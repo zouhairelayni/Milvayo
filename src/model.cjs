@@ -1,5 +1,6 @@
 'use strict';
 const FORMAT='niyarvo.project.v1';
+const gantt=require('./gantt.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -8,7 +9,7 @@ const id=(prefix='id')=>`${prefix}-${Date.now().toString(36)}-${Math.random().to
 const str=(x,max=1000)=>typeof x==='string'?x.slice(0,max):'';
 const arr=(x,max=5000)=>Array.isArray(x)?x.slice(0,max):[];
 const unique=(items)=>[...new Set(items)];
-const dateOnly=(x)=>/^\d{4}-\d{2}-\d{2}$/.test(x||'') && !Number.isNaN(Date.parse(x+'T00:00:00Z'))?x:'';
+const dateOnly=(x)=>gantt.dayNumber(x)!==null?x:'';
 const safeUrl=(x)=>{const u=str(x,3000).trim();return /^https?:\/\//i.test(u)?u:'';};
 const safeArray=(x,max,label)=>{if(!Array.isArray(x))return [];if(x.length>max)throw Error(`${label} exceeds ${max} item limit`);return x;};
 function validateUnique(items,label){const ids=new Set();for(const item of items){if(ids.has(item.id))throw Error(`Duplicate ${label} ID: ${item.id}`);ids.add(item.id);}}
@@ -20,7 +21,7 @@ function defaultTask(o={}){
     status:STATUSES.includes(o.status)?o.status:'Backlog', priority:PRIORITIES.includes(o.priority)?o.priority:'Medium',
     stage:STAGES.includes(o.stage)?o.stage:'Development', owner:str(o.owner,120)||'Solo operator',
     phaseId:str(o.phaseId,120), releaseId:str(o.releaseId,120), repo:str(o.repo,120), branch:str(o.branch,200),
-    commit:str(o.commit,120), mainSha:str(o.mainSha,120), start:dateOnly(o.start), due:dateOnly(o.due),
+    commit:str(o.commit,120), mainSha:str(o.mainSha,120), start:dateOnly(o.start), due:dateOnly(o.due), milestone:o.milestone===true,
     position:Number.isFinite(o.position)&&o.position>=0?o.position:0,
     dependsOn:unique(arr(o.dependsOn,100).map(x=>str(x,120)).filter(Boolean)),
     labels:unique(arr(o.labels,30).map(x=>str(x,40)).filter(Boolean)),
@@ -79,7 +80,7 @@ function validateProject(project){
  return project;
 }
 function setTaskDependencies(project,taskId,dependsOn){
- const next={...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,dependsOn:unique(dependsOn),updatedAt:iso()}:t)};
+ const next={...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,dependsOn:unique(dependsOn),verified:false,merged:false,updatedAt:iso()}:t)};
  if(!project.tasks.some(t=>t.id===taskId))throw Error('Task not found');
  validateProject(next);return next;
 }
@@ -103,7 +104,7 @@ function moveTask(project,taskId,status,toIndex=99999){
  return {...project,tasks:remaining.concat(changed).map(t=>positions.has(t.id)?{...t,position:positions.get(t.id)}:t),lastAutomationActions:applied};
 }
 function shiftDate(day,amount){const value=dateOnly(day);if(!value)throw Error('Invalid date');const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+amount);return d.toISOString().slice(0,10);}
-function shiftTask(project,taskId,days){const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');if(!task.start&&!task.due)throw Error('Set a start or due date first');if(!Number.isInteger(days)||Math.abs(days)>365)throw Error('Invalid date change');return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,start:t.start?shiftDate(t.start,days):'',due:t.due?shiftDate(t.due,days):'',updatedAt:iso()}:t)};}
+function shiftTask(project,taskId,days){const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');if(!task.start&&!task.due)throw Error('Set a start or due date first');if(!Number.isInteger(days)||Math.abs(days)>365)throw Error('Invalid date change');return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,start:t.start?shiftDate(t.start,days):'',due:t.due?shiftDate(t.due,days):'',verified:false,merged:false,updatedAt:iso()}:t)};}
 
 function resizeTask(project,taskId,days){
  const task=project.tasks.find(t=>t.id===taskId);
@@ -170,4 +171,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={boardAutoScrollDelta,boardLaneAt,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={gantt,boardAutoScrollDelta,boardLaneAt,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

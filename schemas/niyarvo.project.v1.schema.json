@@ -167,6 +167,9 @@
           "due": {
             "type": "string"
           },
+          "milestone": {
+            "type": "boolean"
+          },
           "tests": {
             "type": "array",
             "items": {

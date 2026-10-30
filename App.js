@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useState, useCallback} from 'react';
+import GanttView from './src/GanttView';
 import {View,Text,TextInput,ScrollView,Pressable,Modal,Platform,useWindowDimensions,Alert,StatusBar,Image,Animated,PanResponder,Linking} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {File,Paths} from 'expo-file-system';
@@ -26,12 +27,10 @@ function niceDate(d){try{return new Date(d).toLocaleDateString(undefined,{month:
 function StatTile({name,value,caption,icon,color=C.purple,children}){return <Box style={{padding:17,flexGrow:1,flexBasis:195,minHeight:136}}><View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Txt color={C.sub} size={12} bold>{name}</Txt><I name={icon} size={18} color={color}/></View><Txt size={30} bold style={{marginTop:11}}>{value}</Txt><Txt size={11} color={C.muted} style={{marginTop:1}}>{caption}</Txt>{children}</Box>}
 function BarStack({items}){const total=items.reduce((a,b)=>a+b.value,0)||1;return <View style={{height:11,flexDirection:'row',borderRadius:5,overflow:'hidden',marginTop:17}}>{items.filter(i=>i.value>0).map((i,j)=><View key={j} style={{width:(i.value/total*100)+'%',backgroundColor:i.color}}/>)}</View>}
 function Graph({project}){const counts=STATUSES.map(st=>project.tasks.filter(t=>t.status===st).length);const max=Math.max(1,...counts);return <View style={{height:118,flexDirection:'row',alignItems:'flex-end',gap:18,justifyContent:'space-around',paddingTop:9}}>{counts.map((v,j)=><View key={j} style={{alignItems:'center',flex:1,justifyContent:'flex-end'}}><Txt color={C.sub} size={11}>{v}</Txt><View style={{height:Math.max(6,(v/max)*65),alignSelf:'stretch',maxWidth:80,borderTopLeftRadius:4,borderTopRightRadius:4,backgroundColor:laneColors[STATUSES[j]]}}/><Txt color={C.muted} size={9} style={{marginTop:6}}>{['Backlog','Active','Review','Done'][j]}</Txt></View>)}</View>}
-function TaskCard({task,onPress,grabProps,blocked=false}){
- return <Pressable onPress={onPress} style={({pressed})=>[{backgroundColor:C.panel,borderWidth:1,borderColor:pressed?C.purple:C.border,borderRadius:10,padding:12,marginBottom:9}]}>
+function TaskCard({task,onPress,onLongPress,onPressOut,blocked=false,preview=false}){
+ return <Pressable onPress={onPress} onLongPress={onLongPress} onPressOut={onPressOut} delayLongPress={340} disabled={preview} style={({pressed})=>[{backgroundColor:C.panel,borderWidth:1,borderColor:preview?C.purple:pressed?C.purple:C.border,borderRadius:10,padding:12,marginBottom:9,...(Platform.OS==='web'?{userSelect:'none'}:{})}]}>
   <View style={{flexDirection:'row',justifyContent:'space-between',gap:6,alignItems:'center'}}>
-   <Txt size={10} color={C.muted} bold>{task.id}</Txt>
-   <View style={{flexDirection:'row',gap:7,alignItems:'center'}}><Chip label={task.priority} color={priorityColors[task.priority]} small/>
-   {grabProps&&<View {...grabProps} accessible accessibilityLabel={`Drag ${task.title} to reorder or change lane`} style={{padding:6,backgroundColor:C.raised,borderRadius:7,...(Platform.OS==='web'?{cursor:'grab'}:{})}}><I name="reorder-three-outline" color={C.purple} size={19}/></View>}</View>
+   <Txt size={10} color={C.muted} bold>{task.id}</Txt><Chip label={task.priority} color={priorityColors[task.priority]} small/>
   </View>
   <Txt size={13} bold style={{marginTop:8,marginBottom:8}}>{task.title}</Txt>
   {!!task.description&&<Txt size={11} color={C.muted} lines={2}>{task.description}</Txt>}
@@ -43,41 +42,56 @@ function TaskCard({task,onPress,grabProps,blocked=false}){
   </View>
  </Pressable>;
 }
-function DraggableCard({task,openTask,onDrop,onDrag,onEnd,onLayout,blocked}){
- const pan=React.useRef(new Animated.ValueXY()).current;
- const [dragging,setDragging]=useState(false);
- const current=React.useRef({onDrop,onDrag,onEnd});current.current={onDrop,onDrag,onEnd};
+function DraggableCard({task,openTask,onStart,onDrop,onDrag,onEnd,onLayout,blocked,dragging}){
+ const cardRef=React.useRef(null),armed=React.useRef(false),captured=React.useRef(false);
+ const current=React.useRef({onStart,onDrop,onDrag,onEnd,openTask});current.current={onStart,onDrop,onDrag,onEnd,openTask};
  const responder=React.useRef(PanResponder.create({
-  onStartShouldSetPanResponder:()=>true,
-  onMoveShouldSetPanResponder:()=>true,
-  onPanResponderGrant:()=>{pan.setValue({x:0,y:0});setDragging(true)},
-  onPanResponderMove:(_,g)=>{pan.setValue({x:g.dx,y:g.dy});current.current.onDrag(task.id,g.moveX,g.moveY,task.title)},
+  onStartShouldSetPanResponder:()=>false,
+  onMoveShouldSetPanResponder:(_,gesture)=>armed.current&&(Math.abs(gesture.dx)+Math.abs(gesture.dy)>3),
+  onPanResponderGrant:()=>{captured.current=true},
+  onPanResponderMove:(_,gesture)=>{if(armed.current)current.current.onDrag(task.id,gesture.moveX,gesture.moveY)},
   onPanResponderTerminationRequest:()=>false,
-  onPanResponderRelease:(_,g)=>{pan.setValue({x:0,y:0});setDragging(false);current.current.onEnd();if(Math.abs(g.dx)+Math.abs(g.dy)>9)current.current.onDrop(task.id,g.moveX,g.moveY)},
-  onPanResponderTerminate:()=>{pan.setValue({x:0,y:0});setDragging(false);current.current.onEnd()}
+  onPanResponderRelease:(_,gesture)=>{if(armed.current&&Math.abs(gesture.dx)+Math.abs(gesture.dy)>9)current.current.onDrop(task.id,gesture.moveX,gesture.moveY);armed.current=false;captured.current=false;current.current.onEnd()},
+  onPanResponderTerminate:()=>{armed.current=false;captured.current=false;current.current.onEnd()}
  })).current;
- return <Animated.View onLayout={onLayout} style={{transform:pan.getTranslateTransform(),zIndex:dragging?10:0,opacity:dragging?.3:1}}>
-  <TaskCard task={task} onPress={()=>openTask(task.id)} grabProps={responder.panHandlers} blocked={blocked}/>
- </Animated.View>;
+ return <View ref={cardRef} collapsable={false} {...responder.panHandlers} onLayout={onLayout} style={{opacity:dragging?0:1,...(Platform.OS==='web'?{touchAction:'none'}:{})}}>
+  <TaskCard task={task} blocked={blocked} onPress={()=>{if(!armed.current)current.current.openTask(task.id)}}
+   onLongPress={event=>{armed.current=true;captured.current=false;const e=event.nativeEvent;current.current.onStart(task.id,e.pageX??e.clientX,e.pageY??e.clientY,cardRef.current)}}
+   onPressOut={()=>{setTimeout(()=>{if(armed.current&&!captured.current){armed.current=false;current.current.onEnd()}},70)}}/>
+ </View>;
 }
-function Board({project,tasks,openTask,onMove,compact=false,onPreview=()=>{}}){
+function Board({project,tasks,openTask,onMove,compact=false}){
  const scroll=React.useRef(null),boardView=React.useRef(null),bounds=React.useRef({x:0,y:0,width:0}),offset=React.useRef(0);
  const scrollWidth=React.useRef(0),viewport=React.useRef(0),pointer=React.useRef(null),timer=React.useRef(null),cardLayouts=React.useRef({});
+ const [drag,setDrag]=useState(null),translate=React.useRef(new Animated.ValueXY()).current;
+ const dragOrigin=React.useRef(null);
  const laneWidth=compact?248:278,gap=12;
- const refreshBounds=()=>boardView.current?.measureInWindow?.((x,y,width)=>{bounds.current={x,y,width};viewport.current=width;});
- const end=()=>{pointer.current=null;if(timer.current){clearInterval(timer.current);timer.current=null;}onPreview(null)};
+ const refreshBounds=()=>boardView.current?.measureInWindow?.((x,y,width)=>{bounds.current={x,y,width};viewport.current=width});
+ const end=()=>{pointer.current=null;dragOrigin.current=null;if(timer.current){clearInterval(timer.current);timer.current=null}setDrag(null);translate.setValue({x:0,y:0})};
  useEffect(()=>()=>{if(timer.current)clearInterval(timer.current)},[]);
- const onDrag=(id,x,y,title)=>{
-  pointer.current={x,y};onPreview({title,x,y});refreshBounds();
+ const start=(id,x,y,ref)=>{
+  if(!ref?.measureInWindow)return;
+  boardView.current?.measureInWindow?.((bx,by,bw)=>{
+   bounds.current={x:bx,y:by,width:bw};viewport.current=bw;
+   ref.measureInWindow((cx,cy,cw)=>{
+   const b=bounds.current;const task=tasks.find(t=>t.id===id);if(!task)return;
+   const fingerX=Number.isFinite(x)?x:cx+cw/2, fingerY=Number.isFinite(y)?y:cy+32;
+   dragOrigin.current={x:fingerX,y:fingerY};translate.setValue({x:0,y:0});
+   setDrag({id,task,blocked:project?model.blockers(project,task).length>0:false,left:cx-b.x,top:cy-b.y,width:cw});
+   pointer.current={x:fingerX,y:fingerY};
+   });
+  });
+ };
+ const onDrag=(id,x,y)=>{
+  if(!dragOrigin.current)return;
+  pointer.current={x,y};translate.setValue({x:x-dragOrigin.current.x,y:y-dragOrigin.current.y});
   if(timer.current)return;
   timer.current=setInterval(()=>{
-   const pt=pointer.current;if(!pt)return;
-   const b=bounds.current;const d=pt.x-b.x;
-   // Continue scrolling even when the pointer is stationary near an edge.
-   const delta=model.boardAutoScrollDelta(pt.x,b.x,b.width);
+   const p=pointer.current,b=bounds.current;if(!p)return;
+   const delta=model.boardAutoScrollDelta(p.x,b.x,b.width);
    if(!delta)return;
-   const next=Math.max(0,Math.min(scrollWidth.current-viewport.current,offset.current+delta));
-   if(next!==offset.current){offset.current=next;scroll.current?.scrollTo({x:next,animated:false});}
+   const next=Math.max(0,Math.min(Math.max(0,scrollWidth.current-viewport.current),offset.current+delta));
+   if(next!==offset.current){offset.current=next;scroll.current?.scrollTo({x:next,animated:false})}
   },40);
  };
  const drop=(taskId,x,y)=>{
@@ -85,102 +99,28 @@ function Board({project,tasks,openTask,onMove,compact=false,onPreview=()=>{}}){
   const index=model.boardLaneAt(x,b.x,offset.current,laneWidth,gap);
   const status=STATUSES[index];if(!status)return;
   const list=tasks.filter(t=>t.status===status&&t.id!==taskId).sort((a,b)=>a.position-b.position);
-  // Screen position, relative to the board's column. Avoid async measure callbacks after unmount.
-  const entryY=y-b.y;
-  let count=list.length;
-  for(let i=0;i<list.length;i++){
-   const layout=cardLayouts.current[list[i].id];
-   if(layout&&entryY<layout.y+layout.height/2){count=i;break;}
-  }
+  const entryY=y-b.y;let count=list.length;
+  for(let i=0;i<list.length;i++){const layout=cardLayouts.current[list[i].id];if(layout&&entryY<layout.y+layout.height/2){count=i;break}}
   onMove(taskId,status,count);
  };
  return <View>
-  <Txt color={C.muted} size={11} style={{marginBottom:10}}>Hold a purple handle and drag toward either side to auto-scroll the board. Release over the destination lane. Tap a card to edit.</Txt>
-  <View ref={boardView} onLayout={refreshBounds}>
-  <ScrollView ref={scroll} horizontal showsHorizontalScrollIndicator onLayout={e=>{viewport.current=e.nativeEvent.layout.width;refreshBounds()}} onContentSizeChange={w=>{scrollWidth.current=w}} onScroll={e=>{offset.current=e.nativeEvent.contentOffset.x}} scrollEventThrottle={16} contentContainerStyle={{paddingBottom:14,gap}}>
-   {STATUSES.map(status=>{const list=tasks.filter(t=>t.status===status).sort((a,b)=>a.position-b.position);
-    return <View key={status} style={{width:laneWidth,minHeight:290,backgroundColor:C.side,borderColor:C.border,borderWidth:1,borderRadius:12,padding:10}}>
-     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:12,paddingHorizontal:4}}>
-      <View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{height:7,width:7,borderRadius:6,backgroundColor:laneColors[status]}}/><Txt size={12} bold>{status}</Txt></View><Chip label={String(list.length)} small color={C.sub}/>
-     </View>
-     {list.map(t=><DraggableCard key={t.id} task={t} openTask={openTask} blocked={project?model.blockers(project,t).length>0:false} onDrop={drop} onDrag={onDrag} onEnd={end} onLayout={e=>{cardLayouts.current[t.id]=e.nativeEvent.layout}}/>)}
-    </View>;
-   })}
-  </ScrollView></View>
- </View>;
-}
-function TimelineDragBar({task,left,width,color,dayWidth,onOpen,onMove,onResize}){
- const [delta,setDelta]=useState(0),[resizeDelta,setResizeDelta]=useState(0);
- const state=React.useRef({onMove,onResize});state.current={onMove,onResize};
- const drag=React.useRef(PanResponder.create({onStartShouldSetPanResponder:()=>true,onMoveShouldSetPanResponder:()=>true,onPanResponderTerminationRequest:()=>false,onPanResponderMove:(_,g)=>setDelta(g.dx),onPanResponderRelease:(_,g)=>{setDelta(0);const days=Math.round(g.dx/dayWidth);if(days)state.current.onMove(task.id,days)},onPanResponderTerminate:()=>setDelta(0)})).current;
- const resize=React.useRef(PanResponder.create({onStartShouldSetPanResponder:()=>true,onMoveShouldSetPanResponder:()=>true,onPanResponderTerminationRequest:()=>false,onPanResponderMove:(_,g)=>setResizeDelta(g.dx),onPanResponderRelease:(_,g)=>{setResizeDelta(0);const days=Math.round(g.dx/dayWidth);if(days)state.current.onResize(task.id,days)},onPanResponderTerminate:()=>setResizeDelta(0)})).current;
- return <View style={{position:'absolute',left:left+delta,width:Math.max(18,width+resizeDelta),height:30,backgroundColor:color,borderRadius:7,flexDirection:'row',alignItems:'center',overflow:'hidden',borderWidth:1,borderColor:'#ffffff55'}}>
-  <View {...drag.panHandlers} accessible accessibilityLabel={`Move ${task.title} on timeline`} style={{flex:1,height:'100%',justifyContent:'center',paddingHorizontal:7,...(Platform.OS==='web'?{cursor:'grab'}:{})}}><Txt color={C.bg} size={10} bold lines={1}>{task.id}</Txt></View>
-  <Pressable onPress={()=>onOpen(task.id)} accessibilityLabel={`Open ${task.title}`} style={{paddingHorizontal:3}}><I name="create-outline" size={14} color={C.bg}/></Pressable>
-  <View {...resize.panHandlers} accessible accessibilityLabel={`Resize end date of ${task.title}`} style={{width:20,height:'100%',justifyContent:'center',alignItems:'center',backgroundColor:'#00000033',...(Platform.OS==='web'?{cursor:'ew-resize'}:{})}}><I name="reorder-two-outline" size={17} color={C.bg}/></View>
- </View>;
-}
-function Timeline({project,openTask,onShift,onSchedule,onResize,onLink,screenWidth}){
- const [range,setRange]=useState(14),[windowShift,setWindowShift]=useState(0),[linkTask,setLinkTask]=useState(null);
- const scheduled=project.tasks.filter(t=>t.start||t.due).slice().sort((a,b)=>(a.start||a.due).localeCompare(b.start||b.due));
- const unscheduled=project.tasks.filter(t=>!t.start&&!t.due);
- const today=new Date().toISOString().slice(0,10);
- const first=scheduled.length?scheduled.map(t=>t.start||t.due).sort()[0]:today;
- const anchor=first<today?first:today;
- const start=model.shiftDate(anchor,windowShift);
- const narrow=screenWidth<720,dayWidth=range===90?18:range===30?28:39,labelWidth=narrow?146:206,rowHeight=65;
- const dates=Array.from({length:range},(_,i)=>model.shiftDate(start,i));
- const dateOffset=(date)=>Math.round((Date.parse(date+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000);
- const byId=new Map(scheduled.map((t,i)=>[t.id,{task:t,index:i}]));
- return <View style={{minWidth:0}}>
-  <Box style={{padding:12,marginBottom:12}}><View style={{flexDirection:'row',flexWrap:'wrap',alignItems:'center',gap:8}}>
-   <Txt color={C.sub} size={12} bold>Zoom</Txt>{[7,14,30,90].map(days=><Btn key={days} label={`${days}d`} compact tone={days===range?'primary':'neutral'} onPress={()=>setRange(days)}/>)}
-   <Btn label="‹" compact onPress={()=>setWindowShift(v=>v-range)}/><Btn label="Today" compact onPress={()=>setWindowShift(0)}/><Btn label="›" compact onPress={()=>setWindowShift(v=>v+range)}/>
-  </View><Txt color={C.muted} size={11} style={{marginTop:10}}>{start} → {model.shiftDate(start,range-1)} · {scheduled.length} scheduled · Scroll horizontally to view dates.</Txt>
-  <Txt color={C.muted} size={11} style={{marginTop:5}}>Drag a bar to move it, grab its end handle to resize, or tap the link icon to set predecessors.</Txt></Box>
-  <Box style={{overflow:'hidden'}}><ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator persistentScrollbar contentContainerStyle={{minWidth:labelWidth+range*dayWidth}}>
-    <View style={{width:labelWidth+range*dayWidth}}>
-     <View style={{height:39,flexDirection:'row',borderBottomWidth:1,borderBottomColor:C.border,backgroundColor:C.panel2}}>
-      <View style={{width:labelWidth,justifyContent:'center',paddingHorizontal:10}}><Txt size={10} color={C.sub} bold>TASK / LINK</Txt></View>
-      {dates.map((date,i)=><View key={date} style={{width:dayWidth,alignItems:'center',justifyContent:'center',borderLeftWidth:1,borderLeftColor:C.border}}><Txt size={9} color={date===today?C.purple:C.muted}>{date.slice(8)}</Txt><Txt size={8} color={C.muted}>{i===0||date.endsWith('-01')?date.slice(5,7):new Date(date+'T00:00:00Z').toLocaleDateString('en-US',{weekday:'short'}).slice(0,2)}</Txt></View>)}
-     </View>
-     {scheduled.map((task,i)=>{
-      const from=task.start||task.due,end=task.due&&task.due>=from?task.due:from;
-      const offset=dateOffset(from),duration=Math.max(1,dateOffset(end)-offset+1),visibleStart=Math.max(0,offset),visibleEnd=Math.min(range,offset+duration);
-      const blocked=model.blockers(project,task).length>0;
-      return <View key={task.id} style={{height:rowHeight,flexDirection:'row',borderBottomWidth:1,borderBottomColor:C.border}}>
-       <View style={{width:labelWidth,justifyContent:'center',paddingHorizontal:9,backgroundColor:i%2?C.side:C.panel}}>
-        <Pressable onPress={()=>openTask(task.id)}><Txt bold size={11} lines={1}>{task.title}</Txt></Pressable>
-        <View style={{flexDirection:'row',alignItems:'center',gap:10,marginTop:4}}><Pressable accessibilityLabel={`Set dependencies for ${task.title}`} onPress={()=>setLinkTask(task.id)}><I name="git-branch-outline" size={19} color={C.cyan}/></Pressable><Pressable accessibilityLabel={`Shift ${task.title} earlier`} onPress={()=>onShift(task.id,-1)}><I name="chevron-back-circle-outline" size={18} color={C.sub}/></Pressable><Pressable accessibilityLabel={`Shift ${task.title} later`} onPress={()=>onShift(task.id,1)}><I name="chevron-forward-circle-outline" size={18} color={C.sub}/></Pressable>{blocked&&<I name="lock-closed-outline" size={13} color={C.amber}/>}</View>
-       </View>
-       <View style={{width:range*dayWidth,height:rowHeight,justifyContent:'center',backgroundColor:i%2?'#1d1e26':'#20212a'}}>
-        <View pointerEvents="none" style={{position:'absolute',top:0,bottom:0,flexDirection:'row'}}>{dates.map(date=><View key={date} style={{height:'100%',width:dayWidth,borderLeftWidth:1,borderLeftColor:date===today?C.purpleDim:C.border}}/>)}</View>
-        {visibleEnd>visibleStart&&<TimelineDragBar key={task.id} task={task} left={visibleStart*dayWidth+2} width={(visibleEnd-visibleStart)*dayWidth-4} dayWidth={dayWidth} color={blocked?C.amber:task.status==='Done'?C.green:C.purple} onOpen={openTask} onMove={onShift} onResize={onResize}/>}
-       </View>
-      </View>;
-     })}
-     {scheduled.length>0&&<View pointerEvents="none" style={{position:'absolute',left:labelWidth,top:39,width:range*dayWidth,height:scheduled.length*rowHeight}}>
-      {scheduled.flatMap((task,i)=>task.dependsOn.map((depId)=>{const dep=byId.get(depId);if(!dep)return null;
-       const from=(dateOffset(dep.task.due||dep.task.start)+1)*dayWidth,to=dateOffset(task.start||task.due)*dayWidth;
-       const firstX=Math.max(0,Math.min(range*dayWidth,from)),lastX=Math.max(0,Math.min(range*dayWidth,to));
-       const firstY=dep.index*rowHeight+32,lastY=i*rowHeight+32;
-       return <React.Fragment key={`${depId}-${task.id}`}>
-        <View style={{position:'absolute',left:Math.min(firstX,lastX),top:firstY,height:2,width:Math.max(2,Math.abs(lastX-firstX)),backgroundColor:C.cyan,opacity:.85}}/>
-        <View style={{position:'absolute',left:lastX,top:Math.min(firstY,lastY),width:2,height:Math.max(2,Math.abs(lastY-firstY)),backgroundColor:C.cyan,opacity:.85}}/>
-        <View style={{position:'absolute',left:lastX-3,top:lastY-3,width:7,height:7,borderRadius:4,backgroundColor:C.cyan}}/>
-       </React.Fragment>;}))}
-     </View>}
-    </View>
-   </ScrollView></Box>
-  {!!unscheduled.length&&<Box style={{padding:14,marginTop:12}}><Txt size={13} bold>Unscheduled tasks ({unscheduled.length})</Txt>{unscheduled.map(t=><View key={t.id} style={{flexDirection:'row',gap:9,alignItems:'center',paddingVertical:7}}><Pressable onPress={()=>openTask(t.id)} style={{flex:1}}><Txt size={12} lines={1}>{t.title}</Txt></Pressable><Btn compact label="Schedule" onPress={()=>onSchedule(t.id)}/></View>)}</Box>}
-  {linkTask&&<Modal visible transparent animationType="fade" onRequestClose={()=>setLinkTask(null)}><View style={{flex:1,backgroundColor:'#000b',alignItems:'center',justifyContent:'center',padding:16}}><Box style={{width:'100%',maxWidth:475,maxHeight:'85%',padding:19}}><View style={{flexDirection:'row',justifyContent:'space-between',marginBottom:12}}><Txt bold size={17}>Task predecessors</Txt><IconButton name="close-outline" onPress={()=>setLinkTask(null)}/></View><Txt color={C.muted} size={11} style={{marginBottom:12}}>Choose tasks that must be completed first. Circular dependencies and missing references are rejected.</Txt><ScrollView>{project.tasks.filter(t=>t.id!==linkTask).map(t=>{const current=project.tasks.find(x=>x.id===linkTask);const checked=current?.dependsOn.includes(t.id);return <Pressable key={t.id} onPress={()=>onLink(linkTask,t.id)} style={{padding:12,flexDirection:'row',alignItems:'center',gap:11,borderBottomWidth:1,borderBottomColor:C.border}}><I name={checked?'checkbox':'square-outline'} color={checked?C.purple:C.muted} size={21}/><View style={{flex:1}}><Txt size={12} bold>{t.title}</Txt><Txt size={10} color={C.muted}>{t.id} · {t.status}</Txt></View></Pressable>})}</ScrollView><Btn label="Done" tone="primary" onPress={()=>setLinkTask(null)} style={{marginTop:12}}/></Box></View></Modal>}
+  <Txt color={C.muted} size={11} style={{marginBottom:10}}>Press and hold anywhere on a card, then drag it between columns. Keep holding near an edge to scroll the board. Tap to edit.</Txt>
+  <View ref={boardView} collapsable={false} onLayout={refreshBounds} style={{position:'relative',overflow:'visible'}}>
+   <ScrollView ref={scroll} horizontal showsHorizontalScrollIndicator onLayout={e=>{viewport.current=e.nativeEvent.layout.width;refreshBounds()}} onContentSizeChange={w=>{scrollWidth.current=w}} onScroll={e=>{offset.current=e.nativeEvent.contentOffset.x}} scrollEventThrottle={16} contentContainerStyle={{paddingBottom:14,gap}}>
+    {STATUSES.map(status=>{const list=tasks.filter(t=>t.status===status).sort((a,b)=>a.position-b.position);return <View key={status} style={{width:laneWidth,minHeight:290,backgroundColor:C.side,borderColor:C.border,borderWidth:1,borderRadius:12,padding:10}}>
+     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:12,paddingHorizontal:4}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{height:7,width:7,borderRadius:6,backgroundColor:laneColors[status]}}/><Txt size={12} bold>{status}</Txt></View><Chip label={String(list.length)} small color={C.sub}/></View>
+     {list.map(t=><DraggableCard key={t.id} task={t} openTask={openTask} blocked={project?model.blockers(project,t).length>0:false} onStart={start} onDrop={drop} onDrag={onDrag} onEnd={end} dragging={drag?.id===t.id} onLayout={e=>{cardLayouts.current[t.id]=e.nativeEvent.layout}}/>)}
+    </View>})}
+   </ScrollView>
+   {drag&&<Animated.View pointerEvents="none" style={{position:'absolute',left:drag.left,top:drag.top,width:drag.width,transform:translate.getTranslateTransform(),zIndex:1000}}><TaskCard preview task={drag.task} blocked={drag.blocked}/></Animated.View>}
+  </View>
  </View>;
 }
 function Empty({icon='folder-open-outline',title='Nothing here yet',desc,action}){return <View style={{alignItems:'center',padding:35,gap:10}}><I name={icon} size={29}/><Txt size={15} bold>{title}</Txt><Txt size={12} color={C.muted} style={{textAlign:'center'}}>{desc}</Txt>{action}</View>}
 
 export default function App(){
  const {width,height}=useWindowDimensions();const desktop=width>=1000||(Platform.OS==='web'&&width>=860),tablet=width>=720;
- const [ws,setWs]=useState(null),[tab,setTab]=useState('Overview'),[menu,setMenu]=useState(false),[query,setQuery]=useState(''),[showCreate,setShowCreate]=useState(false),[editId,setEditId]=useState(null),[message,setMessage]=useState(''),[restoreIndex,setRestoreIndex]=useState(-1),[importPreview,setImportPreview]=useState(null),[releaseDraft,setReleaseDraft]=useState(null),[confirmDelete,setConfirmDelete]=useState(false),[confirmTaskDelete,setConfirmTaskDelete]=useState(false),[confirmReleaseDelete,setConfirmReleaseDelete]=useState(null),[attachmentDraft,setAttachmentDraft]=useState({name:'',url:''}),[storageFault,setStorageFault]=useState(''),[projectPicker,setProjectPicker]=useState(false),[projectDialog,setProjectDialog]=useState(null),[projectDraft,setProjectDraft]=useState({name:'',code:'',description:''}),[dragGhost,setDragGhost]=useState(null);
+ const [ws,setWs]=useState(null),[tab,setTab]=useState('Overview'),[menu,setMenu]=useState(false),[query,setQuery]=useState(''),[showCreate,setShowCreate]=useState(false),[editId,setEditId]=useState(null),[message,setMessage]=useState(''),[restoreIndex,setRestoreIndex]=useState(-1),[importPreview,setImportPreview]=useState(null),[releaseDraft,setReleaseDraft]=useState(null),[confirmDelete,setConfirmDelete]=useState(false),[confirmTaskDelete,setConfirmTaskDelete]=useState(false),[confirmReleaseDelete,setConfirmReleaseDelete]=useState(null),[attachmentDraft,setAttachmentDraft]=useState({name:'',url:''}),[storageFault,setStorageFault]=useState(''),[projectPicker,setProjectPicker]=useState(false),[projectDialog,setProjectDialog]=useState(null),[projectDraft,setProjectDraft]=useState({name:'',code:'',description:''});
  const [newTask,setNewTask]=useState({title:'',description:'',priority:'Medium',status:'Backlog',stage:'Development',repo:'',owner:'Solo operator',releaseId:'',tests:[]});
  const notify=(s)=>{setMessage(s);};
  useEffect(()=>{let alive=true;AsyncStorage.getItem('niyarvo-projects-v1').then(raw=>{if(alive)setWs(raw?normalizeWorkspace(JSON.parse(raw)):createWorkspace())}).catch(e=>{if(alive)setStorageFault(`Saved workspace could not be read: ${e.message}. Local data was NOT overwritten.`)});return()=>{alive=false}},[]);
@@ -281,9 +221,9 @@ export default function App(){
  const sidebar=<View style={{width:desktop?225:260,backgroundColor:C.side,borderRightWidth:1,borderRightColor:C.border,flex:1,padding:14}}><View style={{flexDirection:'row',gap:11,alignItems:'center',paddingHorizontal:8,paddingVertical:17,marginBottom:17}}><Image source={require('./assets/brand-symbol.png')} style={{width:36,height:36}} resizeMode="contain"/><View><Txt size={16} bold>Niyarvo</Txt><Txt size={9} color={C.muted} style={{letterSpacing:1.6}}>PROJECTS WORKSPACE</Txt></View></View><View style={{paddingHorizontal:10,marginBottom:11}}><Txt size={10} bold color={C.muted}>WORKSPACE</Txt></View><Pressable onPress={()=>{setMenu(false);setProjectPicker(true)}} style={{backgroundColor:C.panel2,padding:12,borderRadius:9,marginBottom:19,borderWidth:1,borderColor:C.border,flexDirection:'row',gap:9,alignItems:'center'}}><I name="layers-outline" color={C.purple}/><View style={{flex:1}}><Txt bold size={12} lines={1}>{project.name}</Txt><Txt color={C.muted} size={10}>{project.code} · v{project.version}</Txt></View><I name="chevron-down-outline" size={13}/></Pressable><Txt size={10} color={C.muted} bold style={{paddingHorizontal:10,marginBottom:9}}>OVERVIEW</Txt>{nav.map(item=><Pressable key={item} onPress={()=>{setTab(item);setMenu(false)}} style={{flexDirection:'row',alignItems:'center',gap:12,paddingHorizontal:13,paddingVertical:11,backgroundColor:item===tab?C.panel2:'transparent',borderRadius:9,marginBottom:3,borderLeftWidth:item===tab?2:0,borderLeftColor:C.purple}}><I name={iconMap[item]} color={item===tab?C.purple:C.muted} size={18}/><Txt color={item===tab?C.ink:C.sub} size={12} bold={item===tab}>{item}</Txt></Pressable>)}<View style={{flex:1}}/><View style={{borderTopWidth:1,borderTopColor:C.border,paddingTop:16,paddingHorizontal:9}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{backgroundColor:'#393347',borderRadius:100,width:29,height:29,alignItems:'center',justifyContent:'center'}}><I name="person" color={C.purple}/></View><View><Txt size={11} bold>Solo operator</Txt><Txt size={10} color={C.muted}>Local-first workspace</Txt></View></View></View></View>;
  const header=<View style={{minHeight:76,paddingHorizontal:desktop?28:15,paddingTop:desktop?20:Platform.OS==='web'?18:27,paddingBottom:14,borderBottomWidth:1,borderBottomColor:C.border,flexDirection:'row',alignItems:'center',gap:12}}>{!desktop&&<IconButton name="menu-outline" onPress={()=>setMenu(true)} label="Open navigation"/>}{!desktop&&<Pressable accessibilityLabel="Switch project" onPress={()=>setProjectPicker(true)} style={{padding:6,borderRadius:9,borderWidth:1,borderColor:C.border}}><I name="layers-outline" size={20} color={C.purple}/></Pressable>}<View style={{flex:1}}><Txt size={desktop?21:18} bold>{tab==='Overview'?'Tasks report':tab}</Txt><Txt size={11} color={C.muted}>{project.name} · {tab==='Overview'?'Engineering status at a glance':'Manage, verify and preserve your work'}</Txt></View>{desktop&&<View style={{width:230}}><TextInput value={query} onChangeText={setQuery} placeholder="Search tasks..." placeholderTextColor={C.muted} style={{borderWidth:1,borderColor:C.border,borderRadius:9,color:C.ink,fontSize:12,paddingHorizontal:13,height:39,backgroundColor:C.panel2}}/></View>}<IconButton name="cloud-download-outline" onPress={exportProject} label="Export project"/><Btn label={desktop?'Create task':'New'} icon="add-outline" tone="primary" onPress={()=>setShowCreate(true)} compact={!desktop}/></View>;
  const smallHeading=(title,subtitle,right)=> <View style={{marginBottom:15,marginTop:5,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12}}><View style={{flex:1}}><Txt size={17} bold>{title}</Txt>{!!subtitle&&<Txt size={11} color={C.muted}>{subtitle}</Txt>}</View>{right}</View>;
- const dashboard=<View>{project.id==='sample-workspace'&&<View style={{backgroundColor:'#28223b',borderColor:'#493c6a',borderWidth:1,borderRadius:9,padding:10,marginBottom:18,flexDirection:'row',alignItems:'center',gap:8}}><I name="information-circle-outline" color={C.purple}/><View style={{flex:1}}><Txt color="#dacdff" size={11}>Sample tasks only. Import your roadmap to replace these examples.</Txt></View><Pressable onPress={()=>{setTab('Settings')}}><Txt color={C.purple} bold size={11}>Manage</Txt></Pressable></View>}{smallHeading('Performance overview','Status, validation and project completion')}<View style={{flexDirection:'row',flexWrap:'wrap',gap:12,marginBottom:18}}><StatTile name="Task status" value={s.total} caption={`${s.backlog} backlog · ${s.active} in progress`} icon="checkmark-done-circle-outline"><BarStack items={STATUSES.map(st=>({value:project.tasks.filter(t=>t.status===st).length,color:laneColors[st]}))}/></StatTile><StatTile name="Verified tests" value={`${s.passed}/${s.checks}`} caption="Checks with passing evidence" icon="flask-outline" color={C.green}><BarStack items={[{value:s.passed,color:C.green},{value:s.checks-s.passed,color:C.raised}]}/></StatTile><StatTile name="Release readiness" value={s.verified} caption={`${s.merged} merged · ${project.releases.length} releases`} icon="git-merge-outline" color={C.amber}><View style={{marginTop:14,flexDirection:'row',gap:5}}>{[...Array(9)].map((_,i)=><View key={i} style={{height:9,flex:1,borderRadius:3,backgroundColor:i<Math.ceil(s.verified/(s.total||1)*9)?C.purple:C.raised}}/>)}</View></StatTile></View><View style={{flexDirection:desktop?'row':'column',gap:12,marginBottom:23}}><Box style={{padding:17,flex:2,minWidth:0}}><View style={{flexDirection:'row',justifyContent:'space-between'}}><View><Txt bold size={13}>Task distribution</Txt><Txt size={11} color={C.muted}>Calculated from the selected project's tasks</Txt></View><Chip label="Current" color={C.purple}/></View><Graph project={project}/><View style={{flexDirection:'row',justifyContent:'space-between',marginTop:12}}><Txt size={10} color={C.muted}>Backlog</Txt><Txt size={10} color={C.muted}>Completed</Txt></View></Box><Box style={{padding:17,flex:1,minWidth:0}}><Txt bold size={13}>Stage distribution</Txt><Txt size={11} color={C.muted} style={{marginBottom:15}}>Development → Production</Txt>{STAGES.map(stage=>{let count=project.tasks.filter(t=>t.stage===stage).length;return <View key={stage} style={{marginBottom:11}}><View style={{flexDirection:'row',justifyContent:'space-between'}}><Txt size={11}>{stage}</Txt><Txt color={C.muted} size={11}>{count}</Txt></View><View style={{height:6,borderRadius:3,backgroundColor:C.raised,marginTop:7,overflow:'hidden'}}><View style={{width:(count/(s.total||1)*100)+'%',height:6,backgroundColor:stage==='Development'?C.purple:stage==='Testing'?C.amber:C.green}}/></View></View>})}</Box></View>{smallHeading('Tasks board','Track engineering work through release gates',<Btn label="Open board" icon="arrow-forward" compact onPress={()=>setTab('Board')}/>)}<Board project={project} tasks={filtered} openTask={setEditId} onMove={onMoveTask} onPreview={setDragGhost} compact={!desktop}/></View>;
- const boardScreen=<View>{smallHeading('Tasks board',`${filtered.length} tasks · verify before marking merged`,<Btn label="Add task" compact icon="add" onPress={()=>setShowCreate(true)}/>)}{!desktop&&<TextInput value={query} onChangeText={setQuery} placeholder="Search tasks..." placeholderTextColor={C.muted} style={{height:42,backgroundColor:C.panel,borderRadius:10,borderWidth:1,borderColor:C.border,color:C.ink,paddingHorizontal:12,marginBottom:14}}/>}<Board project={project} tasks={filtered} openTask={setEditId} onMove={onMoveTask} onPreview={setDragGhost}/></View>;
- const timelineScreen=<View>{smallHeading('Interactive timeline','Date-based roadmap planning · tap a bar to edit; use arrows to shift tasks')}<Timeline project={project} openTask={setEditId} onShift={onShiftTask} onSchedule={onScheduleTask} onResize={onResizeTask} onLink={onLinkTask} screenWidth={width}/></View>;
+ const dashboard=<View>{project.id==='sample-workspace'&&<View style={{backgroundColor:'#28223b',borderColor:'#493c6a',borderWidth:1,borderRadius:9,padding:10,marginBottom:18,flexDirection:'row',alignItems:'center',gap:8}}><I name="information-circle-outline" color={C.purple}/><View style={{flex:1}}><Txt color="#dacdff" size={11}>Sample tasks only. Import your roadmap to replace these examples.</Txt></View><Pressable onPress={()=>{setTab('Settings')}}><Txt color={C.purple} bold size={11}>Manage</Txt></Pressable></View>}{smallHeading('Performance overview','Status, validation and project completion')}<View style={{flexDirection:'row',flexWrap:'wrap',gap:12,marginBottom:18}}><StatTile name="Task status" value={s.total} caption={`${s.backlog} backlog · ${s.active} in progress`} icon="checkmark-done-circle-outline"><BarStack items={STATUSES.map(st=>({value:project.tasks.filter(t=>t.status===st).length,color:laneColors[st]}))}/></StatTile><StatTile name="Verified tests" value={`${s.passed}/${s.checks}`} caption="Checks with passing evidence" icon="flask-outline" color={C.green}><BarStack items={[{value:s.passed,color:C.green},{value:s.checks-s.passed,color:C.raised}]}/></StatTile><StatTile name="Release readiness" value={s.verified} caption={`${s.merged} merged · ${project.releases.length} releases`} icon="git-merge-outline" color={C.amber}><View style={{marginTop:14,flexDirection:'row',gap:5}}>{[...Array(9)].map((_,i)=><View key={i} style={{height:9,flex:1,borderRadius:3,backgroundColor:i<Math.ceil(s.verified/(s.total||1)*9)?C.purple:C.raised}}/>)}</View></StatTile></View><View style={{flexDirection:desktop?'row':'column',gap:12,marginBottom:23}}><Box style={{padding:17,flex:2,minWidth:0}}><View style={{flexDirection:'row',justifyContent:'space-between'}}><View><Txt bold size={13}>Task distribution</Txt><Txt size={11} color={C.muted}>Calculated from the selected project's tasks</Txt></View><Chip label="Current" color={C.purple}/></View><Graph project={project}/><View style={{flexDirection:'row',justifyContent:'space-between',marginTop:12}}><Txt size={10} color={C.muted}>Backlog</Txt><Txt size={10} color={C.muted}>Completed</Txt></View></Box><Box style={{padding:17,flex:1,minWidth:0}}><Txt bold size={13}>Stage distribution</Txt><Txt size={11} color={C.muted} style={{marginBottom:15}}>Development → Production</Txt>{STAGES.map(stage=>{let count=project.tasks.filter(t=>t.stage===stage).length;return <View key={stage} style={{marginBottom:11}}><View style={{flexDirection:'row',justifyContent:'space-between'}}><Txt size={11}>{stage}</Txt><Txt color={C.muted} size={11}>{count}</Txt></View><View style={{height:6,borderRadius:3,backgroundColor:C.raised,marginTop:7,overflow:'hidden'}}><View style={{width:(count/(s.total||1)*100)+'%',height:6,backgroundColor:stage==='Development'?C.purple:stage==='Testing'?C.amber:C.green}}/></View></View>})}</Box></View>{smallHeading('Tasks board','Track engineering work through release gates',<Btn label="Open board" icon="arrow-forward" compact onPress={()=>setTab('Board')}/>)}<Board project={project} tasks={filtered} openTask={setEditId} onMove={onMoveTask} compact={!desktop}/></View>;
+ const boardScreen=<View>{smallHeading('Tasks board',`${filtered.length} tasks · verify before marking merged`,<Btn label="Add task" compact icon="add" onPress={()=>setShowCreate(true)}/>)}{!desktop&&<TextInput value={query} onChangeText={setQuery} placeholder="Search tasks..." placeholderTextColor={C.muted} style={{height:42,backgroundColor:C.panel,borderRadius:10,borderWidth:1,borderColor:C.border,color:C.ink,paddingHorizontal:12,marginBottom:14}}/>}<Board project={project} tasks={filtered} openTask={setEditId} onMove={onMoveTask}/></View>;
+ const timelineScreen=<View>{smallHeading('Gantt timeline','Interactive schedule · grouped task rows, milestones, dependency lines and draggable dates')}<GanttView project={project} onOpen={setEditId} onMove={onShiftTask} onSchedule={onScheduleTask} onResize={onResizeTask} onLink={onLinkTask} onAlign={taskId=>{try{model.gantt.afterPredecessors(project,taskId);updateProject(p=>model.gantt.afterPredecessors(p,taskId),`Aligned ${taskId} after predecessors`)}catch(e){notify(e.message)}}} onSampleSchedule={()=>{try{const today=new Date().toISOString().slice(0,10);model.gantt.scheduleSample(project,today);change(w=>({...w,backups:[workspaceSnapshot(w,'Before sample Gantt dates'),...w.backups].slice(0,12),projects:w.projects.map(p=>p.id===w.selectedId?model.gantt.scheduleSample(p,today):p)}),'Added example dates to sample Gantt')}catch(e){notify(e.message)}}}/></View>;
  const automationScreen=<View>{smallHeading('Board automations','Rules run locally when a card changes status. No background jobs or external services.',<Btn label="Add rule" icon="add" compact tone="primary" onPress={addRule}/>)}
  {project.automations.length===0&&<Empty icon="flash-outline" title="No automations yet" desc="Add a rule to set fields whenever a card enters a lane."/>}
  {project.automations.map(rule=><Box key={rule.id} style={{padding:15,marginBottom:12}}>
@@ -308,13 +248,13 @@ export default function App(){
  {!!ws.projects.filter(p=>p.archived).length&&<><Line/><Txt color={C.muted} bold size={12} style={{marginBottom:9}}>Archived projects</Txt>{ws.projects.filter(p=>p.archived).map(p=><View key={p.id} style={{padding:9,flexDirection:'row',alignItems:'center',gap:8,marginBottom:7}}><View style={{flex:1}}><Txt size={12}>{p.name}</Txt><Txt color={C.muted} size={10}>{p.code} · archived</Txt></View><Btn compact label="Restore" onPress={()=>restoreArchived(p.id)}/></View>)}</>}
  </ScrollView><View style={{flexDirection:'row',gap:8,flexWrap:'wrap',marginTop:14}}><Btn label="New project" icon="add-outline" tone="primary" onPress={()=>openProjectDialog('new')}/><Btn label="Manage selected" icon="settings-outline" onPress={()=>openProjectDialog('edit')}/></View></Box></View></Modal>}
  {projectDialog&&<Modal visible transparent animationType="fade" onRequestClose={()=>setProjectDialog(null)}><View style={{flex:1,backgroundColor:'#000b',justifyContent:'center',alignItems:'center',padding:16}}><Box style={{width:'100%',maxWidth:500,maxHeight:'92%',padding:19}}><View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:15}}><Txt bold size={18}>{projectDialog==='new'?'Create project':'Manage project'}</Txt><IconButton name="close-outline" onPress={()=>setProjectDialog(null)}/></View><ScrollView keyboardShouldPersistTaps="handled"><Labeled title="Project name" value={projectDraft.name} onChange={v=>setProjectDraft(p=>({...p,name:v}))} placeholder="Project name"/><Labeled title="Project code" value={projectDraft.code} onChange={v=>setProjectDraft(p=>({...p,code:v.slice(0,16)}))} placeholder="PRJ"/><Labeled title="Description" value={projectDraft.description} onChange={v=>setProjectDraft(p=>({...p,description:v}))} multiline/><View style={{flexDirection:'row',gap:8,flexWrap:'wrap',marginBottom:15}}><Btn label={projectDialog==='new'?'Create project':'Save changes'} icon="checkmark" tone="primary" onPress={saveProjectDraft}/><Btn label="Cancel" onPress={()=>setProjectDialog(null)}/></View><Line/>{projectDialog==='new'?<><Txt size={13} bold style={{marginBottom:10}}>Or import a project</Txt><Btn label="Import JSON project" icon="cloud-upload-outline" onPress={()=>{setProjectDialog(null);pickImport()}}/></>:<><Txt size={13} bold>Project operations</Txt><Txt color={C.muted} size={11} style={{marginVertical:9}}>These actions apply only to {project.name}. Archive hides this project from the active picker without deleting its tasks.</Txt><View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Btn label="Export project" icon="download-outline" onPress={exportProject}/><Btn label="Archive" icon="archive-outline" onPress={archiveSelected}/>{project.id==='sample-workspace'&&<Btn label="Clear demo" onPress={()=>{discardDemo();setProjectDialog(null)}}/>}<Btn label="Delete project" tone="danger" icon="trash-outline" onPress={()=>{setProjectDialog(null);setConfirmDelete(true)}}/></View></>}</ScrollView></Box></View></Modal>}
- {dragGhost&&<View pointerEvents="none" style={{position:'absolute',left:Math.max(8,dragGhost.x-115),top:Math.max(8,dragGhost.y-45),width:215,minHeight:65,backgroundColor:C.purpleDim,borderColor:C.purple,borderWidth:1.5,borderRadius:11,padding:13,opacity:.96,zIndex:500,elevation:15}}><I name="reorder-three-outline" color={C.purple}/><Txt size={12} bold lines={2}>{dragGhost.title}</Txt></View>}
+
  {menu&&<Modal transparent visible animationType="fade" onRequestClose={()=>setMenu(false)}><View style={{flex:1,flexDirection:'row',backgroundColor:'#000b'}}>{sidebar}<Pressable onPress={()=>setMenu(false)} style={{flex:1}}/></View></Modal>}
  {message!==''&&<View style={{position:'absolute',bottom:desktop?23:76,right:12,left:desktop?'auto':12,maxWidth:480,backgroundColor:'#332d43',borderWidth:1,borderColor:'#776397',borderRadius:10,padding:12,flexDirection:'row',gap:12,alignItems:'center'}}><I name="information-circle" color={C.purple}/><View style={{flex:1}}><Txt size={12}>{message}</Txt></View><IconButton name="close-outline" label="Dismiss message" onPress={()=>setMessage('')}/></View>}
  {showCreate&&<Modal visible transparent animationType="fade" onRequestClose={()=>setShowCreate(false)}><View style={{flex:1,backgroundColor:'#000b',alignItems:'center',justifyContent:'center',padding:15}}><Box style={{width:'100%',maxWidth:560,maxHeight:'92%',padding:20}}><View style={{flexDirection:'row',justifyContent:'space-between',marginBottom:16}}><Txt size={19} bold>New task</Txt><IconButton name="close-outline" onPress={()=>setShowCreate(false)}/></View><ScrollView keyboardShouldPersistTaps="handled"><Labeled title="Task title" value={newTask.title} onChange={v=>setNewTask({...newTask,title:v})} placeholder="What needs to be done?"/><Labeled title="Description" value={newTask.description} onChange={v=>setNewTask({...newTask,description:v})} multiline/><Txt size={12} color={C.muted}>Status</Txt><View style={{flexDirection:'row',flexWrap:'wrap',gap:7,marginVertical:9}}>{STATUSES.map(v=><Pressable key={v} onPress={()=>setNewTask({...newTask,status:v})}><Chip label={v} color={newTask.status===v?C.purple:C.muted} bg={newTask.status===v?C.purpleDim:C.panel2}/></Pressable>)}</View><Txt size={12} color={C.muted}>Priority</Txt><View style={{flexDirection:'row',gap:7,marginVertical:9,flexWrap:'wrap'}}>{PRIORITIES.map(v=><Pressable key={v} onPress={()=>setNewTask({...newTask,priority:v})}><Chip label={v} color={newTask.priority===v?priorityColors[v]:C.muted} bg={newTask.priority===v?C.purpleDim:C.panel2}/></Pressable>)}</View><Labeled title="Repository" value={newTask.repo} onChange={v=>setNewTask({...newTask,repo:v})}/><View style={{flexDirection:'row',gap:10,justifyContent:'flex-end',marginTop:10}}><Btn label="Cancel" onPress={()=>setShowCreate(false)}/><Btn label="Create task" tone="primary" icon="add" onPress={createTask}/></View></ScrollView></Box></View></Modal>}
  {edit&&<Modal visible transparent animationType="slide" onRequestClose={()=>setEditId(null)}><View style={{flex:1,backgroundColor:'#000b',alignItems:'flex-end'}}><View style={{width:desktop?580:'100%',maxWidth:'100%',height:'100%',backgroundColor:C.side,borderLeftColor:C.border,borderLeftWidth:1}}><View style={{padding:16,borderBottomColor:C.border,borderBottomWidth:1,flexDirection:'row',alignItems:'center',gap:9}}><View style={{flex:1}}><Txt color={C.muted} bold size={11}>{edit.id} · {edit.repo||edit.stage}</Txt><Txt size={18} bold lines={2}>{edit.title}</Txt></View><IconButton name="close-outline" onPress={()=>setEditId(null)}/></View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:17,paddingBottom:40}}><View style={{flexDirection:'row',gap:7,flexWrap:'wrap',marginBottom:15}}><Chip label={edit.priority} color={priorityColors[edit.priority]}/><Chip label={edit.stage} color={C.cyan}/>{edit.verified&&<Chip label="Verified" color={C.green}/ >}{edit.merged&&<Chip label="Merged" color={C.purple}/>}</View><Labeled title="Title" value={edit.title} onChange={v=>setTaskField('title',v)}/><Labeled title="Description" value={edit.description} onChange={v=>setTaskField('description',v)} multiline/><Labeled title="Assignee" value={edit.owner} onChange={v=>setTaskField('owner',v)}/>
  <Txt color={C.muted} size={11}>Priority</Txt><View style={{flexDirection:'row',gap:7,flexWrap:'wrap',marginVertical:10}}>{PRIORITIES.map(pr=><Pressable key={pr} onPress={()=>setTaskField('priority',pr)}><Chip label={pr} color={pr===edit.priority?priorityColors[pr]:C.muted} bg={pr===edit.priority?C.purpleDim:C.panel2}/></Pressable>)}</View><Txt color={C.muted} size={11}>Board status</Txt><View style={{flexDirection:'row',gap:7,flexWrap:'wrap',marginVertical:10}}>{STATUSES.map(st=><Pressable key={st} onPress={()=>onMoveTask(edit.id,st,99999)}><Chip label={st} color={st===edit.status?C.purple:C.muted} bg={st===edit.status?C.purpleDim:C.panel2}/></Pressable>)}</View><View style={{flexDirection:'row',gap:10,marginTop:8}}><View style={{flex:1}}><Labeled title="Start (YYYY-MM-DD)" value={edit.start} onChange={v=>setTaskField('start',v)}/></View><View style={{flex:1}}><Labeled title="Due (YYYY-MM-DD)" value={edit.due} onChange={v=>setTaskField('due',v)}/></View></View>
- <Line/><Txt size={14} bold>Task dependencies</Txt><Txt size={11} color={C.muted}>Tasks with unfinished prerequisites cannot enter Done. Circular dependencies are rejected.</Txt>
+ <View style={{flexDirection:"row",alignItems:"center",gap:10,marginBottom:8}}><Pressable accessibilityRole="button" accessibilityLabel="Toggle milestone" onPress={()=>setTaskField("milestone",!edit.milestone)} style={{flexDirection:"row",gap:9,alignItems:"center",padding:7}}><I name={edit.milestone?"checkbox":"square-outline"} color={edit.milestone?C.purple:C.muted} size={20}/><Txt size={12}>Milestone (diamond on Gantt)</Txt></Pressable></View><Line/><Txt size={14} bold>Task dependencies</Txt><Txt size={11} color={C.muted}>Tasks with unfinished prerequisites cannot enter Done. Circular dependencies are rejected.</Txt>
  <View style={{flexDirection:'row',gap:7,flexWrap:'wrap',marginTop:9,marginBottom:12}}>{project.tasks.filter(t=>t.id!==edit.id).map(t=><Pressable key={t.id} onPress={()=>toggleDependency(t.id)}><Chip label={`${edit.dependsOn.includes(t.id)?'✓ ':''}${t.id}`} color={edit.dependsOn.includes(t.id)?C.purple:C.muted}/></Pressable>)}</View>
  {!!model.blockers(project,edit).length&&<Txt color={C.amber} size={11}>Blocked by: {model.blockers(project,edit).join(', ')}</Txt>}
  <Line/><Txt bold size={14}>Attachments</Txt><Txt color={C.muted} size={11} style={{marginBottom:9}}>Links to documents or files (cloud uploads will be added with secure Firebase Storage).</Txt>
