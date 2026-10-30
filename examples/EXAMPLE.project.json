@@ -1,0 +1,88 @@
+{
+  "format": "niyarvo.project.v1",
+  "id": "example-independent",
+  "name": "Example Launch",
+  "code": "EXM",
+  "description": "Example only — replace with your project import.",
+  "version": "0.1.0",
+  "color": "#9972ea",
+  "importedAt": "2026-10-30T19:37:00.557Z",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Foundation",
+      "stage": "Development",
+      "description": "Core product scope",
+      "goal": "",
+      "exit": ""
+    }
+  ],
+  "releases": [
+    {
+      "id": "r1",
+      "name": "Demo v0.1.0",
+      "status": "Planned",
+      "repo": "example-repository",
+      "version": "0.1.0",
+      "mainSha": "",
+      "notes": ""
+    }
+  ],
+  "tasks": [
+    {
+      "id": "EXM-1",
+      "title": "Build onboarding",
+      "description": "Example task",
+      "status": "Backlog",
+      "priority": "High",
+      "stage": "Development",
+      "owner": "Solo operator",
+      "phaseId": "",
+      "releaseId": "r1",
+      "repo": "example-repository",
+      "branch": "",
+      "commit": "",
+      "mainSha": "",
+      "due": "",
+      "tests": [
+        {
+          "id": "check1",
+          "title": "Renders on mobile",
+          "result": "pending",
+          "evidence": ""
+        }
+      ],
+      "evidence": "",
+      "expected": "Clean first launch",
+      "actual": "",
+      "rollback": "Revert patch commit",
+      "verified": false,
+      "merged": false,
+      "createdAt": "2026-10-30T19:37:00.557Z",
+      "updatedAt": "2026-10-30T19:37:00.557Z"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "schema-1",
+      "name": "Record",
+      "description": "Example data record",
+      "content": "{ id: string, title: string }"
+    }
+  ],
+  "apiContracts": [
+    {
+      "id": "api1",
+      "name": "POST /tasks",
+      "description": "Example API contract only"
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "pb1",
+      "name": "Release QA",
+      "description": "Review tests, verify build, create checkpoint"
+    }
+  ],
+  "changelog": []
+}

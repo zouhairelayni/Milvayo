@@ -1,0 +1,17 @@
+{
+  "format": "niyarvo.project.v1",
+  "id": "project-mvvdioi5-brpo1an",
+  "name": "My first project",
+  "code": "NEW",
+  "description": "Ready for your single-file roadmap import.",
+  "version": "0.1.0",
+  "color": "#9972ea",
+  "importedAt": "2026-10-30T19:37:00.557Z",
+  "phases": [],
+  "releases": [],
+  "tasks": [],
+  "schemas": [],
+  "apiContracts": [],
+  "playbooks": [],
+  "changelog": []
+}

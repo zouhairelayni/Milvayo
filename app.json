@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Niyarvo Projects",
+    "slug": "niyarvo-projects",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#111217",
+    "scheme": "niyarvoprojects",
+    "web": {
+      "name": "Niyarvo Projects",
+      "shortName": "Niyarvo",
+      "description": "Private engineering project management workspace",
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./public/icons/icon-192.png"
+    },
+    "android": {
+      "package": "com.niyarvo.projects",
+      "adaptiveIcon": {"foregroundImage": "./public/icons/icon-512.png", "backgroundColor": "#111217"}
+    },
+    "ios": {"bundleIdentifier": "com.niyarvo.projects"}
+  }
+}
