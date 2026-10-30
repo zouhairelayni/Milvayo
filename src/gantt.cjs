@@ -81,4 +81,58 @@ function afterPredecessors(project,taskId){
  const due=start+(t.milestone?1:(current?.days??1))-1;
  return {...project,tasks:project.tasks.map(x=>x.id===taskId?{...x,start:dateAt(start),due:dateAt(due),verified:false,merged:false,updatedAt:new Date().toISOString()}:x)};
 }
-module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample};
+// Critical-path method using calendar-day task durations and finish-to-start
+// dependencies. Project start is an abstract day zero; this is NOT a resource-
+// leveled or working-day forecast. Incomplete schedules are excluded.
+function criticalPath(tasks){
+ const valid=tasks.filter(t=>span(t));
+ const byId=new Map(valid.map(t=>[t.id,t]));
+ const excludedIds=tasks.filter(t=>!byId.has(t.id)).map(t=>t.id);
+ const visiting=new Set(),visited=new Set(),order=[];
+ function visit(id){
+  if(visited.has(id))return;
+  if(visiting.has(id))throw Error('Circular dependency prevents critical path calculation');
+  visiting.add(id);
+  for(const dep of byId.get(id).dependsOn||[])if(byId.has(dep))visit(dep);
+  visiting.delete(id);visited.add(id);order.push(id);
+ }
+ for(const id of byId.keys())visit(id);
+ const starts={},finishes={},durations={},successors={};
+ for(const id of order)successors[id]=[];
+ for(const id of order){
+  const task=byId.get(id), s=span(task);
+  durations[id]=s.milestone?0:s.days;
+  const predecessors=(task.dependsOn||[]).filter(dep=>byId.has(dep));
+  starts[id]=Math.max(0,...predecessors.map(dep=>finishes[dep]));
+  finishes[id]=starts[id]+durations[id];
+  for(const dep of predecessors)successors[dep].push(id);
+ }
+ const totalDays=Math.max(0,...Object.values(finishes));
+ const latestStart={},latestFinish={},slack={};
+ for(const id of order.slice().reverse()){
+  latestFinish[id]=successors[id].length?Math.min(...successors[id].map(x=>latestStart[x])):totalDays;
+  latestStart[id]=latestFinish[id]-durations[id];
+  slack[id]=latestStart[id]-starts[id];
+ }
+ const criticalIds=order.filter(id=>slack[id]===0);
+ const criticalSet=new Set(criticalIds);
+ const criticalEdges=[];
+ for(const id of order)for(const pred of byId.get(id).dependsOn||[]){
+  if(criticalSet.has(pred)&&criticalSet.has(id)&&finishes[pred]===starts[id])criticalEdges.push(`${pred}->${id}`);
+ }
+ return {totalDays,scheduledCount:valid.length,excludedIds,criticalIds,criticalEdges,slack,earliestStart:starts,latestStart,assumption:'Calendar days · finish-to-start · no resource leveling'};
+}
+// Screen-point hit test. The port is dragged onto a visible successor task bar;
+// release over whitespace has no effect. Never infer a target from row alone.
+function linkTargetAt(rows,from,dayWidth,x,y,sourceId){
+ if(!Number.isFinite(x)||!Number.isFinite(y))return null;
+ for(const row of rows){
+  if(row.kind!=='task'||row.task.id===sourceId||y<row.top+7||y>row.top+row.height-7)continue;
+  const bar=barGeometry(row.task,from,dayWidth);if(!bar)continue;
+  const left=bar.milestone?bar.x+dayWidth/2-14:bar.x;
+  const right=bar.milestone?left+28:bar.x+Math.max(22,bar.width);
+  if(x>=left-12&&x<=right+12)return row.task.id;
+ }
+ return null;
+}
+module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample,criticalPath,linkTargetAt};
