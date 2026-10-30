@@ -1,7 +1,7 @@
 /* Caches only same-origin static assets. Never cache API responses, private Firebase data, or other origins. */
-const CACHE = 'niyarvo-projects-assets-v1';
+const CACHE = 'niyarvo-projects-assets-v2';
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/','/manifest.json','/icons/icon-192.png','/icons/icon-512.png'])).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/','/manifest.json','/icons/icon-192.png','/icons/icon-512.png','/icons/icon-maskable-512.png'])).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('niyarvo-projects-assets-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

@@ -212,6 +212,50 @@
           },
           "merged": {
             "type": "boolean"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO YYYY-MM-DD date"
+          },
+          "position": {
+            "type": "number",
+            "minimum": 0
+          },
+          "dependsOn": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "url"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "pattern": "^https?://"
+                }
+              }
+            }
           }
         }
       }
@@ -298,6 +342,49 @@
           }
         }
       }
+    },
+    "automations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "triggerStatus",
+          "action",
+          "value"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "triggerStatus": {
+            "enum": [
+              "Backlog",
+              "In progress",
+              "Validation",
+              "Done"
+            ]
+          },
+          "action": {
+            "enum": [
+              "priority",
+              "stage",
+              "owner",
+              "dueDays"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
     }
-  }
+  },
+  "description": "Version 1 compatible format. v0.2.0 adds optional Kanban ordering, task dependencies, timeline fields, attachment links and status-triggered automations."
 }
