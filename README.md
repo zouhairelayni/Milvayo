@@ -1,55 +1,33 @@
-# Niyarvo Projects — v0.2.0 local-first QA candidate
+# Niyarvo Projects — v0.2.1 local QA candidate
 
-Independent multi-project management app built on Expo SDK 58 / React Native (Web, Android, iOS). No integration with RIVNA or Niyarvo Control Center. The former Northstar sample remains the only preloaded project; engineering roadmaps are **not** bundled.
+Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
 
-## What's implemented
+## Changes since v0.2.0
 
-- Dark responsive dashboard with multiple local projects and task/release CRUD foundations.
-- Kanban board with gesture handles (PanResponder) for moving and ordering cards within/across four lanes. Card details retain a status-choice fallback for touch/accessibility. Drop is based on measured lane/card positions.
-- Dependency graph with self-reference, missing-reference and circular-dependency validation. Incomplete prerequisites block transition to Done.
-- Date-based roadmap timeline (14/30/90 days), clickable task bars and one-day shift controls; editable start/due dates on task detail.
-- Local on-move automation rules: set priority, stage, owner, or due date offset, with enable/pause.
-- Task attachment **URL references** (link open and removal); actual binary upload is *not* implemented.
-- Web and Android/iOS JSON project/workspace import/export (native document picker + share sheet). Project import validation, snapshot recovery and preserved imported workspace history.
-- Niyarvo-branded PWA/Android/iOS icons created from the supplied centered Niyarvo symbol.
-- Local AsyncStorage persistence with serialized writes and guarded startup on corrupted data; project snapshots and release-readiness indicators.
+- Select active projects from the sidebar workspace dropdown (or the mobile header project shortcut). No trip through Settings.
+- **Create project:** separate form for project name/code/description and project JSON import.
+- **Manage project:** separate form for edit, export, archive, delete. Archived projects are retained and may be restored from the project picker. Last active project cannot be archived.
+- Added extra top spacing on mobile and desktop. Browser width >=860 px uses the desktop sidebar and **does not** show the bottom tab bar.
+- Kanban: handle-based drag, horizontal edge auto-scroll while dragging, floating card preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
+- Timeline: scrollable Gantt table, task name rail, 7/14/30/90-day zoom, predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
+- No new npm dependencies. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
 
-## Local development using Termux
+## Run in Termux
 
 ```bash
 cd ~/NiyarvoProjects
+git switch work
+# Export a backup first, then unzip the candidate at this repository root
 npm install
 npm test
 npx expo install --check
 npx expo start
 ```
 
-Use Metro/Fast Refresh for both Expo Web and Expo Go. No Python static server required. The source ZIP does not include `node_modules` or a native build. New Expo packages: `expo-document-picker`, `expo-file-system`, `expo-sharing`.
+Use Expo Go for Android and Metro for Web; avoid static export + Python HTTP server for development.
 
-## What is NOT proven/implemented
+**Gate:** 25 Node tests passed and JSX parser reported no syntax issues in the preparation environment. Android/Web interactive behavior is **not yet verified**. Do not merge into `main` until the `CHG-NP-0.2.1.md` manual QA checklist passes.
 
-- **No runtime tap/gesture E2E QA on your phone or desktop browser has been observed for v0.2.0.** JSX parsing and Node model tests are not substitutes for running Metro/Expo Go.
-- Cross-device collaboration, realtime sync, secure authentication, cloud file uploads, comments/notifications, collaborative users/permissions, undo/redo history, recurring tasks, multi-board swimlanes and user-configurable automation integrations are still future work.
-- No Firebase project is connected or deployed, no iOS build tested, no GitHub branch/remote/commit created from this archive.
-- This application is currently a local-first single-device prototype. Do not import sensitive/critical workspaces until recovery, local exports and device QA are accepted.
+## Not yet implemented
 
-## Safe Firebase Hosting workflow (later, after local QA)
-
-Create a **separate** Firebase project specifically for Niyarvo Projects, install Firebase CLI, log in with the intended account, and confirm the project ID. The guarded deploy script refuses to run without an explicit new project ID:
-
-```bash
-export NIYARVO_PROJECTS_FIREBASE_PROJECT_ID=your-new-firebase-id
-npm run deploy:hosting
-```
-
-Hosting deployment builds the Expo Web bundle separately and deploys **only Hosting**, not Firestore or Storage. Firestore and Storage rules in this repo are deny-all placeholders. Do not enable cloud sync until dedicated Firebase Auth, per-workspace ownership/security rules, tests and backup strategy are ready.
-
-## Git checkpoint protocol
-
-1. Commit the current **tested** v0.1.0 baseline to your dedicated Niyarvo Projects repo if not already done.
-2. Create a working feature branch (e.g. `feat/np-v0.2-boards-roadmap`) from that known baseline.
-3. Back up/export real local workspaces before extracting the new ZIP into the project directory.
-4. Install dependencies, run tests, start Metro and run the included manual QA flows; fix failures on the branch.
-5. Commit the patch only after it passes and then merge the verified branch into `main`.
-
-Read `CHG-NP-0.2.0.md` for evidence, risks and detailed QA instructions.
+Cloud Firebase Auth/Firestore sync, permissions, hosted binary attachments, notifications, schedule-based automation, comments, team collaboration, offline conflict resolution, advanced Gantt scheduling/critical path, and production iOS tests. The attached OpenProject GPL-3.0 source archive was inspected for conceptual guidance; no source snippets were imported.

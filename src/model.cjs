@@ -32,7 +32,7 @@ function defaultTask(o={}){
 }
 function makeProject(o={}){
  return {format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
-  description:str(o.description,2000),version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
+  description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   automations:safeArray(o.automations,50,'Automations').map(normalizeRule), phases:safeArray(o.phases,200,'Phases').map(p=>({id:str(p.id,120)||id('phase'),name:str(p.name,180),stage:STAGES.includes(p.stage)?p.stage:'Development',description:str(p.description,4000),goal:str(p.goal,4000),exit:str(p.exit,4000)})),
   releases:safeArray(o.releases,500,'Releases').map(r=>({id:str(r.id,120)||id('release'),name:str(r.name,180),status:['Planned','Testing','Ready','Released'].includes(r.status)?r.status:'Planned',repo:str(r.repo,120),version:str(r.version,40),mainSha:str(r.mainSha,120),notes:str(r.notes,3000)})),
@@ -61,9 +61,10 @@ function normalizeWorkspace(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid workspace');
  const projects=safeArray(input.projects,30,'Workspace projects').map(makeProject);
  if(!projects.length)throw Error('Workspace must contain a project');
+ if(projects.every(p=>p.archived))throw Error('Workspace must contain at least one active project');
  validateUnique(projects,'project');projects.forEach(validateProject);
  const valid=new Set(projects.map(p=>p.id));
- return {schemaVersion:1,selectedId:valid.has(input.selectedId)?input.selectedId:projects[0].id,projects,
+ return {schemaVersion:1,selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
  backups:arr(input.backups,15).filter(s=>s&&typeof s==='object'&&['project','workspace'].includes(s.kind)),
  activity:arr(input.activity,100).map(a=>({id:str(a.id,120),at:str(a.at,60),action:str(a.action,1200)})),
  revision:Number.isInteger(input.revision)&&input.revision>=0?input.revision:0};
@@ -104,6 +105,16 @@ function moveTask(project,taskId,status,toIndex=99999){
 function shiftDate(day,amount){const value=dateOnly(day);if(!value)throw Error('Invalid date');const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+amount);return d.toISOString().slice(0,10);}
 function shiftTask(project,taskId,days){const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');if(!task.start&&!task.due)throw Error('Set a start or due date first');if(!Number.isInteger(days)||Math.abs(days)>365)throw Error('Invalid date change');return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,start:t.start?shiftDate(t.start,days):'',due:t.due?shiftDate(t.due,days):'',updatedAt:iso()}:t)};}
 
+function resizeTask(project,taskId,days){
+ const task=project.tasks.find(t=>t.id===taskId);
+ if(!task)throw Error('Task not found');
+ if(!task.start&&!task.due)throw Error('Schedule the task first');
+ if(!Number.isInteger(days)||Math.abs(days)>365)throw Error('Invalid duration change');
+ const start=task.start||task.due,end=task.due||task.start;
+ const due=shiftDate(end,days);
+ if(due<start)throw Error('End date cannot precede start date');
+ return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,start,due,verified:false,merged:false,updatedAt:iso()}:t)};
+}
 function importProject(raw){if(typeof raw!=='object'||raw===null||Array.isArray(raw))throw Error('Invalid JSON object');if(raw.format!==FORMAT)throw Error('Unsupported project file. Expected '+FORMAT);if(!Array.isArray(raw.tasks))throw Error('Project must contain a tasks array');const p=makeProject(raw);return validateProject(p);}
 function canVerify(task){return !!task.tests.length && task.tests.every(t=>t.result==='passed'&&t.evidence.trim()) && !!task.evidence.trim() && !!task.actual.trim();}
 function canMerge(task){return task.verified && canVerify(task) && !!task.mainSha.trim();}
@@ -127,11 +138,36 @@ function restoreSnapshot(workspace,snapshot){
     return {...workspace,selectedId:recovered.selectedId,projects:recovered.projects};
   }
   if(!snapshot.project)throw Error('Snapshot contains no project');
-  const p=makeProject(snapshot.project);
+  const p={...makeProject(snapshot.project),archived:false};
   return {...workspace,selectedId:p.id,projects:[...workspace.projects.filter(x=>x.id!==p.id),p]};
 }
+
+function boardAutoScrollDelta(pointerX,left,width,threshold=66){
+ if(!Number.isFinite(pointerX)||!Number.isFinite(left)||!Number.isFinite(width)||width<=0)return 0;
+ const relative=pointerX-left;
+ if(relative<threshold)return -18;
+ if(relative>width-threshold)return 18;
+ return 0;
+}
+function boardLaneAt(pointerX,left,scrollOffset,laneWidth,gap=12){
+ if(![pointerX,left,scrollOffset,laneWidth,gap].every(Number.isFinite)||laneWidth<=0)return -1;
+ return Math.floor((pointerX-left+scrollOffset)/(laneWidth+gap));
+}
+function archiveProject(workspace,projectId,archived=true){
+ if(!workspace.projects.some(p=>p.id===projectId))throw Error('Project not found');
+ const projects=workspace.projects.map(p=>p.id===projectId?{...p,archived}:p);
+ if(projects.every(p=>p.archived))throw Error('Cannot archive the last active project. Create another project first.');
+ const active=projects.find(p=>!p.archived);
+ return {...workspace,projects,selectedId:projects.find(p=>p.id===workspace.selectedId&&!p.archived)?workspace.selectedId:active.id};
+}
+function selectWorkspaceProject(workspace,projectId){
+ const selected=workspace.projects.find(p=>p.id===projectId&&!p.archived);
+ if(!selected)throw Error('Project is archived or missing');
+ return {...workspace,selectedId:projectId};
+}
+
 function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={boardAutoScrollDelta,boardLaneAt,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

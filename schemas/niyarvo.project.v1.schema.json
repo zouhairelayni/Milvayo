@@ -384,6 +384,10 @@
           }
         }
       }
+    },
+    "archived": {
+      "type": "boolean",
+      "description": "Archived projects remain in the workspace but are not selectable until restored."
     }
   },
   "description": "Version 1 compatible format. v0.2.0 adds optional Kanban ordering, task dependencies, timeline fields, attachment links and status-triggered automations."
