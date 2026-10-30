@@ -1,4 +1,4 @@
-# Niyarvo Projects — v0.2.1 local QA candidate
+# Niyarvo Projects — v0.2.4 local QA candidate
 
 Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
 
@@ -10,7 +10,7 @@ Independent Expo SDK 58 / React Native project management app for Web, Android (
 - Added extra top spacing on mobile and desktop. Browser width >=860 px uses the desktop sidebar and **does not** show the bottom tab bar.
 - Kanban: handle-based drag, horizontal edge auto-scroll while dragging, floating card preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
 - Timeline: scrollable Gantt table, task name rail, 7/14/30/90-day zoom, predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
-- No new npm dependencies. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
+- Note: v0.2.4 adds `react-native-svg` 15.16.0; run `npm install` before Metro. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
 
 ## Run in Termux
 
@@ -51,3 +51,13 @@ Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`
 - **Critical path:** Switch on `Critical path` to emphasize the longest *scheduled dependency-duration chain*. The result is a calendar-day, finish-to-start estimate; it is not a working-day, constrained or resource-leveled forecast.
 - **Development discipline:** Read `AGENTS.md` and the bundled original Unslop skill under `.opencode/skills/unslop/SKILL.md` before changes. Its original author is Damir Sokolovsky (CC BY 4.0). The repo includes an explicit UI redline audit (`docs/UNSLOP-NP-0.2.3.md`). OpenCode-compatible files are guidance only; OpenCode itself is not installed or run by this ZIP.
 - **Status:** v0.2.3 is a QA candidate; browser and Expo Go gestures require actual local tests. Continue with `npx expo start` in Termux on the `work` branch. Do not merge or deploy until accepted.
+
+## v0.2.4 — Curved Gantt links, deletion and actual Unslop pass
+
+- Connector motion uses relative gesture deltas to reduce finger/preview offset.
+- Dependency routes are independently drawn as curved SVG with separated overlapping trunks, endpoint/arrow markers and dashed conflicts.
+- Tap a link to inspect/remove, or use the `Links N` listing if SVG hits are difficult.
+- Gantt toolbar has on-demand Help and warning detail; task rail is wider and the mobile header/board copy are simplified.
+- The source includes a screenshot-driven nine-pass Unslop audit at `docs/UNSLOP-NP-0.2.4.md` and manual QA at `docs/NP-QA-0.2.4.md`.
+- **New dependency:** `react-native-svg@15.16.0`, Expo SDK 58 compatible. Run `npm install`, `npm test`, `npx expo install --check`, then `npx expo start`.
+- **Unverified:** native & Web gestures and actual rendered screenshots, until the local runtime tests. No Git push, merge, or Firebase deployment.

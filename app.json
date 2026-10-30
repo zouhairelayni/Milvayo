@@ -2,7 +2,7 @@
   "expo": {
     "name": "Niyarvo Projects",
     "slug": "niyarvo-projects",
-    "version": "0.2.0",
+    "version": "0.2.4",
     "orientation": "default",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#111217",
@@ -10,7 +10,7 @@
     "web": {
       "name": "Niyarvo Projects",
       "shortName": "Niyarvo",
-      "description": "Private engineering project management workspace",
+      "description": "Local-first multi-project task and roadmap workspace",
       "bundler": "metro",
       "output": "single",
       "favicon": "./public/icons/favicon.png"

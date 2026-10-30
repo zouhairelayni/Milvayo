@@ -34,7 +34,7 @@ function buildRows(tasks,groupBy='status'){
   for(const group of order){const members=tasks.filter(t=>t[field]===group).slice().sort((a,b)=>(a.position||0)-(b.position||0)||a.id.localeCompare(b.id));
     if(!members.length)continue;
     rows.push({key:`group:${group}`,kind:'group',title:group,height:32});
-    for(const task of members)rows.push({key:task.id,kind:'task',task,height:58});
+    for(const task of members)rows.push({key:task.id,kind:'task',task,height:60});
   }
   return rows;
 }
@@ -45,18 +45,60 @@ function barGeometry(task,from,dayWidth){
   const x=(origin-from)*dayWidth, xEnd=(s.end-from+1)*dayWidth;
   return {x,width:Math.max(3,xEnd-x),endX:xEnd,days:s.milestone?1:s.days,milestone:s.milestone};
 }
+// Deterministic routing channels: links whose vertical spans overlap receive
+// distinct elbow tracks. This prevents coincident trunks from masquerading as
+// one dependency. A channel is only shared where the row ranges do not overlap.
 function dependencyGeometry(rows,from,dayWidth){
  const byId=new Map(rows.filter(r=>r.kind==='task').map(r=>[r.task.id,r]));
  const paths=[];
- for(const row of rows){if(row.kind!=='task')continue;const target=barGeometry(row.task,from,dayWidth);if(!target)continue;
-  for(const id of row.task.dependsOn||[]){const sourceRow=byId.get(id);if(!sourceRow)continue;const source=barGeometry(sourceRow.task,from,dayWidth);if(!source)continue;
-   const x1=source.milestone?source.x+dayWidth/2:source.endX;
-   const x2=target.x;
-   const elbow=x2-x1>34?x1+Math.min(26,(x2-x1)/2):x1+18;
-   paths.push({key:`${id}->${row.task.id}`,fromId:id,toId:row.task.id,x1,y1:sourceRow.center,x2,y2:row.center,elbow,conflict:x2<x1});
+ for(const row of rows){
+  if(row.kind!=='task')continue;
+  const target=barGeometry(row.task,from,dayWidth);if(!target)continue;
+  for(const id of row.task.dependsOn||[]){
+   const sourceRow=byId.get(id);if(!sourceRow)continue;
+   const source=barGeometry(sourceRow.task,from,dayWidth);if(!source)continue;
+   paths.push({key:`${id}->${row.task.id}`,fromId:id,toId:row.task.id,
+    x1:source.milestone?source.x+dayWidth/2:source.endX,y1:sourceRow.center,
+    x2:target.milestone?target.x+dayWidth/2:target.x,y2:row.center,
+    conflict:(target.milestone?target.x+dayWidth/2:target.x)<(source.milestone?source.x+dayWidth/2:source.endX)});
   }
  }
+ paths.sort((a,b)=>a.fromId.localeCompare(b.fromId)||a.toId.localeCompare(b.toId));
+ const used=[];
+ for(const path of paths){
+  const minY=Math.min(path.y1,path.y2),maxY=Math.max(path.y1,path.y2);
+  let lane=0,elbow;
+  // A small deterministic search is sufficient for project-scale boards.
+  for(;lane<80;lane++){
+   elbow=path.x1+24+lane*16;
+   if(!used.some(p=>Math.abs(p.elbow-elbow)<12&&minY<=p.maxY+8&&maxY>=p.minY-8))break;
+  }
+  path.lane=lane;path.elbow=elbow;used.push({elbow,minY,maxY});
+ }
  return paths;
+}
+// Two smooth turns and a distinct vertical track; SVG path does not require
+// platform canvas APIs. Returns finite, stable coordinates for every edge.
+function dependencyCurve(path){
+ const {x1,y1,x2,y2,elbow}=path;
+ if(![x1,y1,x2,y2,elbow].every(Number.isFinite))return '';
+ const direction=y2>=y1?1:-1;
+ const turn=Math.min(15,Math.abs(y2-y1)/3);
+ const leftEnd=x2-9;
+ return `M ${x1} ${y1} L ${elbow-12} ${y1} C ${elbow-3} ${y1} ${elbow} ${y1+direction*3} ${elbow} ${y1+direction*turn} L ${elbow} ${y2-direction*turn} C ${elbow} ${y2-direction*3} ${elbow-3} ${y2} ${elbow-12} ${y2} L ${leftEnd} ${y2}`;
+}
+// Gesture.dx/dy share the same coordinate system as their source port; do not
+// combine screen pageX/pageY with asynchronous measureInWindow results.
+function connectorPoint(rows,from,dayWidth,sourceId){
+ const row=rows.find(r=>r.kind==='task'&&r.task.id===sourceId);
+ if(!row)return null;
+ const geom=barGeometry(row.task,from,dayWidth);if(!geom)return null;
+ return {x:geom.milestone?geom.x+dayWidth/2+32:geom.endX-29,y:row.center};
+}
+function linkGesturePoint(rows,from,dayWidth,sourceId,dx,dy){
+ if(!Number.isFinite(dx)||!Number.isFinite(dy))return null;
+ const start=connectorPoint(rows,from,dayWidth,sourceId);
+ return start?{x:start.x+dx,y:start.y+dy}:null;
 }
 function invalidSchedules(tasks){return tasks.filter(t=>(t.start&&!Number.isInteger(dayNumber(t.start)))||(t.due&&!Number.isInteger(dayNumber(t.due)))||(dayNumber(t.start)!==null&&dayNumber(t.due)!==null&&dayNumber(t.due)<dayNumber(t.start))).map(t=>t.id)}
 function dependencyConflicts(tasks){const byId=new Map(tasks.map(t=>[t.id,t])),conflicts=[];
@@ -135,4 +177,4 @@ function linkTargetAt(rows,from,dayWidth,x,y,sourceId){
  }
  return null;
 }
-module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample,criticalPath,linkTargetAt};
+module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample,criticalPath,linkTargetAt,dependencyCurve,connectorPoint,linkGesturePoint};
