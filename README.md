@@ -1,3 +1,25 @@
+> **v0.3.2-HOTFIX3 local QA:** Android/large-workspace rendering optimization and removal of Overview Kanban. See `CHG-NP-0.3.2-HOTFIX3.md`; device confirmation pending.
+
+# 0.3.2-HOTFIX2 — Android JSON import (QA candidate)
+
+Android now imports JSON through Expo SDK 58 `File.pickFileAsync` (direct Android system-picker file access) instead of trying to read the inaccessible `expo-document-picker` cache file in Expo Go. Web/iOS import paths are unchanged. Source tests: 216/216 passed; Android runtime is **not yet verified**. See `CHG-NP-0.3.2-HOTFIX2.md` and `docs/NP-0.3.2-HOTFIX2-QA.md`. Keep on `work` pending verification; no Firebase connection or deployment.
+
+---
+
+# Niyarvo Projects — v0.3.2 local QA candidate
+
+Built independently on v0.3.1. This batch adds a **per-project Agile sprint planner**: create planned sprints, define a goal and 1–90-day window, assign/unassign tasks, start exactly one sprint at a time, record remaining-work events as task statuses change, view observed (not fabricated) calendar-day burndown, and explicitly finish a sprint while retaining final scope and history. Unfinished work returns to the unassigned backlog without being marked Done. Planned sprint deletion is reversible through a workspace snapshot, and running/completed sprint deletion is blocked.
+
+Open **Sprints** in the sidebar or mobile bottom navigation. Automations remains available in the navigation menu. **Do not assume cloud collaboration**: sprint changes are local only, using AsyncStorage under the unchanged `niyarvo-projects-v1` key. This is not a substitute for a secure Firebase permissions model.
+
+**Data:** project JSON format `niyarvo.project.v1` unchanged; new optional `sprints` array per project and `sprintId` per task. Old projects load with empty sprints; no migration that rewrites task statuses or dates. Project exports, workspace backups and import retain the new metadata. Completed sprint history intentionally retains deleted task IDs as historical references. No automated roadmap imports.
+
+**QA:** automated tests and syntax checks recorded in `CHG-NP-0.3.2.md`. Android/Expo Go, Web Metro and iOS UI interactions must still be tested locally. Use `npm test`, `npx expo install --check`, `npx expo start` in Termux. No new package dependencies are required.
+
+**Next:** separate portfolio reporting, more configurable workflow/action rules, and improved retrospective metrics. Continue using OpenProject only for architectural study; do not copy its source or UI assets. Firebase is not connected or deployed.
+
+---
+
 # Niyarvo Projects — v0.2.8 local QA candidate
 
 Built from v0.2.7, with original task hierarchy, parent/subtask editing, bounded 40-row Tasks and 60-card-per-lane Board rendering, query filters and reversible bulk status/priority updates. Task `parentId` is optional; the `niyarvo.project.v1` import format and `niyarvo-projects-v1` storage key are unchanged. Saved v0.2.7 projects load without migration.

@@ -31,3 +31,6 @@
 - **Signature:** one user-selected accent (default Claude clay orange) and meaningful dependency/status colors.
 
 Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo mark. Do not add glow, gradient text, badges or decorative animation.
+
+## v0.3.2 sprint development rule
+Keep sprint lifecycle and historical burndown semantics inside `src/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and `docs/UNSLOP-NP-0.3.2.md`.

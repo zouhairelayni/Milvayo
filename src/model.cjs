@@ -5,6 +5,7 @@ const projectScheduling=require('./scheduleProject.cjs');
 const taskWorkflows=require('./taskWorkflows.cjs');
 const planning=require('./planning.cjs');
 const taskSchema=require('./taskSchema.cjs');
+const agile=require('./agile.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -28,7 +29,7 @@ function defaultTask(o={}){
     commit:str(o.commit,120), mainSha:str(o.mainSha,120), start:dateOnly(o.start), due:dateOnly(o.due), milestone:o.milestone===true,
     position:Number.isFinite(o.position)&&o.position>=0?o.position:0,
     progress:planning.percent(o.progress),estimateHours:planning.hours(o.estimateHours),
-    taskTypeId:str(o.taskTypeId,60)||'task', customValues:o.customValues&&typeof o.customValues==='object'&&!Array.isArray(o.customValues)?{...o.customValues}:{},
+    taskTypeId:str(o.taskTypeId,60)||'task', sprintId:str(o.sprintId,100), customValues:o.customValues&&typeof o.customValues==='object'&&!Array.isArray(o.customValues)?{...o.customValues}:{},
     dependsOn:unique(arr(o.dependsOn,100).map(x=>str(x,120)).filter(Boolean)),
     labels:unique(arr(o.labels,30).map(x=>str(x,40)).filter(Boolean)),
     attachments:arr(o.attachments,100).map(a=>({id:str(a.id,120)||id('attachment'),name:str(a.name,220)||'Link',url:safeUrl(a.url)})).filter(a=>a.url),
@@ -42,6 +43,7 @@ function makeProject(o={}){
  const project={...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
+  sprints:agile.normalizeAgile(o).sprints,
   savedViews:safeArray(o.savedViews,50,'Saved views').map(planning.normalizeView),
   automations:safeArray(o.automations,50,'Automations').map(normalizeRule), phases:safeArray(o.phases,200,'Phases').map(p=>({id:str(p.id,120)||id('phase'),name:str(p.name,180),stage:STAGES.includes(p.stage)?p.stage:'Development',description:str(p.description,4000),goal:str(p.goal,4000),exit:str(p.exit,4000)})),
   releases:safeArray(o.releases,500,'Releases').map(r=>({id:str(r.id,120)||id('release'),name:str(r.name,180),status:['Planned','Testing','Ready','Released'].includes(r.status)?r.status:'Planned',repo:str(r.repo,120),version:str(r.version,40),mainSha:str(r.mainSha,120),notes:str(r.notes,3000)})),
@@ -83,6 +85,7 @@ function validateProject(project){
  projectScheduling.normalizeProjectScheduling(project);
  taskSchema.validateProject(project);
  planning.validateViews(project.savedViews||[]);
+ agile.validateAgile(project);
  taskWorkflows.hierarchy(project.tasks);
  validateUnique(project.tasks,'task');validateUnique(project.releases,'release');
  const ids=new Set(project.tasks.map(t=>t.id));
@@ -195,4 +198,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={projectScheduling,taskWorkflows,planning,taskSchema,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={projectScheduling,taskWorkflows,planning,taskSchema,agile,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

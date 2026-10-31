@@ -1,7 +1,8 @@
 import React, {useMemo,useRef,useState,useEffect} from 'react';
 import {View,Text,ScrollView,Pressable,Modal,PanResponder,Platform,useWindowDimensions} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-import Svg,{Path,Circle} from 'react-native-svg';
+import Svg,{Path,Circle,G} from 'react-native-svg';
+import ganttWindow from './gantt-window.cjs';
 import model from './model.cjs';
 import viewportMath from './viewport.cjs';
 import design from './design.cjs';
@@ -61,12 +62,15 @@ function Dependency({path,critical=false,selected=false,onSelect}){
 }
 export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onLink,onAlign,onSampleSchedule}){
  const {height:screenHeight}=useWindowDimensions();
+ const [paintOffset,setPaintOffset]=useState({x:0,y:0});
+ const paintRef=useRef({x:0,y:0}),windowAnchor=useRef({x:-1,y:-1});
+ const [windowPos,setWindowPos]=useState({x:0,y:0});
  const [width,setWidth]=useState(380),[dayWidth,setDayWidth]=useState(zoomLevels.Weeks),[mode,setMode]=useState('status'),[collapsed,setCollapsed]=useState([]),[linkTask,setLinkTask]=useState(null),[linkError,setLinkError]=useState(''),[calendarOffset,setCalendarOffset]=useState(0),[linkSource,setLinkSource]=useState(null),[linkPreview,setLinkPreview]=useState(null),[showCritical,setShowCritical]=useState(false),[selectedLink,setSelectedLink]=useState(null),[showHelp,setShowHelp]=useState(false),[showScheduleIssues,setShowScheduleIssues]=useState(false),[showLinks,setShowLinks]=useState(false),[isLinkDragging,setIsLinkDragging]=useState(false),[pinchActive,setPinchActive]=useState(false);
  const zoom=dayWidth>=36?'Days':dayWidth>=17?'Weeks':'Months';
  const now=new Date().toISOString().slice(0,10);
  const base=useMemo(()=>g.calendarDomain(project.tasks,now),[project.tasks,now]);
  const day0=base.from+calendarOffset;
- const days=Array.from({length:base.count},(_,i)=>g.dateAt(day0+i));
+ const days=useMemo(()=>Array.from({length:base.count},(_,i)=>g.dateAt(day0+i)),[day0,base.count]);
  const rows=useMemo(()=>g.layoutRows(mode==='hierarchy'?g.hierarchyRows(project.tasks,collapsed):g.buildRows(project.tasks,mode),HEADER),[project.tasks,mode,collapsed]);
  const rollups=useMemo(()=>model.planning.progressRollups(project.tasks),[project.tasks]);
  const summaries=useMemo(()=>g.hierarchySummaries(project.tasks,rollups),[project.tasks,rollups]);
@@ -79,9 +83,21 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
  const linkSession=useRef(null), autoTimer=useRef(null), pinch=useRef(null), zoomAnchor=useRef(null);
  const totalHeightRef=useRef(totalHeight),canvasWidthRef=useRef(canvasWidth);totalHeightRef.current=totalHeight;canvasWidthRef.current=canvasWidth;
  const viewportHeight=Math.max(296,Math.min(580,screenHeight-(Platform.OS==='web'?250:360)));
+ const chartWidth=Math.max(80,width-labelsWidth);
+ const windowRows=useMemo(()=>ganttWindow.visibleRows(rows,windowPos.y,viewportHeight,180),[rows,windowPos.y,viewportHeight]);
+ const dayRange=useMemo(()=>ganttWindow.visibleDays(base.count,dayWidth,windowPos.x,chartWidth,270),[base.count,dayWidth,windowPos.x,chartWidth]);
+ const visibleDayCells=useMemo(()=>days.slice(dayRange.start,dayRange.end).map((day,j)=>({day,i:dayRange.start+j})),[days,dayRange.start,dayRange.end]);
+ const updateVisibleWindow=(x,y)=>{
+  // Update scene at modest intervals; only alter the row/day window when a buffered boundary is crossed.
+  const previous=paintRef.current;
+  if(linkSession.current||Math.abs(x-previous.x)>=12||Math.abs(y-previous.y)>=12){paintRef.current={x,y};setPaintOffset({x,y})}
+  const ax=Math.floor(x/150),ay=Math.floor(y/150);
+  if(ax!==windowAnchor.current.x||ay!==windowAnchor.current.y){windowAnchor.current={x:ax,y:ay};setWindowPos({x:ax*150,y:ay*150})}
+ };
  const measureViewport=()=>viewport.current?.measureInWindow?.((x,y,w,h)=>{viewportRect.current={x,y,width:w,height:h};viewportSize.current={width:w,height:h}});
- const scrollXTo=(value)=>{const x=viewportMath.clamp(value,0,Math.max(0,canvasWidthRef.current-Math.max(0,viewportSize.current.width-labelsWidth)));offsets.current.x=x;scroll.current?.scrollTo({x,animated:false})};
- const scrollYTo=(value)=>{const y=viewportMath.clamp(value,0,Math.max(0,totalHeightRef.current-viewportSize.current.height));offsets.current.y=y;vertical.current?.scrollTo({y,animated:false})};
+ const scrollXTo=(value)=>{const x=viewportMath.clamp(value,0,Math.max(0,canvasWidthRef.current-Math.max(0,viewportSize.current.width-labelsWidth)));offsets.current.x=x;updateVisibleWindow(x,offsets.current.y);scroll.current?.scrollTo({x,animated:false})};
+ const scrollYTo=(value)=>{const y=viewportMath.clamp(value,0,Math.max(0,totalHeightRef.current-viewportSize.current.height));offsets.current.y=y;updateVisibleWindow(offsets.current.x,y);vertical.current?.scrollTo({y,animated:false})};
+ useEffect(()=>{const maxY=Math.max(0,totalHeight-viewportHeight);if(offsets.current.y>maxY)scrollYTo(maxY)},[totalHeight,viewportHeight]);
  const pinchStart=e=>{if(Platform.OS==='web')return;const touches=e.nativeEvent.touches||[];if(touches.length!==2)return;const d=viewportMath.touchDistance(touches);if(!d)return;
   const rect=viewportRect.current;const centerX=(touches[0].pageX+touches[1].pageX)/2-(rect?.x||0)-labelsWidth;
   pinch.current={distance:d,width:dayWidth,centerX,scrollX:offsets.current.x};setPinchActive(true);
@@ -96,12 +112,13 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
  useEffect(()=>{if(zoomAnchor.current!==null){const x=zoomAnchor.current;zoomAnchor.current=null;scrollXTo(x)}},[dayWidth]);
  useEffect(()=>()=>{if(autoTimer.current)clearInterval(autoTimer.current)},[]);
  const scheduleHealth=useMemo(()=>{try{return model.projectScheduling.audit(project)}catch(e){return {issues:[{code:'invalid_schedule',detail:e.message}]}}},[project]);
- const conflicts=scheduleHealth.issues.filter(issue=>issue.code==='dependency_conflict');
+ const conflicts=useMemo(()=>scheduleHealth.issues.filter(issue=>issue.code==='dependency_conflict'),[scheduleHealth]);
  const scheduleWarnings=scheduleHealth.issues;
  const legacyCritical=project.scheduling?.calendar?.mode!=='workdays'&&!(project.scheduling?.links||[]).some(l=>l.type!=='FS'||l.lagDays!==0);
  const conflictIds=new Set(conflicts.map(x=>x.taskId));
  const invalidIds=new Set([...g.invalidSchedules(project.tasks),...scheduleWarnings.filter(e=>e.code!=='dependency_conflict'&&e.taskId).map(e=>e.taskId)]);
- const linkPaths=g.dependencyGeometry(rows,day0,dayWidth,project.scheduling?.links).map(path=>({...path,conflict:conflicts.some(c=>c.taskId===path.toId&&c.predecessorId===path.fromId)}));
+ const linkPaths=useMemo(()=>g.dependencyGeometry(rows,day0,dayWidth,project.scheduling?.links).map(path=>({...path,conflict:conflicts.some(c=>c.taskId===path.toId&&c.predecessorId===path.fromId)})),[rows,day0,dayWidth,project.scheduling?.links,conflicts]);
+ const drawnLinks=useMemo(()=>ganttWindow.visibleLinks(linkPaths,paintOffset.x,paintOffset.y,chartWidth,viewportHeight,80),[linkPaths,paintOffset.x,paintOffset.y,chartWidth,viewportHeight]);
  const scheduledCount=project.tasks.filter(t=>g.span(t)).length;
  const cpm=useMemo(()=>g.criticalPath(project.tasks),[project.tasks]);
  const criticalIds=new Set(showCritical&&legacyCritical&&mode!=='hierarchy'?cpm.criticalIds:[]);
@@ -181,7 +198,7 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
  const centerOn=(date)=>{const day=g.dayNumber(date);if(day===null)return;const local=day-day0; if(local<0||local>=base.count){setCalendarOffset(day-base.from-7);setTimeout(()=>scroll.current?.scrollTo({x:0,animated:false}),0);return;}
   scroll.current?.scrollTo({x:Math.max(0,(local-3)*dayWidth),animated:true});};
  // A project switch must not retain horizontal scroll state from the prior project.
- useEffect(()=>{setCalendarOffset(0);setLinkTask(null);setLinkError('');setLinkSource(null);setLinkPreview(null);setSelectedLink(null);setShowLinks(false);scroll.current?.scrollTo({x:0,animated:false})},[project.id]);
+ useEffect(()=>{offsets.current={x:0,y:0};paintRef.current={x:0,y:0};windowAnchor.current={x:-1,y:-1};setPaintOffset({x:0,y:0});setWindowPos({x:0,y:0});setCalendarOffset(0);setLinkTask(null);setLinkError('');setLinkSource(null);setLinkPreview(null);setSelectedLink(null);setShowLinks(false);scroll.current?.scrollTo({x:0,animated:false});vertical.current?.scrollTo({y:0,animated:false})},[project.id]);
  return <View style={{minWidth:0}} onLayout={e=>setWidth(Math.max(280,e.nativeEvent.layout.width))}>
   <View style={{backgroundColor:K.panel,borderColor:K.border,borderWidth:1,borderRadius:12,padding:12,marginBottom:12,gap:12}}>
    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8}}>
@@ -218,11 +235,12 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    {base.clipped&&<T color={K.amber} size={11}>Long schedule: showing a bounded date window.</T>}
   </View>
   <View ref={viewport} collapsable={false} onLayout={e=>{viewportSize.current={...viewportSize.current,width:e.nativeEvent.layout.width,height:e.nativeEvent.layout.height};measureViewport()}} onTouchStart={pinchStart} onTouchMove={pinchMove} onTouchEnd={pinchEnd} onTouchCancel={pinchEnd} style={{borderWidth:1,borderColor:K.border,borderRadius:12,overflow:'hidden',backgroundColor:K.panel,height:Math.min(viewportHeight,Math.max(260,totalHeight))}}>
-   <ScrollView ref={vertical} nestedScrollEnabled scrollEventThrottle={16} onScroll={e=>{offsets.current.y=e.nativeEvent.contentOffset.y}} scrollEnabled={!isLinkDragging&&!pinchActive} contentContainerStyle={{height:totalHeight}}>
+   <ScrollView ref={vertical} nestedScrollEnabled scrollEventThrottle={16} onScroll={e=>{const y=e.nativeEvent.contentOffset.y;offsets.current.y=y;updateVisibleWindow(offsets.current.x,y)}} scrollEnabled={!isLinkDragging&&!pinchActive} contentContainerStyle={{height:totalHeight}}>
     <View style={{flexDirection:'row',height:totalHeight}}>
    <View style={{width:labelsWidth,backgroundColor:K.panel,borderRightColor:K.border,borderRightWidth:1,zIndex:1}}>
     <View style={{height:HEADER,justifyContent:'center',paddingHorizontal:12,borderBottomWidth:1,borderBottomColor:K.border,backgroundColor:K.panel2}}><T bold size={11}>Tasks</T><T size={10} color={K.muted}>Title · links</T></View>
-    {rows.map(row=>row.kind==='group'?<View key={row.key} style={{height:row.height,backgroundColor:'#24252d',justifyContent:'center',paddingHorizontal:10,borderBottomWidth:1,borderBottomColor:K.border}}><T color={K.ink} size={11} bold>{row.title}</T></View>:<View key={row.key} style={{height:row.height,backgroundColor:row.top%2?K.panel:K.side,borderBottomWidth:1,borderBottomColor:K.border,paddingHorizontal:8,justifyContent:'center'}}>
+    <View style={{height:Math.max(0,totalHeight-HEADER),position:'relative'}}>
+    {windowRows.map(row=>row.kind==='group'?<View key={row.key} style={{position:'absolute',top:row.top-HEADER,left:0,right:0,height:row.height,backgroundColor:'#24252d',justifyContent:'center',paddingHorizontal:10,borderBottomWidth:1,borderBottomColor:K.border}}><T color={K.ink} size={11} bold>{row.title}</T></View>:<View key={row.key} style={{position:'absolute',top:row.top-HEADER,left:0,right:0,height:row.height,backgroundColor:row.top%2?K.panel:K.side,borderBottomWidth:1,borderBottomColor:K.border,paddingHorizontal:8,justifyContent:'center'}}>
      <View style={{flexDirection:'row',alignItems:'center',paddingLeft:Math.min(row.depth||0,5)*12,gap:6}}>
       {mode==='hierarchy'&&row.hasChildren&&<Pressable accessibilityRole="button" accessibilityLabel={`${row.collapsed?'Expand':'Collapse'} subtasks of ${row.task.title}`} onPress={()=>setCollapsed(current=>row.collapsed?current.filter(id=>id!==row.task.id):[...current,row.task.id])} style={{width:27,height:30,justifyContent:'center',alignItems:'center'}}><Icon name={row.collapsed?'chevron-forward-outline':'chevron-down-outline'} size={15}/></Pressable>}
       {mode==='hierarchy'&&!row.hasChildren&&<View style={{width:27}}/>}
@@ -234,29 +252,16 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
       {g.span(row.task)?<T size={9} color={K.muted}>{row.task.due||row.task.start}</T>:invalidIds.has(row.task.id)?<T size={9} color={K.red}>Invalid dates</T>:<Pressable onPress={()=>onSchedule(row.task.id)}><T size={10} color={K.purple} bold>+ Schedule</T></Pressable>}
      </View>
     </View>)}
+    </View>
    </View>
-   <ScrollView ref={scroll} horizontal showsHorizontalScrollIndicator nestedScrollEnabled scrollEnabled={!isLinkDragging&&!pinchActive} onScroll={e=>{offsets.current.x=e.nativeEvent.contentOffset.x}} style={{flex:1}} contentContainerStyle={{width:canvasWidth,height:totalHeight}} scrollEventThrottle={16}>
+   <ScrollView ref={scroll} horizontal showsHorizontalScrollIndicator nestedScrollEnabled scrollEnabled={!isLinkDragging&&!pinchActive} onScroll={e=>{const x=e.nativeEvent.contentOffset.x;offsets.current.x=x;updateVisibleWindow(x,offsets.current.y)}} style={{flex:1}} contentContainerStyle={{width:canvasWidth,height:totalHeight}} scrollEventThrottle={16}>
     <View collapsable={false} style={{width:canvasWidth,height:totalHeight,position:'relative'}}>
      <View style={{height:28,flexDirection:'row',backgroundColor:K.panel2,borderBottomWidth:1,borderBottomColor:K.border}}>{monthSegments.map((s,i)=><View key={i} style={{width:s.width,height:28,justifyContent:'center',borderRightWidth:1,borderRightColor:K.border,paddingLeft:7}}><T size={11} color={K.ink} bold>{monthLabel.format(new Date(s.date+'T00:00:00Z'))}</T></View>)}</View>
-     <View style={{height:32,flexDirection:'row',backgroundColor:K.panel2,borderBottomWidth:1,borderBottomColor:K.border}}>{days.map((day,i)=>{const weekdayNum=new Date(day+'T00:00:00Z').getUTCDay();const displayed=(zoom==='Days')||(zoom==='Weeks'&&(weekdayNum===1||i===0))||(zoom==='Months'&&(day.endsWith('-01')||i===0));return <View key={day} style={{width:dayWidth,height:32,alignItems:'center',justifyContent:'center',borderRightWidth:(weekdayNum===0||zoom==='Days')?1:0,borderRightColor:K.border}}>{displayed&&<T size={zoom==='Months'?8:9} color={day===now?K.purple:K.muted} bold>{zoom==='Days'?day.slice(8):dayLabel.format(new Date(day+'T00:00:00Z'))}</T>}{zoom==='Days'&&<T size={8} color={K.muted}>{weekday.format(new Date(day+'T00:00:00Z'))}</T>}</View>})}</View>
-     {rows.map(row=><View key={row.key} pointerEvents="none" style={{position:'absolute',left:0,right:0,top:row.top,height:row.height,borderBottomWidth:1,borderBottomColor:K.border,backgroundColor:row.kind==='group'?'#24252d':row.top%2?K.panel:K.side}}/>)}
-     <View pointerEvents="none" style={{position:'absolute',top:HEADER,bottom:0,left:0,right:0,flexDirection:'row'}}>{days.map((day,i)=>{const dow=new Date(day+'T00:00:00Z').getUTCDay();return <View key={day} style={{width:dayWidth,height:'100%',backgroundColor:dow===0||dow===6?'#ffffff08':'transparent',borderLeftWidth:dow===1||zoom==='Days'?1:0,borderLeftColor:K.border}}/>})}</View>
+     <View style={{height:32,flexDirection:'row',backgroundColor:K.panel2,borderBottomWidth:1,borderBottomColor:K.border}}>{visibleDayCells.map(({day,i})=>{const weekdayNum=new Date(day+'T00:00:00Z').getUTCDay();const displayed=(zoom==='Days')||(zoom==='Weeks'&&(weekdayNum===1||i===0))||(zoom==='Months'&&(day.endsWith('-01')||i===0));return <View key={day} style={{position:'absolute',left:i*dayWidth,width:dayWidth,height:32,alignItems:'center',justifyContent:'center',borderRightWidth:(weekdayNum===0||zoom==='Days')?1:0,borderRightColor:K.border}}>{displayed&&<T size={zoom==='Months'?8:9} color={day===now?K.purple:K.muted} bold>{zoom==='Days'?day.slice(8):dayLabel.format(new Date(day+'T00:00:00Z'))}</T>}{zoom==='Days'&&<T size={8} color={K.muted}>{weekday.format(new Date(day+'T00:00:00Z'))}</T>}</View>})}</View>
+     {windowRows.map(row=><View key={row.key} pointerEvents="none" style={{position:'absolute',left:0,right:0,top:row.top,height:row.height,borderBottomWidth:1,borderBottomColor:K.border,backgroundColor:row.kind==='group'?'#24252d':row.top%2?K.panel:K.side}}/>)}
+     <View pointerEvents="none" style={{position:'absolute',top:HEADER,bottom:0,left:0,right:0,flexDirection:'row'}}>{visibleDayCells.map(({day,i})=>{const dow=new Date(day+'T00:00:00Z').getUTCDay();return <View key={day} style={{position:'absolute',left:i*dayWidth,top:0,bottom:0,width:dayWidth,backgroundColor:dow===0||dow===6?'#ffffff08':'transparent',borderLeftWidth:dow===1||zoom==='Days'?1:0,borderLeftColor:K.border}}/>})}</View>
      {g.dayNumber(now)>=day0&&g.dayNumber(now)<day0+base.count&&<View pointerEvents="none" style={{position:'absolute',left:(g.dayNumber(now)-day0)*dayWidth+dayWidth/2,top:HEADER,bottom:0,width:2,backgroundColor:K.purple,opacity:.65}}/>}
-     <Svg pointerEvents="box-none" width={canvasWidth} height={totalHeight} style={{position:'absolute',left:0,top:0,zIndex:2}}>
-      {linkPaths.map(path=><Dependency key={path.key} path={path} critical={criticalEdges.has(path.key)} selected={selectedLink?.fromId===path.fromId&&selectedLink?.toId===path.toId} onSelect={()=>{setSelectedLink({fromId:path.fromId,toId:path.toId});setLinkSource(null);setLinkPreview(null)}}/>)}
-     </Svg>
-     {linkPreview&&(()=>{
-      const row=rows.find(r=>r.kind==='task'&&r.task.id===linkPreview.source);
-      const geo=row&&g.barGeometry(row.task,day0,dayWidth);
-      if(!geo)return null;
-      const startX=geo.milestone?geo.x+dayWidth/2:geo.endX;
-      const previewPath={x1:startX,y1:row.center,x2:linkPreview.x+8,y2:linkPreview.y,elbow:Math.max(startX+18,linkPreview.x+16)};
-      return <Svg pointerEvents="none" width={canvasWidth} height={totalHeight} style={{position:'absolute',left:0,top:0,zIndex:7}}>
-       <Path d={g.dependencyCurve(previewPath)} fill="none" stroke={K.amber} strokeWidth={2.5} strokeLinecap="round" strokeDasharray="5 5"/>
-       <Circle cx={linkPreview.x} cy={linkPreview.y} r={5} fill={K.amber}/>
-      </Svg>;
-     })()}
-     {rows.filter(row=>row.kind==='task').map(row=>{
+     {windowRows.filter(row=>row.kind==='task').map(row=>{
        const summary=mode==='hierarchy'&&row.hasChildren?summaries.get(row.task.id):null;
        if(summary){
         const left=(summary.start-day0)*dayWidth,width=Math.max(3,(summary.end-summary.start+1)*dayWidth);
@@ -267,6 +272,21 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    </ScrollView>
     </View>
    </ScrollView>
+   {/* Render dependency strokes in a clipped viewport. A full canvas-sized native
+       SVG can exceed Android GPU texture limits when projects span months. */}
+   <Svg pointerEvents="box-none" width={chartWidth} height={Math.min(viewportHeight,Math.max(260,totalHeight))}
+     style={{position:'absolute',left:labelsWidth,top:0,zIndex:5}}>
+     <G transform={`translate(${-paintOffset.x} ${-paintOffset.y})`}>
+       {drawnLinks.map(path=><Dependency key={path.key} path={path} critical={criticalEdges.has(path.key)} selected={selectedLink?.fromId===path.fromId&&selectedLink?.toId===path.toId} onSelect={()=>{setSelectedLink({fromId:path.fromId,toId:path.toId});setLinkSource(null);setLinkPreview(null)}}/>)}
+       {linkPreview&&(()=>{
+         const row=rows.find(r=>r.kind==='task'&&r.task.id===linkPreview.source);
+         const geo=row&&g.barGeometry(row.task,day0,dayWidth);if(!geo)return null;
+         const startX=geo.milestone?geo.x+dayWidth/2:geo.endX;
+         const previewPath={x1:startX,y1:row.center,x2:linkPreview.x+8,y2:linkPreview.y,elbow:Math.max(startX+18,linkPreview.x+16)};
+         return <G><Path d={g.dependencyCurve(previewPath)} fill="none" stroke={K.amber} strokeWidth={2.5} strokeLinecap="round" strokeDasharray="5 5"/><Circle cx={linkPreview.x} cy={linkPreview.y} r={5} fill={K.amber}/></G>;
+       })()}
+     </G>
+   </Svg>
   </View>
   {!project.tasks.length&&<T color={K.muted} style={{marginTop:12}}>No tasks yet. Add a task to start planning your roadmap.</T>}
   {showLinks&&<Modal visible transparent animationType="fade" onRequestClose={()=>setShowLinks(false)}><View style={{flex:1,backgroundColor:'#000b',alignItems:'center',justifyContent:'center',padding:16}}><View style={{width:'100%',maxWidth:470,maxHeight:'82%',backgroundColor:K.panel,borderWidth:1,borderColor:K.border,borderRadius:14,padding:18,gap:12}}>
