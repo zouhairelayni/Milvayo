@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "mode": "push-only",
+  "changed": [
+    {
+      "taskId": "B",
+      "start": "2026-11-10",
+      "due": "2026-11-11"
+    },
+    {
+      "taskId": "C",
+      "start": "",
+      "due": "2026-11-12"
+    }
+  ],
+  "originalUnchanged": true,
+  "conflicts": 0
+}
