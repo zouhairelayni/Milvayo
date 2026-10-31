@@ -3,10 +3,11 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const gantt=fs.readFileSync(require.resolve('../src/GanttView.js'),'utf8');
 const app=fs.readFileSync(require.resolve('../App.js'),'utf8');
 const pkg=require('../package.json');
-test('pointer mapping uses pan deltas, not asynchronous window measurement',()=>{
- assert.match(gantt,/onLinkPointer\(task\.id,p\.dx,p\.dy\)/);
+test('pointer tracking uses pan deltas, scroll compensation and measured contact offset',()=>{
+ assert.match(gantt,/onLinkPointer\(task\.id,p\.dx,p\.dy,p\.moveX,p\.moveY\)/);
  assert.match(gantt,/onLinkFinish\(task\.id,p\.dx,p\.dy/);
- assert.doesNotMatch(gantt,/canvasOrigin|canvasRef|\.moveX|\.moveY|measureInWindow/);
+ assert.match(gantt,/viewportMath\.dragDelta\(dx,dy,offsets\.current\.x,offsets\.current\.y,sess\.scrollX,sess\.scrollY/);
+ assert.match(gantt,/if\(Math\.abs\(x\)<32&&Math\.abs\(y\)<32\)/);
 });
 test('dependency rendering is SVG and offers direct removal plus a touch fallback',()=>{
  assert.match(gantt,/from 'react-native-svg'/);
@@ -19,12 +20,15 @@ test('dependency rendering is SVG and offers direct removal plus a touch fallbac
 test('Unslop changes are in UI, not only in a rules document',()=>{
  assert.match(gantt,/showHelp/);
  assert.match(gantt,/showScheduleIssues/);
- assert.match(gantt,/Hide help/);
- assert.match(app,/<Txt size=\{12\} color=\{C.muted\}>\{project.name\}<\/Txt>/);
+ assert.match(gantt,/Pinch the chart to zoom/);
+ assert.match(gantt,/onTouchMove=\{pinchMove\}/);
+ assert.match(gantt,/const vx=viewportMath\.edgeVelocity/);
+ assert.match(gantt,/const vy=viewportMath\.edgeVelocity/);
+ assert.match(app,/<Txt size=\{12\} color=\{C.muted\} lines=\{1\}>\{project.name\}<\/Txt>/);
  assert.doesNotMatch(app,/Manage, verify and preserve your work/);
 });
 test('Expo SDK 58 has matching SVG integration',()=>{
- assert.equal(pkg.version,'0.2.4');
+ assert.equal(pkg.version,'0.2.5');
  assert.equal(pkg.dependencies['react-native-svg'],'15.16.0');
  assert.match(pkg.dependencies.expo,/58\.0/);
 });

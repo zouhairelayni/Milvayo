@@ -1,4 +1,4 @@
-# Niyarvo Projects — v0.2.4 local QA candidate
+# Niyarvo Projects — v0.2.5 local QA candidate
 
 Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
 
@@ -8,9 +8,9 @@ Independent Expo SDK 58 / React Native project management app for Web, Android (
 - **Create project:** separate form for project name/code/description and project JSON import.
 - **Manage project:** separate form for edit, export, archive, delete. Archived projects are retained and may be restored from the project picker. Last active project cannot be archived.
 - Added extra top spacing on mobile and desktop. Browser width >=860 px uses the desktop sidebar and **does not** show the bottom tab bar.
-- Kanban: handle-based drag, horizontal edge auto-scroll while dragging, floating card preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
-- Timeline: scrollable Gantt table, task name rail, 7/14/30/90-day zoom, predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
-- Note: v0.2.4 adds `react-native-svg` 15.16.0; run `npm install` before Metro. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
+- Kanban: full-card press-and-hold drag, horizontal edge auto-scroll while dragging, card-position preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
+- Timeline: scrollable Gantt chart, task name rail, continuous/preset zoom (see v0.2.5), predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
+- Note: v0.2.4 introduced `react-native-svg` 15.16.0; run `npm install` before Metro. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
 
 ## Run in Termux
 
@@ -26,7 +26,7 @@ npx expo start
 
 Use Expo Go for Android and Metro for Web; avoid static export + Python HTTP server for development.
 
-**Gate:** 25 Node tests passed and JSX parser reported no syntax issues in the preparation environment. Android/Web interactive behavior is **not yet verified**. Do not merge into `main` until the `CHG-NP-0.2.1.md` manual QA checklist passes.
+**Gate for v0.2.5:** 66 Node tests passed and JSX parser reported no syntax errors in the preparation environment. Android/Web interactive behavior is **not yet verified**. Do not merge into `main` until the `CHG-NP-0.2.1.md` manual QA checklist passes.
 
 ## Not yet implemented
 
@@ -61,3 +61,14 @@ Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`
 - The source includes a screenshot-driven nine-pass Unslop audit at `docs/UNSLOP-NP-0.2.4.md` and manual QA at `docs/NP-QA-0.2.4.md`.
 - **New dependency:** `react-native-svg@15.16.0`, Expo SDK 58 compatible. Run `npm install`, `npm test`, `npx expo install --check`, then `npx expo start`.
 - **Unverified:** native & Web gestures and actual rendered screenshots, until the local runtime tests. No Git push, merge, or Firebase deployment.
+
+## v0.2.5 — Mobile Gantt viewport and shared design system (LOCAL QA)
+
+- **Pinch zoom:** pinch inside the Gantt viewport to adjust day width continuously (6–96 px/day), centered on the pinch midpoint. `+`, `−`, and `Fit` are accessible fallbacks; Days / Weeks / Months remain selectable presets. At overview-level zoom, bars become compact indicators; zoom in to move/resize/link them.
+- **Two-axis chart navigation:** the Gantt now has its own vertically scrolling task/calendar viewport and independent horizontal date scroll. During a connector drag, holding near any chart edge auto-pans in that direction; offsets are applied to target hit-testing. Tap-to-link remains available.
+- **First-touch alignment:** gesture source contact offset is measured when possible, constrained to the connector hit zone, with an async measurement refresh. This still needs device verification.
+- **UI:** Unslop was applied to actual shared controls in `App.js`, a calmer shared theme `src/design.cjs`, a simpler mobile header/bottom navigation, and a shorter three-row Gantt toolbar with advanced actions under **More**. Full application-wide pixel review remains a separate acceptance requirement.
+- **App version:** `0.2.5`; local AsyncStorage schema/key unchanged; no new dependencies.
+- **QA:** `npm test`, JSX parser checks pass in the delivery environment. Expo Go, iOS and Web rendering/gesture testing **Not run** here. See `docs/NP-QA-0.2.5.md` and `docs/UNSLOP-NP-0.2.5.md`.
+
+Do not merge `work` or deploy this QA candidate until device/browser runtime interactions pass. Back up your workspace JSON before extraction. No Firebase project is connected.
