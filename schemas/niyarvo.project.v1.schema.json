@@ -263,6 +263,18 @@
           "parentId": {
             "type": "string",
             "description": "Optional parent task ID in this same project; parent cycles and missing references are rejected"
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Manual leaf progress percentage; parents are derived by rollup."
+          },
+          "estimateHours": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "description": "Planned effort for progress weighting; 0 means one unit weight."
           }
         }
       }
@@ -482,6 +494,66 @@
                 "type": "integer",
                 "minimum": -365,
                 "maximum": 365
+              }
+            }
+          }
+        }
+      }
+    },
+    "savedViews": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sort": {
+            "enum": [
+              "position",
+              "title",
+              "due",
+              "priority",
+              "progress"
+            ]
+          },
+          "descending": {
+            "type": "boolean"
+          },
+          "filters": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "All",
+                  "Backlog",
+                  "In progress",
+                  "Validation",
+                  "Done"
+                ]
+              },
+              "priority": {
+                "enum": [
+                  "All",
+                  "Low",
+                  "Medium",
+                  "High",
+                  "Critical"
+                ]
+              },
+              "owner": {
+                "type": "string"
               }
             }
           }

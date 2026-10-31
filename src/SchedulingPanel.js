@@ -1,3 +1,4 @@
+import {SafeAreaProvider,SafeAreaView} from 'react-native-safe-area-context';
 import React, {useMemo,useState} from 'react';
 import {View,ScrollView,Pressable,Text,TextInput,Modal,useWindowDimensions} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
@@ -28,7 +29,7 @@ export default function SchedulingPanel({visible,project,onClose,onCalendar,onTy
   setExceptionDate('');
  };
  const isStale=!!previewInfo&&previewInfo.projectId!==project?.id;
- return <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+ return <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}><SafeAreaProvider style={{flex:1}}><SafeAreaView edges={['top','bottom','left','right']} style={{flex:1}}>
   <View style={{flex:1,backgroundColor:'#000b',justifyContent:'center',alignItems:'center',padding:width<650?8:24}}>
    <View style={{maxWidth:700,width:'100%',maxHeight:'95%',backgroundColor:C.panel,borderRadius:14,borderColor:C.border,borderWidth:1,overflow:'hidden'}}>
     <View style={{padding:16,flexDirection:'row',alignItems:'center',gap:12,borderBottomWidth:1,borderBottomColor:C.border}}>
@@ -78,5 +79,5 @@ export default function SchedulingPanel({visible,project,onClose,onCalendar,onTy
     </ScrollView>
    </View>
   </View>
- </Modal>;
+ </SafeAreaView></SafeAreaProvider></Modal>;
 }

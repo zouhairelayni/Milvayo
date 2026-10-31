@@ -96,3 +96,22 @@ Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`
 - **QA:** `npm test`, JSX parser checks pass in the delivery environment. Expo Go, iOS and Web rendering/gesture testing **Not run** here. See `docs/NP-QA-0.2.5.md` and `docs/UNSLOP-NP-0.2.5.md`.
 
 Do not merge `work` or deploy this QA candidate until device/browser runtime interactions pass. Back up your workspace JSON before extraction. No Firebase project is connected.
+
+## v0.3.0 — Planning and architecture inventory
+
+The local-first task model supports leaf progress (0–100%), estimated effort in hours, calculated nested parent/project completion, and saved per-project task query views (status/priority/owner/text and sorting). Existing `niyarvo.project.v1` imports remain compatible; fields are optional and export as part of project JSON.
+
+See `docs/NP-OPENPROJECT-CAPABILITY-MAP-v1.md` for 63 source-evidenced capabilities across 30 OpenProject modules and the implementation roadmap. OpenProject architecture was studied as a reference; no source code was copied.
+
+**Status:** v0.3.0 is a local QA candidate. Test through Metro (`npx expo start`) before committing to `main`. Firebase `niyarvoprojects` remains unconnected.
+
+
+## v0.3.0 — Local task configuration and Android safe areas
+
+**Task setup:** Open **Tasks → Task setup** or **Settings → Configure tasks & workflow**. Each project has its own custom task types, validated fields (`text`, `number`, `date`, `boolean`, `select`), and optionally enforced workflow transitions. Existing projects retain the default `Task` type and unrestricted moves until you enable transition enforcement. Text, date and number inputs use an explicit Save value action; Boolean and select fields are direct choices. Custom field and type data survives workspace/project JSON export and backups. Removing a custom field deletes its saved values after an automatic workspace snapshot. In-use types cannot be removed.
+
+**Task editor:** Task types and custom values can be edited in a task's detail drawer. Field changes invalidate verification for affected tasks and reopen linked release records when applicable. Kanban and bulk status changes honor configured transitions. A status may still be blocked by unfinished dependencies.
+
+**Safe areas:** The screen shell and native full-screen dialogs use `react-native-safe-area-context`, including top status-bar clearance and bottom gesture-navigation clearance. Install the new dependency via `npm install` and check it using `npx expo install --check`. Android and iOS need runtime verification, including landscape and keyboard presentation. Web uses existing page spacing.
+
+No Firebase initialization, cloud writes, account imports, Git operations, or roadmap imports are performed by this release. All metadata remains local until separately migrated.

@@ -65,6 +65,7 @@ function bulkUpdate(project,taskIds,field,value){
  const ids=new Set(taskIds),all=new Set(project.tasks.map(t=>t.id));
  for(const id of ids)if(!all.has(id))throw Error('Unknown selected task: '+id);
  const changing=project.tasks.filter(t=>ids.has(t.id)&&t[field]!==value);
+ if(field==='status'){const schema=require('./taskSchema.cjs');for(const t of changing)schema.checkTransition(project,t,value);}
  if(!changing.length)return {project,changed:0};
  const futureStatus=new Map(project.tasks.map(t=>[t.id,field==='status'&&ids.has(t.id)?value:t.status]));
  if(field==='status'&&value==='Done')for(const t of changing){

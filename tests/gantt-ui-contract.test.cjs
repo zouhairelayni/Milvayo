@@ -28,7 +28,7 @@ test('Unslop changes are in UI, not only in a rules document',()=>{
  assert.doesNotMatch(app,/Manage, verify and preserve your work/);
 });
 test('Expo SDK 58 has matching SVG integration',()=>{
- assert.match(pkg.version,/^0\.2\.(?:[5-9]|[1-9][0-9]+)$/);
+ assert.match(pkg.version,/^(?:0\.2\.(?:[5-9]|[1-9][0-9]+)|0\.[3-9]\.\d+|[1-9]\d*\.\d+\.\d+)$/);
  assert.equal(pkg.dependencies['react-native-svg'],'15.16.0');
  assert.match(pkg.dependencies.expo,/58\.0/);
 });
