@@ -18,7 +18,7 @@ test('Overview no longer mounts a second interactive Kanban board',()=>{
  const overview=app.slice(from,to);
  assert.doesNotMatch(overview,/<Board\s/);
  assert.doesNotMatch(overview,/Kanban board/);
- assert.match(app.slice(to,to+900),/<Board\s/);
+ assert.match(app.slice(to,app.indexOf(' const timelineScreen=',to)),/<Board\s/);
 });
 test('mobile Kanban progressively loads cards instead of mounting 60 per lane initially',()=>{
  assert.match(app,/const PAGE=boardScreenWidth>=860\?36:12/);

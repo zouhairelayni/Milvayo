@@ -6,6 +6,10 @@ const taskWorkflows=require('./taskWorkflows.cjs');
 const planning=require('./planning.cjs');
 const taskSchema=require('./taskSchema.cjs');
 const agile=require('./agile.cjs');
+const operations=require('./operations.cjs');
+const boards=require('./boards.cjs');
+const powerUps=require('./powerUps.cjs');
+const automation=require('./automation.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -22,7 +26,7 @@ function normalizeRule(rule={}){return {id:str(rule.id,120)||id('rule'),name:str
 
 function defaultTask(o={}){
   const now=iso();return {
-    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000), parentId:str(o.parentId,120),
+    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000), parentId:str(o.parentId,120), boardId:str(o.boardId,120)||boards.DEFAULT_BOARD_ID,
     status:STATUSES.includes(o.status)?o.status:'Backlog', priority:PRIORITIES.includes(o.priority)?o.priority:'Medium',
     stage:STAGES.includes(o.stage)?o.stage:'Development', owner:str(o.owner,120)||'Solo operator',
     phaseId:str(o.phaseId,120), releaseId:str(o.releaseId,120), repo:str(o.repo,120), branch:str(o.branch,200),
@@ -32,6 +36,7 @@ function defaultTask(o={}){
     taskTypeId:str(o.taskTypeId,60)||'task', sprintId:str(o.sprintId,100), customValues:o.customValues&&typeof o.customValues==='object'&&!Array.isArray(o.customValues)?{...o.customValues}:{},
     dependsOn:unique(arr(o.dependsOn,100).map(x=>str(x,120)).filter(Boolean)),
     labels:unique(arr(o.labels,30).map(x=>str(x,40)).filter(Boolean)),
+    githubLinks:powerUps.normalizeTaskLinks(o.githubLinks),
     attachments:arr(o.attachments,100).map(a=>({id:str(a.id,120)||id('attachment'),name:str(a.name,220)||'Link',url:safeUrl(a.url)})).filter(a=>a.url),
     tests:arr(o.tests,250).map((t,i)=>({id:str(t.id,100)||`check-${i}`, title:str(t.title||t,500), result:['pending','passed','failed','blocked'].includes(t.result)?t.result:'pending', evidence:str(t.evidence,2000)})),
     evidence:str(o.evidence,4000), expected:str(o.expected,4000), actual:str(o.actual,4000), rollback:str(o.rollback,4000),
@@ -40,11 +45,12 @@ function defaultTask(o={}){
 }
 function makeProject(o={}){
  const meta=taskSchema.normalizeSchema(o);
- const project={...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
+ const project={...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   sprints:agile.normalizeAgile(o).sprints,
   savedViews:safeArray(o.savedViews,50,'Saved views').map(planning.normalizeView),
+  automationCommands:automation.normalizeCommands(o.automationCommands||[]),automationHistory:automation.normalizeHistory(o.automationHistory||[]),
   automations:safeArray(o.automations,50,'Automations').map(normalizeRule), phases:safeArray(o.phases,200,'Phases').map(p=>({id:str(p.id,120)||id('phase'),name:str(p.name,180),stage:STAGES.includes(p.stage)?p.stage:'Development',description:str(p.description,4000),goal:str(p.goal,4000),exit:str(p.exit,4000)})),
   releases:safeArray(o.releases,500,'Releases').map(r=>({id:str(r.id,120)||id('release'),name:str(r.name,180),status:['Planned','Testing','Ready','Released'].includes(r.status)?r.status:'Planned',repo:str(r.repo,120),version:str(r.version,40),mainSha:str(r.mainSha,120),notes:str(r.notes,3000)})),
   tasks:safeArray(o.tasks,10000,'Tasks').map((t,i)=>defaultTask({...t,position:Number.isFinite(t.position)?t.position:i})),schemas:safeArray(o.schemas,200,'Schemas').map(s=>({id:str(s.id,120)||id('schema'),name:str(s.name,180),description:str(s.description,12000),content:str(s.content,20000)})),
@@ -68,7 +74,7 @@ function demoProject(){return makeProject({id:'sample-workspace',name:'Northstar
     {id:'NST-008',title:'Remove debug UI from production bundle',status:'Backlog',priority:'Critical',stage:'Production',repo:'Northstar Studio',releaseId:'rel1'},
     {id:'NST-009',title:'Release sign-off checklist',status:'In progress',priority:'Medium',stage:'Testing',repo:'Northstar Studio',releaseId:'rel1'}
   ]});}
-function createWorkspace(){const p=demoProject();return {schemaVersion:1,selectedId:p.id,projects:[p],backups:[],activity:[{id:id('activity'),at:iso(),action:'Demo workspace initialized'}],revision:1};}
+function createWorkspace(){const p=demoProject();return {schemaVersion:1,selectedId:p.id,projects:[p],portfolios:[],backups:[],activity:[{id:id('activity'),at:iso(),action:'Demo workspace initialized'}],revision:1};}
 function normalizeWorkspace(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid workspace');
  const projects=safeArray(input.projects,30,'Workspace projects').map(makeProject);
@@ -76,13 +82,18 @@ function normalizeWorkspace(input){
  if(projects.every(p=>p.archived))throw Error('Workspace must contain at least one active project');
  validateUnique(projects,'project');projects.forEach(validateProject);
  const valid=new Set(projects.map(p=>p.id));
- return {schemaVersion:1,selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
+ return {schemaVersion:1,portfolios:operations.normalizePortfolios(input.portfolios||[],projects),selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
  backups:arr(input.backups,15).filter(s=>s&&typeof s==='object'&&['project','workspace'].includes(s.kind)),
  activity:arr(input.activity,100).map(a=>({id:str(a.id,120),at:str(a.at,60),action:str(a.action,1200)})),
  revision:Number.isInteger(input.revision)&&input.revision>=0?input.revision:0};
 }
 function validateProject(project){
  projectScheduling.normalizeProjectScheduling(project);
+ operations.validateExtras(project);
+ boards.validateBoards(project);
+ powerUps.normalizedPowerUps(project);
+ for(const task of project.tasks)powerUps.normalizeTaskLinks(task.githubLinks);
+ automation.validate(project);
  taskSchema.validateProject(project);
  planning.validateViews(project.savedViews||[]);
  agile.validateAgile(project);
@@ -107,7 +118,7 @@ function deleteTaskWithLinks(project,taskId){
  const deleted=project.tasks.find(t=>t.id===taskId);if(!deleted)throw Error('Task not found');
  const dependents=project.tasks.filter(t=>t.dependsOn.includes(taskId)||t.parentId===taskId).map(t=>t.id);
  const next={...project,tasks:project.tasks.filter(t=>t.id!==taskId).map(t=>t.dependsOn.includes(taskId)||t.parentId===taskId?{...t,parentId:t.parentId===taskId?'':t.parentId,dependsOn:t.dependsOn.filter(dep=>dep!==taskId),verified:false,merged:false,updatedAt:iso()}:t)};
- const reconciled=projectScheduling.reconcileProjectScheduling(next);validateProject(reconciled);
+ const reconciled=projectScheduling.reconcileProjectScheduling({...next,timeEntries:(next.timeEntries||[]).filter(x=>x.taskId!==taskId),comments:(next.comments||[]).filter(x=>x.taskId!==taskId),reminders:(next.reminders||[]).filter(x=>x.taskId!==taskId)});validateProject(reconciled);
  return projectScheduling.invalidateDependents(reconciled,dependents,deleted.releaseId?[deleted.releaseId]:[]);
 }
 function blockers(project,task){return task.dependsOn.filter(id=>project.tasks.find(t=>t.id===id)?.status!=='Done');}
@@ -128,7 +139,9 @@ function moveTask(project,taskId,status,toIndex=99999){
  const current=remaining.filter(t=>t.status===status).sort((a,b)=>a.position-b.position);
  current.splice(Math.max(0,Math.min(current.length,Math.floor(toIndex))),0,changed);
  const positions=new Map(current.map((t,i)=>[t.id,i]));
- return {...project,tasks:remaining.concat(changed).map(t=>positions.has(t.id)?{...t,position:positions.get(t.id)}:t),lastAutomationActions:applied};
+ const result={...project,tasks:remaining.concat(changed).map(t=>positions.has(t.id)?{...t,position:positions.get(t.id)}:t),lastAutomationActions:applied};
+ if(status!==task.status&&result.automationCommands?.length){const executed=automation.run(result,{type:'status',from:task.status,to:status,taskId});return {...executed.project,lastAutomationActions:[...applied,...executed.applied.map(x=>x.ruleId)]};}
+ return result;
 }
 function shiftDate(day,amount){const value=dateOnly(day);if(!value)throw Error('Invalid date');const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+amount);return d.toISOString().slice(0,10);}
 function shiftTask(project,taskId,days){const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');if(!task.start&&!task.due)throw Error('Set a start or due date first');if(!Number.isInteger(days)||Math.abs(days)>365)throw Error('Invalid date change');return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,start:t.start?shiftDate(t.start,days):'',due:t.due?shiftDate(t.due,days):'',verified:false,merged:false,updatedAt:iso()}:t)};}
@@ -198,4 +211,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={projectScheduling,taskWorkflows,planning,taskSchema,agile,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={powerUps,boards,automation,operations,projectScheduling,taskWorkflows,planning,taskSchema,agile,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

@@ -1,3 +1,15 @@
+# Niyarvo Projects v0.3.11 — cumulative local QA candidate
+
+This full-source archive includes **all batches v0.3.3 through v0.3.11**, plus the v0.3.2-HOTFIX3 baseline. Each `CHG-NP-[VERSION].md` is at the ZIP root and in `docs/`.
+
+New modules: `src/operations.cjs`, `src/WorkspaceExtensions.js`, `src/boards.cjs`, `src/automation.cjs`, and `src/AutomationStudio.js` plus regression tests. Key workflows: portfolios and health; sprint velocity; resources and time; budgets; local comments and reminders; CSV/JSON exports and clean project templates; multi-board Kanban with independent-height columns and task editor raw-text fix; Trello-inspired local automations.
+
+**Important:** data is still local and private to this installation. Firebase project `niyarvoprojects` and application ID `com.niyarvo.projects` are noted, but there is no cloud sync, backend execution or deployment. `work` stays the QA branch; don't overwrite accepted design changes without preserving them. Metro Fast Refresh: `npx expo start`.
+
+Refer to `docs/NP-QA-CUMULATIVE-v0.3.11.md` for the ordered test matrix, `docs/NP-TRELLO-AUTOMATION-ARCHITECTURE.md` for action safety, and `docs/UNSLOP-NP-0.3.10.md` for a scoped UI audit. Trello and OpenProject were only studied for architecture; no vendor source/assets were copied.
+
+---
+
 > **v0.3.2-HOTFIX3 local QA:** Android/large-workspace rendering optimization and removal of Overview Kanban. See `CHG-NP-0.3.2-HOTFIX3.md`; device confirmation pending.
 
 # 0.3.2-HOTFIX2 — Android JSON import (QA candidate)
@@ -146,3 +158,11 @@ See `docs/NP-OPENPROJECT-CAPABILITY-MAP-v1.md` for 63 source-evidenced capabilit
 **Safe areas:** The screen shell and native full-screen dialogs use `react-native-safe-area-context`, including top status-bar clearance and bottom gesture-navigation clearance. Install the new dependency via `npm install` and check it using `npx expo install --check`. Android and iOS need runtime verification, including landscape and keyboard presentation. Web uses existing page spacing.
 
 No Firebase initialization, cloud writes, account imports, Git operations, or roadmap imports are performed by this release. All metadata remains local until separately migrated.
+
+## v0.3.11 — Kanban Power-Ups
+
+Board-specific built-in extensions: GitHub links and optional public API previews, upcoming due-date panel, card aging, and checklist progress. Power-Ups can be enabled per Kanban board without altering statuses or deleting existing tasks. Each lane supports quick card creation. This implementation is **not compatible with Trello Power-Up packages** and has no authenticated private GitHub access; GitHub OAuth and backend synchronization require a later secure integration.
+
+## v0.3.11-HOTFIX1 — Mobile/Web drawer fix
+
+Navigation sidebar links now scroll independently, keeping the header, project switcher, and close control accessible on short screens. The mobile/Web menu no longer uses the navigation `Modal` portal and supports tap-outside, Android Back, and Web Escape dismissal. No data migration or new dependencies. See `CHG-NP-0.3.11-HOTFIX1.md` and `docs/NP-QA-0.3.11-HOTFIX1.md`. This is a source-level QA candidate pending runtime tests.
