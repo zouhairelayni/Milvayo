@@ -10,6 +10,7 @@ const operations=require('./operations.cjs');
 const boards=require('./boards.cjs');
 const powerUps=require('./powerUps.cjs');
 const automation=require('./automation.cjs');
+const kanbanUX=require('./kanbanUX.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -45,7 +46,7 @@ function defaultTask(o={}){
 }
 function makeProject(o={}){
  const meta=taskSchema.normalizeSchema(o);
- const project={...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
+ const project={...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),kanbanViews:o.kanbanViews||{},powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   sprints:agile.normalizeAgile(o).sprints,
@@ -57,7 +58,7 @@ function makeProject(o={}){
   apiContracts:safeArray(o.apiContracts,400,'API contracts').map(s=>({id:str(s.id,120)||id('api'),name:str(s.name,180),description:str(s.description,12000)})),
   playbooks:safeArray(o.playbooks,200,'Playbooks').map(s=>({id:str(s.id,120)||id('playbook'),name:str(s.name,180),description:str(s.description,12000)})),
   changelog:safeArray(o.changelog,1000,'Changelog').map(s=>({id:str(s.id,120)||id('changelog'),at:str(s.at,50),message:str(s.message,3000)}))};
- return projectScheduling.normalizeProjectScheduling({...project,scheduling:o.scheduling});
+ return projectScheduling.normalizeProjectScheduling({...project,kanbanViews:kanbanUX.normalizeViews(project),scheduling:o.scheduling});
 }
 function blankProject(){return makeProject({name:'My first project',code:'NEW',description:'Ready for your single-file roadmap import.'});}
 function demoProject(){return makeProject({id:'sample-workspace',name:'Northstar Studio',code:'NST',description:'Illustrative project only. Import your own roadmap whenever ready.',version:'0.1.0',
@@ -91,6 +92,7 @@ function validateProject(project){
  projectScheduling.normalizeProjectScheduling(project);
  operations.validateExtras(project);
  boards.validateBoards(project);
+ kanbanUX.normalizeViews(project);
  powerUps.normalizedPowerUps(project);
  for(const task of project.tasks)powerUps.normalizeTaskLinks(task.githubLinks);
  automation.validate(project);
@@ -211,4 +213,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={powerUps,boards,automation,operations,projectScheduling,taskWorkflows,planning,taskSchema,agile,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={kanbanUX,powerUps,boards,automation,operations,projectScheduling,taskWorkflows,planning,taskSchema,agile,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

@@ -166,3 +166,7 @@ Board-specific built-in extensions: GitHub links and optional public API preview
 ## v0.3.11-HOTFIX1 — Mobile/Web drawer fix
 
 Navigation sidebar links now scroll independently, keeping the header, project switcher, and close control accessible on short screens. The mobile/Web menu no longer uses the navigation `Modal` portal and supports tap-outside, Android Back, and Web Escape dismissal. No data migration or new dependencies. See `CHG-NP-0.3.11-HOTFIX1.md` and `docs/NP-QA-0.3.11-HOTFIX1.md`. This is a source-level QA candidate pending runtime tests.
+
+## v0.3.12 — Kan-based Kanban polish (local-QA candidate)
+
+Inspired by **capabilities observed in the user-provided Kan reference source**, independently reimplemented for Expo/React Native. Compact cards, labelled metadata, quick action sheet, duplicate and move controls, filters (owner/priority/label/due dates), and per-board description preferences. The current task-status workflow, drag-and-drop, GitHub Power-Ups and local automations remain authoritative. This release does **not** copy Kan code and does not implement arbitrary custom status lanes, multi-user role permissions, GitHub OAuth or backend automation. Read `CHG-NP-0.3.12.md` and `docs/NP-QA-0.3.12.md` before testing on Android and Web.
