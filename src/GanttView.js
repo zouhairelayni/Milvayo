@@ -9,13 +9,13 @@ const g=model.gantt;
 const K=design.colors;
 const HEADER=60;
 const zoomLevels={Days:48,Weeks:24,Months:10};
-const statusColor={Backlog:'#a2a2ae','In progress':K.purple,Validation:K.amber,Done:K.green};
+const statusColor={Backlog:'#a2a2ae',get 'In progress'(){return K.purple},Validation:K.amber,Done:K.green};
 const weekday=new Intl.DateTimeFormat('en-US',{weekday:'short',timeZone:'UTC'});
 const monthLabel=new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'});
 const dayLabel=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
 function T({children,size=12,color=K.ink,bold=false,style={},lines}){return <Text numberOfLines={lines} style={[{fontSize:size,color,fontWeight:bold?'600':'400'},style]}>{children}</Text>}
 function Icon({name,size=16,color=K.muted}){return <Ionicons name={name} size={size} color={color}/>}
-function Control({label,onPress,selected=false,icon,disabled=false}){return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({pressed})=>({paddingHorizontal:12,minHeight:40,paddingVertical:8,borderWidth:1,borderRadius:8,borderColor:selected?'#8572c1':K.border,backgroundColor:selected?'#302a40':K.panel,opacity:disabled?.4:pressed?.7:1,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6})}>{icon&&<Icon name={icon} color={selected?K.purple:K.muted}/>}<T size={12} color={selected?K.purple:K.ink} bold={selected}>{label}</T></Pressable>}
+function Control({label,onPress,selected=false,icon,disabled=false}){return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({pressed})=>({paddingHorizontal:12,minHeight:40,paddingVertical:8,borderWidth:1,borderRadius:8,borderColor:selected?K.accentBorder:K.border,backgroundColor:selected?K.purpleDim:K.panel,opacity:disabled?.4:pressed?.7:1,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6})}>{icon&&<Icon name={icon} color={selected?K.purple:K.muted}/>}<T size={12} color={selected?K.purple:K.ink} bold={selected}>{label}</T></Pressable>}
 function InteractiveBar({task,geometry,row,color,dayWidth,onOpen,onMove,onResize,onLinkStart,onLinkPointer,onLinkFinish,onTargetTap,isCritical,linkActive}){
  const [preview,setPreview]=useState({dx:0,end:0});
  const liveDayWidth=useRef(dayWidth);liveDayWidth.current=dayWidth;
@@ -61,13 +61,16 @@ function Dependency({path,critical=false,selected=false,onSelect}){
 }
 export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onLink,onAlign,onSampleSchedule}){
  const {height:screenHeight}=useWindowDimensions();
- const [width,setWidth]=useState(380),[dayWidth,setDayWidth]=useState(zoomLevels.Weeks),[mode,setMode]=useState('status'),[linkTask,setLinkTask]=useState(null),[linkError,setLinkError]=useState(''),[calendarOffset,setCalendarOffset]=useState(0),[linkSource,setLinkSource]=useState(null),[linkPreview,setLinkPreview]=useState(null),[showCritical,setShowCritical]=useState(false),[selectedLink,setSelectedLink]=useState(null),[showHelp,setShowHelp]=useState(false),[showScheduleIssues,setShowScheduleIssues]=useState(false),[showLinks,setShowLinks]=useState(false),[isLinkDragging,setIsLinkDragging]=useState(false),[pinchActive,setPinchActive]=useState(false);
+ const [width,setWidth]=useState(380),[dayWidth,setDayWidth]=useState(zoomLevels.Weeks),[mode,setMode]=useState('status'),[collapsed,setCollapsed]=useState([]),[linkTask,setLinkTask]=useState(null),[linkError,setLinkError]=useState(''),[calendarOffset,setCalendarOffset]=useState(0),[linkSource,setLinkSource]=useState(null),[linkPreview,setLinkPreview]=useState(null),[showCritical,setShowCritical]=useState(false),[selectedLink,setSelectedLink]=useState(null),[showHelp,setShowHelp]=useState(false),[showScheduleIssues,setShowScheduleIssues]=useState(false),[showLinks,setShowLinks]=useState(false),[isLinkDragging,setIsLinkDragging]=useState(false),[pinchActive,setPinchActive]=useState(false);
  const zoom=dayWidth>=36?'Days':dayWidth>=17?'Weeks':'Months';
  const now=new Date().toISOString().slice(0,10);
  const base=useMemo(()=>g.calendarDomain(project.tasks,now),[project.tasks,now]);
  const day0=base.from+calendarOffset;
  const days=Array.from({length:base.count},(_,i)=>g.dateAt(day0+i));
- const rows=useMemo(()=>g.layoutRows(g.buildRows(project.tasks,mode),HEADER),[project.tasks,mode]);
+ const rows=useMemo(()=>g.layoutRows(mode==='hierarchy'?g.hierarchyRows(project.tasks,collapsed):g.buildRows(project.tasks,mode),HEADER),[project.tasks,mode,collapsed]);
+ const rollups=useMemo(()=>model.planning.progressRollups(project.tasks),[project.tasks]);
+ const summaries=useMemo(()=>g.hierarchySummaries(project.tasks,rollups),[project.tasks,rollups]);
+ useEffect(()=>setCollapsed([]),[project.id]);
  const totalHeight=rows.length?rows[rows.length-1].top+rows[rows.length-1].height:HEADER+85;
  const canvasWidth=base.count*dayWidth;
  const labelsWidth=Math.max(124,Math.min(220,Math.round(width*(width<550?.34:.30))));
@@ -101,8 +104,8 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
  const linkPaths=g.dependencyGeometry(rows,day0,dayWidth,project.scheduling?.links).map(path=>({...path,conflict:conflicts.some(c=>c.taskId===path.toId&&c.predecessorId===path.fromId)}));
  const scheduledCount=project.tasks.filter(t=>g.span(t)).length;
  const cpm=useMemo(()=>g.criticalPath(project.tasks),[project.tasks]);
- const criticalIds=new Set(showCritical&&legacyCritical?cpm.criticalIds:[]);
- const criticalEdges=new Set(showCritical&&legacyCritical?cpm.criticalEdges:[]);
+ const criticalIds=new Set(showCritical&&legacyCritical&&mode!=='hierarchy'?cpm.criticalIds:[]);
+ const criticalEdges=new Set(showCritical&&legacyCritical&&mode!=='hierarchy'?cpm.criticalEdges:[]);
  const connect=(source,target)=>{
   if(!source||!target||source===target)return;
   const successor=project.tasks.find(t=>t.id===target);
@@ -193,8 +196,8 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    <View style={{flexDirection:'row',alignItems:'center',gap:8}}>
     <T size={11} color={K.muted}>View</T><View style={{flex:1,flexDirection:'row',gap:4}}>{Object.keys(zoomLevels).map(k=><View key={k} style={{flex:1}}><Control label={k} selected={zoom===k} onPress={()=>changeZoom(zoomLevels[k])}/></View>)}</View>
    </View>
-   <View style={{flexDirection:'row',alignItems:'center',gap:8,justifyContent:'space-between'}}>
-    <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Control label="Status" selected={mode==='status'} onPress={()=>setMode('status')}/><Control label="Stage" selected={mode==='stage'} onPress={()=>setMode('stage')}/></View>
+   <View style={{flexDirection:'row',alignItems:'center',gap:8,justifyContent:'space-between',flexWrap:'wrap'}}>
+    <View style={{flexDirection:'row',alignItems:'center',gap:4,flexWrap:'wrap'}}><Control label="Status" selected={mode==='status'} onPress={()=>setMode('status')}/><Control label="Stage" selected={mode==='stage'} onPress={()=>setMode('stage')}/><Control label="Tree" selected={mode==='hierarchy'} onPress={()=>setMode('hierarchy')}/></View>
     <Control label={`Links ${linkPaths.length}`} icon="git-network-outline" disabled={!linkPaths.length} onPress={()=>setShowLinks(true)}/>
     <Control label="More" icon="options-outline" onPress={()=>setShowHelp(v=>!v)}/>
    </View>
@@ -220,9 +223,13 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    <View style={{width:labelsWidth,backgroundColor:K.panel,borderRightColor:K.border,borderRightWidth:1,zIndex:1}}>
     <View style={{height:HEADER,justifyContent:'center',paddingHorizontal:12,borderBottomWidth:1,borderBottomColor:K.border,backgroundColor:K.panel2}}><T bold size={11}>Tasks</T><T size={10} color={K.muted}>Title · links</T></View>
     {rows.map(row=>row.kind==='group'?<View key={row.key} style={{height:row.height,backgroundColor:'#24252d',justifyContent:'center',paddingHorizontal:10,borderBottomWidth:1,borderBottomColor:K.border}}><T color={K.ink} size={11} bold>{row.title}</T></View>:<View key={row.key} style={{height:row.height,backgroundColor:row.top%2?K.panel:K.side,borderBottomWidth:1,borderBottomColor:K.border,paddingHorizontal:8,justifyContent:'center'}}>
-     <Pressable accessibilityLabel={`Open task ${row.task.title}`} onPress={()=>onOpen(row.task.id)}><T bold lines={1} size={12}>{row.task.title}</T></Pressable>
+     <View style={{flexDirection:'row',alignItems:'center',paddingLeft:Math.min(row.depth||0,5)*12,gap:6}}>
+      {mode==='hierarchy'&&row.hasChildren&&<Pressable accessibilityRole="button" accessibilityLabel={`${row.collapsed?'Expand':'Collapse'} subtasks of ${row.task.title}`} onPress={()=>setCollapsed(current=>row.collapsed?current.filter(id=>id!==row.task.id):[...current,row.task.id])} style={{width:27,height:30,justifyContent:'center',alignItems:'center'}}><Icon name={row.collapsed?'chevron-forward-outline':'chevron-down-outline'} size={15}/></Pressable>}
+      {mode==='hierarchy'&&!row.hasChildren&&<View style={{width:27}}/>}
+      <Pressable style={{flex:1}} accessibilityLabel={`Open task ${row.task.title}`} onPress={()=>onOpen(row.task.id)}><T bold lines={1} size={12}>{row.task.title}</T></Pressable>
+     </View>
      <View style={{flexDirection:'row',alignItems:'center',gap:9,marginTop:5}}><View style={{width:6,height:6,backgroundColor:statusColor[row.task.status],borderRadius:4}}/><Pressable accessibilityRole="button" accessibilityLabel={`Edit predecessors for ${row.task.title}`} onPress={()=>{setLinkError('');setLinkTask(row.task.id)}}><Icon name="git-network-outline" size={18} color={K.cyan}/></Pressable>{(row.task.dependsOn||[]).length>0&&<Pressable accessibilityRole="button" accessibilityLabel={`Review ${row.task.dependsOn.length} predecessors of ${row.task.title}`} onPress={()=>{setLinkTask(row.task.id);setLinkError('')}} style={{paddingHorizontal:4,paddingVertical:3,borderRadius:5,backgroundColor:K.panel2}}><T color={K.muted} size={10}>{row.task.dependsOn.length}</T></Pressable>}
-      {row.task.milestone&&<Icon name="diamond-outline" size={14} color={K.amber}/>}
+      {mode==='hierarchy'&&row.hasChildren&&<T size={10} color={K.muted}>{rollups.get(row.task.id)?.progress??0}% · {row.childCount} children</T>}{row.task.milestone&&<Icon name="diamond-outline" size={14} color={K.amber}/>}
       {(conflictIds.has(row.task.id)||invalidIds.has(row.task.id))&&<Icon name="warning-outline" size={16} color={K.red}/>}
       {g.span(row.task)?<T size={9} color={K.muted}>{row.task.due||row.task.start}</T>:invalidIds.has(row.task.id)?<T size={9} color={K.red}>Invalid dates</T>:<Pressable onPress={()=>onSchedule(row.task.id)}><T size={10} color={K.purple} bold>+ Schedule</T></Pressable>}
      </View>
@@ -249,7 +256,13 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
        <Circle cx={linkPreview.x} cy={linkPreview.y} r={5} fill={K.amber}/>
       </Svg>;
      })()}
-     {rows.filter(row=>row.kind==='task').map(row=>{const geometry=g.barGeometry(row.task,day0,dayWidth);if(!geometry)return null;return <InteractiveBar key={row.key} task={row.task} row={row} geometry={geometry} color={conflictIds.has(row.task.id)?K.red:row.task.milestone?K.amber:statusColor[row.task.status]||K.purple} dayWidth={dayWidth} onOpen={onOpen} onMove={onMove} onResize={onResize} onLinkStart={startLink} onLinkPointer={pointer} onLinkFinish={finishLink} onTargetTap={targetTap} isCritical={criticalIds.has(row.task.id)} linkActive={linkSource===row.task.id}/>})}
+     {rows.filter(row=>row.kind==='task').map(row=>{
+       const summary=mode==='hierarchy'&&row.hasChildren?summaries.get(row.task.id):null;
+       if(summary){
+        const left=(summary.start-day0)*dayWidth,width=Math.max(3,(summary.end-summary.start+1)*dayWidth);
+        return <Pressable key={row.key} accessibilityLabel={`Open summary for ${row.task.title}, ${summary.progress}% complete`} onPress={()=>onOpen(row.task.id)} style={{position:'absolute',left,top:row.top+18,height:25,width,borderColor:K.accentBorder,borderWidth:1,backgroundColor:K.panel2,borderRadius:5,zIndex:4,overflow:'hidden'}}><View style={{position:'absolute',left:0,top:0,bottom:0,width:`${summary.progress}%`,backgroundColor:K.purple,opacity:.75}}/>{width>75&&<T size={10} color={K.ink} bold style={{padding:4}} lines={1}>{row.task.title} · {summary.progress}%</T>}</Pressable>;
+       }
+       const geometry=g.barGeometry(row.task,day0,dayWidth);if(!geometry)return null;return <InteractiveBar key={row.key} task={row.task} row={row} geometry={geometry} color={conflictIds.has(row.task.id)?K.red:row.task.milestone?K.amber:statusColor[row.task.status]||K.purple} dayWidth={dayWidth} onOpen={onOpen} onMove={onMove} onResize={onResize} onLinkStart={startLink} onLinkPointer={pointer} onLinkFinish={finishLink} onTargetTap={targetTap} isCritical={criticalIds.has(row.task.id)} linkActive={linkSource===row.task.id}/>})}
     </View>
    </ScrollView>
     </View>

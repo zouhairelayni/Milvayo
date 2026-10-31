@@ -28,6 +28,6 @@
 - **Character:** calm, exact, dependable.
 - **World:** planning instruments and quiet technical workbenches.
 - **Moments:** the Gantt diagram, Kanban task movement and verified progress are the content-rich moments.
-- **Signature:** restrained violet navigation emphasis and meaningful dependency/status colors.
+- **Signature:** one user-selected accent (default Claude clay orange) and meaningful dependency/status colors.
 
 Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo mark. Do not add glow, gradient text, badges or decorative animation.

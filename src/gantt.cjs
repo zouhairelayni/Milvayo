@@ -38,6 +38,48 @@ function buildRows(tasks,groupBy='status'){
   }
   return rows;
 }
+// Hierarchy view is read-only with respect to parent aggregate dates.
+// Collapsing changes presentation, never the underlying task graph.
+function hierarchyRows(tasks,collapsedIds=[]){
+ const byId=new Map(tasks.map(t=>[t.id,t])),kids=new Map();
+ for(const t of tasks)kids.set(t.id,[]);
+ const roots=[];
+ for(const t of tasks){if(t.parentId&&t.parentId!==t.id&&byId.has(t.parentId))kids.get(t.parentId).push(t);else roots.push(t)}
+ const sort=(a,b)=>(Number(a.position)||0)-(Number(b.position)||0)||String(a.id).localeCompare(String(b.id));
+ roots.sort(sort);for(const k of kids.values())k.sort(sort);
+ const collapsed=new Set(collapsedIds),seen=new Set(),rows=[];
+ const walk=(task,depth)=>{
+  if(seen.has(task.id))return;seen.add(task.id);
+  const children=kids.get(task.id)||[];
+  rows.push({key:task.id,kind:'task',task,height:60,depth,hasChildren:children.length>0,childCount:children.length,collapsed:collapsed.has(task.id)});
+  if(!collapsed.has(task.id))for(const child of children)walk(child,Math.min(depth+1,20));
+  else {const markHidden=id=>{if(seen.has(id))return;seen.add(id);for(const kid of kids.get(id)||[])markHidden(kid.id)};for(const child of children)markHidden(child.id)}
+ };
+ for(const root of roots)walk(root,0);
+ // Preserve otherwise unreachable records for malformed imported hierarchies.
+ for(const t of tasks)if(!seen.has(t.id))walk(t,0);
+ return rows;
+}
+function hierarchySummaries(tasks,rollups=null){
+ const byId=new Map(tasks.map(t=>[t.id,t]));
+ const kids=new Map(tasks.map(t=>[t.id,[]]));
+ for(const t of tasks){if(t.parentId&&kids.has(t.parentId)&&t.parentId!==t.id)kids.get(t.parentId).push(t.id)}
+ const visiting=new Set(),cache=new Map();
+ const calculate=id=>{
+  if(cache.has(id))return cache.get(id);
+  if(visiting.has(id))return null;
+  visiting.add(id);
+  const task=byId.get(id),desc=kids.get(id)||[],spans=[];
+  for(const kid of desc){const nested=calculate(kid);if(nested)spans.push(nested);}
+  const own=span(task);if(own)spans.push({start:own.start,end:own.end});
+  visiting.delete(id);
+  if(!spans.length)return null;
+  const result={start:Math.min(...spans.map(s=>s.start)),end:Math.max(...spans.map(s=>s.end)),children:desc.length,progress:rollups?.get(id)?.progress??(task.status==='Done'?100:Number(task.progress)||0)};
+  cache.set(id,result);return result;
+ };
+ for(const t of tasks)calculate(t.id);
+ return new Map([...cache.entries()].filter(([id,s])=>s.children>0));
+}
 function layoutRows(rows,headerHeight=58){let top=headerHeight;return rows.map(row=>{const r={...row,top,center:top+row.height/2};top+=row.height;return r})}
 function barGeometry(task,from,dayWidth){
   const s=span(task);if(!s)return null;
@@ -181,4 +223,4 @@ function linkTargetAt(rows,from,dayWidth,x,y,sourceId){
  }
  return null;
 }
-module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample,criticalPath,linkTargetAt,dependencyCurve,connectorPoint,linkGesturePoint};
+module.exports={dayNumber,dateAt,span,calendarDomain,buildRows,hierarchyRows,hierarchySummaries,layoutRows,barGeometry,dependencyGeometry,dependencyConflicts,invalidSchedules,afterPredecessors,scheduleSample,criticalPath,linkTargetAt,dependencyCurve,connectorPoint,linkGesturePoint};

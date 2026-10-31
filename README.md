@@ -97,6 +97,15 @@ Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`
 
 Do not merge `work` or deploy this QA candidate until device/browser runtime interactions pass. Back up your workspace JSON before extraction. No Firebase project is connected.
 
+## v0.3.1 — Accent preferences and hierarchical Gantt
+
+- Settings offers 10 RIVNA-inspired accent names (Aqua, Mint, Lime, Amber, Orange, Coral, Pink, Fuchsia, Violet, Indigo), with orange `#D97757` selected on clean installs.
+- Theme selection is persisted in its own AsyncStorage key on this device; it does not change projects or JSON imports. Primary actions, navigation and the in-app user-supplied monochrome Niyarvo symbol are retinted live.
+- Native launcher and PWA installed icons remain monochrome *orange*; iOS/Android launcher icons cannot switch automatically from an Expo JavaScript setting. On Web the browser tab favicon follows selection.
+- Gantt adds Tree view, expand/collapse, rollup summary bars and progress. Aggregate summary bars are read-only: update child schedules to adjust them, so grouping never silently reschedules descendants.
+
+**Status:** Local-QA candidate. Expo Go Android / Web / iOS gesture and visual checks are not verified.
+
 ## v0.3.0 — Planning and architecture inventory
 
 The local-first task model supports leaf progress (0–100%), estimated effort in hours, calculated nested parent/project completion, and saved per-project task query views (status/priority/owner/text and sorting). Existing `niyarvo.project.v1` imports remain compatible; fields are optional and export as part of project JSON.
