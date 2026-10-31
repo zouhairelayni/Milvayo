@@ -259,6 +259,10 @@
                 }
               }
             }
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Optional parent task ID in this same project; parent cycles and missing references are rejected"
           }
         }
       }

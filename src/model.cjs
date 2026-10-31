@@ -2,6 +2,7 @@
 const FORMAT='niyarvo.project.v1';
 const gantt=require('./gantt.cjs');
 const projectScheduling=require('./scheduleProject.cjs');
+const taskWorkflows=require('./taskWorkflows.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -18,7 +19,7 @@ function normalizeRule(rule={}){return {id:str(rule.id,120)||id('rule'),name:str
 
 function defaultTask(o={}){
   const now=iso();return {
-    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000),
+    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000), parentId:str(o.parentId,120),
     status:STATUSES.includes(o.status)?o.status:'Backlog', priority:PRIORITIES.includes(o.priority)?o.priority:'Medium',
     stage:STAGES.includes(o.stage)?o.stage:'Development', owner:str(o.owner,120)||'Solo operator',
     phaseId:str(o.phaseId,120), releaseId:str(o.releaseId,120), repo:str(o.repo,120), branch:str(o.branch,200),
@@ -74,6 +75,7 @@ function normalizeWorkspace(input){
 }
 function validateProject(project){
  projectScheduling.normalizeProjectScheduling(project);
+ taskWorkflows.hierarchy(project.tasks);
  validateUnique(project.tasks,'task');validateUnique(project.releases,'release');
  const ids=new Set(project.tasks.map(t=>t.id));
  for(const task of project.tasks)for(const dep of task.dependsOn){if(dep===task.id)throw Error('Task cannot depend on itself: '+task.id);if(!ids.has(dep))throw Error('Missing dependency '+dep+' for '+task.id);}
@@ -92,8 +94,8 @@ function setTaskDependencies(project,taskId,dependsOn){
 }
 function deleteTaskWithLinks(project,taskId){
  const deleted=project.tasks.find(t=>t.id===taskId);if(!deleted)throw Error('Task not found');
- const dependents=project.tasks.filter(t=>t.dependsOn.includes(taskId)).map(t=>t.id);
- const next={...project,tasks:project.tasks.filter(t=>t.id!==taskId).map(t=>t.dependsOn.includes(taskId)?{...t,dependsOn:t.dependsOn.filter(dep=>dep!==taskId)}:t)};
+ const dependents=project.tasks.filter(t=>t.dependsOn.includes(taskId)||t.parentId===taskId).map(t=>t.id);
+ const next={...project,tasks:project.tasks.filter(t=>t.id!==taskId).map(t=>t.dependsOn.includes(taskId)||t.parentId===taskId?{...t,parentId:t.parentId===taskId?'':t.parentId,dependsOn:t.dependsOn.filter(dep=>dep!==taskId),verified:false,merged:false,updatedAt:iso()}:t)};
  const reconciled=projectScheduling.reconcileProjectScheduling(next);validateProject(reconciled);
  return projectScheduling.invalidateDependents(reconciled,dependents,deleted.releaseId?[deleted.releaseId]:[]);
 }
@@ -184,4 +186,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={projectScheduling,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={projectScheduling,taskWorkflows,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

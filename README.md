@@ -1,3 +1,13 @@
+# Niyarvo Projects — v0.2.8 local QA candidate
+
+Built from v0.2.7, with original task hierarchy, parent/subtask editing, bounded 40-row Tasks and 60-card-per-lane Board rendering, query filters and reversible bulk status/priority updates. Task `parentId` is optional; the `niyarvo.project.v1` import format and `niyarvo-projects-v1` storage key are unchanged. Saved v0.2.7 projects load without migration.
+
+**Validation:** 133/133 Node tests passed in the delivery environment. JSX parse checks passed; real Web/Expo Go/iOS runtime and Firebase deployment were **not run**. See `CHG-NP-0.2.8.md`, `docs/NP-QA-0.2.8.md`, and `docs/UNSLOP-NP-0.2.8.md`.
+
+**Firebase:** User has created a separate project named `niyarvoprojects`, and `app.json` already uses Android `com.niyarvo.projects`. No cloud backend has been connected yet. Confirm actual project ID before configuring/deploying. `docs/NP-FIREBASE-READINESS.md` tracks the boundary.
+
+---
+
 # Niyarvo Projects — v0.2.7 local QA candidate
 
 Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
