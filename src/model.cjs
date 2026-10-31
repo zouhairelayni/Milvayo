@@ -1,6 +1,7 @@
 'use strict';
 const FORMAT='niyarvo.project.v1';
 const gantt=require('./gantt.cjs');
+const projectScheduling=require('./scheduleProject.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -32,7 +33,7 @@ function defaultTask(o={}){
   };
 }
 function makeProject(o={}){
- return {format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
+ const project={format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   automations:safeArray(o.automations,50,'Automations').map(normalizeRule), phases:safeArray(o.phases,200,'Phases').map(p=>({id:str(p.id,120)||id('phase'),name:str(p.name,180),stage:STAGES.includes(p.stage)?p.stage:'Development',description:str(p.description,4000),goal:str(p.goal,4000),exit:str(p.exit,4000)})),
@@ -41,6 +42,7 @@ function makeProject(o={}){
   apiContracts:safeArray(o.apiContracts,400,'API contracts').map(s=>({id:str(s.id,120)||id('api'),name:str(s.name,180),description:str(s.description,12000)})),
   playbooks:safeArray(o.playbooks,200,'Playbooks').map(s=>({id:str(s.id,120)||id('playbook'),name:str(s.name,180),description:str(s.description,12000)})),
   changelog:safeArray(o.changelog,1000,'Changelog').map(s=>({id:str(s.id,120)||id('changelog'),at:str(s.at,50),message:str(s.message,3000)}))};
+ return projectScheduling.normalizeProjectScheduling({...project,scheduling:o.scheduling});
 }
 function blankProject(){return makeProject({name:'My first project',code:'NEW',description:'Ready for your single-file roadmap import.'});}
 function demoProject(){return makeProject({id:'sample-workspace',name:'Northstar Studio',code:'NST',description:'Illustrative project only. Import your own roadmap whenever ready.',version:'0.1.0',
@@ -71,6 +73,7 @@ function normalizeWorkspace(input){
  revision:Number.isInteger(input.revision)&&input.revision>=0?input.revision:0};
 }
 function validateProject(project){
+ projectScheduling.normalizeProjectScheduling(project);
  validateUnique(project.tasks,'task');validateUnique(project.releases,'release');
  const ids=new Set(project.tasks.map(t=>t.id));
  for(const task of project.tasks)for(const dep of task.dependsOn){if(dep===task.id)throw Error('Task cannot depend on itself: '+task.id);if(!ids.has(dep))throw Error('Missing dependency '+dep+' for '+task.id);}
@@ -82,7 +85,17 @@ function validateProject(project){
 function setTaskDependencies(project,taskId,dependsOn){
  const next={...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,dependsOn:unique(dependsOn),verified:false,merged:false,updatedAt:iso()}:t)};
  if(!project.tasks.some(t=>t.id===taskId))throw Error('Task not found');
- validateProject(next);return next;
+ const reconciled=projectScheduling.reconcileProjectScheduling(next);validateProject(reconciled);
+ const old=project.tasks.find(t=>t.id===taskId).dependsOn;
+ if(old.length===dependsOn.length&&old.every(dep=>dependsOn.includes(dep)))return project;
+ return projectScheduling.invalidateDependents(reconciled,[taskId]);
+}
+function deleteTaskWithLinks(project,taskId){
+ const deleted=project.tasks.find(t=>t.id===taskId);if(!deleted)throw Error('Task not found');
+ const dependents=project.tasks.filter(t=>t.dependsOn.includes(taskId)).map(t=>t.id);
+ const next={...project,tasks:project.tasks.filter(t=>t.id!==taskId).map(t=>t.dependsOn.includes(taskId)?{...t,dependsOn:t.dependsOn.filter(dep=>dep!==taskId)}:t)};
+ const reconciled=projectScheduling.reconcileProjectScheduling(next);validateProject(reconciled);
+ return projectScheduling.invalidateDependents(reconciled,dependents,deleted.releaseId?[deleted.releaseId]:[]);
 }
 function blockers(project,task){return task.dependsOn.filter(id=>project.tasks.find(t=>t.id===id)?.status!=='Done');}
 function moveTask(project,taskId,status,toIndex=99999){
@@ -171,4 +184,4 @@ function canRelease(release,project){
   const linked=project.tasks.filter(t=>t.releaseId===release.id);
   return linked.length>0 && !!release.mainSha.trim() && linked.every(t=>t.status==='Done'&&!blockers(project,t).length&&canMerge(t)&&t.merged);
 }
-module.exports={gantt,boardAutoScrollDelta,boardLaneAt,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};
+module.exports={projectScheduling,gantt,boardAutoScrollDelta,boardLaneAt,deleteTaskWithLinks,archiveProject,selectWorkspaceProject,resizeTask,validateProject,setTaskDependencies,blockers,moveTask,shiftDate,shiftTask,FORMAT,STATUSES,PRIORITIES,STAGES,id,iso,defaultTask,makeProject,blankProject,demoProject,createWorkspace,normalizeWorkspace,importProject,canVerify,canMerge,verifyTask,mergeTask,stats,workspaceSnapshot,projectSnapshot,restoreSnapshot,canRelease};

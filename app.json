@@ -2,7 +2,7 @@
   "expo": {
     "name": "Niyarvo Projects",
     "slug": "niyarvo-projects",
-    "version": "0.2.5",
+    "version": "0.2.7",
     "orientation": "default",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#101217",

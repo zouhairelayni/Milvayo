@@ -48,7 +48,8 @@ function barGeometry(task,from,dayWidth){
 // Deterministic routing channels: links whose vertical spans overlap receive
 // distinct elbow tracks. This prevents coincident trunks from masquerading as
 // one dependency. A channel is only shared where the row ranges do not overlap.
-function dependencyGeometry(rows,from,dayWidth){
+function dependencyGeometry(rows,from,dayWidth,typedLinks){
+ const metadata=new Map((typedLinks||[]).map(e=>[`${e.predecessorId}->${e.successorId}`,e]));
  const byId=new Map(rows.filter(r=>r.kind==='task').map(r=>[r.task.id,r]));
  const paths=[];
  for(const row of rows){
@@ -57,10 +58,13 @@ function dependencyGeometry(rows,from,dayWidth){
   for(const id of row.task.dependsOn||[]){
    const sourceRow=byId.get(id);if(!sourceRow)continue;
    const source=barGeometry(sourceRow.task,from,dayWidth);if(!source)continue;
-   paths.push({key:`${id}->${row.task.id}`,fromId:id,toId:row.task.id,
-    x1:source.milestone?source.x+dayWidth/2:source.endX,y1:sourceRow.center,
-    x2:target.milestone?target.x+dayWidth/2:target.x,y2:row.center,
-    conflict:(target.milestone?target.x+dayWidth/2:target.x)<(source.milestone?source.x+dayWidth/2:source.endX)});
+   const type=metadata.get(`${id}->${row.task.id}`)?.type||'FS';
+   const fromStart=type==='SS'||type==='SF',toEnd=type==='FF'||type==='SF';
+   const x1=source.milestone?source.x+dayWidth/2:fromStart?source.x:source.endX;
+   const x2=target.milestone?target.x+dayWidth/2:toEnd?target.endX:target.x;
+   paths.push({key:`${id}->${row.task.id}`,fromId:id,toId:row.task.id,type,
+    x1,y1:sourceRow.center,x2,y2:row.center,
+    conflict:x2<x1});
   }
  }
  paths.sort((a,b)=>a.fromId.localeCompare(b.fromId)||a.toId.localeCompare(b.toId));

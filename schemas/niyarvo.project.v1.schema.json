@@ -391,6 +391,98 @@
     "archived": {
       "type": "boolean",
       "description": "Archived projects remain in the workspace but are not selectable until restored."
+    },
+    "scheduling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "calendar",
+        "links"
+      ],
+      "properties": {
+        "calendar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "weekdays",
+            "closed",
+            "opened"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "calendar",
+                "workdays"
+              ]
+            },
+            "weekdays": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 7,
+              "uniqueItems": true,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              }
+            },
+            "closed": {
+              "type": "array",
+              "maxItems": 4000,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "opened": {
+              "type": "array",
+              "maxItems": 4000,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "predecessorId",
+              "successorId",
+              "type",
+              "lagDays"
+            ],
+            "properties": {
+              "predecessorId": {
+                "type": "string"
+              },
+              "successorId": {
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "FS",
+                  "SS",
+                  "FF",
+                  "SF"
+                ]
+              },
+              "lagDays": {
+                "type": "integer",
+                "minimum": -365,
+                "maximum": 365
+              }
+            }
+          }
+        }
+      }
     }
   },
   "description": "Version 1 compatible format. v0.2.0 adds optional Kanban ordering, task dependencies, timeline fields, attachment links and status-triggered automations."

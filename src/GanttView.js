@@ -92,14 +92,17 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
  const changeZoom=(next)=>{zoomAnchor.current=viewportMath.anchorScroll(offsets.current.x,Math.max(0,(viewportSize.current.width-labelsWidth)/2),dayWidth,next);setDayWidth(next)};
  useEffect(()=>{if(zoomAnchor.current!==null){const x=zoomAnchor.current;zoomAnchor.current=null;scrollXTo(x)}},[dayWidth]);
  useEffect(()=>()=>{if(autoTimer.current)clearInterval(autoTimer.current)},[]);
- const conflicts=g.dependencyConflicts(project.tasks);
+ const scheduleHealth=useMemo(()=>{try{return model.projectScheduling.audit(project)}catch(e){return {issues:[{code:'invalid_schedule',detail:e.message}]}}},[project]);
+ const conflicts=scheduleHealth.issues.filter(issue=>issue.code==='dependency_conflict');
+ const scheduleWarnings=scheduleHealth.issues;
+ const legacyCritical=project.scheduling?.calendar?.mode!=='workdays'&&!(project.scheduling?.links||[]).some(l=>l.type!=='FS'||l.lagDays!==0);
  const conflictIds=new Set(conflicts.map(x=>x.taskId));
- const invalidIds=new Set(g.invalidSchedules(project.tasks));
- const linkPaths=g.dependencyGeometry(rows,day0,dayWidth);
+ const invalidIds=new Set([...g.invalidSchedules(project.tasks),...scheduleWarnings.filter(e=>e.code!=='dependency_conflict'&&e.taskId).map(e=>e.taskId)]);
+ const linkPaths=g.dependencyGeometry(rows,day0,dayWidth,project.scheduling?.links).map(path=>({...path,conflict:conflicts.some(c=>c.taskId===path.toId&&c.predecessorId===path.fromId)}));
  const scheduledCount=project.tasks.filter(t=>g.span(t)).length;
  const cpm=useMemo(()=>g.criticalPath(project.tasks),[project.tasks]);
- const criticalIds=new Set(showCritical?cpm.criticalIds:[]);
- const criticalEdges=new Set(showCritical?cpm.criticalEdges:[]);
+ const criticalIds=new Set(showCritical&&legacyCritical?cpm.criticalIds:[]);
+ const criticalEdges=new Set(showCritical&&legacyCritical?cpm.criticalEdges:[]);
  const connect=(source,target)=>{
   if(!source||!target||source===target)return;
   const successor=project.tasks.find(t=>t.id===target);
@@ -197,17 +200,17 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    </View>
    {showHelp&&<View style={{padding:12,borderRadius:8,backgroundColor:K.panel2,gap:8}}>
      <T size={11} color={K.muted}>Pinch the chart to zoom. Drag the connector toward an edge to pan in any direction. Hold the bar to move; drag the right grip to resize.</T>
-     <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Control label="Critical path" icon="git-branch-outline" selected={showCritical} onPress={()=>setShowCritical(v=>!v)}/><Control label="Earlier" icon="chevron-back" onPress={()=>{setCalendarOffset(v=>v-45);scrollXTo(0)}}/><Control label="Later" icon="chevron-forward" onPress={()=>{setCalendarOffset(v=>v+45);scrollXTo(0)}}/></View>
+     <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Control label="Critical path" icon="git-branch-outline" disabled={!legacyCritical} selected={showCritical&&legacyCritical} onPress={()=>setShowCritical(v=>!v)}/><Control label="Earlier" icon="chevron-back" onPress={()=>{setCalendarOffset(v=>v-45);scrollXTo(0)}}/><Control label="Later" icon="chevron-forward" onPress={()=>{setCalendarOffset(v=>v+45);scrollXTo(0)}}/></View>
      <T size={11} color={K.muted}>{project.tasks.length} tasks · {viewDays} days visible</T>
     </View>}
    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8}}>
-     <T size={11} color={K.muted} lines={1}>{showCritical?`Critical: ${cpm.totalDays} days · ${cpm.criticalIds.length} tasks`:`${project.tasks.length} tasks · pinch to zoom`}</T>
+     <T size={11} color={K.muted} lines={1}>{showCritical&&legacyCritical?`Critical: ${cpm.totalDays} days · ${cpm.criticalIds.length} tasks`:`${project.tasks.length} tasks · pinch to zoom`}</T>
      {(conflicts.length>0||invalidIds.size>0)&&<Pressable onPress={()=>setShowScheduleIssues(v=>!v)} style={{flexDirection:'row',gap:5,alignItems:'center',padding:6}}><Icon name="alert-circle-outline" size={15} color={K.amber}/><T size={11} color={K.amber}>{conflicts.length+invalidIds.size} issues</T></Pressable>}
    </View>
-   {showCritical&&showHelp&&<T color={K.amber} size={11}>Calendar-day estimate only; no working calendar or resource leveling.</T>}
+   {showHelp&&<T color={K.muted} size={11}>{legacyCritical?'Critical path estimates calendar-day FS/0 only, no resource leveling':'Critical path unavailable for working calendars or non-FS/0 relations; review schedule in Scheduling'}</T>}
    {!!linkSource&&<View style={{flexDirection:'row',alignItems:'center',flexWrap:'wrap',gap:8}}><T color={K.cyan} size={11}>Linking {project.tasks.find(t=>t.id===linkSource)?.title}. Release over a task or tap its bar.</T><Control label="Cancel" onPress={()=>{cancelLinkDrag();setLinkError('')}} icon="close-outline"/></View>}
    {!!linkError&&<T color={K.red} size={12}>{linkError}</T>}
-   {showScheduleIssues&&<View style={{gap:6}}>{invalidIds.size>0&&<T color={K.red} size={11}>{invalidIds.size} task(s) have invalid dates. Edit their start and due dates.</T>}{conflicts.length>0&&<T color={K.amber} size={11}>{conflicts.length} successor(s) start before predecessors end. Use the task link icon to align schedules.</T>}</View>}
+   {showScheduleIssues&&<View style={{gap:6}}>{invalidIds.size>0&&<T color={K.red} size={11}>{invalidIds.size} task(s) have invalid dates. Edit their start and due dates.</T>}{conflicts.length>0&&<T color={K.amber} size={11}>{conflicts.length} successor(s) start before predecessors end. Review the scheduling controls for dependency types, lag, and calendar constraints.</T>}</View>}
    {project.id==='sample-workspace'&&project.tasks.length>0&&scheduledCount===0&&<View style={{flexDirection:'row',alignItems:'center',flexWrap:'wrap',gap:8}}><T size={11} color={K.amber}>Sample tasks have no dates. Recovery snapshot is saved before adding demo dates.</T><Control label="Populate example Gantt" icon="calendar-outline" onPress={onSampleSchedule}/></View>}
    {base.clipped&&<T color={K.amber} size={11}>Long schedule: showing a bounded date window.</T>}
   </View>
@@ -271,7 +274,7 @@ export default function GanttView({project,onOpen,onMove,onResize,onSchedule,onL
    <T size={12} color={K.muted} style={{marginBottom:12}}>Choose predecessors for {project.tasks.find(x=>x.id===linkTask)?.title}. Dependencies must be completed first; cycles are rejected.</T>
    <ScrollView style={{maxHeight:320}}>{project.tasks.filter(t=>t.id!==linkTask).map(t=>{const current=project.tasks.find(x=>x.id===linkTask);const checked=current?.dependsOn?.includes(t.id);return <Pressable key={t.id} onPress={()=>choosePredecessor(linkTask,t.id)} style={{paddingVertical:11,paddingHorizontal:4,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:1,borderBottomColor:K.border}}><Icon name={checked?'checkbox':'square-outline'} color={checked?K.purple:K.muted} size={21}/><View style={{flex:1}}><T size={12} bold>{t.title}</T><T color={K.muted} size={10}>{t.id} · {t.due||'Unscheduled'}</T></View></Pressable>})}</ScrollView>
    {!!linkError&&<T size={11} color={K.red} style={{marginTop:10}}>{linkError}</T>}
-   {conflicts.some(c=>c.taskId===linkTask)&&<View style={{gap:9,marginTop:14}}><T color={K.amber} size={11}>One or more predecessors end on or after this task's start date.</T><Control label="Align after predecessors" icon="calendar-outline" onPress={()=>align(linkTask)}/></View>}
+   {conflicts.some(c=>c.taskId===linkTask)&&<View style={{gap:9,marginTop:14}}><T color={K.amber} size={11}>One or more dependency constraints conflict with task dates.</T>{legacyCritical&&<Control label="Align after predecessors" icon="calendar-outline" onPress={()=>align(linkTask)}/>}</View>}
    <View style={{marginTop:13,alignItems:'flex-end'}}><Control label="Done" onPress={()=>setLinkTask(null)} selected/></View>
   </View></View></Modal>}
  </View>;

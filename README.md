@@ -1,6 +1,20 @@
-# Niyarvo Projects — v0.2.5 local QA candidate
+# Niyarvo Projects — v0.2.7 local QA candidate
 
 Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
+
+## Current development state (v0.2.7)
+
+NP-SCHED1 is recognized as **v0.2.6** (standalone engine patch). This v0.2.7 archive contains the **complete v0.2.5 source + v0.2.6 engine + integrated scheduling UI/persistence**, so it can be extracted on the existing `work` branch. No Firebase project or remote Git repository is modified by this archive.
+
+- Open **Timeline → Scheduling** to configure an independent per-project working calendar, weekdays, holiday closures and extra working dates.
+- Change any existing predecessor edge between **FS / SS / FF / SF** with signed integer lag (−365 through +365). New and legacy relationships default to FS with zero lag.
+- Pick a task that was changed on the Gantt chart or in its editor, then **Preview successor dates**. You must explicitly confirm before affected tasks are moved. Changes are push-only; explicit anchors never shift silently.
+- Applying dates creates a local workspace recovery snapshot, checks for stale previews, clears verification/merge evidence of moved tasks, and returns affected Ready/Released release cards to Testing.
+- Link edits also reopen downstream verification and reconcile metadata on unlink or deletion.
+- JSON project and workspace exports/backups preserve calendar and dependency settings. Old `niyarvo.project.v1` files without these fields remain importable. Imported project dates are never automatically shifted.
+- Gantt connectors now honor FS/SS/FF/SF endpoint choice. The legacy critical-path control is disabled when the project uses working-day calendars or non-FS/0 links, because that estimate would be misleading.
+
+**QA status:** Node regression and JSX syntax checks pass in the delivery environment. The app was not interactively run on Expo Go, Web or iOS here, and its scheduling modal is not yet device-verified. Use Metro `npx expo start` in Termux. See `docs/NP-QA-0.2.7.md` and `CHG-NP-0.2.7.md` before acceptance.
 
 ## Changes since v0.2.0
 
@@ -26,11 +40,11 @@ npx expo start
 
 Use Expo Go for Android and Metro for Web; avoid static export + Python HTTP server for development.
 
-**Gate for v0.2.5:** 66 Node tests passed and JSX parser reported no syntax errors in the preparation environment. Android/Web interactive behavior is **not yet verified**. Do not merge into `main` until the `CHG-NP-0.2.1.md` manual QA checklist passes.
+**Release gate:** v0.2.7 must pass the `docs/NP-QA-0.2.7.md` checklist on Android and Web. The historical v0.2.5 QA claims below describe that older build only.
 
 ## Not yet implemented
 
-Cloud Firebase Auth/Firestore sync, permissions, hosted binary attachments, notifications, schedule-based automation, comments, team collaboration, offline conflict resolution, advanced Gantt scheduling/critical path, and production iOS tests. The attached OpenProject GPL-3.0 source archive was inspected for conceptual guidance; no source snippets were imported.
+Cloud Firebase Auth/Firestore sync, permissions, hosted binary attachments, notifications, schedule-triggered automation, comments, team collaboration, offline conflict resolution, resource leveling, critical path for typed constraints, and production iOS tests. The attached OpenProject GPL-3.0 source archive was inspected for conceptual guidance; no source snippets were imported.
 
 ## v0.2.2 — Full-card Kanban drag and independent Gantt planner (local QA)
 
