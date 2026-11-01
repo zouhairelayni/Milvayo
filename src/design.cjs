@@ -2,9 +2,9 @@
 // Niyarvo Projects | shared visual system, Unslop review 2026-10-30
 // Quiet graphite chrome. Violet marks interactive focus; task statuses own content color.
 const colors={
- bg:'#101217',side:'#161920',panel:'#1c2028',panel2:'#242832',raised:'#2c303b',
- border:'#353943',border2:'#424650',line:'#343943',
- ink:'#f3f2f6',muted:'#a8a9b6',sub:'#c2c1ca',white:'#ffffff',
+ bg:'#161719',side:'#121315',panel:'#1e2023',panel2:'#282a2e',raised:'#32353a',
+ border:'#34363b',border2:'#4b4e55',line:'#34363b',
+ ink:'#f1f0ed',muted:'#a4a6ac',sub:'#c7c8cd',white:'#ffffff',
  purple:'#D97757',purpleDim:'rgba(217,119,87,0.16)',accent:'#D97757',accentBorder:'rgba(217,119,87,0.52)',green:'#8ccdaa',amber:'#eac07b',red:'#e795a0',cyan:'#91c8d8'
 };
 const space={xs:4,sm:8,md:12,base:16,lg:24,xl:32};

@@ -1,0 +1,776 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
+import { Button, Card, Chip, Page, Segmented, T, useWide } from '../ui';
+import { useStore } from '../store';
+import { useTheme, STATUS_COLOR } from '../theme';
+import { TODAY, addDays, daysBetween, fmt } from '../data';
+import { useHoldDrag } from '../gesture';
+import { GestureArea } from '../gestureSurface';
+import { clipBar } from '../timeline-window.cjs';
+const windowing = require('../timelineWindow.cjs');
+const display = require('../timelineDisplay.cjs');
+const viewport = require('../timelineViewport.cjs');
+import { diagnosticMonitor } from '../diagnostics/monitor';
+
+const ZOOM = { Days: 34, Weeks: 14, Months: 6 };
+// Default minimum coverage; the actual span extends across every scheduled task.
+const SPAN = display.BASE_DAYS;
+const ROW = 54;
+// Rows are continuously scrollable; native SVG/gesture nodes are viewport-virtualized.
+const HEAD = 44;
+const BAR_TOP = 14;
+const BAR_H = 26;
+const CHAR = 6.6; // rough width of one 11pt character, used to decide if a title fits
+const HOLD_MS = 300;
+const HANDLE = 30;     // touch size of the link handle at the end of each bar
+const EDGE_X = 60;     // chart scrolls when the finger is this close to its left or right side
+const EDGE_TOP = 120;  // page scrolls when a link is dragged this close to the top or bottom of the window
+const EDGE_BOTTOM = 140;
+const SPEED = 14;
+const AUTO_MS = 30;
+const LINK_COLORS = ['#E0512D', '#3B6FE0', '#2F9E6B', '#D89614', '#8E5CD6', '#14A3B8', '#E6399B'];
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+
+// New start/due for a move or an edge resize, given the whole days the finger has travelled.
+function calc(mode, base, days) {
+  let s = base.start;
+  let d = base.due;
+  if (mode === 'move') {
+    s = addDays(base.start, days);
+    d = addDays(base.due, days);
+  } else if (mode === 'start') {
+    s = addDays(base.start, days);
+    if (s > base.due) s = base.due;
+  } else {
+    d = addDays(base.due, days);
+    if (d < base.start) d = base.start;
+  }
+  return { start: s, due: d };
+}
+
+// Horizontal space a row's bar takes (grips, link dot and the title when it sits outside), so lines can keep clear of it.
+function extent(t, e, w, x) {
+  if (t.milestone) {
+    const l = x(e.due) + w / 2 - 8;
+    return [l - 6, l + 56 + t.title.length * CHAR];
+  }
+  const l = x(e.start) + 2;
+  const width = Math.max(w - 4, (daysBetween(e.start, e.due) + 1) * w - 4);
+  return [l - 12, l + width + 36];
+}
+
+// Polyline turned into a flowing S-curve: every corner is rounded as widely as the neighbouring segments allow.
+function roundPath(pts, rMax = 40) {
+  const n = pts.length;
+  const len = (i) => Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 1; i < n - 1; i++) {
+    const [px, py] = pts[i - 1];
+    const [cx, cy] = pts[i];
+    const [nx, ny] = pts[i + 1];
+    const l1 = len(i - 1);
+    const l2 = len(i);
+    // The first and last segments give all their length to their one corner; the others share theirs.
+    const a = Math.min(rMax, i === 1 ? l1 : l1 / 2);
+    const b = Math.min(rMax, i === n - 2 ? l2 : l2 / 2);
+    if (a < 0.5 || b < 0.5) {
+      d += ` L${cx},${cy}`;
+      continue;
+    }
+    d += ` L${cx - ((cx - px) / l1) * a},${cy - ((cy - py) / l1) * a} Q${cx},${cy} ${cx + ((nx - cx) / l2) * b},${cy + ((ny - cy) / l2) * b}`;
+  }
+  const last = pts[n - 1];
+  return `${d} L${last[0]},${last[1]}`;
+}
+
+function distToPath(pts, qx, qy) {
+  let best = Infinity;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1];
+    const [bx, by] = pts[i];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 ? clamp(((qx - ax) * dx + (qy - ay) * dy) / len2, 0, 1) : 0;
+    best = Math.min(best, Math.hypot(qx - (ax + t * dx), qy - (ay + t * dy)));
+  }
+  return best;
+}
+
+function refreshMax(k) {
+  k.max.x = Math.max(0, k.size.cw - k.size.vw);
+  k.max.y = Math.max(0, k.size.ch - k.size.vh);
+}
+
+// One task bar. Hold the body and drag to move it, hold a left or right edge and drag to change the start or
+// due date, hold the dot after the bar and drag onto another row to make that task wait for this one.
+// A quick tap on the body opens the task; a swipe still scrolls the chart.
+function TaskBar({ t, start, due, origin, w, span, paintLeft, paintWidth, rowTop, target, k, onPreview, onCommit, onOpen, onLink }) {
+  const { c } = useTheme();
+  const color = STATUS_COLOR[t.status];
+  const live = useRef({});
+  live.current = { t, start, due, w, onPreview, onCommit, onOpen, onLink };
+  const baseRef = useRef(null); // start and due when the lift happened (live.current is replaced on every render)
+
+  const shape = (mode) => ({
+    axis: 'x',
+    holdMs: HOLD_MS,
+    getScroll: () => k.scroll,
+    onLift: () => {
+      const L = live.current;
+      baseRef.current = { start: L.start, due: L.due };
+      k.measure();
+      // Mark the lifted task without changing its dates, preserving its native
+      // touch target while horizontal auto-scroll rebases the draw window.
+      L.onPreview(L.t.id, L.start, L.due);
+    },
+    onMove: (cx, cy, px, py) => {
+      k.pointer = { x: px, y: py, valid: true };
+      const L = live.current;
+      const base = baseRef.current;
+      if (!base) return;
+      const p = calc(mode, base, Math.round(cx / L.w));
+      if (Platform.OS === 'web' || mode !== 'move') L.onPreview(L.t.id, p.start, p.due);
+    },
+    onDrop: (cx) => {
+      k.pointer = { x: 0, y: 0, valid: false };
+      const L = live.current;
+      L.onPreview(null);
+      const base = baseRef.current;
+      if (!base) return;
+      const p = calc(mode, base, Math.round(cx / L.w));
+      if (p.start !== base.start || p.due !== base.due) L.onCommit(L.t.id, p.start, p.due, mode);
+    },
+  });
+
+  const mv = useHoldDrag({ ...shape('move'), onTap: () => live.current.onOpen(live.current.t.id) });
+  const st = useHoldDrag(shape('start'));
+  const du = useHoldDrag(shape('due'));
+  const ln = useHoldDrag({
+    axis: 'xy',
+    holdMs: HOLD_MS,
+    getScroll: () => k.scroll,
+    onLift: () => {
+      k.measure();
+      live.current.onLink('move', live.current.t.id, 0, 0);
+    },
+    onMove: (cx, cy, px, py) => {
+      k.pointer = { x: px, y: py, valid: true };
+      live.current.onLink('move', live.current.t.id, cx, cy);
+    },
+    onDrop: (cx, cy) => {
+      k.pointer = { x: 0, y: 0, valid: false };
+      live.current.onLink('drop', live.current.t.id, cx, cy);
+    },
+  });
+
+  const hot = mv.lifted || st.lifted || du.lifted;
+  const dot = (
+    <View
+      style={{
+        width: ln.lifted ? 18 : 11, height: ln.lifted ? 18 : 11, borderRadius: 9, backgroundColor: ln.lifted ? c.accent : color,
+        borderWidth: 2, borderColor: c.surface,
+      }}
+    />
+  );
+
+  if (t.milestone) {
+    const left = daysBetween(origin, due) * w + w / 2 - 8;
+    // Offscreen milestones must not create native views at enormous coordinates.
+    if (left < paintLeft - 56 || left > paintLeft + paintWidth + 8) return null;
+    return (
+      <>
+        <GestureArea drag={mv} animate={Platform.OS !== 'web'}
+          style={{
+            position: 'absolute', left, top: rowTop + 19, width: 16, height: 16, zIndex: hot ? 5 : 1,
+          }}
+        >
+          <View
+            style={{
+              width: 16, height: 16, transform: [{ rotate: '45deg' }], backgroundColor: c.accent, borderRadius: 3,
+              borderWidth: target || hot ? 2 : 0, borderColor: c.ink,
+            }}
+          />
+        </GestureArea>
+        <GestureArea drag={ln}
+          style={{ position: 'absolute', left: left + 18, top: rowTop + 27 - HANDLE / 2, width: HANDLE, height: HANDLE, alignItems: 'center', justifyContent: 'center', zIndex: 3 }}
+        >
+          {dot}
+        </GestureArea>
+        <T size={11} weight="600" numberOfLines={1} pointerEvents="none" style={{ position: 'absolute', left: left + 52, top: rowTop + 16, width: 200 }}>{t.title}</T>
+      </>
+    );
+  }
+
+  // Clip bars to the visible 56-day window, not their entire (possibly multi-year)
+  // duration. Move/resize calculations continue using the original ISO dates.
+  const actualLeft = daysBetween(origin, start) * w + 2;
+  const actualRight = daysBetween(origin, due) * w + w - 2;
+  const clipped = clipBar(actualLeft, actualRight, span * w);
+  if (!clipped) return null;
+  // The bar is rendered only within the horizontal drawing viewport. Original
+  // start/due dates remain untouched, including multi-year tasks.
+  const left = Math.max(clipped.left, paintLeft);
+  const right = Math.min(clipped.left + clipped.width, paintLeft + paintWidth);
+  const width = right - left;
+  if (width <= 0) return null;
+  const startVisible = clipped.startVisible && clipped.left >= paintLeft;
+  const dueVisible = clipped.dueVisible && clipped.left + clipped.width <= paintLeft + paintWidth;
+  const done = t.status === 'Done' ? 100 : t.progress;
+  const edge = Math.min(24, Math.floor(width / 3));
+
+  return (
+    <View style={{ position: 'absolute', left, top: rowTop + BAR_TOP, width, height: BAR_H, zIndex: hot || ln.lifted ? 5 : 1 }}>
+      <GestureArea drag={mv} animate={Platform.OS !== 'web'}
+        style={{
+          flex: 1, borderRadius: BAR_H / 4, backgroundColor: c.surface, borderWidth: hot || target ? 2 : 1,
+          borderColor: target ? c.accent : hot ? color : color + '99', overflow: 'hidden', justifyContent: 'center',
+        }}
+      >
+        <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: color + '26' }} pointerEvents="none" />
+        <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${done}%`, backgroundColor: color + '45' }} pointerEvents="none" />
+        {/* The title always stays inside the pill; when the bar is short it is cut with an ellipsis */}
+        <T size={11} weight="600" numberOfLines={1} style={{ paddingHorizontal: 14 }} pointerEvents="none">{t.title}</T>
+        {/* Grips show where to hold to resize */}
+        <View pointerEvents="none" style={{ position: 'absolute', left: 6, top: 5, width: 3, height: 14, borderRadius: 2, backgroundColor: color, opacity: hot ? 1 : 0.7 }} />
+        <View pointerEvents="none" style={{ position: 'absolute', right: 6, top: 5, width: 3, height: 14, borderRadius: 2, backgroundColor: color, opacity: hot ? 1 : 0.7 }} />
+      </GestureArea>
+
+      {/* Resize zones: hold the left edge to change start, the right edge to change due date */}
+      {startVisible ? <GestureArea drag={st} style={{ position: 'absolute', left: -10, top: 0, bottom: 0, width: edge + 10, ...(Platform.OS === 'web' ? { cursor: 'ew-resize' } : {}) }} /> : null}
+      {dueVisible ? <GestureArea drag={du} style={{ position: 'absolute', left: width - edge, top: 0, bottom: 0, width: edge + 2, ...(Platform.OS === 'web' ? { cursor: 'ew-resize' } : {}) }} /> : null}
+
+      {/* Link handle: hold and drag onto another row to add a dependency */}
+      {dueVisible ? <GestureArea drag={ln}
+        style={{ position: 'absolute', left: width + 2, top: (BAR_H - HANDLE) / 2, width: HANDLE, height: HANDLE, alignItems: 'center', justifyContent: 'center' }}
+      >
+        {dot}
+      </GestureArea> : null}
+
+    </View>
+  );
+}
+
+export default function Timeline({ openTask }) {
+  const { c } = useTheme();
+  const wide = useWide();
+  const { s, updateTask } = useStore();
+  const [zoom, setZoom] = useState('Days');
+  const [drag, setDrag] = useState(null); // temporary date edits
+  const [link, setLink] = useState(null); // temporary dependency gesture
+  const [notice, setNotice] = useState('');
+  const [showUnscheduled, setShowUnscheduled] = useState(false);
+  const [showItems, setShowItems] = useState(false);
+  const [pick, setPick] = useState(null);
+  const [viewportW, setViewportW] = useState(0);
+  const [scrollXPaint, setScrollXPaint] = useState(0);
+  const [paint, setPaint] = useState({ first: 0, last: display.INITIAL_ROWS });
+  const gridRef = useRef(null);
+  const chartRef = useRef(null);
+  const pageRef = useRef(null);
+  const allScheduled = useMemo(() => windowing.scheduled(s.tasks), [s.tasks]);
+  const unscheduled = useMemo(() => s.tasks.filter((t) => !t.start && !t.due), [s.tasks]);
+  const bounds = useMemo(() => display.rangeForTasks(allScheduled, TODAY, addDays, daysBetween), [allScheduled]);
+  const START = bounds.start;
+  const END = bounds.end;
+  const span = bounds.span;
+  const w = display.dayWidth(ZOOM[zoom], span);
+  const labelW = wide ? 240 : 150;
+  const rows = allScheduled; // no row pager and no disappearing out-of-window tasks
+  const rowIndex = useMemo(() => Object.fromEntries(rows.map((t, i) => [t.id, i])), [rows]);
+  const tasksById = useMemo(() => new Map(s.tasks.map((t) => [t.id, t])), [s.tasks]);
+  const gridW = span * w;
+  const gridH = rows.length * ROW;
+  const drawViewport = viewport.horizontalWindow(gridW, viewportW || Dimensions.get('window').width, scrollXPaint);
+  const paintLeft = drawViewport.left;
+  const paintWidth = drawViewport.width;
+  const dayTicks = useMemo(() => display.ticks(span, zoom, w), [span, zoom, w]);
+  const visibleTicks = dayTicks.filter((i) => viewport.intersects(i * w, i * w + 80, paintLeft, paintWidth));
+  const x = (iso) => daysBetween(START, iso) * w;
+  const firstPaint = Math.min(rows.length, paint.first);
+  const lastPaint = Math.min(rows.length, Math.max(paint.last, firstPaint));
+  const paintTop = firstPaint * ROW;
+  const paintH = (lastPaint - firstPaint) * ROW;
+  const paintedRows = rows.slice(firstPaint, lastPaint);
+  const eff = (t) => (drag && drag.id === t.id ? { start: drag.start, due: drag.due } : { start: t.start, due: t.due });
+  const active = !!drag || !!link;
+  // Pre-filter before TaskBar mounts four native gesture recognizers.
+  // Rows remain in the chart; only offscreen *view instances* are omitted.
+  const drawnBars = paintedRows.map((t, i) => ({ t, i })).filter(({ t }) => {
+    // Keep the active native target alive while viewport offsets rebase.
+    // Removing a touched gesture view mid-stream can confuse RN touch tracking.
+    if ((drag && drag.id === t.id) || (link && link.from === t.id)) return true;
+    const e = eff(t);
+    const left = daysBetween(START, e.start) * w;
+    const right = daysBetween(START, e.due) * w + w;
+    return viewport.intersects(left, right, paintLeft, paintWidth, HANDLE + 20);
+  });
+
+  const kRef = useRef(null);
+  if (!kRef.current) {
+    kRef.current = {
+      scroll: { x: 0, y: 0 },               // chart (x) and page (y) scroll, kept by onScroll
+      max: { x: 0, y: 0 },
+      size: { cw: 0, vw: 0, ch: 0, vh: 0 },
+      pointer: { x: 0, y: 0, valid: false },
+      box: null,                            // { x, w } of the visible chart, measured at the lift
+      measure: () => {},
+    };
+  }
+  const k = kRef.current;
+  const boxRef = useRef(null);
+  k.size.cw = gridW;
+  refreshMax(k);
+  k.measure = () => {
+    const n = boxRef.current;
+    if (n) n.measure((x0, y0, bw, bh, px) => { k.box = { x: px, w: bw }; });
+  };
+
+  // A single vertical scroll contains every row. Only near-viewport rows mount
+  // bars and links, preventing the all-at-once gesture/SVG crash on Android.
+  const refreshPaint = () => {
+    if (!gridRef.current) return;
+    gridRef.current.measureInWindow((_x, y) => {
+      const next = display.paintedRange(rows.length, y, Dimensions.get('window').height, ROW);
+      // A native ScrollView can report a transient detached/offscreen measurement
+      // during reconciliation. Never replace a valid window with zero mounted
+      // rows while the current screen is open: it produces a one-second flicker.
+      if (rows.length && next.first === next.last) return;
+      setPaint((prev) => prev.first === next.first && prev.last === next.last ? prev : next);
+    });
+  };
+  const goToday = (animated = true) => {
+    const center = x(TODAY) + w / 2 - viewportW / 2;
+    const next = clamp(center, 0, Math.max(0, gridW - viewportW));
+    chartRef.current?.scrollTo({ x: next, animated });
+    k.scroll.x = next;
+    setScrollXPaint((prev) => Math.abs(prev - next) < 1 ? prev : next);
+  };
+  // Record non-sensitive native drawing dimensions so unexpected process restarts
+  // can be compared against the actual renderer load in Settings diagnostics.
+  const loggedViewport = useRef(false);
+  useEffect(() => {
+    if (!viewportW || loggedViewport.current) return;
+    loggedViewport.current = true;
+    diagnosticMonitor.recordAction(`timeline canvas ${Math.round(gridW)}px, viewport ${Math.round(viewportW)}px, scheduled ${rows.length}, first render ${drawnBars.length} bars`);
+  }, [viewportW, gridW, rows.length, drawnBars.length]);
+  // Do NOT scroll to Today automatically after first paint. This used to display
+  // bars at the initial offset, then move them offscreen a second later. Today is
+  // an explicit action. The horizontal scroll position persists between renders.
+
+
+  // While something is held, scroll the chart near its sides, and the page near the window's top or bottom for a link.
+  useEffect(() => {
+    if (!active) return undefined;
+    const id = setInterval(() => {
+      const p = k.pointer;
+      if (!p.valid) return;
+      if (k.box) {
+        let d = 0;
+        if (p.x < k.box.x + EDGE_X) d = -SPEED;
+        else if (p.x > k.box.x + k.box.w - EDGE_X) d = SPEED;
+        const nx = clamp(k.scroll.x + d, 0, k.max.x);
+        if (d && nx !== k.scroll.x && chartRef.current) {
+          k.scroll.x = nx;
+          setScrollXPaint((prev) => Math.abs(prev - nx) < 64 ? prev : nx);
+          chartRef.current.scrollTo({ x: nx, animated: false });
+        }
+      }
+      if (link) {
+        const H = Dimensions.get('window').height;
+        let dy = 0;
+        if (p.y < EDGE_TOP) dy = -SPEED;
+        else if (p.y > H - EDGE_BOTTOM) dy = SPEED;
+        const ny = clamp(k.scroll.y + dy, 0, k.max.y);
+        if (dy && ny !== k.scroll.y && pageRef.current) {
+          k.scroll.y = ny;
+          pageRef.current.scrollTo({ y: ny, animated: false });
+        }
+      }
+    }, AUTO_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, !!link]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+    const id = setTimeout(() => setNotice(''), 2600);
+    return () => clearTimeout(id);
+  }, [notice]);
+
+  const onPreview = (id, start, due) =>
+    setDrag((prev) => {
+      if (!id) return null;
+      return prev && prev.id === id && prev.start === start && prev.due === due ? prev : { id, start, due };
+    });
+  const onCommit = (id, start, due, mode) => {
+    const t = s.tasks.find((x2) => x2.id === id);
+    if (!t) return;
+    const label =
+      mode === 'move' ? `Moved "${t.title}" to ${fmt(start)}`
+      : mode === 'start' ? `Changed start of "${t.title}" to ${fmt(start)}`
+      : `Changed due date of "${t.title}" to ${fmt(due)}`;
+    updateTask(id, { start, due }, label);
+  };
+
+  // The task in the row the finger is over while a link is dragged (never the one it started from).
+  const targetAt = (fromId, cy) => {
+    const i = rowIndex[fromId];
+    if (i === undefined) return null;
+    const r = rows[Math.floor((i * ROW + ROW / 2 + cy) / ROW)];
+    return r && r.id !== fromId ? r : null;
+  };
+  // True when `fromId` already waits (directly or through others) for `goalId`; linking then would loop.
+  const reaches = (fromId, goalId, seen = {}) => {
+    if (fromId === goalId) return true;
+    if (seen[fromId]) return false;
+    seen[fromId] = true;
+    const t = s.tasks.find((q) => q.id === fromId);
+    return !!t && t.dependsOn.some((d) => reaches(d, goalId, seen));
+  };
+  const onLink = (kind, id, cx, cy) => {
+    if (kind === 'drop') {
+      const tgt = targetAt(id, cy);
+      setLink(null);
+      if (!tgt) return;
+      const src = s.tasks.find((q) => q.id === id);
+      if (!src) return;
+      if (tgt.dependsOn.includes(id)) setNotice(`"${tgt.title}" already waits for "${src.title}"`);
+      else if (reaches(id, tgt.id)) setNotice(`Can't link: "${src.title}" already depends on "${tgt.title}"`);
+      else updateTask(tgt.id, { dependsOn: [...tgt.dependsOn, id] }, `Added dependency: "${tgt.title}" waits for "${src.title}"`);
+      return;
+    }
+    setLink((prev) => (prev && prev.from === id && prev.cx === cx && prev.cy === cy ? prev : { from: id, cx, cy }));
+  };
+
+  // Dependency lines run out of the bottom (or top) of the predecessor into the gap between rows, along the gap,
+  // down (or up) at a spot where no bar stands, and into the left end of the successor, so they never cross a bar.
+  const links = useMemo(() => {
+  // Reuse bar extents during path routing instead of recalculating date math
+  // in every candidate lane for every dependency.
+  const extents = rows.map((t) => extent(t, eff(t), w, x));
+  const lanes = {};
+  const found = [];
+  rows.forEach((t) => {
+    t.dependsOn.forEach((pid) => {
+      const p = tasksById.get(pid);
+      if (!p || rowIndex[pid] === undefined) return;
+      const pe = eff(p);
+      const te = eff(t);
+      const pr = rowIndex[pid];
+      const tr = rowIndex[t.id];
+      // Keep links crossing the painted viewport even when their endpoints are
+      // outside it. Previous versions required BOTH endpoints to be inside,
+      // silently hiding most dependencies on a continuously scrolling chart.
+      if (!viewport.intersectsRows(pr, tr, firstPaint, lastPaint)) return;
+      const down = tr > pr;
+      const pRight = p.milestone ? x(pe.due) + w / 2 : x(pe.due) + w - 2;
+      const sx = p.milestone ? pRight : Math.max(x(pe.start) + 10, pRight - 10);
+      const sy = pr * ROW + (p.milestone ? ROW / 2 + (down ? 11 : -11) : down ? BAR_TOP + BAR_H : BAR_TOP);
+      const gutter = (down ? pr + 1 : pr) * ROW;
+      lanes[gutter] = (lanes[gutter] === undefined ? -1 : lanes[gutter]) + 1;
+      const gy = gutter + ((lanes[gutter] % 5) - 2) * 4;
+      const x2 = t.milestone ? x(te.due) + w / 2 - 11 : x(te.start) + 2;
+      // Keep out-of-window dependency data intact, but do not draw unbounded
+      // native SVG paths with offscreen endpoints.
+      if (pRight < 0 || pRight > gridW || x2 < 0 || x2 > gridW) return;
+      const y2 = tr * ROW + ROW / 2;
+      const lo = Math.min(pr, tr) + 1;
+      const hi = Math.max(pr, tr) - 1;
+      const blocked = (xv) => {
+        for (let r = lo; r <= hi; r++) {
+          const [a, b] = extents[r];
+          if (xv >= a - 4 && xv <= b + 4) return true;
+        }
+        return false;
+      };
+      let xv = x2 - 14;
+      for (let cand = x2 - 14; cand >= 8; cand -= 6) {
+        if (!blocked(cand)) {
+          xv = cand;
+          break;
+        }
+      }
+      xv = Math.max(6, xv);
+      const pts = [[sx, sy], [sx, gy], [xv, gy], [xv, y2], [x2 - 2, y2]];
+      // A routed dependency can bend through the viewport even when its two
+      // endpoints are offscreen horizontally; test the *actual route*.
+      const xs = pts.map((point) => point[0]);
+      if (!viewport.intersects(Math.min(...xs), Math.max(...xs), paintLeft, paintWidth, 10)) return;
+      found.push({
+        key: `${pid}>${t.id}`,
+        pid,
+        tid: t.id,
+        pts,
+        d: roundPath(pts),
+        color: LINK_COLORS[found.length % LINK_COLORS.length],
+        x2: x2 - 2,
+        y2,
+      });
+    });
+  });
+  return found;
+  // Only expensive path routing is memoized. Tap/drag callback props remain live.
+  }, [rows, tasksById, rowIndex, drag, firstPaint, lastPaint, w, START, gridW, paintLeft, paintWidth]);
+
+  // Distinguish missing render geometry from a project without visible links.
+  // Log at most once on initial layout; never store task names or IDs.
+  const reportedLinkCount = useRef(false);
+  useEffect(() => {
+    if (!viewportW || !paintH || reportedLinkCount.current) return;
+    reportedLinkCount.current = true;
+    diagnosticMonitor.recordAction(`timeline SVG viewport ${Math.round(paintWidth)}x${Math.round(paintH)}px, visible dependency paths ${links.length}`);
+  }, [viewportW, paintWidth, paintH, links.length]);
+
+  // A tap on empty chart area: pick the dependency line under the finger, if any.
+  const onGridTap = (e) => {
+    const n = gridRef.current;
+    if (!n) return;
+    const { pageX, pageY } = e.nativeEvent;
+    n.measure((a, b, c2, d2, px, py) => {
+      const lx = pageX - px;
+      const ly = pageY - py;
+      let best = null;
+      let bd = 18;
+      links.forEach((l) => {
+        const dd = distToPath(l.pts, lx, ly);
+        if (dd < bd) {
+          bd = dd;
+          best = l;
+        }
+      });
+      setPick(best ? { key: best.key, pid: best.pid, tid: best.tid } : null);
+    });
+  };
+  const removePick = () => {
+    if (!pick) return;
+    const tgt = s.tasks.find((q) => q.id === pick.tid);
+    const src = s.tasks.find((q) => q.id === pick.pid);
+    setPick(null);
+    if (tgt && src) updateTask(tgt.id, { dependsOn: tgt.dependsOn.filter((d) => d !== pick.pid) }, `Removed dependency: "${tgt.title}" no longer waits for "${src.title}"`);
+  };
+  const pickTgt = pick ? s.tasks.find((q) => q.id === pick.tid) : null;
+  const pickSrc = pick ? s.tasks.find((q) => q.id === pick.pid) : null;
+
+  // The curve being drawn: follows the finger, and snaps to the start of the task it would link to.
+  let drawing = null;
+  if (link) {
+    const src = s.tasks.find((q) => q.id === link.from);
+    if (src && rowIndex[src.id] !== undefined) {
+      const e = eff(src);
+      const x1 = src.milestone ? x(e.due) + w / 2 : x(e.due) + w - 2;
+      if (x1 >= 0 && x1 <= gridW) {
+      const y1 = rowIndex[src.id] * ROW + ROW / 2;
+      const hx = src.milestone ? x(e.due) + w / 2 + 25 : x(e.due) + w + 15;
+      const tgt = targetAt(link.from, link.cy);
+      let x2 = hx + link.cx;
+      let y2 = y1 + link.cy;
+      if (tgt) {
+        const te = eff(tgt);
+        x2 = tgt.milestone ? x(te.due) + w / 2 - 8 : x(te.start) + 2;
+        y2 = rowIndex[tgt.id] * ROW + ROW / 2;
+      }
+      const kk = Math.max(28, Math.abs(x2 - x1) / 2);
+      drawing = { d: `M${x1},${y1} C${x1 + kk},${y1} ${x2 - kk},${y2} ${x2},${y2}`, x2, y2, tid: tgt ? tgt.id : null };
+      }
+    }
+  }
+
+  const lastMeasure = useRef(0);
+  const pageScrollProps = {
+    // Native vertical scrolling keeps touch ownership throughout gestures.
+    onLayout: (e) => { k.size.vh = e.nativeEvent.layout.height; refreshMax(k); },
+    onContentSizeChange: (cw, ch) => { k.size.ch = ch; refreshMax(k); },
+  };
+
+  return (
+    <Page
+      title="Timeline"
+      subtitle={`${allScheduled.length} scheduled items · ${unscheduled.length} unscheduled · ${fmt(START)} to ${fmt(END)} · curves show dependencies`}
+      actions={
+        <>
+          <Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />
+          <Chip label="Today" onPress={() => goToday(true)} />
+        </>
+      }
+      scrollRef={pageRef}
+      scrollEnabled={Platform.OS === 'web' ? !active : true}
+      scrollProps={pageScrollProps}
+      onScroll={(e) => {
+        k.scroll.y = e.nativeEvent.contentOffset.y;
+        const now = Date.now();
+        if (now - lastMeasure.current > 110) { lastMeasure.current = now; refreshPaint(); }
+      }}
+    >
+      {unscheduled.length ? (
+        <View style={{ borderBottomWidth: 1, borderBottomColor: c.line, paddingBottom: 8, gap: 8 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showUnscheduled }}
+            onPress={() => setShowUnscheduled((v) => !v)}
+            style={{ minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+          >
+            <T size={12} weight="600" style={{ flex: 1 }}>Needs scheduling · {unscheduled.length} tasks</T>
+            <T size={12} muted>{showUnscheduled ? 'Hide' : 'Show'}</T>
+          </Pressable>
+          {showUnscheduled ? (
+            <View style={{ gap: 8 }}>
+              <T size={12} muted>Tasks without dates are preserved. Add dates from their task sheets.</T>
+              {unscheduled.map((t) => <Button key={t.id} label={t.title} small variant="ghost" onPress={() => openTask(t.id)} />)}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+      {notice ? <T size={13} weight="600" color={c.accent}>{notice}</T> : null}
+      {pick && pickTgt && pickSrc ? (
+        <Card style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+          <T size={13} style={{ flex: 1, minWidth: 200 }}>Remove the dependency? "{pickTgt.title}" waits for "{pickSrc.title}".</T>
+          <Button label="Remove" small variant="danger" onPress={removePick} />
+          <Button label="Keep" small variant="ghost" onPress={() => setPick(null)} />
+        </Card>
+      ) : null}
+      <Card pad={0} style={{ overflow: 'hidden' }}>
+        {/* Chart-local control is left-aligned, above hidden item labels. */}
+        <View style={{ minHeight: 44, paddingHorizontal: 12, paddingVertical: 5, alignItems: 'flex-start', justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: c.line }}>
+          <Chip label="Items" active={showItems} onPress={() => setShowItems(!showItems)} />
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+          {/* Fixed label column, shown with the Items chip */}
+          {showItems ? (
+          <View style={{ width: labelW, borderRightWidth: 1, borderColor: c.line, backgroundColor: c.surface, zIndex: 2 }}>
+            <View style={{ height: HEAD, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line }}>
+              <T size={11} weight="600" muted upper>Item</T>
+            </View>
+            <View style={{ height: gridH }}>
+              {paintedRows.map((t, i) => (
+                <Pressable
+                  key={t.id}
+                  onPress={() => openTask(t.id)}
+                  style={({ pressed }) => ({ position: 'absolute', top: (firstPaint + i) * ROW, left: 0, right: 0, height: ROW, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line, opacity: pressed ? 0.6 : 1 })}
+                >
+                  <T size={13} weight="500" numberOfLines={1}>{t.title}</T>
+                  <T size={11} muted numberOfLines={1}>
+                    {t.owner}{t.dependsOn.length ? ` · after ${t.dependsOn.map((d) => d.toUpperCase()).join(', ')}` : ''}
+                  </T>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+          ) : null}
+
+          {/* Native scrolling retains touch ownership during a gesture; web locks only after lift. */}
+          <View ref={boxRef} collapsable={false} style={{ flex: 1 }}>
+            <ScrollView
+              ref={chartRef}
+              horizontal
+              showsHorizontalScrollIndicator
+              scrollEnabled={Platform.OS === 'web' ? !active : true}
+              scrollEventThrottle={16}
+              onLayout={(e) => { k.size.vw = e.nativeEvent.layout.width; setViewportW(e.nativeEvent.layout.width); refreshMax(k); }}
+              onScroll={(e) => {
+                const next = e.nativeEvent.contentOffset.x;
+                k.scroll.x = next;
+                // Rebase only after enough horizontal travel, rather than re-rendering
+                // 30 task gestures and SVG paths for every scroll frame.
+                if (Math.abs(next - scrollXPaint) > 160) setScrollXPaint(next);
+              }}
+            >
+              <View style={{ width: gridW }}>
+                <View style={{ height: HEAD, borderBottomWidth: 1, borderColor: c.line }}>
+                  {visibleTicks.map((i) => (
+                    <View key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0, paddingLeft: 6, justifyContent: 'center', borderLeftWidth: 1, borderColor: c.line }}>
+                      <T size={11} muted>{fmt(addDays(START, i))}</T>
+                    </View>
+                  ))}
+                </View>
+
+                <View ref={gridRef} collapsable={false} onLayout={refreshPaint} style={{ height: gridH }}>
+                  {/* Only an in-viewport Pressable; the former full-canvas responder
+                      consumed native scroll gestures and allocated huge hit surfaces. */}
+                  {paintWidth > 0 && paintH > 0 && links.length > 0 ? <Pressable
+                    onPress={onGridTap}
+                    style={{ position: 'absolute', left: paintLeft, top: paintTop, width: paintWidth, height: paintH }}
+                  /> : null}
+                  {visibleTicks.map((i) => (
+                    <View key={'g' + i} style={{ position: 'absolute', left: i * w, top: paintTop, height: paintH, width: 1, backgroundColor: c.line, opacity: 0.6 }} pointerEvents="none" />
+                  ))}
+                  {paintedRows.map((t, i) => (
+                    <View key={'r' + t.id} pointerEvents="none" style={{ position: 'absolute', left: paintLeft, width: paintWidth, top: (firstPaint + i + 1) * ROW - 1, height: 1, backgroundColor: c.line }} />
+                  ))}
+
+                  {/* Today marker: dashed and semi-transparent, drawn behind the bars */}
+                  <View pointerEvents="none" style={{ position: 'absolute', left: x(TODAY) + w / 2 - 1, top: paintTop, width: 2, height: paintH }}>
+                    <Svg width={2} height={paintH}>
+                      <Line x1={1} y1={0} x2={1} y2={paintH} stroke={c.accent} strokeWidth={2} strokeOpacity={0.55} strokeDasharray="7 6" />
+                    </Svg>
+                  </View>
+
+                  {drawnBars.map(({ t, i }) => {
+                    const e = eff(t);
+                    return (
+                      <TaskBar
+                        key={t.id}
+                        t={t}
+                        start={e.start}
+                        due={e.due}
+                        origin={START}
+                        w={w}
+                        rowTop={(firstPaint + i) * ROW}
+                        span={span}
+                        paintLeft={paintLeft}
+                        paintWidth={paintWidth}
+                        target={!!drawing && drawing.tid === t.id}
+                        k={k}
+                        onPreview={onPreview}
+                        onCommit={onCommit}
+                        onOpen={openTask}
+                        onLink={onLink}
+                      />
+                    );
+                  })}
+
+                  {/* Dependency curves, drawn above the bars and ignoring touches */}
+                  {paintWidth > 0 && paintH > 0 ? <View pointerEvents="none" style={{ position: 'absolute', left: paintLeft, top: paintTop, width: paintWidth, height: paintH }}>
+                    <Svg width={paintWidth} height={paintH} viewBox={viewport.svgViewBox(paintLeft, paintTop, paintWidth, paintH)} preserveAspectRatio="none">
+                      {links.map((l) => (
+                        <Path
+                          key={l.key}
+                          d={l.d}
+                          stroke={l.color}
+                          strokeWidth={pick && pick.key === l.key ? 4 : 2}
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      ))}
+                      {links.map((l) => (
+                        <Circle key={'a' + l.key} cx={l.x2} cy={l.y2} r={3.5} fill={l.color} />
+                      ))}
+                      {drawing ? (
+                        <Path
+                          d={drawing.d}
+                          stroke={c.accent}
+                          strokeWidth={2.5}
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeDasharray={drawing.tid ? undefined : '6 5'}
+                        />
+                      ) : null}
+                      {drawing ? <Circle cx={drawing.x2} cy={drawing.y2} r={5} fill={c.accent} /> : null}
+                    </Svg>
+                  </View> : null}
+
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Card>
+
+      <T size={12} muted>
+        Hold a bar and drag to move it. Hold its left or right edge and drag to change the start or due date. Hold the dot after a bar and drag onto another row to make that task wait for it. Tap a bar to open the task. Tap a dependency line to remove it. The vermilion line is today.
+      </T>
+    </Page>
+  );
+}

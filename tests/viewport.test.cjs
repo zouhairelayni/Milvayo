@@ -44,3 +44,16 @@ test('drag connection hit test compensates for horizontal and vertical auto-scro
  const stationary=v.dragDelta(0,0,10,20,10,20);
  assert.deepEqual(stationary,{x:0,y:0});
 });
+
+test('canvasPointer = contact + finger movement + scroll since the grant',()=>{
+ const p=v.canvasPointer({x:100,y:200},30,-10,{x:50,y:40},{x:20,y:40});
+ assert.deepEqual(p,{x:160,y:190});
+});
+test('contactPoint uses the touch location on the handle, and falls back to the handle centre',()=>{
+ assert.deepEqual(v.contactPoint(100,50,6,9,112,66),{x:106,y:59});
+ assert.deepEqual(v.contactPoint(100,50,NaN,9,112,66),{x:112,y:66});
+ assert.deepEqual(v.contactPoint(100,50,900,9,112,66),{x:112,y:66});
+});
+test('viewportLocal maps a chart point to the visible area',()=>{
+ assert.deepEqual(v.viewportLocal({x:400,y:300},{x:350,y:100},124),{x:174,y:200});
+});

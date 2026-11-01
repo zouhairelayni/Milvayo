@@ -14,4 +14,17 @@ const edgeVelocity=(position,start,length,threshold=48)=>{
  if(local>length-threshold)return clamp(Math.ceil((local-(length-threshold))/7),1,12);
  return 0;
 };
-module.exports={clamp,zoomWidth,touchDistance,anchorScroll,dragDelta,fitWidth,edgeVelocity};
+// --- Link dragging -----------------------------------------------------------
+// The finger position on the chart canvas is computed from values the gesture
+// itself provides, never from asynchronous window measurements:
+//   contact  = where the finger first touched, in canvas pixels
+//              (handle origin on the canvas + the touch's offset inside the handle)
+//   pointer  = contact + finger travel + how far the chart scrolled since the touch
+const contactPoint=(originX,originY,locX,locY,fallbackX,fallbackY)=>{
+ const inside=Number.isFinite(locX)&&Number.isFinite(locY)&&locX>=-4&&locY>=-4&&locX<=96&&locY<=96;
+ return inside?{x:originX+locX,y:originY+locY}:{x:fallbackX,y:fallbackY};
+};
+const canvasPointer=(contact,dx,dy,scroll,startScroll)=>({x:contact.x+dx+scroll.x-startScroll.x,y:contact.y+dy+scroll.y-startScroll.y});
+// canvas point -> position inside the visible chart area (right of the task rail)
+const viewportLocal=(point,scroll,railWidth=0)=>({x:point.x-scroll.x+railWidth,y:point.y-scroll.y});
+module.exports={clamp,zoomWidth,touchDistance,anchorScroll,dragDelta,fitWidth,edgeVelocity,contactPoint,canvasPointer,viewportLocal};

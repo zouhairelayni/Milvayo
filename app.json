@@ -2,9 +2,9 @@
   "expo": {
     "name": "Niyarvo Projects",
     "slug": "niyarvo-projects",
-    "version": "0.3.12",
+    "version": "0.5.9",
     "orientation": "default",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "backgroundColor": "#101217",
     "scheme": "niyarvoprojects",
     "web": {
@@ -26,11 +26,6 @@
       "bundleIdentifier": "com.niyarvo.projects",
       "icon": "./assets/icon.png"
     },
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#101217"
-    }
+    "icon": "./assets/icon.png"
   }
 }

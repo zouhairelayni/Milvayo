@@ -1,172 +1,81 @@
-# Niyarvo Projects v0.3.11 — cumulative local QA candidate
+# Niyarvo Projects v0.5.9 — Governance migration
 
-This full-source archive includes **all batches v0.3.3 through v0.3.11**, plus the v0.3.2-HOTFIX3 baseline. Each `CHG-NP-[VERSION].md` is at the ZIP root and in `docs/`.
+Niyarvo Projects is a local-first, cross-platform project management application using Expo and React Native. All screens now run inside the modern Niyarvo interface; the original v0.4.1 domain modules continue to validate the project data behind it.
 
-New modules: `src/operations.cjs`, `src/WorkspaceExtensions.js`, `src/boards.cjs`, `src/automation.cjs`, and `src/AutomationStudio.js` plus regression tests. Key workflows: portfolios and health; sprint velocity; resources and time; budgets; local comments and reminders; CSV/JSON exports and clean project templates; multi-board Kanban with independent-height columns and task editor raw-text fix; Trello-inspired local automations.
+## Installing on an existing Termux checkout
 
-**Important:** data is still local and private to this installation. Firebase project `niyarvoprojects` and application ID `com.niyarvo.projects` are noted, but there is no cloud sync, backend execution or deployment. `work` stays the QA branch; don't overwrite accepted design changes without preserving them. Metro Fast Refresh: `npx expo start`.
+This full source ZIP deliberately **does not include `package.json`, `package-lock.json` or `node_modules`**. Preserve those three files/folders from your working installation (including the locally corrected `expo-font` dependency), then extract the ZIP at the project root:
 
-Refer to `docs/NP-QA-CUMULATIVE-v0.3.11.md` for the ordered test matrix, `docs/NP-TRELLO-AUTOMATION-ARCHITECTURE.md` for action safety, and `docs/UNSLOP-NP-0.3.10.md` for a scoped UI audit. Trello and OpenProject were only studied for architecture; no vendor source/assets were copied.
-
----
-
-> **v0.3.2-HOTFIX3 local QA:** Android/large-workspace rendering optimization and removal of Overview Kanban. See `CHG-NP-0.3.2-HOTFIX3.md`; device confirmation pending.
-
-# 0.3.2-HOTFIX2 — Android JSON import (QA candidate)
-
-Android now imports JSON through Expo SDK 58 `File.pickFileAsync` (direct Android system-picker file access) instead of trying to read the inaccessible `expo-document-picker` cache file in Expo Go. Web/iOS import paths are unchanged. Source tests: 216/216 passed; Android runtime is **not yet verified**. See `CHG-NP-0.3.2-HOTFIX2.md` and `docs/NP-0.3.2-HOTFIX2-QA.md`. Keep on `work` pending verification; no Firebase connection or deployment.
-
----
-
-# Niyarvo Projects — v0.3.2 local QA candidate
-
-Built independently on v0.3.1. This batch adds a **per-project Agile sprint planner**: create planned sprints, define a goal and 1–90-day window, assign/unassign tasks, start exactly one sprint at a time, record remaining-work events as task statuses change, view observed (not fabricated) calendar-day burndown, and explicitly finish a sprint while retaining final scope and history. Unfinished work returns to the unassigned backlog without being marked Done. Planned sprint deletion is reversible through a workspace snapshot, and running/completed sprint deletion is blocked.
-
-Open **Sprints** in the sidebar or mobile bottom navigation. Automations remains available in the navigation menu. **Do not assume cloud collaboration**: sprint changes are local only, using AsyncStorage under the unchanged `niyarvo-projects-v1` key. This is not a substitute for a secure Firebase permissions model.
-
-**Data:** project JSON format `niyarvo.project.v1` unchanged; new optional `sprints` array per project and `sprintId` per task. Old projects load with empty sprints; no migration that rewrites task statuses or dates. Project exports, workspace backups and import retain the new metadata. Completed sprint history intentionally retains deleted task IDs as historical references. No automated roadmap imports.
-
-**QA:** automated tests and syntax checks recorded in `CHG-NP-0.3.2.md`. Android/Expo Go, Web Metro and iOS UI interactions must still be tested locally. Use `npm test`, `npx expo install --check`, `npx expo start` in Termux. No new package dependencies are required.
-
-**Next:** separate portfolio reporting, more configurable workflow/action rules, and improved retrospective metrics. Continue using OpenProject only for architectural study; do not copy its source or UI assets. Firebase is not connected or deployed.
-
----
-
-# Niyarvo Projects — v0.2.8 local QA candidate
-
-Built from v0.2.7, with original task hierarchy, parent/subtask editing, bounded 40-row Tasks and 60-card-per-lane Board rendering, query filters and reversible bulk status/priority updates. Task `parentId` is optional; the `niyarvo.project.v1` import format and `niyarvo-projects-v1` storage key are unchanged. Saved v0.2.7 projects load without migration.
-
-**Validation:** 133/133 Node tests passed in the delivery environment. JSX parse checks passed; real Web/Expo Go/iOS runtime and Firebase deployment were **not run**. See `CHG-NP-0.2.8.md`, `docs/NP-QA-0.2.8.md`, and `docs/UNSLOP-NP-0.2.8.md`.
-
-**Firebase:** User has created a separate project named `niyarvoprojects`, and `app.json` already uses Android `com.niyarvo.projects`. No cloud backend has been connected yet. Confirm actual project ID before configuring/deploying. `docs/NP-FIREBASE-READINESS.md` tracks the boundary.
-
----
-
-# Niyarvo Projects — v0.2.7 local QA candidate
-
-Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
-
-## Current development state (v0.2.7)
-
-NP-SCHED1 is recognized as **v0.2.6** (standalone engine patch). This v0.2.7 archive contains the **complete v0.2.5 source + v0.2.6 engine + integrated scheduling UI/persistence**, so it can be extracted on the existing `work` branch. No Firebase project or remote Git repository is modified by this archive.
-
-- Open **Timeline → Scheduling** to configure an independent per-project working calendar, weekdays, holiday closures and extra working dates.
-- Change any existing predecessor edge between **FS / SS / FF / SF** with signed integer lag (−365 through +365). New and legacy relationships default to FS with zero lag.
-- Pick a task that was changed on the Gantt chart or in its editor, then **Preview successor dates**. You must explicitly confirm before affected tasks are moved. Changes are push-only; explicit anchors never shift silently.
-- Applying dates creates a local workspace recovery snapshot, checks for stale previews, clears verification/merge evidence of moved tasks, and returns affected Ready/Released release cards to Testing.
-- Link edits also reopen downstream verification and reconcile metadata on unlink or deletion.
-- JSON project and workspace exports/backups preserve calendar and dependency settings. Old `niyarvo.project.v1` files without these fields remain importable. Imported project dates are never automatically shifted.
-- Gantt connectors now honor FS/SS/FF/SF endpoint choice. The legacy critical-path control is disabled when the project uses working-day calendars or non-FS/0 links, because that estimate would be misleading.
-
-**QA status:** Node regression and JSX syntax checks pass in the delivery environment. The app was not interactively run on Expo Go, Web or iOS here, and its scheduling modal is not yet device-verified. Use Metro `npx expo start` in Termux. See `docs/NP-QA-0.2.7.md` and `CHG-NP-0.2.7.md` before acceptance.
-
-## Changes since v0.2.0
-
-- Select active projects from the sidebar workspace dropdown (or the mobile header project shortcut). No trip through Settings.
-- **Create project:** separate form for project name/code/description and project JSON import.
-- **Manage project:** separate form for edit, export, archive, delete. Archived projects are retained and may be restored from the project picker. Last active project cannot be archived.
-- Added extra top spacing on mobile and desktop. Browser width >=860 px uses the desktop sidebar and **does not** show the bottom tab bar.
-- Kanban: full-card press-and-hold drag, horizontal edge auto-scroll while dragging, card-position preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
-- Timeline: scrollable Gantt chart, task name rail, continuous/preset zoom (see v0.2.5), predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
-- Note: v0.2.4 introduced `react-native-svg` 15.16.0; run `npm install` before Metro. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
-
-## Run in Termux
-
-```bash
+```sh
 cd ~/NiyarvoProjects
-git switch work
-# Export a backup first, then unzip the candidate at this repository root
-npm install
+unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.9-GOVERNANCE.zip -d .
+npx expo install expo-document-picker
 npm test
-npx expo install --check
-npx expo start
+npx expo-doctor
+npx expo start --clear
 ```
 
-Use Expo Go for Android and Metro for Web; avoid static export + Python HTTP server for development.
+The ZIP does not contain an enclosing parent directory. If this is a truly blank folder without `package.json`, obtain a known compatible Expo SDK 58 manifest before installation; this ZIP alone is not sufficient to install dependencies from scratch.
 
-**Release gate:** v0.2.7 must pass the `docs/NP-QA-0.2.7.md` checklist on Android and Web. The historical v0.2.5 QA claims below describe that older build only.
+## Screens
 
-## Not yet implemented
+Overview · Board · Timeline · Scheduling · Tasks · Task configuration · Sprints · Releases · Testing · Resources · Collaboration · Costs · **Governance** (Projects → Portfolios → Programs) · Automations · Reports · Activity · Specifications · Backup · Settings.
 
-Cloud Firebase Auth/Firestore sync, permissions, hosted binary attachments, notifications, schedule-triggered automation, comments, team collaboration, offline conflict resolution, resource leveling, critical path for typed constraints, and production iOS tests. The attached OpenProject GPL-3.0 source archive was inspected for conceptual guidance; no source snippets were imported.
+Project management, task hierarchy, schedules, sprint safeguards, releases, resources, financial reports, portfolios, local automation commands and backup recovery use the original data model. Projects, Portfolios and Programs are independent management screens grouped under Governance. They use `src/projectRelations.cjs` and a single canonical workspace store for shared membership and roll-ups and the existing canonical workspace store. Complex controls are organized in collapsible sections and inline task rows.
 
-## v0.2.2 — Full-card Kanban drag and independent Gantt planner (local QA)
+The application is local-only: it does **not** provide remote multi-user sync, push reminders, authenticated GitHub operations or cloud-run automation. Existing Firestore readiness files do not imply enabled cloud services.
 
-This source is a **local QA candidate**, not an Android/iOS/Web-verified release. Existing workspace data remains in AsyncStorage under `niyarvo-projects-v1`.
+## Storage and safety
 
-- **Board:** Press and hold anywhere on a task card for about 340 ms, then drag. A tap opens the editor. Holding near a viewport edge should auto-scroll the Kanban lanes; this needs touch/mouse QA.
-- **Timeline:** A genuine task-row Gantt layout with fixed task labels, horizontally scrollable calendar, Days/Weeks/Months scale, status/stage groups, drag-to-move bars, end resizing, explicit predecessor linking, conflict indicators and milestone diamonds.
-- **Unscheduled tasks** remain visible. Use `+ Schedule` on a row. For the bundled Northstar sample only, `Populate example Gantt` creates illustrative dates after taking a recovery snapshot. No real user roadmaps are imported or modified by that sample action.
-- **Dependencies:** Existing finish-to-start predecessors can be set in a dialog; use `Align after predecessors` for explicit rescheduling. No background cascading reschedule is performed.
-- **Task editor:** The `Milestone` toggle marks a task as a diamond at its due date on the chart.
-- **Data integrity:** Edits to predecessor links or scheduling invalidate existing release verification flags for the edited task; project JSON remains backward-compatible.
+The existing AsyncStorage key remains `niyarvo-projects-v1`. Never clear app data or reinstall without first exporting a complete workspace backup from Backup. Destructive operations require explicit confirmation and/or create local recovery snapshots.
 
-Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`. See `CHG-NP-0.2.2.md` for the complete test checklist, current limitations and exact evidence status.
+## Verification
 
-## v0.2.3 — Gantt linkage and planning QA
+Source-level tests and syntax checks verify business-logic pathways but **cannot certify native Expo Go rendering or gestures**. In particular, verify Timeline task bars and dependency SVGs stay visible after initial mount, Kanban scrolling and long-press dragging, and navigation responsiveness on Android/iOS. The v0.5.9 changelog is under `docs/changelogs/modern-code/`, and its QA checklist is under `docs/qa/modern-code/`. Historical source documentation is archived separately in `docs/legacy-code/`.
 
-- **Timeline:** Tap a task bar's connector port and then a successor task bar, or drag the connector onto another scheduled bar. The existing link icon in task rows remains a predecessor editor. Invalid/cyclic links are rejected by the project model.
-- **Critical path:** Switch on `Critical path` to emphasize the longest *scheduled dependency-duration chain*. The result is a calendar-day, finish-to-start estimate; it is not a working-day, constrained or resource-leveled forecast.
-- **Development discipline:** Read `AGENTS.md` and the bundled original Unslop skill under `.opencode/skills/unslop/SKILL.md` before changes. Its original author is Damir Sokolovsky (CC BY 4.0). The repo includes an explicit UI redline audit (`docs/UNSLOP-NP-0.2.3.md`). OpenCode-compatible files are guidance only; OpenCode itself is not installed or run by this ZIP.
-- **Status:** v0.2.3 is a QA candidate; browser and Expo Go gestures require actual local tests. Continue with `npx expo start` in Termux on the `work` branch. Do not merge or deploy until accepted.
+## v0.5.2 task experience
 
-## v0.2.4 — Curved Gantt links, deletion and actual Unslop pass
+The Tasks page uses saved task status for its completion checkboxes. A long press selects tasks for bulk actions. Status and label filters live under one disclosure. Automations support an explicit checked-task destination (Done or Validation), safe status actions, due checks, card-aging checks and presets. The appearance menu contains Orange and nine alternative accents, saved locally.
 
-- Connector motion uses relative gesture deltas to reduce finger/preview offset.
-- Dependency routes are independently drawn as curved SVG with separated overlapping trunks, endpoint/arrow markers and dashed conflicts.
-- Tap a link to inspect/remove, or use the `Links N` listing if SVG hits are difficult.
-- Gantt toolbar has on-demand Help and warning detail; task rail is wider and the mobile header/board copy are simplified.
-- The source includes a screenshot-driven nine-pass Unslop audit at `docs/UNSLOP-NP-0.2.4.md` and manual QA at `docs/NP-QA-0.2.4.md`.
-- **New dependency:** `react-native-svg@15.16.0`, Expo SDK 58 compatible. Run `npm install`, `npm test`, `npx expo install --check`, then `npx expo start`.
-- **Unverified:** native & Web gestures and actual rendered screenshots, until the local runtime tests. No Git push, merge, or Firebase deployment.
+Native inline notices use Reanimated motion and are anchored below the phone header (wide-screen notices honor the top safe-area inset). They are app notifications, not native Apple Dynamic Island Live Activities or operating-system push notifications.
 
-## v0.2.5 — Mobile Gantt viewport and shared design system (LOCAL QA)
+## v0.5.3 — Projects / Programs / Backup / Navigation
 
-- **Pinch zoom:** pinch inside the Gantt viewport to adjust day width continuously (6–96 px/day), centered on the pinch midpoint. `+`, `−`, and `Fit` are accessible fallbacks; Days / Weeks / Months remain selectable presets. At overview-level zoom, bars become compact indicators; zoom in to move/resize/link them.
-- **Two-axis chart navigation:** the Gantt now has its own vertically scrolling task/calendar viewport and independent horizontal date scroll. During a connector drag, holding near any chart edge auto-pans in that direction; offsets are applied to target hit-testing. Tap-to-link remains available.
-- **First-touch alignment:** gesture source contact offset is measured when possible, constrained to the connector hit zone, with an async measurement refresh. This still needs device verification.
-- **UI:** Unslop was applied to actual shared controls in `App.js`, a calmer shared theme `src/design.cjs`, a simpler mobile header/bottom navigation, and a shorter three-row Gantt toolbar with advanced actions under **More**. Full application-wide pixel review remains a separate acceptance requirement.
-- **App version:** `0.2.5`; local AsyncStorage schema/key unchanged; no new dependencies.
-- **QA:** `npm test`, JSX parser checks pass in the delivery environment. Expo Go, iOS and Web rendering/gesture testing **Not run** here. See `docs/NP-QA-0.2.5.md` and `docs/UNSLOP-NP-0.2.5.md`.
+- Project creation, editing, duplication, archival and confirmed deletion live in the **Projects** manager above Programs and Portfolios. Destructive deletion preserves a local pre-delete workspace snapshot and cleans up group memberships.
+- **Programs** are distinct workspace-level coordination groups. They contain references to existing projects (no project/task copies), have Planned / Active / Completed states and survive full-workspace import/export and snapshots. Older workspaces receive an empty Programs list.
+- Task configuration is now under **Operate**. Settings is for appearance and diagnostics; Backup manages JSON file transfer, snapshots and archived project recovery.
+- Android/iOS `.json` import uses `expo-document-picker` with a cache copy read by `expo-file-system`, and export uses the existing `expo-sharing` flow. Install `expo-document-picker` in the user's retained manifest using Expo's installer; package manifests are intentionally absent from this release ZIP.
+- Mobile screen titles are compact and placed in the header; the Niyarvo Projects SVG lockup is used in the drawer. Notices are presented within the safe area. Timeline retains one continuous task list and its Items control is aligned left.
 
-Do not merge `work` or deploy this QA candidate until device/browser runtime interactions pass. Back up your workspace JSON before extraction. No Firebase project is connected.
+## v0.5.4 — Drawer key and embedded logo lettering hotfix
 
-## v0.3.1 — Accent preferences and hierarchical Gantt
+- Removed duplicate `taskconfig` row from the shared NAV groups feeding Android/iOS drawer and desktop sidebar; Task configuration appears exactly once under OPERATE.
+- Strengthened the embedded PROJECTS subtitle in both dark/light SVG logo files and regenerated their matching PNGs. Launcher icon and original colored monogram unchanged.
+- Updated local diagnostics version and Expo app version to 0.5.4. No dependency changes.
+- The provided performance data still shows Board navigation around 2 seconds; this narrowly scoped release does not claim to improve Board/Tasks transition latency.
 
-- Settings offers 10 RIVNA-inspired accent names (Aqua, Mint, Lime, Amber, Orange, Coral, Pink, Fuchsia, Violet, Indigo), with orange `#D97757` selected on clean installs.
-- Theme selection is persisted in its own AsyncStorage key on this device; it does not change projects or JSON imports. Primary actions, navigation and the in-app user-supplied monochrome Niyarvo symbol are retinted live.
-- Native launcher and PWA installed icons remain monochrome *orange*; iOS/Android launcher icons cannot switch automatically from an Expo JavaScript setting. On Web the browser tab favicon follows selection.
-- Gantt adds Tree view, expand/collapse, rollup summary bars and progress. Aggregate summary bars are read-only: update child schedules to adjust them, so grouping never silently reschedules descendants.
+## v0.5.5 — Entreprise PM and compact responsive headers
 
-**Status:** Local-QA candidate. Expo Go Android / Web / iOS gesture and visual checks are not verified.
-
-## v0.3.0 — Planning and architecture inventory
-
-The local-first task model supports leaf progress (0–100%), estimated effort in hours, calculated nested parent/project completion, and saved per-project task query views (status/priority/owner/text and sorting). Existing `niyarvo.project.v1` imports remain compatible; fields are optional and export as part of project JSON.
-
-See `docs/NP-OPENPROJECT-CAPABILITY-MAP-v1.md` for 63 source-evidenced capabilities across 30 OpenProject modules and the implementation roadmap. OpenProject architecture was studied as a reference; no source code was copied.
-
-**Status:** v0.3.0 is a local QA candidate. Test through Metro (`npx expo start`) before committing to `main`. Firebase `niyarvoprojects` remains unconnected.
+- Consolidated Projects, Programs and Portfolios into one Entreprise PM drawer destination, with separate feature source files and shared relationship selector.
+- A program can now include portfolios; a portfolio includes projects. Existing direct program-to-project IDs remain readable and editable to avoid discarding historical memberships. Project summaries deduplicate projects belonging to multiple portfolios.
+- Workspace normalization, snapshots and whole-workspace transfer preserve `portfolioIds`; portfolio deletion safely unlinks programs without removing projects or tasks.
+- The shared mobile Page layout stacks the full-width subtitle above its own horizontal action row. This avoids word-by-word wrapping in Timeline and Automations, and applies to other screens using Page.
+- Embedded PROJECTS logo lettering has been repositioned under the right side of Niyarvo and colored blue, then regenerated as transparent PNGs from the vector source.
+- - Fixed the Android 15 notification overlay that could appear behind the status bar by anchoring the floating pill beneath the phone header, with a safe-area inset guard for wide screens.
+- No new dependencies. Expo Go device QA is still needed.
 
 
-## v0.3.0 — Local task configuration and Android safe areas
+## v0.5.6 — Dynamic Island-style in-app notifications
 
-**Task setup:** Open **Tasks → Task setup** or **Settings → Configure tasks & workflow**. Each project has its own custom task types, validated fields (`text`, `number`, `date`, `boolean`, `select`), and optionally enforced workflow transitions. Existing projects retain the default `Task` type and unrestricted moves until you enable transition enforcement. Text, date and number inputs use an explicit Save value action; Boolean and select fields are direct choices. Custom field and type data survives workspace/project JSON export and backups. Removing a custom field deletes its saved values after an automatic workspace snapshot. In-use types cannot be removed.
+- The notification pill uses a compact → expanded → collapsed → dismissed lifecycle, with manual expansion/dismissal and a deliberate persistent error state.
+- Android and iOS animations use Reanimated UI-thread worklets. Web uses React Native Web's Animated transitions. A restrained spring settle was inspired by classic Android animation references (the Android libraries themselves are **not** dependencies).
+- Notifications remain anchored beneath the mobile header and Android status bar, or near the top center in desktop web. They are **in-app** notifications, not native system Dynamic Island Live Activities.
+- No manifest changes or additional packages. Test device motion/placement before promoting to main.
 
-**Task editor:** Task types and custom values can be edited in a task's detail drawer. Field changes invalidate verification for affected tasks and reopen linked release records when applicable. Kanban and bulk status changes honor configured transitions. A status may still be blocked by unfinished dependencies.
+## v0.5.7 — Dynamic Island at the top safe area
 
-**Safe areas:** The screen shell and native full-screen dialogs use `react-native-safe-area-context`, including top status-bar clearance and bottom gesture-navigation clearance. Install the new dependency via `npm install` and check it using `npx expo install --check`. Android and iOS need runtime verification, including landscape and keyboard presentation. Web uses existing page spacing.
+Moved the existing in-app Dynamic Island animation to a top-of-window layer with a platform-aware status-bar/notch inset and 10-point visual clearance. The animation and dismissal behavior are unchanged. On phones it may temporarily overlap the header while expanded, but it no longer sits over task filters or the scrolling page. This is not a system notification. See `docs/changelogs/modern-code/CHG-NP-0.5.7.md`.
 
-No Firebase initialization, cloud writes, account imports, Git operations, or roadmap imports are performed by this release. All metadata remains local until separately migrated.
+## v0.5.8 — Web scroll and offscreen rendering fix
 
-## v0.3.11 — Kanban Power-Ups
-
-Board-specific built-in extensions: GitHub links and optional public API previews, upcoming due-date panel, card aging, and checklist progress. Power-Ups can be enabled per Kanban board without altering statuses or deleting existing tasks. Each lane supports quick card creation. This implementation is **not compatible with Trello Power-Up packages** and has no authenticated private GitHub access; GitHub OAuth and backend synchronization require a later secure integration.
-
-## v0.3.11-HOTFIX1 — Mobile/Web drawer fix
-
-Navigation sidebar links now scroll independently, keeping the header, project switcher, and close control accessible on short screens. The mobile/Web menu no longer uses the navigation `Modal` portal and supports tap-outside, Android Back, and Web Escape dismissal. No data migration or new dependencies. See `CHG-NP-0.3.11-HOTFIX1.md` and `docs/NP-QA-0.3.11-HOTFIX1.md`. This is a source-level QA candidate pending runtime tests.
-
-## v0.3.12 — Kan-based Kanban polish (local-QA candidate)
-
-Inspired by **capabilities observed in the user-provided Kan reference source**, independently reimplemented for Expo/React Native. Compact cards, labelled metadata, quick action sheet, duplicate and move controls, filters (owner/priority/label/due dates), and per-board description preferences. The current task-status workflow, drag-and-drop, GitHub Power-Ups and local automations remain authoritative. This release does **not** copy Kan code and does not implement arbitrary custom status lanes, multi-user role permissions, GitHub OAuth or backend automation. Read `CHG-NP-0.3.12.md` and `docs/NP-QA-0.3.12.md` before testing on Android and Web.
+Web Kanban and Timeline now use a browser pointer-based stationary-hold drag hook, rather than a PanResponder that claims touches on pointer-down. Normal swipes scroll without fighting the ScrollView responder. Heavy Board/Timeline screens unmount when hidden on web as well as native; this reduces repeated offscreen React renders. Native gesture handling and layout geometry remain unchanged. Console diagnostics now distinguish the count of `console.error` calls and exceptions from the number of actual captured JS exceptions.

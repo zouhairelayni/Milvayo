@@ -113,8 +113,11 @@ test('typed dependencies attach to correct Gantt anchor endpoints',()=>{
  const rows=g.layoutRows(g.buildRows(proj.tasks,'status'),60);const start=g.dayNumber('2026-11-01');
  const paths=g.dependencyGeometry(rows,start,24,[{predecessorId:'A',successorId:'B',type:'SS',lagDays:0}]);
  const path=paths.find(x=>x.fromId==='A'&&x.toId==='B');
- assert.equal(path.x1,g.barGeometry(proj.tasks[0],start,24).x);
- assert.equal(path.x2,g.barGeometry(proj.tasks[1],start,24).x);
+ // The drawn bar is inset 2px at the start and 3px at the end, so routes touch the visible edge.
+ assert.equal(path.x1,g.barGeometry(proj.tasks[0],start,24).x+2);
+ assert.equal(path.x2,g.barGeometry(proj.tasks[1],start,24).x+2);
  const ff=g.dependencyGeometry(rows,start,24,[{predecessorId:'A',successorId:'B',type:'FF',lagDays:0}]).find(x=>x.toId==='B');
- assert.equal(ff.x2,g.barGeometry(proj.tasks[1],start,24).endX);
+ assert.equal(ff.x2,g.barGeometry(proj.tasks[1],start,24).endX-3);
+ assert.equal(ff.arrowDir,-1);
+ assert.equal(path.arrowDir,1);
 });

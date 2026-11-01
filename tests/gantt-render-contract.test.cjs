@@ -1,27 +1,6 @@
 'use strict';
-const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');
-const root=path.join(__dirname,'..');const gantt=fs.readFileSync(path.join(root,'src/GanttView.js'),'utf8');const app=fs.readFileSync(path.join(root,'App.js'),'utf8');
-test('Timeline never creates a full height and width dependency SVG',()=>{
- assert.doesNotMatch(gantt,/<Svg[^>]*width=\{canvasWidth\}[^>]*height=\{totalHeight\}/);
- assert.match(gantt,/<Svg pointerEvents="box-none" width=\{chartWidth\}/);
- assert.match(gantt,/ganttWindow\.visibleLinks\(/);
-});
-test('Timeline limits task rows and date columns to the viewport',()=>{
- assert.match(gantt,/windowRows\.map\(/);
- assert.match(gantt,/windowRows\.filter\(row=>row\.kind==='task'\)/);
- assert.match(gantt,/visibleDayCells\.map\(/);
- assert.doesNotMatch(gantt,/\{days\.map\(/);
-});
-test('Overview no longer mounts a second interactive Kanban board',()=>{
- const from=app.indexOf(' const dashboard='),to=app.indexOf(' const boardScreen=',from);
- assert.ok(from>0&&to>from);
- const overview=app.slice(from,to);
- assert.doesNotMatch(overview,/<Board\s/);
- assert.doesNotMatch(overview,/Kanban board/);
- assert.match(app.slice(to,app.indexOf(' const timelineScreen=',to)),/<Board\s/);
-});
-test('mobile Kanban progressively loads cards instead of mounting 60 per lane initially',()=>{
- assert.match(app,/const PAGE=boardScreenWidth>=860\?36:12/);
- assert.match(app,/list\.slice\(0,boardLimits\[status\]\|\|PAGE\)/);
- assert.match(app,/\(a\[status\]\|\|PAGE\)\+PAGE/);
-});
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path');
+const root=path.join(__dirname,'..');const tl=fs.readFileSync(path.join(root,'src/screens/Timeline.js'),'utf8');const app=fs.readFileSync(path.join(root,'ModernApp.js'),'utf8');
+test('one modern timeline draws viewport-limited SVG instead of massive native canvas',()=>{assert.match(tl,/<Svg width=\{paintWidth\} height=\{paintH\} viewBox=/);assert.doesNotMatch(tl,/<Svg width=\{gridW\}/);assert.match(tl,/display\.paintedRange/);assert.match(tl,/rows = allScheduled/)});
+test('timeline retains all task rows with continuous scroll and no sliced-page navigation',()=>{assert.doesNotMatch(tl,/Next rows|Previous rows/);assert.match(tl,/paintedRows\.map/);assert.match(tl,/drawnBars\.map/)});
+test('overview and board are separate modern screens, no second application exists',()=>{assert.match(app,/board: Board/);assert.match(app,/overview: Overview/);assert.doesNotMatch(app,/ClassicApp|Advanced workspace/);assert.equal(fs.existsSync(path.join(root,'ClassicApp.js')),false)});

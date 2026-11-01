@@ -48,6 +48,4 @@ test('Kan Atlas-sized fixture survives import after new board preferences',()=>{
  const atlas=JSON.parse(fs.readFileSync(path.join(__dirname,'..','examples','ATLAS-MOCK.project.json'),'utf8'));
  const p=model.importProject(atlas);assert.equal(p.tasks.length,73);const updated=ux.setBoardView(p,'board-default',{showDescriptions:true});assert.equal(model.importProject(JSON.parse(JSON.stringify(updated))).kanbanViews['board-default'].showDescriptions,true);
 });
-test('Kan board feature controls and contextual actions are wired in source',()=>{
- const source=fs.readFileSync(path.join(__dirname,'..','App.js'),'utf8');for(const name of ['filterCards(boardAllTasks','Duplicate to backlog','Edit labels and due date','Filter cards','resolveDropIndex(boardAllTasks','showDescriptions={activeBoardView.showDescriptions}'])assert.ok(source.includes(name),name);
-});
+test('modern board retains card/list gesture logic and management actions',()=>{const source=fs.readFileSync(path.join(__dirname,'../src/screens/Board.js'),'utf8');for(const name of ['boardGesture','moveListTo','placeTask','openTask','onScroll'])assert.ok(source.includes(name),name)});

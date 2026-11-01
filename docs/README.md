@@ -1,46 +1,13 @@
-# Niyarvo Projects — v0.2.1 local QA candidate
+# Niyarvo Projects — Documentation index (v0.5.1)
 
-Independent Expo SDK 58 / React Native project management app for Web, Android (Expo Go) and iOS source. All project data remains local-first in AsyncStorage; no Firebase or GitHub runtime integration. Niyarvo Control Center and RIVNA are **separate applications**.
+**One app:** `App.js` opens `ModernApp.js`. There is no ClassicApp or secondary workspace UI.
 
-## Changes since v0.2.0
+- [`changelogs/legacy-code`](changelogs/legacy-code/README.md): historical source releases and checkpoints before the MockDesign merge (through v0.4.1).
+- [`changelogs/modern-code`](changelogs/modern-code/README.md): one changelog per integration release, v0.4.2 onward.
+- [`qa/legacy-code`](qa/legacy-code): pre-merge acceptance notes.
+- [`qa/modern-code`](qa/modern-code): modern integration acceptance checklists.
+- [`legacy-code`](legacy-code): superseded technical reports, release history, test traces, handoffs, design review notes. These are **historical** and may describe screens removed in v0.5.1.
 
-- Select active projects from the sidebar workspace dropdown (or the mobile header project shortcut). No trip through Settings.
-- **Create project:** separate form for project name/code/description and project JSON import.
-- **Manage project:** separate form for edit, export, archive, delete. Archived projects are retained and may be restored from the project picker. Last active project cannot be archived.
-- Added extra top spacing on mobile and desktop. Browser width >=860 px uses the desktop sidebar and **does not** show the bottom tab bar.
-- Kanban: handle-based drag, horizontal edge auto-scroll while dragging, floating card preview, drop-lane detection that includes current scroll offset, and measured card-height ordering. Status edit remains a fallback.
-- Timeline: scrollable Gantt table, task name rail, 7/14/30/90-day zoom, predecessor lines, task dependency selection, draggable bars to move dates, end handles to resize, date nudge controls and unscheduled task scheduling.
-- No new npm dependencies. The `niyarvo-projects-v1` local storage key is unchanged, and `archived` is an optional backward-compatible project field.
+No release changelogs are stored at the source root or directly inside `docs/`.
 
-## Run in Termux
-
-```bash
-cd ~/NiyarvoProjects
-git switch work
-# Export a backup first, then unzip the candidate at this repository root
-npm install
-npm test
-npx expo install --check
-npx expo start
-```
-
-Use Expo Go for Android and Metro for Web; avoid static export + Python HTTP server for development.
-
-**Gate:** 25 Node tests passed and JSX parser reported no syntax issues in the preparation environment. Android/Web interactive behavior is **not yet verified**. Do not merge into `main` until the `CHG-NP-0.2.1.md` manual QA checklist passes.
-
-## Not yet implemented
-
-Cloud Firebase Auth/Firestore sync, permissions, hosted binary attachments, notifications, schedule-based automation, comments, team collaboration, offline conflict resolution, advanced Gantt scheduling/critical path, and production iOS tests. The attached OpenProject GPL-3.0 source archive was inspected for conceptual guidance; no source snippets were imported.
-
-## v0.2.2 — Full-card Kanban drag and independent Gantt planner (local QA)
-
-This source is a **local QA candidate**, not an Android/iOS/Web-verified release. Existing workspace data remains in AsyncStorage under `niyarvo-projects-v1`.
-
-- **Board:** Press and hold anywhere on a task card for about 340 ms, then drag. A tap opens the editor. Holding near a viewport edge should auto-scroll the Kanban lanes; this needs touch/mouse QA.
-- **Timeline:** A genuine task-row Gantt layout with fixed task labels, horizontally scrollable calendar, Days/Weeks/Months scale, status/stage groups, drag-to-move bars, end resizing, explicit predecessor linking, conflict indicators and milestone diamonds.
-- **Unscheduled tasks** remain visible. Use `+ Schedule` on a row. For the bundled Northstar sample only, `Populate example Gantt` creates illustrative dates after taking a recovery snapshot. No real user roadmaps are imported or modified by that sample action.
-- **Dependencies:** Existing finish-to-start predecessors can be set in a dialog; use `Align after predecessors` for explicit rescheduling. No background cascading reschedule is performed.
-- **Task editor:** The `Milestone` toggle marks a task as a diamond at its due date on the chart.
-- **Data integrity:** Edits to predecessor links or scheduling invalidate existing release verification flags for the edited task; project JSON remains backward-compatible.
-
-Run with `npm install`, `npm test`, `npx expo install --check`, `npx expo start`. See `CHG-NP-0.2.2.md` for the complete test checklist, current limitations and exact evidence status.
+`package.json`, `package-lock.json`, and `node_modules` are intentionally omitted from this source ZIP, preserving the existing Termux setup.
