@@ -48,6 +48,13 @@ function createSprint(project,data){
  if((project.sprints||[]).some(x=>x.id===s.id))throw Error('Sprint ID already exists');
  const result={...project,sprints:[...(project.sprints||[]),s]};validateAgile(result);return result;
 }
+function updatePlannedSprint(project,id,changes={}){
+ const old=find(project,id);
+ if(old.state!=='planned')throw Error('Only planned sprint details can be edited');
+ const candidate=normalizeSprint({...old,name:changes.name??old.name,goal:changes.goal??old.goal,start:changes.start??old.start,end:changes.end??old.end});
+ const next={...project,sprints:project.sprints.map(s=>s.id===id?candidate:s)};
+ validateAgile(next);return next;
+}
 function assign(project,taskId,sprintId,at=atIso()){
  const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');
  if(sprintId&&find(project,sprintId).state==='completed')throw Error('Cannot add tasks to completed sprint');
@@ -98,4 +105,4 @@ function burndown(project,id,today=new Date().toISOString().slice(0,10)){
  }
  return out;
 }
-module.exports={STATES,normalizeSprint,normalizeAgile,validateAgile,createSprint,assign,startSprint,finishSprint,deleteSprint,reconcileProgress,summary,burndown,snapshot};
+module.exports={STATES,normalizeSprint,normalizeAgile,validateAgile,createSprint,updatePlannedSprint,assign,startSprint,finishSprint,deleteSprint,reconcileProgress,summary,burndown,snapshot};

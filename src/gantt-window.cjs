@@ -17,8 +17,10 @@ function visibleDays(count,dayWidth,scrollX,width,overscan=100){
 function visibleLinks(paths,scrollX,scrollY,width,height,overscan=75){
  const left=scrollX-overscan,right=scrollX+width+overscan,top=scrollY-overscan,bottom=scrollY+height+overscan;
  return paths.filter(p=>{
-  const xMin=Math.min(p.x1,p.x2,p.elbow||p.x1),xMax=Math.max(p.x1,p.x2,p.elbow||p.x1);
-  return xMax>=left&&xMin<=right&&Math.max(p.y1,p.y2)>=top&&Math.min(p.y1,p.y2)<=bottom;
+  const pts=p.points&&p.points.length?p.points:[{x:p.x1,y:p.y1},{x:p.x2,y:p.y2}];
+  let xMin=Infinity,xMax=-Infinity,yMin=Infinity,yMax=-Infinity;
+  for(const q of pts){if(q.x<xMin)xMin=q.x;if(q.x>xMax)xMax=q.x;if(q.y<yMin)yMin=q.y;if(q.y>yMax)yMax=q.y}
+  return xMax>=left&&xMin<=right&&yMax>=top&&yMin<=bottom;
  });
 }
 module.exports={visibleRows,visibleDays,visibleLinks};

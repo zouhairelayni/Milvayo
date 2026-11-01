@@ -7,6 +7,7 @@ const planning=require('./planning.cjs');
 const taskSchema=require('./taskSchema.cjs');
 const agile=require('./agile.cjs');
 const operations=require('./operations.cjs');
+const programs=require('./programs.cjs');
 const boards=require('./boards.cjs');
 const powerUps=require('./powerUps.cjs');
 const automation=require('./automation.cjs');
@@ -27,7 +28,7 @@ function normalizeRule(rule={}){return {id:str(rule.id,120)||id('rule'),name:str
 
 function defaultTask(o={}){
   const now=iso();return {
-    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000), parentId:str(o.parentId,120), boardId:str(o.boardId,120)||boards.DEFAULT_BOARD_ID,
+    id:str(o.id,120)||id('task'), title:str(o.title,240)||'Untitled task', description:str(o.description,12000), parentId:str(o.parentId,120), boardId:str(o.boardId,120)||boards.DEFAULT_BOARD_ID, listId:str(o.listId,120),
     status:STATUSES.includes(o.status)?o.status:'Backlog', priority:PRIORITIES.includes(o.priority)?o.priority:'Medium',
     stage:STAGES.includes(o.stage)?o.stage:'Development', owner:str(o.owner,120)||'Solo operator',
     phaseId:str(o.phaseId,120), releaseId:str(o.releaseId,120), repo:str(o.repo,120), branch:str(o.branch,200),
@@ -46,7 +47,7 @@ function defaultTask(o={}){
 }
 function makeProject(o={}){
  const meta=taskSchema.normalizeSchema(o);
- const project={...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),kanbanViews:o.kanbanViews||{},powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
+ const project={governance:require('./governanceCore.cjs').normalizeGovernance(o.governance),...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),kanbanViews:o.kanbanViews||{},powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   sprints:agile.normalizeAgile(o).sprints,
@@ -75,7 +76,7 @@ function demoProject(){return makeProject({id:'sample-workspace',name:'Northstar
     {id:'NST-008',title:'Remove debug UI from production bundle',status:'Backlog',priority:'Critical',stage:'Production',repo:'Northstar Studio',releaseId:'rel1'},
     {id:'NST-009',title:'Release sign-off checklist',status:'In progress',priority:'Medium',stage:'Testing',repo:'Northstar Studio',releaseId:'rel1'}
   ]});}
-function createWorkspace(){const p=demoProject();return {schemaVersion:1,selectedId:p.id,projects:[p],portfolios:[],backups:[],activity:[{id:id('activity'),at:iso(),action:'Demo workspace initialized'}],revision:1};}
+function createWorkspace(){const p=demoProject();return {schemaVersion:1,selectedId:p.id,projects:[p],portfolios:[],programs:[],backups:[],activity:[{id:id('activity'),at:iso(),action:'Demo workspace initialized'}],revision:1};}
 function normalizeWorkspace(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid workspace');
  const projects=safeArray(input.projects,30,'Workspace projects').map(makeProject);
@@ -83,7 +84,8 @@ function normalizeWorkspace(input){
  if(projects.every(p=>p.archived))throw Error('Workspace must contain at least one active project');
  validateUnique(projects,'project');projects.forEach(validateProject);
  const valid=new Set(projects.map(p=>p.id));
- return {schemaVersion:1,portfolios:operations.normalizePortfolios(input.portfolios||[],projects),selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
+ const portfolios=operations.normalizePortfolios(input.portfolios||[],projects);
+ return {schemaVersion:1,portfolios,programs:programs.normalized(input.programs||[],projects,portfolios),selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
  backups:arr(input.backups,15).filter(s=>s&&typeof s==='object'&&['project','workspace'].includes(s.kind)),
  activity:arr(input.activity,100).map(a=>({id:str(a.id,120),at:str(a.at,60),action:str(a.action,1200)})),
  revision:Number.isInteger(input.revision)&&input.revision>=0?input.revision:0};
@@ -130,7 +132,7 @@ function moveTask(project,taskId,status,toIndex=99999){
  taskSchema.checkTransition(project,task,status);
  if(status==='Done'&&blockers(project,task).length)throw Error('Complete dependency tasks first: '+blockers(project,task).join(', '));
  const remaining=project.tasks.filter(t=>t.id!==taskId);
- let changed={...task,status,updatedAt:iso(),verified:status==='Done'?task.verified:false,merged:status==='Done'?task.merged:false};
+ let changed={...task,status,listId:status!==task.status?'':task.listId,updatedAt:iso(),verified:status==='Done'?task.verified:false,merged:status==='Done'?task.merged:false};
  const applied=[];
  if(status!==task.status){for(const rule of project.automations||[]){if(!rule.enabled||rule.triggerStatus!==status)continue;
   if(rule.action==='priority'&&PRIORITIES.includes(rule.value)){changed.priority=rule.value;applied.push(rule.name);}
@@ -167,7 +169,7 @@ function stats(project){const tasks=project.tasks;const passed=tasks.flatMap(t=>
 
 function workspaceSnapshot(workspace,label='Workspace recovery snapshot'){
   return {id:id('snapshot'),kind:'workspace',at:iso(),label,
-    workspace:JSON.parse(JSON.stringify({selectedId:workspace.selectedId,projects:workspace.projects}))};
+    workspace:JSON.parse(JSON.stringify({selectedId:workspace.selectedId,projects:workspace.projects,portfolios:workspace.portfolios||[],programs:workspace.programs||[],activity:workspace.activity||[]}))};
 }
 function projectSnapshot(workspace,label='Project recovery snapshot'){
   const p=workspace.projects.find(p=>p.id===workspace.selectedId);
@@ -178,7 +180,7 @@ function restoreSnapshot(workspace,snapshot){
   if(!snapshot||typeof snapshot!=='object')throw Error('Invalid snapshot');
   if(snapshot.kind==='workspace'){
     const recovered=normalizeWorkspace({...workspace,...snapshot.workspace,backups:workspace.backups});
-    return {...workspace,selectedId:recovered.selectedId,projects:recovered.projects};
+    return {...workspace,selectedId:recovered.selectedId,projects:recovered.projects,portfolios:recovered.portfolios,programs:recovered.programs,activity:recovered.activity};
   }
   if(!snapshot.project)throw Error('Snapshot contains no project');
   const p={...makeProject(snapshot.project),archived:false};

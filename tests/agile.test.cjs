@@ -89,3 +89,15 @@ test('unrelated project data and the user-selected accent stay outside sprint ch
  assert.equal(p.releases.length,0);assert.equal(p.tasks[0].verified,false);
  assert.deepEqual(Object.keys(p).includes('accentId'),false);
 });
+test('planned sprint edits preserve IDs, scope and validation, and cannot alter active history',()=>{
+ let p=a.assign(a.createSprint(make(),sprint),'a','s1',now);
+ const next=a.updatePlannedSprint(p,'s1',{name:'Sprint 1 revised',goal:'Deliver a working board',start:'2026-11-01',end:'2026-11-14'});
+ assert.equal(next.sprints[0].name,'Sprint 1 revised');
+ assert.equal(next.sprints[0].id,'s1');
+ assert.equal(next.tasks[0].sprintId,'s1');
+ assert.equal(next.sprints[0].goal,'Deliver a working board');
+ assert.equal(p.sprints[0].name,sprint.name);
+ assert.throws(()=>a.updatePlannedSprint(p,'s1',{start:'2026-11-20',end:'2026-11-14'}),/dates/);
+ const active=a.startSprint(next,'s1',now);
+ assert.throws(()=>a.updatePlannedSprint(active,'s1',{goal:'Change history'}),/planned/);
+});

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="340" viewBox="0 0 1240 340" role="img" aria-label="Niyarvo horizontal logo">
+<title>Niyarvo horizontal logo</title>
+<defs>
+<linearGradient id="leftRibbon" x1="130" y1="260" x2="220" y2="655" gradientUnits="userSpaceOnUse">
+ <stop offset="0" stop-color="#0872c9"/><stop offset=".35" stop-color="#145193"/><stop offset=".72" stop-color="#326aa1"/><stop offset="1" stop-color="#b2e8fc"/>
+</linearGradient>
+<linearGradient id="rightRibbon" x1="636" y1="119" x2="689" y2="646" gradientUnits="userSpaceOnUse">
+ <stop offset="0" stop-color="#fff9dc"/><stop offset=".26" stop-color="#f2ce87"/><stop offset=".48" stop-color="#c5a474"/><stop offset=".76" stop-color="#344257"/><stop offset="1" stop-color="#0a2c53"/>
+</linearGradient>
+<linearGradient id="underRibbon" x1="370" y1="377" x2="575" y2="681" gradientUnits="userSpaceOnUse">
+ <stop offset="0" stop-color="#06142d"/><stop offset=".38" stop-color="#0a2549"/><stop offset=".75" stop-color="#15548f"/><stop offset="1" stop-color="#43b3ee"/>
+</linearGradient>
+<linearGradient id="mainRibbon" x1="145" y1="92" x2="643" y2="580" gradientUnits="userSpaceOnUse">
+ <stop offset="0" stop-color="#2d9ee7"/><stop offset=".27" stop-color="#579cdb"/><stop offset=".54" stop-color="#a4c9d7"/><stop offset=".74" stop-color="#fff5d3"/><stop offset=".91" stop-color="#ffe4a0"/><stop offset="1" stop-color="#ecc66c"/>
+</linearGradient>
+<linearGradient id="mainEdge" x1="150" y1="89" x2="640" y2="688" gradientUnits="userSpaceOnUse">
+ <stop offset="0" stop-color="#6ccafe" stop-opacity=".7"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".28"/><stop offset="1" stop-color="#fff8df" stop-opacity=".8"/>
+</linearGradient></defs>
+<g transform="translate(36.4,17) scale(.39)"><path d="M 71 653 L 71 379 C 70 321 93 291 151 274 C 176 267 201 268 233 276 C 219 310 215 350 216 410 L 216 478 C 216 563 171 610 71 653 Z" fill="url(#leftRibbon)"/>
+      <path d="M 579 221 C 583 165 639 125 728 112 L 728 492 C 728 581 697 618 627 627 C 625 550 618 462 601 384 C 584 316 573 271 579 221 Z" fill="url(#rightRibbon)"/>
+      <path d="M 294 331 C 354 366 374 443 418 502 C 475 579 570 610 627 704 C 627 580 573 505 505 455 C 429 405 359 368 294 331 Z" fill="url(#underRibbon)"/>
+      <path d="M 143 51 L 397 205 C 544 295 613 417 627 704 C 592 605 540 535 446 475 C 392 440 321 405 256 352 C 171 283 140 183 143 51 Z" fill="url(#mainRibbon)" stroke="url(#mainEdge)" stroke-width="1.5" stroke-linejoin="round"/></g>
+ <g transform="translate(355.4,56.3) scale(1.16)">
+ <g fill="none" stroke="#151C2C" stroke-width="14" stroke-linecap="butt" stroke-linejoin="round">
+   <path d="M 25 126 L 25 45 M 25 79 C 25 47 46 37 70 37 C 99 37 113 56 113 84 L 113 126"/>
+   <path d="M 153 45 L 153 126"/>
+   <path d="M 203 45 L 241 124 L 279 45 M 241 124 L 224 156 C 216 169 205 170 194 170"/>
+   <circle cx="353" cy="85" r="40"/>
+   <path d="M 393 45 L 393 126"/>
+   <path d="M 437 126 L 437 45 M 437 82 C 437 55 453 41 483 42"/>
+   <path d="M 512 45 L 548 126 L 584 45"/>
+   <circle cx="661" cy="85" r="40"/>
+ </g>
+ <circle cx="153" cy="17" r="8" fill="#151C2C"/>
+</g>
+<text x="765" y="303" font-family="DejaVu Sans,Arial,sans-serif" font-size="44" font-weight="900" letter-spacing="10" fill="#2D9EE7">PROJECTS</text></svg>
