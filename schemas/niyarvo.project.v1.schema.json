@@ -594,6 +594,9 @@
               },
               "owner": {
                 "type": "string"
+              },
+              "label": {
+                "type": "string"
               }
             }
           }

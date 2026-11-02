@@ -1,10 +1,12 @@
+// /src/governance/pm.js
 // Project management layer: PMI-style document templates, seed content and the pure helpers behind
 // Projects, Programs and Portfolios. Everything here is plain data and functions (no React).
 
-import { D, TODAY, labourCosts, money, progressOf } from './data';
+import { labourCosts, money } from './data';
+import { progressOf } from '../utils/progress.cjs';
 
-let counter = 5000;
-export const pid = (prefix) => `${prefix}${++counter}`;
+// IDs must survive app restarts and imports without colliding with earlier rows.
+export const pid = (prefix) => require('../domain/model.cjs').id(prefix);
 
 // ---- vocabularies -------------------------------------------------------------------------------
 
@@ -254,7 +256,7 @@ export const WBS_ROOT = 'w0';
 const wn = (id, parent, name, hours = 0, owner = '', note = '') => ({ id, parent, name, owner, hours, note });
 
 export function buildTree(nodes, rootName) {
-  const kids = {};
+  const kids = Object.create(null);
   nodes.forEach((n) => {
     if (n.parent) (kids[n.parent] = kids[n.parent] || []).push(n);
   });

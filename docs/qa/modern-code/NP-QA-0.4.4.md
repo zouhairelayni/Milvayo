@@ -1,6 +1,6 @@
 # Niyarvo Projects v0.4.4 — Expo Go acceptance checklist
 
-**Candidate:** `v0.4.4-ANDROID-GESTURE-HOTFIX`
+**Candidate:** `v0.4.4-ANDROID-GESTURE-HOTFIX`  
 **Status:** Not run on device. All checks below are pending.
 
 ## Preflight

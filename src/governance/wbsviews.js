@@ -1,8 +1,9 @@
+// /src/governance/wbsviews.js
 // WBS diagrams. Each layout turns the WBS tree into a plain "scene" (rects, paths, text), so the same
 // drawing is shown on screen with react-native-svg and exported as a standalone SVG file.
 
 import Svg, { Path, Rect, Text as SvgText } from 'react-native-svg';
-import { font, useTheme } from './theme';
+import { font, useTheme } from '../ui/theme/theme';
 
 export const BRANCH = ['#E0512D', '#3B6FE0', '#2F9E6B', '#D89614', '#8E5CD6', '#14A3B8'];
 const branchColor = (n) => (n.branch < 0 ? 'ink' : BRANCH[n.branch % BRANCH.length]);

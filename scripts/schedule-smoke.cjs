@@ -1,6 +1,7 @@
+// /scripts/schedule-smoke.cjs
 'use strict';
 // Read-only smoke test: uses isolated example tasks, never loads a user's workspace.
-const scheduling=require('../src/scheduling.cjs');
+const scheduling=require('../src/domain/scheduling.cjs');
 const project={id:'np-sched-smoke',tasks:[
  {id:'A',title:'Planning',start:'2026-11-02',due:'2026-11-06',dependsOn:[]},
  {id:'B',title:'Review',start:'2026-11-05',due:'2026-11-06',dependsOn:['A']},

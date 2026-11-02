@@ -1,3 +1,4 @@
+// /src/diagnostics/core.cjs
 'use strict';
 const MAX_EVENTS = 90;
 const MAX_CRASHES = 12;
@@ -20,11 +21,13 @@ const bounded = (a, max) => a.length > max ? a.slice(-max) : a;
 const fresh = (runId, now, meta = {}) => ({
   schema: 1, runId, startedAt: now, updatedAt: now, active: true, screen: 'overview',
   platform: meta.platform || 'unknown', os: meta.os || 'unknown', version: meta.version || 'unknown',
-  events: [], crashes: [], slow: [], warnings: 0, errors: 0, screenOpens: {}, render: {}, freezeMs: 0,
+  startupEvents: [], events: [], crashes: [], slow: [], warnings: 0, errors: 0, screenOpens: {}, render: {}, freezeMs: 0,
   previous: null,
 });
 const addEvent = (state, type, detail, at = Date.now()) => {
-  state.events = bounded([...state.events, {at, type: clean(type, 30), detail: clean(detail, 170)}], MAX_EVENTS);
+  const event = {at, type: clean(type, 30), detail: clean(detail, 170)};
+  if (state.startupEvents && state.startupEvents.length < 40) state.startupEvents.push(event);
+  state.events = bounded([...state.events, event], MAX_EVENTS);
   state.updatedAt = at;
   return state;
 };
@@ -57,7 +60,9 @@ const reportCrash = (s) => [
     `--- ${fmtTime(c.at)} | ${c.source} | ${c.screen} | count ${c.count} ---`,
     `reason: ${c.name}: ${c.message}`, `fatal handler: ${c.fatal ? 'reported fatal JS exception' : 'no'}`,
     `stack: ${c.stack || 'not captured'}`, `component: ${c.componentStack || 'not captured'}`, '',
-  ]), '--- recent steps ---', ...s.events.slice(-32).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
+  ]), '--- startup steps (current run) ---', ...(s.startupEvents || []).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`), '--- recent steps ---', ...s.events.slice(-32).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
+  ...(s.previous?.crashes?.length ? ['--- previous-run JS exceptions (not current-run counts) ---',
+    ...s.previous.crashes.map(c => `${fmtTime(c.at)} | ${clean(c.source,40)} | ${clean(c.screen,48)} | ${clean(c.name,60)}: ${clean(c.message,450)}\n${clean(c.stack,2800)}`)] : []),
   '', 'LIMITS: JS error boundaries do not capture native process terminations, OOM or ANR. A missing clean exit is not proof of a crash.',
 ].join('\n');
 const reportPerf = (s, now = Date.now()) => [
@@ -71,7 +76,7 @@ const reportPerf = (s, now = Date.now()) => [
   ...Object.entries(s.render).map(([k, v]) => `${k}: ${v.count} renders, avg ${Math.round(v.sum / Math.max(1,v.count))}ms, max ${Math.round(v.max)}ms`),
   '--- slow events / transitions ---',
   ...s.slow.slice(-40).map(x => `${fmtTime(x.at)} | ${x.type} ${x.name} | ${x.ms}ms`),
-  '--- recent steps ---', ...s.events.slice(-25).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
+  '--- startup steps (current run) ---', ...(s.startupEvents || []).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`), '--- recent steps ---', ...s.events.slice(-25).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
   '', 'LIMITS: JS timers and React render costs are estimates, not a native FPS, memory, ANR or device CPU profiler.',
 ].join('\n');
 module.exports = {clean, fresh, addEvent, addCrash, addSlow, reportCrash, reportPerf};

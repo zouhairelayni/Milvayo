@@ -11,3 +11,4 @@ ios/
 *.p12
 *.json.backup
 project-exports/
+*.zip

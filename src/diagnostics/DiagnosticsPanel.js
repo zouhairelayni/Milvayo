@@ -1,8 +1,9 @@
+// /src/diagnostics/DiagnosticsPanel.js
 import { useEffect, useState } from 'react';
 import { TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Button, Card, SectionTitle, Sheet, T } from '../ui';
-import { useTheme } from '../theme';
+import { Button, Card, SectionTitle, Sheet, T } from '../ui/ui';
+import { useTheme } from '../ui/theme/theme';
 import { diagnosticMonitor as monitor } from './monitor';
 
 // Read only when Settings is visible; normal diagnostic events do not cause

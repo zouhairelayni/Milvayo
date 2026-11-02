@@ -21,7 +21,7 @@ The ZIP does not contain an enclosing parent directory. If this is a truly blank
 
 Overview · Board · Timeline · Scheduling · Tasks · Task configuration · Sprints · Releases · Testing · Resources · Collaboration · Costs · **Governance** (Projects → Portfolios → Programs) · Automations · Reports · Activity · Specifications · Backup · Settings.
 
-Project management, task hierarchy, schedules, sprint safeguards, releases, resources, financial reports, portfolios, local automation commands and backup recovery use the original data model. Projects, Portfolios and Programs are independent management screens grouped under Governance. They use `src/projectRelations.cjs` and a single canonical workspace store for shared membership and roll-ups and the existing canonical workspace store. Complex controls are organized in collapsible sections and inline task rows.
+Project management, task hierarchy, schedules, sprint safeguards, releases, resources, financial reports, portfolios, local automation commands and backup recovery use the original data model. Projects, Portfolios and Programs are independent management screens grouped under Governance. They use `src/domain/projectRelations.cjs` and a single canonical workspace store for shared membership and roll-ups and the existing canonical workspace store. Complex controls are organized in collapsible sections and inline task rows.
 
 The application is local-only: it does **not** provide remote multi-user sync, push reminders, authenticated GitHub operations or cloud-run automation. Existing Firestore readiness files do not imply enabled cloud services.
 

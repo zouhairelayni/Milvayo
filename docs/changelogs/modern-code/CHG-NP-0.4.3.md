@@ -1,10 +1,10 @@
 # CHG-NP-0.4.3 — Mock design fidelity, native motion, and timeline hardening
 
-**Product:** Niyarvo Projects (independent application)
-**Baseline:** `NiyarvoProjects-v0.4.2-MOCK-DESIGN-INTEGRATED.zip`
-**Target:** `v0.4.3` QA candidate (not runtime-accepted)
-**Date:** 2026-10-31
-**Scope:** Android/iOS gestures, visual fidelity, compact task sheet, timeline resource safety.
+**Product:** Niyarvo Projects (independent application)  
+**Baseline:** `NiyarvoProjects-v0.4.2-MOCK-DESIGN-INTEGRATED.zip`  
+**Target:** `v0.4.3` QA candidate (not runtime-accepted)  
+**Date:** 2026-10-31  
+**Scope:** Android/iOS gestures, visual fidelity, compact task sheet, timeline resource safety.  
 **Persistence:** Existing v0.4.1/v0.4.2 workspace format, no migration or automatic deletion.
 
 ## 0. Read first
