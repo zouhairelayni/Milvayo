@@ -57,7 +57,7 @@ test('byte readers: Android picker, iOS picker, cancel, size limits', async () =
 
 test('Backup screen: formats, password rules, protected-file unlock, no password kept', () => {
   const src = read('src/screens/workspace/Backup.js');
-  assert.match(src, /niyavCodec\.encode\(text,\{password:protect\?pw:undefined,\.\.\.job\}\)/, 'no password means a plain gzip file, never an empty one');
+  assert.match(src, /niyavCodec\.encode\(text,\{password:protect\?pw:undefined,level,\.\.\.job\}\)/, 'no password means a plain gzip file, never an empty one');
   assert.match(src, /Array\.from\(pw\)\.length<MIN_PASSWORD/);
   assert.match(src, /pw!==pw2/);
   assert.match(src, /if\(protect\)\{setPw\(''\);setPw2\(''\)\}/, 'the password fields are cleared after a protected export');

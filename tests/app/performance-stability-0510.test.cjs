@@ -60,7 +60,7 @@ test('invalid WBS graphs reject before rendering or saving',()=>{
  assert.equal(normalizeGovernance({wbs:[n('w0',null),n('__proto__','w0')]}).wbs.length,2);
 });
 test('project/task identity resets stale editors; hidden pages do not stay subscribed',()=>{
- const app=source('src/app/ModernApp.js');assert.match(app,/const retainHiddenTab = \(\) => retainsHiddenTabs\(Platform\.OS\)/);assert.match(app,/<StoreFreeze frozen=\{!active\}>/);assert.match(app,/key=\{`\$\{workspace.selectedId\}:\$\{taskId\}`\}/);
+ const app=source('src/app/ModernApp.js');assert.match(app,/const retainHiddenTab = \(\) => retainsHiddenTabs\(Platform\.OS\)/);assert.match(app,/<StoreFreeze frozen=\{!active\}>/);assert.match(app,/key=\{`\$\{projectId\}:\$\{taskId\}`\}/);
  assert.match(source('src/governance/pm.js'),/require\('\.\.\/domain\/model.cjs'\)\.id\(prefix\)/);assert.match(source('src/gestures/gesture.native.js'),/else callbacks.current.onCancel\?\.\(\)/);
 });
 test('critical path handles a reversed 10k dated chain without overflowing the stack',()=>{

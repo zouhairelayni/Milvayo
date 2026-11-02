@@ -167,11 +167,11 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, go, quer
 
 function Shell({}) {
   const { c, mode, setPref } = useTheme();
-  const { addTask, switchProject, workspace, notice, dismissNotice } = useStore();
+  const { addTask, switchProject, workspace, workspaceId, notice, dismissNotice } = useStore();
   const wide = useWide();
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState('overview');
-  const projectId = workspace.selectedId;
+  const projectId = `${workspaceId}/${workspace.selectedId}`; // project ids repeat when a backup is imported as a second workspace
   const projectIdRef = useRef(projectId);
   projectIdRef.current = projectId;
   const [visitedState, setVisitedState] = useState({ projectId, list: ['overview'] });
@@ -238,6 +238,8 @@ function Shell({}) {
     go('projects');
   }, [switchProject, go]);
   const clearProjectRequest = useCallback(() => setProjectRequest(null), []);
+  // A different workspace: close the open task and drop filters and requests that pointed into the old one.
+  useEffect(() => { setTaskId(null); setQuery(''); setStatusRequest(null); setProjectRequest(null); setMenu(false); }, [workspaceId]);
   const toggleMode = () => setPref(mode === 'dark' ? 'light' : 'dark');
   const newTask = () => { const id=addTask('Untitled task', 'Backlog', MAIN); if(id)setTaskId(id); };
   const onQuery = (q) => {
@@ -248,11 +250,11 @@ function Shell({}) {
   
   const page = <>
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
-      <CachedPage key={`${workspace.selectedId}:${id}`} pageId={id} active={screen === id} openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
+      <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
     )}
-    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? screen : `${workspace.selectedId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
+    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
   </>;
-  const sheet = taskId ? <TaskSheet key={`${workspace.selectedId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null;
+  const sheet = taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null;
   const barStyle = mode === 'dark' ? 'light' : 'dark';
   const screenTitle = NAV.flatMap(group=>group.items).find(([id])=>id===screen)?.[1] || 'Overview';
 

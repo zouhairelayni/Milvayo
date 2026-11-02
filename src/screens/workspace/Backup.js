@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
+import { loadBackupLevel, saveBackupLevel } from '../../store/backupLevel';
+const { DEFAULT_LEVEL } = require('../../store/niyav.cjs');
 const {MAX_IMPORT_BYTES,tooBig,parseBackupJson,pickAndroidFileBytes,pickDocumentFileBytes}=require('../../store/importFiles.cjs');
 import { niyavCodec } from '../../store/niyavPrimitives';
 import { Bar, Button, Card, Chip, Empty, Input, SectionTitle, Segmented, T, downloadBytes, downloadText } from '../../ui/ui';
@@ -31,18 +33,24 @@ function pickBytesFile(done, fail) {
 }
 
 const MIN_PASSWORD = 12;
+const LEVEL_TEXT = {
+  low: 'Low · 200,000 rounds. Fastest to create and open. Fine for everyday backups with a strong password.',
+  medium: 'Medium · 400,000 rounds. Balanced. Recommended.',
+  high: 'High · 600,000 rounds. Slowest on a phone, hardest for someone to guess the password.',
+};
 const paint = () => new Promise((resolve) => setTimeout(resolve, 40)); // let the "working" message appear before heavy work starts
 const kb = (n) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
 
 export default function Backup() {
   const { c } = useTheme();
-  const { s, projects, backupText, importProject, restoreWorkspace, createSnapshot, recoverProject, switchProject, workspace, restoreSnapshot } = useStore();
+  const { s, projects, backupText, importProject, restoreWorkspace, createSnapshot, recoverProject, switchProject, workspace, restoreSnapshot, workspaceId } = useStore();
   const [notice, setNotice] = useState(null); // { ok, text }
   const [wholeFile,setWholeFile]=useState(null); // selected full-workspace JSON, not yet applied
   const [fmt, setFmt] = useState('json'); // export format: 'json' | 'niyav'
   const [protect, setProtect] = useState(false); // password-protect a .niyav export
   const [pw, setPw] = useState('');
   const [pw2, setPw2] = useState('');
+  const [level, setLevel] = useState(DEFAULT_LEVEL); // remembered protection level: 'low' | 'medium' | 'high'
   const [withSnapshots, setWithSnapshots] = useState(false);
   const [busy, setBusy] = useState(null); // message while compressing / deriving a key
   const [progress, setProgress] = useState(null); // 0..1 while a password key is derived, else null
@@ -56,6 +64,8 @@ export default function Backup() {
   const end = () => { abortRef.current = null; setBusy(null); setProgress(null); };
   const cancel = () => abortRef.current && abortRef.current.abort();
   useEffect(() => () => { if (abortRef.current) abortRef.current.abort(); }, []);
+  useEffect(() => { let live = true; loadBackupLevel().then((v) => { if (live) setLevel(v); }); return () => { live = false; }; }, []);
+  const pickLevel = (v) => { setLevel(v); saveBackupLevel(v); };
   const [locked, setLocked] = useState(null); // { bytes, purpose } protected file waiting for its password
   const [unlockPw, setUnlockPw] = useState('');
   const archived = projects.filter((p) => p.archived);
@@ -63,7 +73,7 @@ export default function Backup() {
   const say = (ok, text) => setNotice({ ok, text });
   const runImport = (text) => {
     if(tooBig(text)){say(false,'Import exceeds 5 MB limit');return;}
-    const r = importProject(text);
+    const r = importProject(text, workspaceId); // the file may take seconds to open; refuse if another workspace is open by now
     if (r.ok) {
       say(true, r.names.length === 1 ? `Imported "${r.names[0]}" and opened it.` : `Imported ${r.names.length} projects. "${r.names[r.names.length - 1]}" is open.`);
     } else say(false, r.error);
@@ -115,7 +125,7 @@ export default function Backup() {
     const job=begin(protect?'Protecting your backup… leaving this screen cancels it.':'Compressing…');
     try{
       await paint();
-      const bytes=await niyavCodec.encode(text,{password:protect?pw:undefined,...job});
+      const bytes=await niyavCodec.encode(text,{password:protect?pw:undefined,level,...job});
       if(await downloadBytes(`${base}.niyav`,bytes,'application/octet-stream')){
         say(true,`${protect?'Password-protected':'Compressed'} backup is ready (${kb(bytes.length)}). ${what}`);
         if(protect){setPw('');setPw2('')}
@@ -167,6 +177,8 @@ export default function Backup() {
               <View style={{ gap: 8 }}>
                 <Input secure value={pw} onChangeText={setPw} placeholder={`Password (${MIN_PASSWORD}+ characters)`} />
                 <Input secure value={pw2} onChangeText={setPw2} placeholder="Repeat password" />
+                <Segmented options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} value={level} onChange={pickLevel} />
+                <T size={11} muted>{LEVEL_TEXT[level]} All three use AES-256 encryption; the level only sets how slow it is to guess the password. The level is saved in the file, so opening it never asks for it.</T>
                 <T size={11} muted>The password is never stored or sent anywhere. If it is forgotten, this backup cannot be opened by anyone, including Niyarvo. Keep it somewhere safe.</T>
               </View>
             ) : null}

@@ -19,6 +19,38 @@ const concat = (chunks, total) => {
   return out;
 };
 
+// Browsers (and any runtime that ships WebCrypto) derive the key natively in a fraction of the time. Hermes in Expo
+// Go has no crypto.subtle and expo-crypto offers no PBKDF2, so Android and iOS use the chunked JavaScript path.
+// The native result is compared once with the JavaScript result before it is trusted; any doubt falls back.
+// It cannot be interrupted mid-derivation, so cancellation is honoured before and after the call.
+let nativeState = null; // null = untested, true = verified, false = unusable
+const subtle = () => (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle && typeof globalThis.crypto.subtle.deriveBits === 'function' ? globalThis.crypto.subtle : null);
+const deriveNative = async (s, password, salt, iterations) => {
+  const key = await s.importKey('raw', password, 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await s.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, key, 256));
+};
+async function nativePbkdf2(password, salt, iterations, dkLen, { onProgress, signal } = {}) {
+  const s = nativeState === false ? null : subtle();
+  if (!s || dkLen !== 32) return null;
+  const stop = () => { if (signal && signal.aborted) throw new NiyavError('NIYAV_CANCELLED', 'Cancelled.'); };
+  try {
+    if (nativeState === null) {
+      const a = await deriveNative(s, strToU8('password'), strToU8('salt'), 1000);
+      nativeState = toHex(a) === '632c2812e46d4604102ba7618e9d6d7d2f8128f6266b4a03264d2a0460b7dcb3';
+      if (!nativeState) return null;
+    }
+    stop();
+    const out = await deriveNative(s, password, salt, iterations);
+    stop();
+    if (onProgress) onProgress(1);
+    return out;
+  } catch (error) {
+    if (error instanceof NiyavError) throw error;
+    nativeState = false;
+    return null;
+  }
+}
+
 const primitives = {
   strToU8: (s) => strToU8(s),
   strFromU8: (u8) => strFromU8(u8),
@@ -37,7 +69,9 @@ const primitives = {
     return concat(chunks, total);
   },
   // Slices of about 16 ms with a timer wait between them (see pbkdf2Chunked.cjs); onProgress and signal come from the screen.
-  pbkdf2: (password, salt, iterations, dkLen, options) => {
+  pbkdf2: async (password, salt, iterations, dkLen, options) => {
+    const fast = await nativePbkdf2(password, salt, iterations, dkLen, options);
+    if (fast) return fast;
     const keyed = hmac.create(sha256, password);
     return pbkdf2Chunked((message) => keyed.clone().update(message).digest(), salt, iterations, dkLen, options);
   },

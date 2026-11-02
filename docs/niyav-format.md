@@ -25,7 +25,7 @@ A 40-byte header followed by `ciphertext || tag`.
 - Key: `PBKDF2-HMAC-SHA256(password, salt, iterations, 32 bytes)`. Password = Unicode NFKC, then UTF-8.
 - Plaintext: the gzip stream of the backup JSON (compress, then encrypt).
 - Additional authenticated data: the whole 40-byte header. Changing any header byte makes decryption fail.
-- Default iterations: 600,000 (OWASP 2023 minimum for PBKDF2-HMAC-SHA256). Readers accept 100,000 to 10,000,000 and refuse anything else before doing any work.
+- Levels (0.5.28): Low 200,000, Medium 400,000 (default), High 600,000 (OWASP 2023 figure, the only value before 0.5.28). Readers accept 100,000 to 1,000,000 and refuse anything else before doing any work.
 - Every file uses a fresh random salt and nonce. Nothing in the file names the project, workspace, counts or dates.
 - Algorithms are standard and FIPS-approved (AES-256-GCM, PBKDF2-HMAC-SHA256, SHA-256). No custom cryptography.
 

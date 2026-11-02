@@ -10,7 +10,7 @@ const programs=require('../domain/programs.cjs');
 const projectRelations=require('../domain/projectRelations.cjs');
 const backupBudget=require('./backupBudget.cjs');
 const {parseBackupJson}=require('./importFiles.cjs');
-const KEY='niyarvo-projects-v1'; // IMPORTANT: same original workspace; do not migrate into a competing store.
+const workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'niyarvo-projects-v1', so nothing is migrated
 const StoreContext=createContext(null);
 const ActionsContext=createContext(null); // stable actions only, so memoised children skip store-value changes
 const ActiveContext=createContext(true); // false while a retained tab is hidden; deferred work (progressive mounting) waits
@@ -27,9 +27,11 @@ export function StoreProvider({children}){
  const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});
  const currentRef=useRef(null),loaded=useRef(false),lastError=useRef('');
  const normalizer=useRef(null),writer=useRef(null);
+ const [idx,setIdx]=useState(null),indexRef=useRef(null),swapping=useRef(false),epochRef=useRef(0);
  if(!normalizer.current)normalizer.current=model.createWorkspaceNormalizer();
- if(!writer.current)writer.current=require('./latestWriter.cjs').createLatestWriter(
-  value=>AsyncStorage.setItem(KEY,JSON.stringify(value)),
+ // A writer is bound to one storage key for its whole life, so a late save can only ever reach the workspace it was made for.
+ const makeWriter=key=>require('./latestWriter.cjs').createLatestWriter(
+  value=>AsyncStorage.setItem(key,JSON.stringify(value)),
   {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},
    onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});
  useEffect(()=>{
@@ -38,13 +40,18 @@ export function StoreProvider({children}){
   if(Platform.OS==='web'&&typeof window!=='undefined')window.addEventListener('pagehide',save);
   return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined')window.removeEventListener('pagehide',save);save();};
  },[]);
- useEffect(()=>{let active=true;AsyncStorage.getItem(KEY).then(raw=>{
+ useEffect(()=>{let active=true;(async()=>{
+   const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);
+   const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());
+   const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);
    if(!active)return;
    const loadedWorkspace=normalizer.current(raw?JSON.parse(raw):model.createWorkspace());
-   currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setReady(true);
+   writer.current=makeWriter(key);indexRef.current=index;
+   currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setIdx(index);setReady(true);
    // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.
    if(!raw)void writer.current.enqueue(loadedWorkspace);
- }).catch(e=>{if(active){setFault(`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify('Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false}},[]);
+   if(!rawIndex||index!==parsed)AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(index)).catch(()=>{}); // the list is rebuilt from the saved keys if this write is lost
+ })().catch(e=>{if(active){setFault(`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify('Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false}},[]);
  const put=(next)=>{
   // Validate before mutating any in-memory or persistent state.
   const safe=normalizer.current(next);
@@ -76,7 +83,45 @@ export function StoreProvider({children}){
  },label);
  const safeMutation=(fn,label)=>projectChange(fn,label);
  const snapshotChange=(fn,label)=>trans(w=>{const p=current(w),next=fn(p);const safe=bridge.reconcile(p,next);model.validateProject(safe);return {...w,backups:[model.workspaceSnapshot(w,'Before '+label),...w.backups].slice(0,12),projects:w.projects.map(x=>x.id===p.id?safe:x)}},label);
+ // One workspace change at a time. Edits are refused while it runs, the open workspace is fully saved first, and the
+ // epoch changes on every switch so work that started in the old workspace can tell it must not write into the new one.
+ const exclusive=async fn=>{
+  if(swapping.current){notify('Another workspace change is still running.','info');return false}
+  swapping.current=true;
+  try{return await fn()}catch(e){notify(e.message||String(e),'error');return false}finally{swapping.current=false}
+ };
+ const saveIndex=async next=>{await AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(next));indexRef.current=next;setIdx(next)};
+ // Order matters for interrupted runs: new data first, then the list; the list's active pointer moves last.
+ const swapTo=(nextIndex,seed)=>exclusive(async()=>{
+  const key=workspaces.keyFor(nextIndex.activeId);let wrote=false;loaded.current=false;
+  try{
+   if(!currentRef.current)throw Error('The workspace is still loading. Try again in a moment.');
+   if(!(await writer.current.flush()))throw Error('The open workspace could not be saved. Export a backup before switching.');
+   let next=seed;
+   if(next){await AsyncStorage.setItem(key,JSON.stringify(next));wrote=true}
+   else{const raw=await AsyncStorage.getItem(key);if(!raw)throw Error('That workspace has no saved data.');next=normalizer.current(JSON.parse(raw))}
+   await saveIndex(nextIndex);
+   epochRef.current+=1;writer.current=makeWriter(key);currentRef.current=next;
+   setWs(next);setFault('');return true;
+  }catch(e){if(wrote)AsyncStorage.removeItem(key).catch(()=>{});throw e}
+  finally{loaded.current=true}
+ });
  const api=useMemo(()=>({
+  activeWorkspaceId:()=>indexRef.current?.activeId,
+  switchWorkspace:async id=>{try{const cur=indexRef.current;return cur.activeId===id?true:await swapTo(workspaces.setActive(cur,id))}catch(e){notify(e.message,'error');return false}},
+  createWorkspace:async name=>{try{
+    const nextIndex=workspaces.addItem(indexRef.current,name,model.id('ws'));
+    const p=model.makeProject({id:model.id('project'),name:'First project',code:'PROJ'});
+    const seed=normalizer.current({schemaVersion:1,selectedId:p.id,projects:[p],portfolios:[],programs:[],backups:[],activity:[{id:model.id('activity'),at:model.iso(),action:'Workspace created'}],revision:1});
+    return await swapTo(nextIndex,seed);
+   }catch(e){notify(e.message,'error');return false}},
+  renameWorkspace:(id,name)=>exclusive(async()=>{await saveIndex(workspaces.renameItem(indexRef.current,id,name));return true}),
+  // Data first, list second: a crash in between leaves a listed workspace with no data, which the next start drops.
+  deleteWorkspace:async id=>{try{
+    const cur=indexRef.current;workspaces.removeItem(cur,id); // refuses the last workspace
+    if(id===cur.activeId&&!(await swapTo(workspaces.setActive(cur,cur.items.find(x=>x.id!==id).id))))return false;
+    return await exclusive(async()=>{await AsyncStorage.removeItem(workspaces.keyFor(id));await saveIndex(workspaces.removeItem(indexRef.current,id));return true});
+   }catch(e){notify(e.message,'error');return false}},
   flush:()=>writer.current.flush(),
   switchProject:id=>trans(w=>model.selectWorkspaceProject(w,id),`Opened project ${id}`),
   createProject:name=>{const clean=String(name||'').trim();if(!clean){setFault('Project name required');return null;}
@@ -84,7 +129,8 @@ export function StoreProvider({children}){
     if(!trans(w=>({...w,selectedId:p.id,projects:[...w.projects,p]}),`Created project ${p.name}`))return null;return p.id;},
   archiveProject:id=>{const w=currentRef.current;if((w?.projects||[]).filter(p=>!p.archived).length<2)return 'last';return trans(w=>model.archiveProject(w,id,true),`Archived project ${id}`)},
   recoverProject:id=>trans(w=>model.archiveProject(w,id,false),`Recovered project ${id}`),
-  importProject:text=>{try{
+  importProject:(text,expectWorkspaceId)=>{try{
+    if(expectWorkspaceId&&expectWorkspaceId!==indexRef.current?.activeId){const error='The workspace changed while the file was opening. Nothing was imported; open the file again.';notify(error,'error');return {ok:false,error}}
     const value=parseBackupJson(text);let items=[];
     if(value.format===model.FORMAT)items=[value];
     else if(value.schemaVersion===1&&Array.isArray(value.projects))items=value.projects;
@@ -165,7 +211,7 @@ export function StoreProvider({children}){
   removeGithubLink:(taskId,url)=>safeMutation(p=>model.powerUps.removeLink(p,taskId,url),'Removed GitHub reference'),
   // Reads the public GitHub API once and stores the result on the link; private repos and rate limits report a notice.
   refreshGithubLink:async(taskId,url)=>{try{const task=current(currentRef.current).tasks.find(t=>t.id===taskId);const link=model.powerUps.normalizeTaskLinks(task?.githubLinks).find(l=>l.url===url);if(!link)throw Error('GitHub link not found');
-    const preview=await model.powerUps.fetchPublicPreview(link);return safeMutation(p=>model.powerUps.setPreview(p,taskId,url,preview),'Refreshed GitHub reference')}catch(e){notify(e.message||'GitHub refresh failed','error');return false}},
+    const epoch=epochRef.current;const preview=await model.powerUps.fetchPublicPreview(link);if(epoch!==epochRef.current)return false;return safeMutation(p=>model.powerUps.setPreview(p,taskId,url,preview),'Refreshed GitHub reference')}catch(e){notify(e.message||'GitHub refresh failed','error');return false}},
   setBoardView:(boardId,patch)=>safeMutation(p=>model.kanbanUX.setBoardView(p,boardId,patch),'Saved board display preference'),
   saveTaskView:raw=>safeMutation(p=>model.planning.saveView(p,raw),'Saved task view'),
   deleteTaskView:id=>safeMutation(p=>model.planning.removeView(p,id),'Deleted task view'),
@@ -217,7 +263,8 @@ export function StoreProvider({children}){
  const dismissNotice=useMemo(()=>()=>setNotice(null),[]);
  const view=useMemo(()=>ws?bridge.projectView(ws):null,[ws]);
  const projects=useMemo(()=>ws?ws.projects.map(p=>({id:p.id,name:p.name,release:p.version,tasks:p.tasks.length,current:p.id===ws.selectedId,archived:p.archived})):[],[ws]);
- const context=useMemo(()=>({s:view,projects,workspace:ws,error:fault,notice,dismissNotice,...api}),[view,projects,ws,fault,notice,dismissNotice,api]);
+ const workspaceList=useMemo(()=>idx?{activeId:idx.activeId,items:idx.items}:null,[idx]);
+ const context=useMemo(()=>({s:view,projects,workspace:ws,workspaceList,workspaceId:idx?.activeId,error:fault,notice,dismissNotice,...api}),[view,projects,ws,workspaceList,idx,fault,notice,dismissNotice,api]);
  if(!ready)return <View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><ActivityIndicator/><T>Opening local workspace…</T></View>;
  if(!ws)return <View style={{flex:1,justifyContent:'center',padding:28,gap:12}}><T weight="600">Workspace data could not be opened safely</T><T>{fault}</T><T>Return to your last working release. Do not clear application storage.</T></View>;
  return <ActionsContext.Provider value={api}><StoreContext.Provider value={context}><View style={{flex:1}}>{children}</View></StoreContext.Provider></ActionsContext.Provider>;

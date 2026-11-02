@@ -31,11 +31,17 @@ const SALT_BYTES = 16;
 const NONCE_BYTES = 12;
 const TAG_BYTES = 16;
 const KEY_BYTES = 32;
-// OWASP 2023 minimum for PBKDF2-HMAC-SHA256. Stored in the header, so a future release can raise it for new files.
-const DEFAULT_ITERATIONS = 600000;
-// Refuse weak files and refuse absurd costs before spending any CPU on a hostile header.
+// Protection levels the user can pick. Only the PBKDF2 work factor differs (resistance to password guessing);
+// every level uses the same AES-256-GCM key length. The count is stored in the header, so a file always opens
+// with the level it was made with. 600000 is the OWASP 2023 figure and the value used by 0.5.24-0.5.27 files.
+const LEVELS = Object.freeze({ low: 200000, medium: 400000, high: 600000 });
+const DEFAULT_LEVEL = 'medium';
+const DEFAULT_ITERATIONS = LEVELS[DEFAULT_LEVEL];
+const iterationsForLevel = (level) => (Object.prototype.hasOwnProperty.call(LEVELS, level) ? LEVELS[level] : DEFAULT_ITERATIONS);
+// Refuse weak files and refuse absurd costs before spending any CPU on a hostile header. The ceiling is well above
+// the strongest preset and keeps a forged header from stalling a phone for minutes (0.5.28: was 10,000,000).
 const MIN_ITERATIONS = 100000;
-const MAX_ITERATIONS = 10000000;
+const MAX_ITERATIONS = 1000000;
 const MIN_PASSWORD_LENGTH = 12;
 const MAX_PASSWORD_LENGTH = 256;
 const MAX_PLAIN_BYTES = 5 * 1024 * 1024;
@@ -116,7 +122,7 @@ function createCodec(prim) {
   }
 
   // text -> bytes. No password: standard gzip. With a password: protected envelope (see header comment).
-  async function encode(text, { password, iterations = DEFAULT_ITERATIONS, maxBytes = MAX_PLAIN_BYTES, onProgress, signal } = {}) {
+  async function encode(text, { password, level, iterations = iterationsForLevel(level), maxBytes = MAX_PLAIN_BYTES, onProgress, signal } = {}) {
     if (typeof text !== 'string') throw new NiyavError('NIYAV_INPUT', 'Nothing to back up.');
     const plain = prim.strToU8(text);
     if (plain.length > maxBytes) throw new NiyavError('NIYAV_TOO_LARGE', 'The backup is larger than the 5 MB limit.');
@@ -171,5 +177,5 @@ function createCodec(prim) {
 module.exports = {
   createCodec, sniff, NiyavError,
   HEADER_BYTES, SALT_BYTES, NONCE_BYTES, TAG_BYTES, KEY_BYTES,
-  DEFAULT_ITERATIONS, MIN_ITERATIONS, MAX_ITERATIONS, MIN_PASSWORD_LENGTH, MAX_PLAIN_BYTES,
+  LEVELS, DEFAULT_LEVEL, DEFAULT_ITERATIONS, iterationsForLevel, MIN_ITERATIONS, MAX_ITERATIONS, MIN_PASSWORD_LENGTH, MAX_PLAIN_BYTES,
 };
