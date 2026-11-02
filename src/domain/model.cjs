@@ -94,7 +94,6 @@ function normalizeWorkspaceWith(input,normalizeProject){
  if(!projects.length)throw Error('Workspace must contain a project');
  if(projects.every(p=>p.archived))throw Error('Workspace must contain at least one active project');
  validateUnique(projects,'project');
- const valid=new Set(projects.map(p=>p.id));
  const portfolios=operations.normalizePortfolios(input.portfolios||[],projects);
  return {schemaVersion:1,portfolios,programs:programs.normalized(input.programs||[],projects,portfolios),selectedId:projects.some(p=>p.id===input.selectedId&&!p.archived)?input.selectedId:(projects.find(p=>!p.archived)||projects[0]).id,projects,
  backups:arr(input.backups,15).filter(s=>s&&typeof s==='object'&&['project','workspace'].includes(s.kind)),

@@ -8,7 +8,6 @@ const MAX_CANVAS_WIDTH = 8192;
 const INITIAL_ROWS = 12;
 const OVERSCAN_ROWS = 3;
 
-const finite = (n) => Number.isFinite(n) ? n : 0;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 function rangeForTasks(tasks, today, addDays, daysBetween) {

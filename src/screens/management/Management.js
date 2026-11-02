@@ -1,9 +1,8 @@
 // /src/screens/management/Management.js
 import {useState} from 'react';
-import {Pressable,View} from 'react-native';
-import {Page,Card,T,Button,Chip,SectionTitle} from '../../ui/ui';
+import {View} from 'react-native';
+import {Page,T,Button,Chip} from '../../ui/ui';
 import {useStore} from '../../store/store';
-import {useTheme} from '../../ui/theme/theme';
 import {Fold,EditRow,Labeled,Pick,DangerConfirm} from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
 const model=require('../../domain/model.cjs');

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Bar, Button, Card, Chip, Page, Pill, T } from '../../ui/ui';
 import { Fold, EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
 import { useStore } from '../../store/store';
-import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
+import { useTheme } from '../../ui/theme/theme';
 const {portfolioSummary, projectSummary}=require('../../domain/projectRelations.cjs');
 const {portfolioMetric}=require('../../domain/governanceSummary.cjs');
 

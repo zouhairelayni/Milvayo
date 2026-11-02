@@ -1,6 +1,6 @@
 // /src/board/boardGesture.native.js
 import { useEffect, useRef, useState } from 'react';
-import { PanResponder, Platform } from 'react-native';
+import { PanResponder } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { dragOffset, hasScrolledBeforeHold } from './boardDragMath.cjs';
 import { hitTitle, isDoubleTap } from './boardInteractions.cjs';
@@ -8,7 +8,6 @@ import { hitTitle, isDoubleTap } from './boardInteractions.cjs';
 const SLOP = 8;
 const DOUBLE_MS = 350;
 const TICK_MS = 30;
-const IS_WEB = Platform.OS === 'web' && typeof document !== 'undefined';
 const pendingHolds = new Set();
 export function cancelPendingBoardHolds() {
   pendingHolds.forEach(cancel => cancel());
@@ -25,10 +24,6 @@ export function cancelPendingBoardHolds() {
 // onMove(x, y, pageX, pageY) and onDrop(x, y, pageX, pageY) get the offset in content space:
 // finger movement plus any scroll since the lift.
 // Native motion is drawn with Reanimated shared values; dragging doesn't re-render the screen.
-//
-// On web, once lifted the hook follows the finger with its own document listeners. The browser's
-// responder system drops the PanResponder whenever a parent ScrollView scrolls (including our
-// own auto-scroll), which used to end the drag early.
 export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, onTap, onTitleDoubleTap, onLift, onMove, onDrop, onCancel }) {
   const cb = useRef({});
   cb.current = { getScroll, onTap, onTitleDoubleTap, onLift, onMove, onDrop, onCancel };
@@ -45,7 +40,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
   };
 
   const st = useRef({
-    timer: null, openTimer: null, tick: null, detach: null,
+    timer: null, openTimer: null, tick: null,
     active: false, moved: false, justDropped: false, pageX: 0, pageY: 0, lastTitleTap: 0, tapSerial: 0,
     x0: 0, y0: 0,           // finger position at the lift
     px: 0, py: 0,           // latest finger position
@@ -59,9 +54,6 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
   const clearTick = () => {
     clearInterval(st.current.tick);
     st.current.tick = null;
-  };
-  const detachDoc = () => {
-    if (st.current.detach) st.current.detach();
   };
 
   const scrollNow = () => (cb.current.getScroll ? cb.current.getScroll() : { x: 0, y: 0 });
@@ -124,7 +116,6 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
     const s = st.current;
     if (s.active) {
       clearTick();
-      detachDoc();
       const { x, y } = place();
       s.active = false;
       s.justDropped = true;
@@ -138,35 +129,6 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
       handleTap({ x: s.px, y: s.py });
     }
     s.moved = false;
-  };
-
-  // Web only: follow the finger (or mouse) at document level while lifted.
-  const attachDoc = () => {
-    if (!IS_WEB || st.current.detach) return;
-    const move = (e) => {
-      if (e.cancelable) e.preventDefault(); // keeps the browser from scrolling the page under the drag
-      const p = e.touches && e.touches[0] ? e.touches[0] : e;
-      st.current.px = p.pageX;
-      st.current.py = p.pageY;
-      sync();
-    };
-    const up = () => end(false);
-    const noMenu = (e) => e.preventDefault(); // a long press would otherwise open the browser menu
-    document.addEventListener('touchmove', move, { passive: false });
-    document.addEventListener('mousemove', move);
-    document.addEventListener('touchend', up);
-    document.addEventListener('touchcancel', up);
-    document.addEventListener('mouseup', up);
-    document.addEventListener('contextmenu', noMenu);
-    st.current.detach = () => {
-      document.removeEventListener('touchmove', move);
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('touchend', up);
-      document.removeEventListener('touchcancel', up);
-      document.removeEventListener('mouseup', up);
-      document.removeEventListener('contextmenu', noMenu);
-      st.current.detach = null;
-    };
   };
 
   // Native: do not seize responder at finger-down. ScrollViews must be able to
@@ -257,13 +219,12 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
     return () => pendingHolds.delete(cancelPending);
   }, []);
 
-  // Stop any pending timers and listeners when the item unmounts.
+  // Stop any pending timers when the item unmounts.
   useEffect(
     () => () => {
       clearTimeout(st.current.timer);
       clearTimeout(st.current.openTimer);
       clearInterval(st.current.tick);
-      if (st.current.detach) st.current.detach();
     },
     []
   );

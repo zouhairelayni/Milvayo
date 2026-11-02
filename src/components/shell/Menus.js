@@ -7,6 +7,7 @@ import { radius, useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
 import { Button, IconBtn, Input, T } from '../../ui/ui';
 import { DangerConfirm } from '../inline/CompactTools';
+import InlineNotice from '../notice/InlineNotice';
 
 // Side navigation shared by the wide layout (Sidebar) and the phone layout (SideMenu).
 function Brand() {
@@ -51,7 +52,7 @@ function NavGroups({ nav, current, go }) {
 }
 
 // Project switcher: slides in over the menu, lists the open projects and ends with a + Create new row.
-function ProjectDrawer({ onClose, onPick }) {
+function ProjectDrawer({ onClose, onPick, inModal }) {
   const { c } = useTheme();
   const { projects, createProject } = useStore();
   const [naming, setNaming] = useState(false);
@@ -74,6 +75,7 @@ function ProjectDrawer({ onClose, onPick }) {
         <T serifFace size={20} weight="600">Projects</T>
         <IconBtn icon="x" label="Close projects" onPress={onClose} />
       </View>
+      {inModal ? <InlineNotice /> : null}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
         {projects.filter((p) => !p.archived).map((p) => (
           <Pressable
@@ -119,7 +121,7 @@ function ProjectDrawer({ onClose, onPick }) {
 }
 
 // Workspace switcher: same slide-over as the project drawer. Tap a row to open it; the pencil opens rename and delete.
-function WorkspaceDrawer({ onClose }) {
+function WorkspaceDrawer({ onClose, inModal }) {
   const { c } = useTheme();
   const { workspaceList, workspace, switchWorkspace, createWorkspace, renameWorkspace, deleteWorkspace } = useStore();
   const [naming, setNaming] = useState(false);
@@ -146,6 +148,7 @@ function WorkspaceDrawer({ onClose }) {
         <T serifFace size={20} weight="600">Workspaces</T>
         <IconBtn icon="x" label="Close workspaces" onPress={onClose} />
       </View>
+      {inModal ? <InlineNotice /> : null}
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 6 }}>
         {workspaceList.items.map((w) => {
           const on = w.id === workspaceList.activeId;
@@ -292,8 +295,8 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject }) 
           <WorkspaceRow onPress={() => setSpaces(true)} />
           <ProjectCard onPress={() => setDrawer(true)} />
           <NavGroups nav={nav} current={current} go={go} />
-          {spaces ? <WorkspaceDrawer onClose={() => setSpaces(false)} /> : null}
-          {drawer ? <ProjectDrawer onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
+          {spaces ? <WorkspaceDrawer inModal onClose={() => setSpaces(false)} /> : null}
+          {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
         </View>
         <Pressable onPress={onClose} style={{ flex: 1 }} accessibilityLabel="Dismiss menu" />
       </View>

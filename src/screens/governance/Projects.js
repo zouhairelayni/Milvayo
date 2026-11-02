@@ -75,7 +75,7 @@ const DocGroups=memo(function DocGroups({pm,setTab}){
 },(a,b)=>a.setTab===b.setTab&&a.pm.docs===b.pm.docs&&a.pm.wbs===b.pm.wbs&&a.pm.budget===b.pm.budget&&a.pm.risks===b.pm.risks);
 
 function ProjectGovernance({back,tab,setTab}){
- const {c}=useTheme();const {s,setPm,setDocStatus}=useGovernance();const {workspace}=useStore();
+ const {s,setPm}=useGovernance();const {workspace}=useStore();
  const p=workspace.projects.find(x=>x.id===workspace.selectedId); const m=projectMetric(p);
  const info=s.pm.info;const patch=x=>setPm('info',{...info,...x},'Updated project governance');
  const special=tab==='overview'?null:DOC_BY_KEY[tab]?.special;

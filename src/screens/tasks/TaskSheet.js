@@ -9,6 +9,7 @@ import { Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/u
 import { useStore } from '../../store/store';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR, serif } from '../../ui/theme/theme';
 import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';
+import InlineNotice from '../../components/notice/InlineNotice';
 import { Field, InlineDrop, DateField, CustomValueInput } from './TaskFields';
 import { localDay } from '../../utils/localDay.cjs';
 import { descendants } from '../../domain/taskWorkflows.cjs';
@@ -16,7 +17,7 @@ const NONE = new Set();
 
 export default function TaskSheet({ taskId, onClose }) {
   const { c } = useTheme();
-  const { s, workspace, setLabels, updateTask, moveTask, addTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
+  const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
   const t = s.tasks.find((x) => x.id === taskId);
   const [open, setOpen] = useState(null);
   const [mode, setMode] = useState('Standard');
@@ -80,6 +81,7 @@ export default function TaskSheet({ taskId, onClose }) {
 
   const footer = t ? (
     <>
+      <InlineNotice />
       <Button
         label="Duplicate" icon="copy" small variant="secondary"
         onPress={() => {duplicateTask(t.id);onClose();}}

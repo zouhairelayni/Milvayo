@@ -7,7 +7,7 @@ import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import {Fold} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
-import { MAIN, PRIORITIES, fmt, isOverdue } from '../../store/data';
+import { MAIN, PRIORITIES, fmt } from '../../store/data';
 import { AddCard, NewListSheet, BoardsManager } from './BoardManagement';
 import { useHoldDrag, cancelPendingBoardHolds } from '../../board/boardGesture';
 import { BoardMotion } from '../../board/boardMotion';
@@ -558,7 +558,6 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
 // Double-tap the title to edit it in place.
 
 const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={}, showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
-  const { c } = useTheme();
   const { updateTask, placeTask } = useStoreActions();
   const [editing, setEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(t.title);

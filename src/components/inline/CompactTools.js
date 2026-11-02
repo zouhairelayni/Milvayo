@@ -2,7 +2,7 @@
 import {useState} from 'react';
 import {Pressable,View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
-import {Card,Input,T,Button,Chip,SectionTitle} from '../../ui/ui';
+import {Card,Input,T,Button,Chip} from '../../ui/ui';
 import {useTheme} from '../../ui/theme/theme';
 import DisclosureGlyph from './DisclosureGlyph';
 

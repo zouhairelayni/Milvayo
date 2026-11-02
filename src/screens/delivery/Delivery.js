@@ -3,10 +3,10 @@ import { useMemo, useRef, useState } from 'react';
 import {Fold,EditRow,Labeled,DangerConfirm} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Bar, Button, Card, Cell, Chip, Empty, Input, Sheet, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, useWide } from '../../ui/ui';
+import { Bar, Button, Card, Cell, Chip, Empty, Input, Sheet, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
-import { CHECK_STATES, STAGES, addDays, fmt, gatesFor } from '../../store/data';
+import { CHECK_STATES, addDays, fmt, gatesFor } from '../../store/data';
 import { BurnChart } from '../../components/charts/charts';
 import { localDay } from '../../utils/localDay.cjs';
 

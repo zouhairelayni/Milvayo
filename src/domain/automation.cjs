@@ -2,7 +2,7 @@
 'use strict';
 const {localDay}=require('../utils/localDay.cjs');
 // Original local-first automation engine. No arbitrary code, HTTP actions, or background execution.
-const {DEFAULT_BOARD_ID,effectiveBoard,normalizedBoards}=require('./boards.cjs');
+const {effectiveBoard,normalizedBoards}=require('./boards.cjs');
 const taskSchema=require('./taskSchema.cjs');
 const TRIGGERS=['status','cardButton','boardButton','due','aging'];
 const ACTIONS=['priority','owner','stage','addLabel','dueDays','comment','moveStatus'];

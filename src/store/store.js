@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { T, Button } from '../ui/ui';
+import { T } from '../ui/ui';
 const model=require('../domain/model.cjs');
 const {localDay}=require('../utils/localDay.cjs');
 const bridge=require('../domain/modernBridge.cjs');
@@ -35,7 +35,7 @@ export function StoreProvider({children}){
   {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},
    onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});
  useEffect(()=>{
-  const save=()=>{void writer.current.flush();};
+  const save=()=>{void writer.current?.flush();}; // the writer does not exist until the first load finishes
   const sub=AppState.addEventListener('change',state=>{if(state!=='active')save();});
   if(Platform.OS==='web'&&typeof window!=='undefined')window.addEventListener('pagehide',save);
   return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined')window.removeEventListener('pagehide',save);save();};
@@ -122,7 +122,7 @@ export function StoreProvider({children}){
     if(id===cur.activeId&&!(await swapTo(workspaces.setActive(cur,cur.items.find(x=>x.id!==id).id))))return false;
     return await exclusive(async()=>{await AsyncStorage.removeItem(workspaces.keyFor(id));await saveIndex(workspaces.removeItem(indexRef.current,id));return true});
    }catch(e){notify(e.message,'error');return false}},
-  flush:()=>writer.current.flush(),
+  flush:()=>writer.current?.flush()??Promise.resolve(true), // no writer yet (startup): nothing to save
   switchProject:id=>trans(w=>model.selectWorkspaceProject(w,id),`Opened project ${id}`),
   createProject:name=>{const clean=String(name||'').trim();if(!clean){setFault('Project name required');return null;}
     const p=model.makeProject({id:model.id('project'),name:clean,code:clean.replace(/[^a-z0-9]/gi,'').slice(0,7).toUpperCase()||'NEW'});
@@ -198,7 +198,7 @@ export function StoreProvider({children}){
   },`Updated check ${id} to ${status}`),
   setStage:(id,stage)=>projectChange(p=>{if(!['Planned','Testing','Ready','Released'].includes(stage))throw Error('Unknown release stage');const r=p.releases.find(r=>r.id===id);if(!r)throw Error('Release missing');if(['Ready','Released'].includes(stage)&&!model.canRelease({...r,status:stage},p))throw Error('Release gates are not satisfied; verify and merge every linked task with evidence first');return {...p,releases:p.releases.map(r=>r.id===id?{...r,status:stage}:r)}},`Updated release ${id} to ${stage}`),
   toggleRule:id=>projectChange(p=>({...p,automations:p.automations.map(x=>x.id===id?{...x,enabled:!x.enabled}:x)}),`Toggled automation ${id}`),
-  sweepDue:()=>projectChange(p=>({...p,tasks:p.tasks.map(t=>t.status!=='Done'&&t.due&&t.due<localDay()&&!t.labels.includes('Overdue')?{...t,labels:[...t.labels,'Overdue']}:t)}),'Flagged overdue tasks'),
+  sweepDue:()=>projectChange(p=>{const today=localDay(),late=t=>t.status!=='Done'&&t.due&&t.due<today&&!t.labels.includes('Overdue');if(!p.tasks.some(late)){notify('No overdue tasks.','info');return p}return {...p,tasks:p.tasks.map(t=>late(t)?{...t,labels:[...t.labels,'Overdue']}:t)}},'Flagged overdue tasks'),
   // One modern application, one canonical legacy engine and one storage key.
   updateProject:(id,patch)=>trans(w=>{const p=w.projects.find(x=>x.id===id);if(!p)throw Error('Project missing');const name=String(patch.name??p.name).trim().slice(0,180),code=String(patch.code??p.code).trim().slice(0,30);if(!name||!code)throw Error('Project name and code are required');const updated=model.makeProject({...p,name,code,description:patch.description??p.description});return {...w,projects:w.projects.map(x=>x.id===id?updated:x)}},`Updated project ${id}`),
   deleteProject:id=>trans(w=>{if(w.projects.length<2||w.projects.filter(p=>!p.archived).length<2&&!w.projects.find(p=>p.id===id)?.archived)throw Error('Keep one project accessible');if(!w.projects.some(p=>p.id===id))throw Error('Project missing');const projects=w.projects.filter(p=>p.id!==id);return {...projectRelations.removeProjectLinks(w,id),projects,selectedId:w.selectedId===id?projects.find(p=>!p.archived)?.id||projects[0].id:w.selectedId,backups:[model.workspaceSnapshot(w,'Before deleting project'),...w.backups].slice(0,12)}},`Deleted project ${id}`),
@@ -254,8 +254,8 @@ export function StoreProvider({children}){
   saveCommand:raw=>safeMutation(p=>model.automation.saveCommand(p,raw),'Saved automation command'),
   deleteCommand:id=>safeMutation(p=>model.automation.deleteCommand(p,id),'Deleted automation command'),
   runCommand:(id,taskId='',boardId='')=>safeMutation(p=>model.automation.run(p,{type:boardId?'boardButton':'cardButton',ruleId:id,taskId:taskId||undefined,boardId:boardId||undefined}).project,'Ran automation'),
-  runDueCommands:()=>safeMutation(p=>{const r=model.automation.run(p,{type:'due'});return r.applied.length?r.project:p},'Ran due automation checks'),
-  runAgingCommands:()=>safeMutation(p=>{const r=model.automation.run(p,{type:'aging'});return r.applied.length?r.project:p},'Ran aging automation checks'),
+  runDueCommands:()=>safeMutation(p=>{const r=model.automation.run(p,{type:'due'});if(!r.applied.length){notify('No tasks matched.','info');return p}return r.project},'Ran due automation checks'),
+  runAgingCommands:()=>safeMutation(p=>{const r=model.automation.run(p,{type:'aging'});if(!r.applied.length){notify('No tasks matched.','info');return p}return r.project},'Ran aging automation checks'),
   createSnapshot:()=>trans(w=>({...w,backups:[model.workspaceSnapshot(w,'Manual recovery snapshot'),...w.backups].slice(0,12)}),'Created recovery snapshot'),
   restoreWorkspace:text=>{try{const payload=parseBackupJson(text);const candidate=payload.format==='niyarvo.workspace.v1'?payload.workspace:payload;const incoming=model.normalizeWorkspace(candidate);const ok=trans(w=>({...incoming,backups:[model.workspaceSnapshot(w,'Before whole-workspace restore'),...incoming.backups].slice(0,12)}),'Restored whole workspace');return {ok,error:ok?'':(lastError.current||'Workspace restore failed')}}catch(e){return {ok:false,error:e.message}}},
   restoreSnapshot:id=>trans(w=>{const snapshot=w.backups.find(x=>x.id===id);if(!snapshot)throw Error('Recovery snapshot missing');return {...model.restoreSnapshot(w,snapshot),backups:[model.workspaceSnapshot(w,'Before restoring snapshot'),...w.backups].slice(0,12)}},`Restored snapshot ${id}`),

@@ -1,7 +1,7 @@
 // /src/screens/governance/Programs.js
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Bar, Card, Button, Chip, Page, T, Grid, Cell, Stat, Input } from '../../ui/ui';
+import { Bar, Card, Button, Chip, Page, T } from '../../ui/ui';
 import { Fold, EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';

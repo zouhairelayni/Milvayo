@@ -2,10 +2,10 @@
 import { Pressable, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect} from 'react';
-import { Avatar, Bar, Button, Card, Cell, Chip, Empty, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, downloadText, useWide } from '../../ui/ui';
+import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, downloadText } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
-import { fmt, money, openHours, toCSV } from '../../store/data';
+import { money, openHours } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
 const operations = require('../../domain/operations.cjs');
@@ -109,7 +109,7 @@ export function Automations(){
  const [actions,setActions]=useState([]);
  const save=()=>{const d={id:edit||`cmd-${Date.now()}`,name,trigger,status,boardId,enabled:true,priorityFilter:'Any',daysBefore:trigger==='aging'?Math.max(1,Math.min(365,Number(agingDays)||7)):0,actions:actions.length?actions:[{type:action,value}]};if(saveCommand(d)){setEdit('');setName('');setActions([])}};
  return <Page title="Automations" subtitle="Local commands: status, card button, board button and due-date triggers. No background execution."
- actions={<View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button label="Due checks" small variant="secondary" icon="calendar" onPress={runDueCommands}/><Button label="Card aging" small icon="clock" onPress={runAgingCommands}/></View>}>
+ actions={<View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button label="Due checks" small variant="secondary" icon="calendar" onPress={runDueCommands}/><Button label="Card aging" small icon="clock" onPress={runAgingCommands}/><Button label="Flag overdue" small variant="secondary" icon="flag" onPress={sweepDue}/></View>}>
   <Fold title="Completion routing" subtitle={`Checked tasks move to ${routeTarget === 'Done' ? 'Done' : 'Validation'}`}>
     <T size={12} muted>Choose what happens after a task is checked. A Validation destination keeps the task uncompleted until approved.</T>
     <Pick values={[{value:'Done',label:'Done'},{value:'Validation',label:'Validation'}]} value={routeTarget} onChange={persistRoute}/>
