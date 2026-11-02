@@ -1,6 +1,6 @@
 {
   "name": "niyarvo-projects",
-  "version": "0.5.25",
+  "version": "0.5.27",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {

@@ -8,6 +8,7 @@ import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/
 import { fmt, money, openHours, toCSV } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
+const operations = require('../../domain/operations.cjs');
 import { localDay } from '../../utils/localDay.cjs';
 
 // ---- Resources --------------------------------------------------------------
@@ -16,6 +17,7 @@ export function Resources() {
   const { c } = useTheme();
   const {s,addResource,deleteResource,logTime,removeTime,workspace}=useStore();
   const p=workspace.projects.find(x=>x.id===workspace.selectedId);
+  const capacity=new Map(operations.capacitySummary(p).map(r=>[r.name,r]));
   const [name,setName]=useState(''),[weekly,setWeekly]=useState('40'),[rate,setRate]=useState('0');
   const [taskId,setTaskId]=useState(''),[owner,setOwner]=useState(''),[date,setDate]=useState(localDay()),[hours,setHours]=useState('1'),[note,setNote]=useState('');
   return (
@@ -48,6 +50,7 @@ export function Resources() {
               <T size={12} muted>{Math.round(open)}h open</T>
               <T size={12} muted>{p.weekly}h weekly capacity</T>
             </View>
+            {capacity.get(p.name) ? <T size={12} muted>{capacity.get(p.name).assignedTasks} open task{capacity.get(p.name).assignedTasks === 1 ? '' : 's'} · {Math.round(capacity.get(p.name).logged * 100) / 100}h logged</T> : null}
           </Card>
         );
       })}

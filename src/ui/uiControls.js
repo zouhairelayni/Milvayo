@@ -94,7 +94,7 @@ export function IconBtn({ icon, onPress, solid, label }) {
 
 // lazy: keep the typed text here and pass it to onChangeText once typing pauses (300 ms), on blur, on submit and on unmount.
 // Use it for fields that save into the store on every change; plain fields behave as before.
-export function Input({ value, onChangeText, placeholder, style, multiline, onSubmitEditing, keyboardType, editable = true, autoFocus, onBlur, lazy = false, secure = false }) {
+export function Input({ value, onChangeText, placeholder, style, multiline, onSubmitEditing, keyboardType, editable = true, autoFocus, onBlur, lazy = false, secure = false, accessibilityLabel }) {
   const { c } = useTheme();
   const [text, setText] = useState(value);
   const latest = useRef(onChangeText);
@@ -107,6 +107,7 @@ export function Input({ value, onChangeText, placeholder, style, multiline, onSu
   return (
     <TextInput
       value={lazy ? text : value}
+      accessibilityLabel={accessibilityLabel}
       onChangeText={change}
       placeholder={placeholder}
       placeholderTextColor={c.faint}

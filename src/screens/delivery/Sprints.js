@@ -130,7 +130,7 @@ export function Sprints({ openTask }) {
           {assigned.slice(0, 60).map(t => <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line }}>
             <Pressable style={{ flex: 1, gap: 3 }} onPress={() => openTask?.(t.id)}>
               <T size={13} weight="500" numberOfLines={2}>{t.title}</T>
-              <T size={11} muted>{t.id} · {t.status}</T>
+              <T size={11} muted>{t.status}</T>
             </Pressable>
             <Button label="Remove" small variant="ghost" onPress={() => assignSprintTask(t.id, '')} />
           </View>)}
@@ -142,7 +142,7 @@ export function Sprints({ openTask }) {
           {backlog.slice(0, backlogLimit).map(t => <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line }}>
             <Pressable style={{ flex: 1, gap: 3 }} onPress={() => openTask?.(t.id)}>
               <T size={13} weight="500" numberOfLines={2}>{t.title}</T>
-              <T size={11} muted>{t.id} · {t.priority} · {t.status}</T>
+              <T size={11} muted>{t.priority} · {t.status}</T>
             </Pressable>
             <Button label="Add" small variant="secondary" disabled={!canAssign} onPress={() => assignSprintTask(t.id, selected.id)} />
           </View>)}

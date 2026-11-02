@@ -55,7 +55,7 @@ test('original mock board controls remain wired after integration', () => {
     /onTitleDoubleTap: beginRename/,
     /onLongPress=\{onManage\}/,
     /moveListTo\(board\.id, list\.id, to\)/,
-    /placeTask\(t\.id, lists\[to\]\.id, slot\.before\)/,
+    /placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore \? k\.dropBefore\(lists\[to\]\.id, slot\.index, t\.id\) : slot\.before\)/,
     /onCancel:/,
     /<NewListSheet visible=\{addingList\}/,
     /<BoardsManager visible=\{managing\}/,

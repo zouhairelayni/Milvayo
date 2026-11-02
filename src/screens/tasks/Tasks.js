@@ -2,18 +2,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Segmented, T, useWide } from '../../ui/ui';
+import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
-import {Fold,EditRow,DangerConfirm} from '../../components/inline/CompactTools';
+import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
+import TaskLabels from '../../components/inline/TaskLabels';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, STATUS, fmt } from '../../store/data';
 
+const planning = require('../../domain/planning.cjs');
+const workflows = require('../../domain/taskWorkflows.cjs');
+const gantt = require('../../timeline/gantt.cjs');
+
 const PAGE_SIZE = Platform.OS === 'web' ? 80 : 20;
+const SORTS = { Due: { sort: 'due', descending: false }, Priority: { sort: 'priority', descending: true }, Progress: { sort: 'progress', descending: false }, Title: { sort: 'title', descending: false }, Manual: { sort: 'position', descending: false } };
+const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 
 export default function Tasks({ openTask, query = '', statusRequest = null }) {
   const { c } = useTheme();
   const wide = useWide();
-  const { s, moveTask, bulkStatus, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
+  const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [viewName,setViewName]=useState('');
   const [q, setQ] = useState(query);
@@ -22,26 +29,39 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
   const [sort, setSort] = useState('Due');
   const [picked, setPicked] = useState([]);
   const heldRef=useRef(false);
-  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
+  const [pages, setPages] = useState(1);
+  const [layout, setLayout] = useState('List');
+  const [prioFilter, setPrioFilter] = useState('All');
+  const [ownerFilter, setOwnerFilter] = useState('All');
 
   useEffect(() => setQ(query), [query]);
   useEffect(() => { if (statusRequest) { setFilter(statusRequest.status); setLabelFilter('All'); } }, [statusRequest]);
-  useEffect(() => setVisibleLimit(PAGE_SIZE), [q,filter,sort,labelFilter]);
+  useEffect(() => setPages(1), [q,filter,sort,labelFilter,prioFilter,ownerFilter,layout]);
 
-  const needle = q.trim().toLowerCase();
-  const list = useMemo(() => s.tasks
-    .filter((t) => (filter === 'All' || t.status === filter))
-    .filter((t) => labelFilter === 'All' || t.labels.includes(labelFilter))
-    .filter((t) => !needle || t.title.toLowerCase().includes(needle) || t.owner.toLowerCase().includes(needle))
-    .sort((a, b) =>
-      sort === 'Due' ? a.due.localeCompare(b.due) : PRIORITIES.indexOf(b.priority) - PRIORITIES.indexOf(a.priority)
-    ), [s.tasks, filter, labelFilter, needle, sort]);
+  // Progress of every task, parents rolled up from their subtasks (null when the task tree is inconsistent).
+  const rollups = useMemo(() => { try { return planning.progressRollups(s.tasks); } catch { return null; } }, [s.tasks]);
+  const overall = useMemo(() => { try { return planning.projectProgress(s.tasks).progress; } catch { return null; } }, [s.tasks]);
+  const list = useMemo(() => {
+    const tagged = labelFilter === 'All' ? s.tasks : s.tasks.filter((t) => (t.labels || []).includes(labelFilter));
+    const found = workflows.query(tagged, { text: q, status: filter, priority: prioFilter, owner: ownerFilter });
+    return planning.filterSort(found, { id: 'tasks-screen', name: 'Tasks', filters: {}, ...SORTS[sort] }, rollups);
+  }, [s.tasks, filter, labelFilter, prioFilter, ownerFilter, q, sort, rollups]);
+  // One list of rows for every layout: a plain list, the parent and subtask tree, or groups by status or stage.
+  const rows = useMemo(() => {
+    const flat = list.map((task) => ({ kind: 'task', task, depth: 0 }));
+    if (layout === 'Tree') {
+      try { const keep = new Set(list.map((t) => t.id)); return workflows.hierarchyOrder(s.tasks).filter((x) => keep.has(x.task.id)).map((x) => ({ kind: 'task', task: x.task, depth: x.depth })); } catch { return flat; }
+    }
+    if (layout === 'By status' || layout === 'By stage') return gantt.buildRows(list, layout === 'By stage' ? 'stage' : 'status').map((r) => (r.kind === 'group' ? r : { kind: 'task', task: r.task, depth: 0 }));
+    return flat;
+  }, [list, layout, s.tasks]);
+  const pageOf = useMemo(() => workflows.page(rows, PAGE_SIZE, pages), [rows, pages]);
 
   // Tag list and per-status counts: one pass, only when the tasks change (not on every search keystroke).
-  const { allLabels, counts } = useMemo(() => {
-    const tags = new Set(), n = {};
-    for (const t of s.tasks) { n[t.status] = (n[t.status] || 0) + 1; for (const l of t.labels || []) tags.add(l); }
-    return { allLabels: [...tags].sort((a, b) => a.localeCompare(b)), counts: n };
+  const { allLabels, counts, owners } = useMemo(() => {
+    const tags = new Set(), people = new Set(), n = {};
+    for (const t of s.tasks) { n[t.status] = (n[t.status] || 0) + 1; if (t.owner) people.add(t.owner); for (const l of t.labels || []) tags.add(l); }
+    return { allLabels: [...tags].sort((a, b) => a.localeCompare(b)), counts: n, owners: [...people].sort((a, b) => a.localeCompare(b)) };
   }, [s.tasks]);
   const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const clearPicked = () => setPicked([]);
@@ -49,25 +69,42 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
     bulkStatus(picked, status);
     clearPicked();
   };
+  const applyBulkField = (field, value) => { if (bulkSet(picked, field, value)) clearPicked(); };
 
   return (
     <Page
       title="Tasks"
-      subtitle={`${list.length} of ${s.tasks.length} tasks`}
+      subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
       actions={<Button label="New task" icon="plus" small onPress={() => openTask(addTask('Untitled task', 'Backlog', MAIN))} />}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
           <Input lazy value={q} onChangeText={setQ} placeholder="Search title or owner" />
         </View>
-        <Segmented options={['Due', 'Priority']} value={sort} onChange={setSort} />
       </View>
 
-      <Fold title="Filters & tags" subtitle={`${filter === 'All' ? 'All statuses' : filter} · ${labelFilter === 'All' ? 'All tags' : labelFilter} · ${list.length} tasks`}>
+      <Fold title="Filters & tags" subtitle={`${filter === 'All' ? 'All statuses' : filter} · ${labelFilter === 'All' ? 'All tags' : labelFilter} · sorted by ${sort} · ${layout} · ${list.length} tasks`}>
         <T size={12} muted weight="600">Status</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {['All', ...STATUS].map(st => <Chip key={st} label={st==='All'?`All ${s.tasks.length}`:`${st} ${counts[st]||0}`} active={filter===st} onPress={()=>setFilter(st)}/>)}
         </View>
+        <T size={12} muted weight="600">Priority</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {['All', ...PRIORITIES].map((p) => <Chip key={p} label={p} active={prioFilter===p} onPress={()=>setPrioFilter(p)}/>)}
+        </View>
+        {owners.length ? <><T size={12} muted weight="600">Owner</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {['All', ...owners].map((o) => <Chip key={o} label={o} active={ownerFilter===o} onPress={()=>setOwnerFilter(o)}/>)}
+        </View></> : null}
+        <T size={12} muted weight="600">Sort by</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {Object.keys(SORTS).map((k) => <Chip key={k} label={k} active={sort===k} onPress={()=>setSort(k)}/>)}
+        </View>
+        <T size={12} muted weight="600">Layout</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {LAYOUTS.map((l) => <Chip key={l} label={l} active={layout===l} onPress={()=>setLayout(l)}/>)}
+        </View>
+        <T size={12} muted>Tree shows subtasks under their parent with the progress of all their subtasks. Grouped layouts keep the manual order inside each group.</T>
         <T size={12} muted weight="600">Tags</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Chip label="All tags" active={labelFilter==='All'} onPress={()=>setLabelFilter('All')}/>
@@ -78,8 +115,8 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
 
       <Fold title="Saved task views" subtitle={`${(project.savedViews||[]).length} saved filters and sorting presets`}>
         <Input value={viewName} onChangeText={setViewName} placeholder="Name this view"/>
-        <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,text:q,label:labelFilter},sort:sort==='Due'?'due':'priority'}))setViewName('')}}/>
-        {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setSort(v.sort==='due'?'Due':'Priority')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
+        <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,priority:prioFilter,owner:ownerFilter,text:q,label:labelFilter},sort:SORTS[sort].sort,descending:SORTS[sort].descending}))setViewName('')}}/>
+        {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
       </Fold>
       {picked.length > 0 ? (
         <Card style={{ gap: 12, backgroundColor: c.surfaceAlt, width: '100%' }}>
@@ -89,12 +126,19 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
           <Button label="To Validation" small variant="ghost" onPress={() => applyBulk('Validation')} />
           <Button label="Clear" small variant="ghost" onPress={clearPicked} />
           </View>
+          <T size={12} muted weight="600">Priority of selected</T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{PRIORITIES.map((p) => <Chip key={p} label={p} onPress={() => applyBulkField('priority', p)} />)}</View>
+          <T size={12} muted weight="600">Stage of selected</T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['Development', 'Testing', 'Production'].map((g) => <Chip key={g} label={g} onPress={() => applyBulkField('stage', g)} />)}</View>
+          {owners.length ? <><T size={12} muted weight="600">Assign selected to</T><Dropdown options={owners.map((o) => ({ value: o, label: o }))} value={null} onChange={(o) => applyBulkField('owner', o)} /></> : null}
         </Card>
       ) : null}
 
       <Card pad={0} style={{ overflow: 'hidden' }}>
         {list.length === 0 ? <Empty>No tasks match these filters.</Empty> : null}
-        {list.slice(0,visibleLimit).map((t, i) => {
+        {pageOf.items.map((row, i) => {
+          if (row.kind === 'group') return <View key={row.key} style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: c.surfaceAlt, borderTopWidth: i ? 1 : 0, borderColor: c.line }}><T size={12} weight="600" muted>{row.title} · {row.count}</T></View>;
+          const t = row.task, roll = rollups?.get(t.id);
           const on = picked.includes(t.id);
           return (
             <Pressable
@@ -104,7 +148,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
               onLongPress={() => {heldRef.current=true;toggle(t.id)}}
               delayLongPress={450}
               style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12,
+                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 12,
                 borderTopWidth: i ? 1 : 0, borderColor: c.line, opacity: pressed ? 0.7 : 1, backgroundColor: on ? c.surfaceAlt : undefined,
               })}
             >
@@ -125,12 +169,9 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
               <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
                 <T size={14} weight="500" numberOfLines={1}>{t.title}</T>
                 <T size={12} muted numberOfLines={1}>
-                  {t.id.toUpperCase()} · {t.type} · {t.stage}
+                  {t.type} · {t.stage}{roll && roll.rollup ? ` · ${roll.progress}% of ${roll.children} subtask${roll.children === 1 ? '' : 's'}` : ''}
                 </T>
-                {!!t.labels.length ? <View style={{flexDirection:'row',flexWrap:'wrap',gap:5,alignItems:'center'}}>
-                  {t.labels.slice(0,wide?4:2).map(tag=><View key={tag} style={{backgroundColor:c.surfaceAlt,paddingHorizontal:7,paddingVertical:2,borderRadius:9}}><T size={10} muted numberOfLines={1}>{tag}</T></View>)}
-                  {t.labels.length>(wide?4:2)?<T size={10} muted>+{t.labels.length-(wide?4:2)}</T>:null}
-                </View>:null}
+                {!!t.labels.length?<TaskLabels labels={t.labels.slice(0,wide?4:2)} colors={project?.labelColors||{}} compact/>:null}
               </View>
 
               {wide ? (
@@ -146,7 +187,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
           );
         })}
       </Card>
-      {list.length > visibleLimit ? <Button label={`Show more tasks (${list.length-visibleLimit} remaining)`} small variant="secondary" onPress={()=>setVisibleLimit(n=>n+PAGE_SIZE)} /> : null}
+      {pageOf.hasMore ? <Button label={`Show more tasks (${pageOf.total-pageOf.items.length} remaining)`} small variant="secondary" onPress={()=>setPages(n=>n+1)} /> : null}
     </Page>
   );
 }

@@ -4,7 +4,8 @@ import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native'
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { Button, Card, Chip, Page, Segmented, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
-import { useTheme, STATUS_COLOR } from '../../ui/theme/theme';
+import { useTheme, STATUS_COLOR, PRIORITY_COLOR } from '../../ui/theme/theme';
+import { Fold } from '../../components/inline/CompactTools';
 import { TODAY, addDays, daysBetween, fmt } from '../../store/data';
 import { useHoldDrag } from '../../gestures/gesture';
 import { GestureArea } from '../../gestures/gestureSurface';
@@ -16,6 +17,8 @@ const viewport = require('../../timeline/timelineViewport.cjs');
 const dragFollow = require('../../gestures/dragFollow.cjs');
 const timelineEdit = require('../../timeline/timelineEdit.cjs');
 const { roundPath, distToPath } = require('../../timeline/timelineGeometry.cjs');
+const gantt = require('../../timeline/gantt.cjs');
+const planning = require('../../domain/planning.cjs');
 const { refreshMax } = require('../../gestures/scrollLimits.cjs');
 import { diagnosticMonitor } from '../../diagnostics/monitor';
 
@@ -56,7 +59,7 @@ function extent(t, e, w, x) {
 // One task bar. Hold the body and drag to move it, hold a left or right edge and drag to change the start or
 // due date, hold the dot after the bar and drag onto another row to make that task wait for this one.
 // A quick tap on the body opens the task; a swipe still scrolls the chart.
-const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLeft, paintWidth, rowTop, target, dragging, k, onPreview, onCommit, onOpen, onLink }) {
+const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLeft, paintWidth, rowTop, target, critical, dragging, k, onPreview, onCommit, onOpen, onLink }) {
   const { c } = useTheme();
   const color = STATUS_COLOR[t.status];
   const live = useRef({});
@@ -184,8 +187,8 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
     <View style={{ position: 'absolute', left, top: rowTop + BAR_TOP, width, height: BAR_H, zIndex: hot || ln.lifted ? 5 : 1 }}>
       <GestureArea drag={mv}
         style={{
-          flex: 1, borderRadius: BAR_H / 4, backgroundColor: c.surface, borderWidth: hot || target ? 2 : 1,
-          borderColor: target ? c.accent : hot ? color : color + '99', overflow: 'hidden', justifyContent: 'center',
+          flex: 1, borderRadius: BAR_H / 4, backgroundColor: c.surface, borderWidth: hot || target || critical ? 2 : 1,
+          borderColor: target ? c.accent : critical ? PRIORITY_COLOR.Critical : hot ? color : color + '99', overflow: 'hidden', justifyContent: 'center',
         }}
       >
         <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: color + '26' }} pointerEvents="none" />
@@ -215,8 +218,10 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
 export default function Timeline({ openTask }) {
   const { c } = useTheme();
   const wide = useWide();
-  const { s, updateTask } = useStore();
+  const { s, updateTask, scheduleAfter, scheduleSample } = useStore();
   const [zoom, setZoom] = useState('Days');
+  const [showCritical, setShowCritical] = useState(false);
+  const [collapsed, setCollapsed] = useState([]); // parent tasks folded in the hierarchy list
   const [drag, setDrag] = useState(null); // temporary date edits
   const [link, setLink] = useState(null); // temporary dependency gesture
   const [notice, setNotice] = useState('');
@@ -240,6 +245,17 @@ export default function Timeline({ openTask }) {
   const rows = allScheduled; // no row pager and no disappearing out-of-window tasks
   const rowIndex = useMemo(() => Object.fromEntries(rows.map((t, i) => [t.id, i])), [rows]);
   const tasksById = useMemo(() => new Map(rows.map((t) => [t.id, t])), [rows]);
+  // Schedule analysis (gantt.cjs): critical path, dependencies that start too early, bad date ranges, parent summaries.
+  const crit = useMemo(() => { try { return gantt.criticalPath(rows); } catch (e) { return { error: e.message }; } }, [rows]);
+  const critIds = useMemo(() => new Set(crit.criticalIds || []), [crit]);
+  const critEdges = useMemo(() => new Set(crit.criticalEdges || []), [crit]);
+  const conflicts = useMemo(() => gantt.dependencyConflicts(rows), [rows]);
+  const invalid = useMemo(() => gantt.invalidSchedules(s.tasks), [s.tasks]);
+  const rollups = useMemo(() => { try { return planning.progressRollups(s.tasks); } catch { return null; } }, [s.tasks]);
+  const summaries = useMemo(() => gantt.hierarchySummaries(s.tasks, rollups), [s.tasks, rollups]);
+  const hierarchy = useMemo(() => gantt.hierarchyRows(s.tasks, collapsed), [s.tasks, collapsed]);
+  const hasParents = summaries.size > 0;
+  const isSample = s.project && s.project.id === 'sample-workspace';
   const gridW = span * w;
   const gridH = rows.length * ROW;
   const drawViewport = viewport.horizontalWindow(gridW, viewportW || Dimensions.get('window').width, scrollXPaint);
@@ -300,6 +316,14 @@ export default function Timeline({ openTask }) {
       if (rows.length && next.first === next.last) return;
       setPaint((prev) => prev.first === next.first && prev.last === next.last ? prev : next);
     });
+  };
+  // Jump to where the schedule begins (gantt.calendarDomain starts a few days before the first scheduled task).
+  const goFirst = () => {
+    if (!rows.length) return;
+    const next = clamp(x(gantt.dateAt(gantt.calendarDomain(rows, TODAY).from)), 0, Math.max(0, gridW - viewportW));
+    chartRef.current?.scrollTo({ x: next, animated: true });
+    k.scroll.x = next;
+    setScrollXPaint((prev) => Math.abs(prev - next) < 1 ? prev : next);
   };
   const goToday = (animated = true) => {
     const center = x(TODAY) + w / 2 - viewportW / 2;
@@ -560,6 +584,8 @@ export default function Timeline({ openTask }) {
       actions={
         <>
           <Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />
+          <Chip label="Critical path" active={showCritical} onPress={() => setShowCritical((v) => !v)} />
+          {rows.length ? <Chip label="First task" onPress={goFirst} /> : null}
           <Chip label="Today" onPress={() => goToday(true)} />
         </>
       }
@@ -592,6 +618,54 @@ export default function Timeline({ openTask }) {
         </View>
       ) : null}
       {notice ? <T size={13} weight="600" color={c.accent}>{notice}</T> : null}
+      {showCritical ? (
+        <Card style={{ gap: 6 }}>
+          {crit.error ? <T size={13} color={PRIORITY_COLOR.High}>{crit.error}. Remove the circular dependency to see the critical path.</T> : <>
+            <T size={13} weight="600">Critical path: {crit.criticalIds.length} of {crit.scheduledCount} scheduled tasks, {crit.totalDays} days end to end</T>
+            <T size={12} muted>Red bars and lines cannot slip without moving the finish date. {crit.assumption}.</T>
+            {crit.excludedIds.length ? <T size={12} muted>{crit.excludedIds.length} task{crit.excludedIds.length === 1 ? '' : 's'} without dates {crit.excludedIds.length === 1 ? 'is' : 'are'} left out.</T> : null}
+          </>}
+        </Card>
+      ) : null}
+      {conflicts.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{conflicts.length} dependenc{conflicts.length === 1 ? 'y starts' : 'ies start'} before the predecessor finishes</T>
+          {[...new Map(conflicts.map((x) => [x.taskId, x])).values()].slice(0, 5).map((x) => (
+            <View key={x.taskId} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+              <T size={12} style={{ flex: 1, minWidth: 180 }}>{tasksById.get(x.taskId)?.title || x.taskId} starts before {tasksById.get(x.predecessorId)?.title || x.predecessorId} ends</T>
+              <Button label="Move after predecessors" small variant="secondary" onPress={() => scheduleAfter(x.taskId)} />
+            </View>
+          ))}
+        </Card>
+      ) : null}
+      {invalid.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{invalid.length} task{invalid.length === 1 ? ' has' : 's have'} an unreadable or reversed date range</T>
+          {invalid.slice(0, 5).map((id) => <Button key={id} label={s.tasks.find((t) => t.id === id)?.title || id} small variant="ghost" onPress={() => openTask(id)} />)}
+        </Card>
+      ) : null}
+      {isSample && !allScheduled.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13}>The sample project has no dates yet.</T>
+          <Button label="Schedule the sample tasks" small onPress={scheduleSample} />
+        </Card>
+      ) : null}
+      {hasParents ? (
+        <Fold title="Parent tasks and subtasks" subtitle={`${summaries.size} parent task${summaries.size === 1 ? '' : 's'} with combined dates and progress`}>
+          {hierarchy.filter((r) => r.hasChildren || r.depth > 0).slice(0, 60).map((r) => {
+            const sum = summaries.get(r.task.id);
+            return (
+              <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: r.depth * 16 }}>
+                {r.hasChildren ? <Chip label={r.collapsed ? '+' : '–'} onPress={() => setCollapsed((cur) => (cur.includes(r.task.id) ? cur.filter((x) => x !== r.task.id) : [...cur, r.task.id]))} /> : <View style={{ width: 34 }} />}
+                <Pressable onPress={() => openTask(r.task.id)} style={{ flex: 1, minHeight: 36, justifyContent: 'center' }}>
+                  <T size={13} weight={r.hasChildren ? '600' : '400'} numberOfLines={1}>{r.task.title}</T>
+                  {sum ? <T size={11} muted numberOfLines={1}>{fmt(gantt.dateAt(sum.start))} to {fmt(gantt.dateAt(sum.end))} · {sum.progress}% · {sum.children} subtask{sum.children === 1 ? '' : 's'}</T> : null}
+                </Pressable>
+              </View>
+            );
+          })}
+        </Fold>
+      ) : null}
       {pick && pickTgt && pickSrc ? (
         <Card style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <T size={13} style={{ flex: 1, minWidth: 200 }}>Remove the dependency? "{pickTgt.title}" waits for "{pickSrc.title}".</T>
@@ -690,6 +764,7 @@ export default function Timeline({ openTask }) {
                         paintLeft={paintLeft}
                         paintWidth={paintWidth}
                         target={!!drawing && drawing.tid === t.id}
+                        critical={showCritical && critIds.has(t.id)}
                         dragging={(!!drag && drag.id === t.id) || (!!link && link.from === t.id)}
                         k={k}
                         onPreview={bar.onPreview}
@@ -707,8 +782,8 @@ export default function Timeline({ openTask }) {
                         <Path
                           key={l.key}
                           d={l.d}
-                          stroke={l.color}
-                          strokeWidth={pick && pick.key === l.key ? 4 : 2}
+                          stroke={showCritical && critEdges.has(`${l.pid}->${l.tid}`) ? PRIORITY_COLOR.Critical : l.color}
+                          strokeWidth={pick && pick.key === l.key ? 4 : showCritical && critEdges.has(`${l.pid}->${l.tid}`) ? 3.5 : 2}
                           fill="none"
                           strokeLinecap="round"
                           strokeLinejoin="round"

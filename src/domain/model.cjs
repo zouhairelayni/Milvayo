@@ -15,6 +15,7 @@ const boards=require('./boards.cjs');
 const powerUps=require('./powerUps.cjs');
 const automation=require('./automation.cjs');
 const kanbanUX=require('../board/kanbanUX.cjs');
+const {normalizeLabelColors}=require('../ui/labelPalette.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const PRIORITIES=['Low','Medium','High','Critical'];
 const STAGES=['Development','Testing','Production'];
@@ -50,7 +51,7 @@ function defaultTask(o={}){
 }
 function makeProject(o={}){
  const meta=taskSchema.normalizeSchema(o);
- const project={governance:require('./governanceCore.cjs').normalizeGovernance(o.governance),...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),kanbanViews:o.kanbanViews||{},powerUps:powerUps.normalizedPowerUps(o),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
+ const project={governance:require('./governanceCore.cjs').normalizeGovernance(o.governance),...operations.normalizeProjectExtras(o),boards:boards.normalizedBoards(o),kanbanViews:o.kanbanViews||{},powerUps:powerUps.normalizedPowerUps(o),labelColors:normalizeLabelColors(o.labelColors),...meta,format:FORMAT,id:str(o.id,100)||id('project'),name:str(o.name,180)||'Untitled project',code:str(o.code,30)||'PRJ',
   description:str(o.description,2000),archived:o.archived===true,version:str(o.version,50)||'0.1.0',color:str(o.color,24)||'#9972ea',
   importedAt:str(o.importedAt,60)||iso(),
   sprints:agile.normalizeAgile(o).sprints,

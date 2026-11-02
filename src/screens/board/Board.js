@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import {Fold} from '../../components/inline/CompactTools';
+import TaskLabels from '../../components/inline/TaskLabels';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, fmt, isOverdue } from '../../store/data';
 import { AddCard, NewListSheet, BoardsManager } from './BoardManagement';
@@ -13,7 +14,9 @@ import { BoardMotion } from '../../board/boardMotion';
 import { committedName } from '../../board/boardInteractions.cjs';
 
 const {visibleColumns} = require('../../board/boardColumns.cjs');
-const {nextCount} = require('../../utils/progressiveCount.cjs');
+const {initialCount, nextCount} = require('../../utils/progressiveCount.cjs');
+const {filterCards, dropBefore} = require('../../board/kanbanUX.cjs');
+const DUE_FILTERS = [['all', 'Any date'], ['overdue', 'Overdue'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'Next 7 days'], ['month', 'Next 30 days'], ['none', 'No date']];
 const {dueSoon, ageInDays} = require('../../domain/powerUps.cjs');
 const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs');
 // Native only: first cards per column appear immediately, the rest follow in small chunks.
@@ -52,6 +55,10 @@ export default function Board({ openTask }) {
   const [boardId, setBoardId] = useState(MAIN);
   const [q, setQ] = useState('');
   const [urgentOnly, setUrgentOnly] = useState(false);
+  const [dueF, setDueF] = useState('all');
+  const [prioF, setPrioF] = useState('All');
+  const [ownerF, setOwnerF] = useState('All');
+  const [labelF, setLabelF] = useState('All');
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [managing, setManaging] = useState(false);
@@ -88,24 +95,29 @@ export default function Board({ openTask }) {
     const frame = requestAnimationFrame(() => k.measure());
     return () => cancelAnimationFrame(frame);
   }, [mountedColumns, locked]);
-  const needle = q.trim().toLowerCase();
   // Grouped once per data change, so a drag step re-renders only the columns it touches.
   const { cards, byList, totals } = useMemo(() => {
-    const list = s.tasks.filter(
-      (t) =>
-        t.board === board.id &&
-        (!needle || t.title.toLowerCase().includes(needle)) &&
-        (!urgentOnly || PRIORITIES.indexOf(t.priority) >= 2)
-    );
+    const list = filterCards(s.tasks.filter((t) => t.board === board.id), { text: q, owner: ownerF, label: labelF, priority: prioF, due: dueF })
+      .filter((t) => !urgentOnly || PRIORITIES.indexOf(t.priority) >= 2);
     const groups = {}, counts = {};
     for (const l of lists) { groups[l.id] = []; counts[l.id] = 0; }
     for (const t of s.tasks) if (t.board === board.id && counts[t.list] !== undefined) counts[t.list] += 1;
     for (const t of list) if (groups[t.list]) groups[t.list].push(t);
     return { cards: list, byList: groups, totals: counts };
-  }, [s.tasks, board, needle, urgentOnly]);
+  }, [s.tasks, board, q, urgentOnly, dueF, prioF, ownerF, labelF]);
+  // Owners and tags that exist on this board, for the filter chips.
+  const { owners, tags } = useMemo(() => {
+    const o = new Set(), g = new Set();
+    for (const t of s.tasks) if (t.board === board.id) { if (t.owner) o.add(t.owner); for (const l of t.labels || []) g.add(l); }
+    return { owners: [...o].sort(), tags: [...g].sort() };
+  }, [s.tasks, board]);
+  const filtersOn = dueF !== 'all' || prioF !== 'All' || ownerF !== 'All' || labelF !== 'All';
+  const clearFilters = () => { setDueF('all'); setPrioF('All'); setOwnerF('All'); setLabelF('All'); };
 
   // Refresh the display order for this render (used for drop slots and the insertion line).
   k.order = Object.fromEntries(lists.map((l) => [l.id, byList[l.id].map((t) => t.id)]));
+  // Where a dropped card goes when a filter hides some cards of the list (see kanbanUX.dropBefore).
+  k.dropBefore = (listId, slotIndex, movingId) => dropBefore(s.tasks, cards, listId, slotIndex, movingId);
 
   // Records where every card and the strip are, at the moment a drag starts.
   k.measure = () => {
@@ -203,6 +215,18 @@ export default function Board({ openTask }) {
         <Chip label="High and above" active={urgentOnly} onPress={() => setUrgentOnly(!urgentOnly)} />
       </View>
 
+      <Fold title="Filters" subtitle={filtersOn ? `${cards.length} of ${s.tasks.filter((t) => t.board === board.id).length} cards shown` : 'Due date, priority, owner and tag'}>
+        <T size={12} muted weight="600">Due</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{DUE_FILTERS.map(([v, label]) => <Chip key={v} label={label} active={dueF === v} onPress={() => setDueF(v)} />)}</View>
+        <T size={12} muted weight="600">Priority</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...PRIORITIES].map((v) => <Chip key={v} label={v} active={prioF === v} onPress={() => setPrioF(v)} />)}</View>
+        {owners.length ? <><T size={12} muted weight="600">Owner</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...owners].map((v) => <Chip key={v} label={v} active={ownerF === v} onPress={() => setOwnerF(v)} />)}</View></> : null}
+        {tags.length ? <><T size={12} muted weight="600">Tag</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...tags].map((v) => <Chip key={v} label={v} active={labelF === v} onPress={() => setLabelF(v)} />)}</View></> : null}
+        {filtersOn ? <Button label="Clear filters" small variant="ghost" onPress={clearFilters} /> : null}
+      </Fold>
+
       <Fold title="Board tools" subtitle="Power-Ups, card previews and local board commands">
         <T muted size={12}>Optional features for this board only. GitHub references are links, not authenticated synchronization.</T>
         {[["github","GitHub references"],["calendar","Upcoming dates"],["aging","Card age"],["checklist","Acceptance progress"]].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>) }
@@ -272,6 +296,7 @@ export default function Board({ openTask }) {
               width={colW}
               cards={byList[l.id]}
               features={project.powerUps?.[board.id]||EMPTY_FEATURES}
+              labelColors={project.labelColors||{}}
               showDescriptions={project.kanbanViews?.[board.id]?.showDescriptions===true}
               totalCards={totals[l.id]}
               openTask={openTask}
@@ -328,7 +353,7 @@ function BoardChip({ board, active, onSelect, onManage }) {
 // Hold the header and drag to reorder lists. Double-tap the title to rename.
 // While a card is held over this list, a line shows where it will land.
 
-const ListColumn = memo(function ListColumn({ board, list, index, total, step, width, cards: allCards, features, showDescriptions, totalCards, openTask, drag, setDrag, setLock, k }) {
+const ListColumn = memo(function ListColumn({ board, list, index, total, step, width, cards: allCards, features, labelColors, showDescriptions, totalCards, openTask, drag, setDrag, setLock, k }) {
   const { c } = useTheme();
   const { addTask, renameList, moveListTo, deleteList } = useStoreActions();
   const [editing, setEditing] = useState(false);
@@ -339,7 +364,8 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
   const titleRef = useRef(null);
   const colRef = useRef(null);
   const active = useScreenActive();
-  const [shown, setShown] = useState(Platform.OS === 'web' ? Infinity : FIRST_CARDS);
+  // First screenful at once (initialCount); a list that fits entirely is simply fully shown.
+  const [shown, setShown] = useState(() => (Platform.OS === 'web' || initialCount(allCards.length, FIRST_CARDS) >= allCards.length ? Infinity : initialCount(allCards.length, FIRST_CARDS)));
   const cardTotal = allCards.length;
   // `cards` is what is mounted now; allCards keeps the true count for the header and empty state.
   const cards = shown >= cardTotal ? allCards : allCards.slice(0, shown);
@@ -477,6 +503,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
           t={t}
           board={board}
           features={features}
+          labelColors={labelColors}
           showDescriptions={showDescriptions}
           fromIndex={index}
           total={total}
@@ -530,7 +557,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
 // One tap opens the task. Hold and drag moves it, to any list and any position.
 // Double-tap the title to edit it in place.
 
-const TaskCard = memo(function TaskCard({ t, board, features=[], showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
+const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={}, showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
   const { c } = useTheme();
   const { updateTask, placeTask } = useStoreActions();
   const [editing, setEditing] = useState(false);
@@ -592,7 +619,7 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], showDescription
       setDrag(null);
       const to = clamp(fromIndex + Math.round(cx / step), 0, total - 1);
       const slot = slotFor(k, lists[to].id, py, t.id);
-      placeTask(t.id, lists[to].id, slot.before);
+      placeTask(t.id, lists[to].id, k.dropBefore ? k.dropBefore(lists[to].id, slot.index, t.id) : slot.before);
     },
     onCancel: () => { k.pointer.valid = false; k.lastKey = null; setLock(false); setDrag(null); },
   });
@@ -613,46 +640,24 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], showDescription
         ...liftShadow(lifted),
       }}
     >
-      <Card pad={12} style={{ gap: 10 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-          <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: PRIORITY_COLOR[t.priority] }} />
-          <View style={{ flex: 1, gap: 4 }}>
-            <View ref={titleRef} collapsable={false}>
-              {editing ? (
-                <Input
-                  value={titleDraft}
-                  autoFocus
-                  onChangeText={(v) => { titleDraftRef.current = v; setTitleDraft(v); }}
-                  onSubmitEditing={endTitleEdit}
-                  onBlur={endTitleEdit}
-                  style={{ backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 2, fontWeight: '600', fontSize: 14 }}
-                />
-              ) : (
-                <T size={14} weight="600" numberOfLines={2}>{t.title}</T>
-              )}
-            </View>
-            <T size={11} muted>{t.id.toUpperCase()} · {t.type} · {t.priority}</T>
-          </View>
+      <Card pad={12} style={{gap:9}}>
+        <TaskLabels labels={t.labels} colors={labelColors} compact />
+        <View ref={titleRef} collapsable={false}>
+          {editing?<Input value={titleDraft} autoFocus onChangeText={v=>{titleDraftRef.current=v;setTitleDraft(v);}} onSubmitEditing={endTitleEdit} onBlur={endTitleEdit} style={{backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,fontWeight:'600',fontSize:14}}/>:
+            <T size={14} weight="600" numberOfLines={3}>{t.title}</T>}
         </View>
-        {showDescriptions && t.description ? <T muted size={12} numberOfLines={3}>{t.description}</T> : null}
-        {features.includes('aging')&&t.status!=='Done' ? <T muted size={11}>Updated {ageInDays(t)}d ago</T> : null}
-        {features.includes('checklist')&&t.tests?.length ? <T muted size={11}>{t.tests.filter(x=>x.result==='passed').length}/{t.tests.length} checks passed</T> : null}
-        {features.includes('github')&&t.githubLinks?.length ? <T muted size={11}>{t.githubLinks.length} GitHub reference{t.githubLinks.length===1?'':'s'}</T> : null}
-        {t.labels.length ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-            {t.labels.map((l) => (
-              <View key={l} style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999, backgroundColor: c.surfaceAlt }}>
-                <T size={11} muted>{l}</T>
-              </View>
-            ))}
-          </View>
-        ) : null}
-        {t.progress > 0 && !t.milestone ? <Bar value={t.progress / 100} height={4} color={STATUS_COLOR.Done} /> : null}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Avatar name={t.owner} size={22} />
-          <T size={12} muted style={{ flex: 1 }} numberOfLines={1}>
-            {isOverdue(t) ? 'Overdue · ' : ''}{fmt(t.due)}
-          </T>
+        {showDescriptions&&t.description?<T muted size={12} numberOfLines={2}>{t.description.replace(/[#*`_~]/g,'')}</T>:null}
+        {features.includes('aging')&&t.status!=='Done'?<T muted size={11}>Updated {ageInDays(t)}d ago</T>:null}
+        {t.progress>0&&!t.milestone?<Bar value={t.progress/100} height={4} color={STATUS_COLOR.Done}/>:null}
+        <View style={{flexDirection:'row',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <View style={{width:7,height:7,borderRadius:4,backgroundColor:PRIORITY_COLOR[t.priority]}}/>
+          {t.due?<T size={11} muted>{fmt(t.due)}</T>:null}
+          {t.tests?.length?<T size={11} muted>☑ {t.tests.filter(x=>x.result==='passed').length}/{t.tests.length}</T>:null}
+          {t.attachments?.length?<T size={11} muted>📎 {t.attachments.length}</T>:null}
+          {t.comments?.length?<T size={11} muted>◻ {t.comments.length}</T>:null}
+          {features.includes('github')&&t.githubLinks?.length?<T size={11} muted>GitHub {t.githubLinks.length}</T>:null}
+          <View style={{flex:1}}/>
+          {t.owner?<Avatar name={t.owner} size={20}/>:null}
         </View>
       </Card>
     </BoardMotion>

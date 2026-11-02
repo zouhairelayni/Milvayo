@@ -19,7 +19,7 @@ test('heavy native tabs defer their first mount; web and Overview do not',()=>{
 });
 test('Board mounts cards progressively on native only and stays fully shown afterwards',()=>{
  const src=read('src/screens/board/Board.js');
- assert.match(src,/Platform\.OS === 'web' \? Infinity : FIRST_CARDS/);
+ assert.match(src,/Platform\.OS === 'web' \|\| initialCount\(allCards\.length, FIRST_CARDS\) >= allCards\.length \? Infinity : initialCount\(allCards\.length, FIRST_CARDS\)/);
  assert.match(src,/return next >= cardTotal \? Infinity : next/);
  assert.match(src,/allCards\.slice\(0, shown\)/);
  assert.match(src,/\{cardTotal\}<\/T>/,'header count shows every card, not only the mounted ones');

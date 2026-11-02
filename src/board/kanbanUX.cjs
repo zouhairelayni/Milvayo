@@ -24,6 +24,14 @@ function resolveDropIndex(allTasks,visibleTasks,status,visibleIndex,movingId){
  if(i===visible.length)return full.findIndex(t=>t.id===visible.at(-1).id)+1;
  return full.findIndex(t=>t.id===visible[i].id);
 }
+// The card a dropped card should go in front of (null = end of the list), counted against ALL cards in the list
+// so cards hidden by a filter keep their place. visibleIndex is the slot among the visible cards.
+function dropBefore(allTasks,visibleTasks,listId,visibleIndex,movingId){
+ const inList=ts=>ts.filter(t=>t.list===listId).map(t=>({...t,status:'list'}));
+ const full=inList(allTasks).filter(t=>t.id!==movingId).sort((a,b)=>a.position-b.position);
+ const at=resolveDropIndex(inList(allTasks),inList(visibleTasks),'list',visibleIndex,movingId);
+ return full[at]?full[at].id:null;
+}
 function normalizeViews(project){const known=new Set((project.boards||[]).map(b=>b.id));const raw=project.kanbanViews;
  if(raw!==undefined&&(raw===null||typeof raw!=='object'||Array.isArray(raw)))throw Error('Invalid Kanban board preferences');
  const out={};for(const [id,value] of Object.entries(raw||{})){if(!known.has(id))continue;if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid Kanban board preference');out[id]={showDescriptions:value.showDescriptions===true};}return out;
@@ -35,4 +43,4 @@ function duplicateCard(project,taskId,newId,now=new Date().toISOString()){
  return {...project,tasks:[...project.tasks,copy]};
 }
 function updateLabels(project,taskId,labels){const task=project.tasks.find(t=>t.id===taskId);if(!task)throw Error('Task not found');if(!Array.isArray(labels)||labels.length>30)throw Error('Too many labels');const clean=[...new Set(labels.map(x=>str(x,40)).filter(Boolean))];if(clean.length>30)throw Error('Too many labels');return {...project,tasks:project.tasks.map(t=>t.id===taskId?{...t,labels:clean,verified:false,merged:false,updatedAt:new Date().toISOString()}:t)};}
-module.exports={PRIORITIES,DUE,dateBucket,filterCards,resolveDropIndex,normalizeViews,setBoardView,duplicateCard,updateLabels};
+module.exports={PRIORITIES,DUE,dateBucket,filterCards,resolveDropIndex,dropBefore,normalizeViews,setBoardView,duplicateCard,updateLabels};

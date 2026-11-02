@@ -42,7 +42,7 @@ test('Kanban restores original MockDesign responder, auto-scroll and full list s
   assert.match(board, /k\.scroll\.x = e\.nativeEvent\.contentOffset\.x/);
   assert.match(board, /scrollEnabled=\{!locked\}/);
   assert.match(board, /onMove: \(cx, cy, px, py\)/);
-  assert.match(board, /placeTask\(t\.id, lists\[to\]\.id, slot\.before\)/);
+  assert.match(board, /placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore \? k\.dropBefore\(lists\[to\]\.id, slot\.index, t\.id\) : slot\.before\)/);
   assert.match(board, /moveListTo\(board\.id, list\.id, to\)/);
   assert.match(board, /cards\.map\(\(t\) => \(/); // no cap hides offscreen cards during placement
   assert.doesNotMatch(board, /visibleLimit|VirtualGestureDetector|GestureArea|DragMotion/);
