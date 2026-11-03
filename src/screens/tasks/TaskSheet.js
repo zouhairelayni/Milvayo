@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import TaskMarkdown from '../../components/inline/TaskMarkdown';
+import MarkdownField from '../../components/inline/MarkdownField';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { COLORS, textColor } from '../../ui/labelPalette.cjs';
 import { Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
@@ -29,7 +30,7 @@ export function NewTaskSheet({ onClose, onSave }) {
   return <Sheet visible onClose={onClose} title="Create task" showNotice={false}
     footer={<><Button label="Cancel" small variant="ghost" onPress={onClose}/><Button label="Save task" small icon="check" disabled={!title.trim() || title.trim().length>240} onPress={save}/></>}>
     <View style={{gap:8}}><T weight="600">Task title</T><Input value={title} onChangeText={setTitle} autoFocus accessibilityLabel="New task title" placeholder="What needs to be done?"/></View>
-    <View style={{gap:8}}><T weight="600">Description</T><Input value={description} onChangeText={setDescription} multiline placeholder="Details (optional)"/></View>
+    <MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/>
     <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>
     <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>
   </Sheet>;
@@ -102,12 +103,20 @@ export default function TaskSheet({ taskId, onClose }) {
   const footer = t ? (
     <>
       <InlineNotice />
-      {confirmDuplicate ? <><Button label="Confirm duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/><Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDuplicate(false)}/></> :
-        <Button label="Duplicate" icon="copy" small variant="secondary" onPress={()=>{setConfirmDelete(false);setConfirmDuplicate(true);}}/>}
-      {confirmDelete ? <><Button label="Confirm delete" small variant="danger" onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/><Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDelete(false)}/></> :
-        <Button label="Delete" icon="trash-2" small variant="danger" onPress={()=>{setConfirmDuplicate(false);setConfirmDelete(true);}}/>}
-      <View style={{ flex: 1 }} />
-      <Button label="Done" small onPress={closeTask} />
+      {confirmDuplicate ? <>
+        <T size={12} muted>Duplicate this task?</T>
+        <Button label="Confirm duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/>
+        <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDuplicate(false)}/>
+      </> : confirmDelete ? <>
+        <T size={12} muted>Delete this task? This cannot be undone.</T>
+        <Button label="Confirm delete" small onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/>
+        <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDelete(false)}/>
+      </> : <>
+        <Button label="Duplicate" icon="copy" small variant="secondary" onPress={()=>setConfirmDuplicate(true)}/>
+        <Button label="Delete" icon="trash-2" small variant="secondary" onPress={()=>setConfirmDelete(true)}/>
+        <View style={{ flex: 1 }} />
+        <Button label="Done" small onPress={closeTask} />
+      </>}
     </>
   ) : null;
 
@@ -145,7 +154,7 @@ export default function TaskSheet({ taskId, onClose }) {
               <Input value={labelDraft} onChangeText={setLabelDraft} placeholder="New label name" onSubmitEditing={addLabel}/>
               <T size={12} weight="600">Label color</T>
               <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
-                {COLORS.map(color=><Pressable key={color} accessibilityRole="button" accessibilityLabel={`Set label color ${color}`} onPress={()=>setLabelColorDraft(color)} style={{width:32,height:32,borderRadius:7,backgroundColor:color,alignItems:'center',justifyContent:'center',borderWidth:labelColorDraft===color?2:0,borderColor:c.ink}}>{labelColorDraft===color?<Feather name="check" size={18} color={textColor(color)}/>:null}</Pressable>)}
+                {COLORS.map(color=><Pressable key={color} accessibilityRole="button" accessibilityLabel={`Set label color ${color}`} hitSlop={7} onPress={()=>setLabelColorDraft(color)} style={{width:32,height:32,borderRadius:7,backgroundColor:color,alignItems:'center',justifyContent:'center',borderWidth:labelColorDraft===color?2:0,borderColor:c.ink}}>{labelColorDraft===color?<Feather name="check" size={18} color={textColor(color)}/>:null}</Pressable>)}
               </View>
               <Button small label="Create & assign label" disabled={!labelDraft.trim()} onPress={addLabel}/>
               {t.labels.length?<><T size={12} weight="600">Recolor assigned labels</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{t.labels.map(name=><Button key={name} small variant="secondary" label={`Recolor ${name}`} onPress={()=>setLabelColor(name,labelColorDraft)}/>)}</View></>:null}

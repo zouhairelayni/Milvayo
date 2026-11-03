@@ -7,8 +7,8 @@ const ACCENTS = Object.freeze([
   ['Aqua', '#2DD4BF', '#3B82F6', '#5B9CF8', '#2563EB', '#0F1316', '#181D21', '#ECF1F5'],
   ['Mint', '#6EE7B7', '#10B981', '#6EE7B7', '#059669', '#101614', '#18201E', '#EAF3EF'],
   ['Lime', '#D7F36A', '#A3E635', '#D7F36A', '#4D7C0F', '#10120F', '#191C17', '#EEF2EA'],
-  ['Amber', '#FBBF24', '#D97706', '#FBBF24', '#B45309', '#16140E', '#201E17', '#F3F0EA'],
-  ['Orange', '#D97757', '#D97757', '#D97757', '#D97757', '#16120F', '#201C18', '#F5F0EA'],
+  ['Amber', '#FBBF24', '#D97706', '#FBBF24', '#8A5A00', '#16140E', '#201E17', '#F3F0EA'],
+  ['Orange', '#D97757', '#D97757', '#D97757', '#DA643D', '#16120F', '#201C18', '#F5F0EA'],
   ['Coral', '#FB7185', '#E11D48', '#FB7185', '#E11D48', '#161112', '#201B1C', '#F5EDED'],
   ['Pink', '#F472B6', '#DB2777', '#F472B6', '#DB2777', '#151114', '#1F1B1E', '#F5EEF0'],
   ['Fuchsia', '#E879F9', '#C026D3', '#E879F9', '#C026D3', '#151116', '#1F1B21', '#F3EEF4'],
@@ -24,6 +24,18 @@ function linear(v) { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.
 function luminance(hex) { const [r,g,b] = hexToRgb(hex); return .2126*linear(r)+.7152*linear(g)+.0722*linear(b); }
 function contrast(a,b) { const x=luminance(a), y=luminance(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
 function buttonInk(accent) { return contrast('#FFFFFF',accent) >= contrast('#111317',accent) ? '#FFFFFF' : '#111317'; }
+// Buttons retain the exact chosen accent. Small text uses its nearest high-contrast shade.
+function readableAccent(accent, background, dark) {
+  if (contrast(accent, background) >= 4.5) return accent;
+  const from = hexToRgb(accent), toward = dark ? 255 : 0;
+  for (let step = 1; step <= 100; step++) {
+    const share = step / 100;
+    const channels = from.map(v => Math.round(v * (1 - share) + toward * share));
+    const candidate = '#' + channels.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+    if (contrast(candidate, background) >= 4.5) return candidate;
+  }
+  return dark ? '#FFFFFF' : '#000000';
+}
 function palette(id, mode) {
   const a = findAccent(id);
   const dark = mode === 'dark' || mode === 'amoled';
@@ -33,8 +45,9 @@ function palette(id, mode) {
     surface: dark ? a.darkCard : '#FFFFFF',
     surfaceAlt: dark ? a.darkBackground : a.lightBackground,
     ink: dark ? '#F4F3F2' : '#17191B', muted: dark ? '#AEB3B5' : '#586169',
-    faint: dark ? '#7E8589' : '#858E95', line: dark ? '#383A3C' : '#D6D9DB',
-    accent, accentInk: buttonInk(accent),
+    faint: dark ? '#7E8589' : '#656D75', line: dark ? '#383A3C' : '#D6D9DB',
+    accent, accentText: readableAccent(accent, mode === 'amoled' ? '#000000' : dark ? a.darkBackground : a.lightBackground, dark),
+    accentInk: buttonInk(accent),
   };
 }
 function themeTokens(id) {

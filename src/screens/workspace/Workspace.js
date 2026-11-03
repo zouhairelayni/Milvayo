@@ -1,8 +1,8 @@
 // /src/screens/workspace/Workspace.js
-import { Pressable, Switch, View } from 'react-native';
-import {Fold,EditRow,Labeled,Pick,DangerConfirm} from '../../components/inline/CompactTools';
+import { Pressable, ScrollView, Switch, View } from 'react-native';
+import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect} from 'react';
-import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, downloadText } from '../../ui/ui';
+import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, useWide, downloadText } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { money, openHours } from '../../store/data';
@@ -28,8 +28,8 @@ export function Resources() {
         {s.contributors.map(r=><EditRow key={r.id} title={r.name} summary={`${r.weekly} hours/week · ${r.rate}/hour`}><DangerConfirm label="Remove contributor" onConfirm={()=>deleteResource(r.id)}/></EditRow>)}
       </Fold>
       <Fold title="Time entries" subtitle={`${(p.timeEntries||[]).length} logged work sessions`}>
-        <Labeled title="Task ID" value={taskId} onChange={setTaskId}/>{s.contributors.length?<><T size={12} muted>Contributor</T><Pick values={s.contributors.map(r=>r.name)} value={owner||s.contributors[0].name} onChange={setOwner}/></>:<Labeled title="Contributor" value={owner} onChange={setOwner}/>}<Labeled title="Date YYYY-MM-DD" value={date} onChange={setDate}/><Labeled title="Hours" value={hours} onChange={setHours} keyboardType="numeric"/><Labeled title="Note" value={note} onChange={setNote}/>
-        <Button label="Log time" small onPress={()=>{if(logTime({taskId,owner:owner||s.contributors[0]?.name||'',date,hours:Number(hours),note})){setNote('');setTaskId('')}}}/>
+        <View style={{gap:6}}><T muted size={12} weight="500">Task</T><Dropdown options={s.tasks.map(t=>({value:t.id,label:t.title}))} value={taskId} onChange={setTaskId}/></View>{s.contributors.length?<><T size={12} muted>Contributor</T><Pick values={s.contributors.map(r=>r.name)} value={owner||s.contributors[0].name} onChange={setOwner}/></>:<Labeled title="Contributor" value={owner} onChange={setOwner}/>}<Labeled title="Date YYYY-MM-DD" value={date} onChange={setDate}/><Labeled title="Hours" value={hours} onChange={setHours} keyboardType="numeric"/><Labeled title="Note" value={note} onChange={setNote}/>
+        <Button label="Log time" small disabled={!taskId} onPress={()=>{if(logTime({taskId,owner:owner||s.contributors[0]?.name||'',date,hours:Number(hours),note})){setNote('');setTaskId('')}}}/>
         {(p.timeEntries||[]).slice(-50).reverse().map(e=><EditRow key={e.id} title={`${e.owner} · ${e.hours}h`} summary={`${e.date} · ${s.tasks.find(t=>t.id===e.taskId)?.title||e.taskId}`}><T size={12} muted>{e.note||'No note'}</T><DangerConfirm label="Remove time entry" onConfirm={()=>removeTime(e.id)}/></EditRow>)}
       </Fold>
       {s.contributors.map((p) => {
@@ -76,7 +76,7 @@ export function Costs() {
         <Cell wide="23%" mobile="48%"><Stat label="Budget" value={money(summary?.budget||0)} /></Cell>
         <Cell wide="23%" mobile="48%"><Stat label="Planned labour" value={money(planned)} hint={`${Math.round((planned / budget) * 100)}% of budget`} /></Cell>
         <Cell wide="23%" mobile="48%"><Stat label="Logged labour" value={money(actual)} hint={`${Math.round((actual / budget) * 100)}% of budget`} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Remaining" value={money(budget - actual)} /></Cell>
+        <Cell wide="23%" mobile="48%"><Stat label="Remaining" value={money(budget - actual)} accent={budget-actual<0?PRIORITY_COLOR.Critical:STATUS_COLOR.Done} /></Cell>
       </Grid>
       <Card style={{ gap: 16 }}>
         <SectionTitle>Against budget</SectionTitle>
@@ -179,15 +179,18 @@ export function Reports() {
       </Fold>
       <Card style={{ gap: 14 }}>
         <SectionTitle>Velocity</SectionTitle>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 160, gap: 24 }}>
-          {velocity.map((x) => (
-            <View key={x.id} style={{ flex: 1, alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
-              <T size={13} weight="600">{x.velocity}</T>
-              <View style={{ width: '60%', maxWidth: 80, height: `${(x.velocity / max) * 75}%`, borderRadius: 8, backgroundColor: c.ink }} />
-              <T size={12} muted>{x.name}</T>
+        {!velocity.length ? <T size={13} muted>No completed sprint data yet. Complete a sprint to see velocity.</T> :
+          <ScrollView horizontal showsHorizontalScrollIndicator accessibilityLabel="Sprint velocity chart">
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 172, gap: 12, paddingVertical: 6 }}>
+              {velocity.map((x) => (
+                <View key={x.id} accessibilityLabel={`${x.name}, ${x.velocity} completed tasks`} style={{ width: 86, alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
+                  <T size={13} weight="600">{x.velocity}</T>
+                  <View style={{ width: 36, height: `${Math.max(2, (x.velocity / max) * 70)}%`, borderRadius: 6, backgroundColor: c.ink }} />
+                  <T size={12} muted numberOfLines={2} center>{x.name}</T>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </ScrollView>}
       </Card>
       <Card style={{ gap: 12 }}>
         <SectionTitle>Tasks by status</SectionTitle>
@@ -212,18 +215,21 @@ export function Reports() {
 
 export function Activity() {
   const { c } = useTheme();
+  const wide = useWide();
   const { s } = useStore();
+  const [visibleCount,setVisibleCount] = useState(50);
   return (
     <Page title="Activity" subtitle="Local history for this workspace. Not a shared audit log.">
       <Card pad={0} style={{ overflow: 'hidden' }}>
         {s.activity.length === 0 ? <Empty>Nothing yet.</Empty> : null}
-        {s.activity.map((a, i) => (
-          <View key={a.id} style={{ flexDirection: 'row', gap: 14, paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderColor: c.line }}>
-            <T size={12} muted style={{ width: 62 }}>{a.at}</T>
-            <T size={13} style={{ flex: 1 }}>{a.text}</T>
+        {s.activity.slice(0,visibleCount).map((a, i) => (
+          <View key={a.id} style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 14 : 4, paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderColor: c.line }}>
+            <T size={12} muted style={wide ? { width: 170 } : undefined}>{a.at}</T>
+            <T size={13} style={wide ? { flex: 1 } : undefined}>{a.action || a.text || 'Activity recorded'}</T>
           </View>
         ))}
       </Card>
+      {s.activity.length > visibleCount ? <Button label={`Show more activity (${s.activity.length-visibleCount} remaining)`} small variant="secondary" onPress={()=>setVisibleCount(n=>n+50)} /> : null}
     </Page>
   );
 }
@@ -240,9 +246,10 @@ export function Settings({go}) {
     <DiagnosticsPanel />
     <Card style={{gap:12}}>
       <SectionTitle>Appearance</SectionTitle>
-      <T size={12} muted>Use the sun/moon control in the menu for Light and Dark. System and AMOLED remain available here.</T>
       <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}>
         <Chip label="System" active={pref==='system'} onPress={()=>setPref('system')}/>
+        <Chip label="Daylight" active={pref==='light'} onPress={()=>setPref('light')}/>
+        <Chip label="Dark" active={pref==='dark'} onPress={()=>setPref('dark')}/>
         <Chip label="AMOLED" active={pref==='amoled'} onPress={()=>setPref('amoled')}/>
       </View>
       <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:12,gap:12}}>

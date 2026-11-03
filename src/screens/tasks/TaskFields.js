@@ -10,7 +10,7 @@ import { dayNumber } from '../../timeline/gantt.cjs';
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 export const Field = ({ label, children }) => (
   <View style={{ gap: 8 }}>
-    <T size={11} weight="600" muted upper>{label}</T>
+    <T size={12} weight="500" muted>{label}</T>
     {children}
   </View>
 );
@@ -49,6 +49,7 @@ export function DateField({ label, value, onValid }) {
       <Field label={label}>
         <Input
           value={draft}
+          accessibilityLabel={label}
           placeholder="YYYY-MM-DD"
           onChangeText={(v) => {
             setDraft(v);

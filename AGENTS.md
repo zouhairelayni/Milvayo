@@ -10,7 +10,7 @@
 4. Plan controlled patch scope; preserve the stable Metro setup, existing data and import format, and existing verified workflows. Record any migration requirements explicitly.
 5. Implement model / security invariants first, then UI. Add tests for success, failure, edge cases, and persistence/import round trips. Prefer pure, deterministic functions for scheduling and dependency logic.
 6. Run `npm test`, check JSX syntax, and run `npx expo install --check`; test Web and Expo Go with `npx expo start` and Fast Refresh. If device/browser testing cannot be run in this environment, say **Not run**; never claim a source check equals runtime acceptance.
-7. Deliver one complete project-root ZIP with version-synchronized `package.json`, `package-lock.json` and `app.json`, plus exactly one consolidated release changelog at the repository root. Do not ship redundant `/docs` changelogs or installer scripts. Record Pass/Fail/Not run and a reversible installation plan.
+7. Deliver one complete project-root ZIP with version-synchronized `package.json`, `package-lock.json` and `app.json`, plus exactly one cumulative release changelog at `docs/changelog/CHANGELOG.md`. Keep QA in `docs/qa` and usage guides in `docs/instructions`; ship no other changelog or installer scripts. Record Pass/Fail/Not run and a reversible installation plan.
 8. Work on Git `work`. Never force-push, commit, deploy or merge automatically. User validates on Termux before a checkpoint; only merge to `main` after passing acceptance gates.
 
 ## Architecture / safety

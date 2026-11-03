@@ -1,28 +1,51 @@
 // /src/components/shell/Bars.js
 import { useRef } from 'react';
-import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { radius, useTheme } from '../../ui/theme/theme';
 import { Button, IconBtn, Input, T } from '../../ui/ui';
 import { diagnosticMonitor } from '../../diagnostics/monitor';
 import { ProjectSwitcher } from './Menus';
 
-export function TopBar({ query, onQuery, onNew, onPickProject }) {
+// Screen actions share the real app header, not an extra toolbar inside Page.
+// Both contextual tools and the timeline zoom occupy the same 44pt header rhythm.
+export function HeaderControls({controls}) {
+  const { c } = useTheme();
+  if (!controls) return <View style={{ flex: 1, minWidth: 0 }} />;
+  if (controls.kind === 'zoom') return <View style={{ flex: 1, minWidth: 0, height: 44, justifyContent: 'center' }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1, minWidth: 0 }}
+      contentContainerStyle={{flexDirection:'row',alignItems:'center',minHeight:44,paddingHorizontal:2,borderRadius:radius.sm,backgroundColor:c.surfaceAlt}}>
+      {['Days','Weeks','Months'].map(value => <Pressable key={value} accessibilityRole="button" accessibilityLabel={`${value} zoom`}
+        accessibilityState={{selected:controls.value===value}} onPress={()=>controls.onChange(value)}
+        style={({pressed})=>({paddingHorizontal:9,minHeight:44,borderRadius:radius.sm,
+          backgroundColor:controls.value===value?c.surface:'transparent',justifyContent:'center',opacity:pressed?.75:1})}>
+        <T size={12} weight={controls.value===value?'600':'400'} color={controls.value===value?c.ink:c.muted}>{value}</T>
+      </Pressable>)}
+    </ScrollView>
+  </View>;
+  return <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1, minWidth: 0, height: 44 }}
+    contentContainerStyle={{ flexGrow: 1, flexDirection:'row', alignItems:'center', justifyContent:'flex-end', gap:8 }}>
+    {controls.actions?.map(item=><Button key={item.label} label={item.label} icon={item.icon} small variant={item.variant||'secondary'} onPress={item.onPress}/>)}
+  </ScrollView>;
+}
+
+export function TopBar({ query, onQuery, onNew, onPickProject, controls }) {
   const { c } = useTheme();
   const { width } = useWindowDimensions();
   const compact = width < 1120;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: compact ? 10 : 16, paddingHorizontal: compact ? 16 : 32, minHeight: compact ? 64 : 72,
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: compact ? 8 : 12, paddingHorizontal: compact ? 16 : 28,
+      minHeight: compact ? 64 : 72, paddingVertical: compact ? 10 : 14,
       backgroundColor: c.bg }}>
       <ProjectSwitcher onPickProject={onPickProject} compact={compact} />
       <View style={{ flex: 1, maxWidth: compact ? 240 : 320, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8,
-        backgroundColor: c.bg, borderWidth: 1, borderColor: c.line, borderRadius: radius.sm, paddingHorizontal: 12 }}>
+        backgroundColor: c.bg, borderWidth: 1, borderColor: c.line, borderRadius: radius.sm, paddingHorizontal: 12, height: 44 }}>
         <Feather name="search" size={16} color={c.muted} />
         <Input value={query} onChangeText={onQuery} accessibilityLabel="Search tasks" placeholder="Search tasks"
-          style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, minHeight: 38 }} />
+          style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
       </View>
-      {compact ? <IconBtn icon="plus" label="New task" solid onPress={onNew} />
-        : <Button label="New task" icon="plus" small onPress={onNew} />}
+      <HeaderControls controls={controls} />
+      <Button label="New task" icon="plus" small headerCompact onPress={onNew} />
     </View>
   );
 }

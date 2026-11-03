@@ -13,6 +13,7 @@ import {
 import { BRANCH, Scene, sceneFor, sceneToSvg } from '../../../governance/wbsviews';
 import { DocHeader } from './PmDocs';
 import { Field, NumInput, OwnerPick } from './pmui';
+import MarkdownField from '../../../components/inline/MarkdownField';
 
 const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
 
@@ -32,9 +33,12 @@ function OutlineRow({ n, open, onOpen, nodes, save, select }) {
     <View style={{ marginLeft: Math.min(n.level, 5) * 14 }}>
       <Pressable
         onPress={onOpen}
+        accessibilityRole="button"
+        accessibilityLabel={`${n.code || 'Project'}: ${n.name}`}
+        accessibilityState={{expanded:open}}
         style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 12, backgroundColor: open ? c.surfaceAlt : 'transparent', opacity: pressed ? 0.7 : 1 })}
       >
-        <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: col }} />
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} />
         <T size={12} weight="700" muted style={{ width: 44 }}>{n.code || 'Project'}</T>
         <T weight={n.level <= 1 ? '700' : '500'} style={{ flex: 1 }} numberOfLines={open ? undefined : 1}>{n.name}</T>
         {n.hours ? <T size={12} muted>{n.hours}h</T> : null}
@@ -52,7 +56,7 @@ function OutlineRow({ n, open, onOpen, nodes, save, select }) {
                 <T size={12} muted>{n.hours}h rolled up from {n.children.length} element{n.children.length === 1 ? '' : 's'} below.</T>
               )}
               <Field label="Description (WBS dictionary)">
-                <Input lazy multiline value={raw.note || ''} onChangeText={(v) => change({ note: v })} placeholder="What this work package delivers and how it is accepted" />
+                <MarkdownField showLabel={false} label="WBS description" lazy value={raw.note || ''} onChangeText={(v) => change({ note: v })} placeholder="What this work package delivers and how it is accepted" />
               </Field>
             </>
           ) : (

@@ -28,7 +28,8 @@ test('all 10 RIVNA accents generate readable primary buttons and 4 appearance su
 
 test('Board has a single tools entry and all old filters live inside its sheet', () => {
   const board = source('src/screens/board/Board.js');
-  assert.match(board, /<Button label="Tools"/);
+  assert.match(board, /useHeaderActions\('board', headerControls, active\)/);
+  assert.match(board, /label: 'Tools'/);
   assert.match(board, /<Sheet visible=\{boardToolsOpen\}/);
   for (const label of ['Search board cards', 'High and above', 'Clear filters', 'Descriptions on cards', 'Upcoming dates', 'Card age']) {
     assert.ok(board.includes(label), label);

@@ -4,6 +4,7 @@ import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native'
 import { Feather } from '@expo/vector-icons';
 import { Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
+import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -60,6 +61,8 @@ export default function Board({ openTask }) {
   const [newName, setNewName] = useState('');
   const [managing, setManaging] = useState(false);
   const [boardToolsOpen, setBoardToolsOpen] = useState(false);
+  const headerControls = useMemo(() => ({ actions: [{ label: 'Tools', icon: 'sliders', variant: 'secondary', onPress: () => setBoardToolsOpen(true) }] }), []);
+  useHeaderActions('board', headerControls, active);
   const [addingList, setAddingList] = useState(false);
   const [drag, setDrag] = useState(null); // { kind: 'card'|'list', id, from, to, before? }
   const [mountedColumns, setMountedColumns] = useState({});
@@ -202,7 +205,6 @@ export default function Board({ openTask }) {
       onScroll={(e) => { k.scroll.y = e.nativeEvent.contentOffset.y; }}
     >
       <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
-        <Button label="Tools" icon="sliders" small variant="secondary" onPress={()=>setBoardToolsOpen(true)} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex:1,flexGrow:1}} contentContainerStyle={{gap:8,alignItems:'center'}}>
           {boards.map((b) => <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />)}
         </ScrollView>
@@ -215,11 +217,11 @@ export default function Board({ openTask }) {
           <T weight="600" size={14}>Upcoming dates</T>
           <T muted size={12}>Open tasks on this board due in the next 30 days.</T>
           {upcoming.length ? upcoming.map((t) => (
-            <Pressable key={t.id} onPress={() => openTask(t.id)} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', gap: 10, alignItems: 'center', minHeight: 36, opacity: pressed ? 0.6 : 1 })}>
+            <Pressable key={t.id} onPress={() => openTask(t.id)} accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} style={({ pressed }) => ({ flexDirection: 'row', gap: 10, alignItems: 'center', minHeight: 44, opacity: pressed ? 0.6 : 1 })}>
               <T size={12} muted style={{ width: 84 }}>{t.due}</T>
               <T size={13} numberOfLines={2} style={{ flex: 1 }}>{t.title}</T>
             </Pressable>
-          )) : <T muted size={12}>No dated tasks in the next 30 days.</T>}
+          )) : <T muted size={12}>No upcoming due dates on this board. Set a task due date to see it here.</T>}
         </Card>;
       })() : null}
       {creating ? (
@@ -248,6 +250,7 @@ export default function Board({ openTask }) {
         >
           <Pressable
             onPress={() => setAddingList(true)}
+            accessibilityRole="button"
             accessibilityLabel="Add list to the left"
             style={({ pressed }) => ({
               width: 64, minHeight: 240, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line,
@@ -328,6 +331,10 @@ function BoardChip({ board, active, onSelect, onManage }) {
   const lastTap = useRef(0);
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Open board ${board.name}`}
+      accessibilityHint="Long press to manage boards"
+      accessibilityState={{selected:!!active}}
       onPress={() => {
         const now = Date.now();
         if (now - lastTap.current < DOUBLE_MS) {
@@ -477,7 +484,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
     >
       <View
         {...(editing ? {} : panHandlers)}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 40, paddingHorizontal: 4, ...NOSELECT }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingHorizontal: 4, ...NOSELECT }}
       >
         <View style={{ width: 8, height: 8, borderRadius: 4, marginLeft: 4, backgroundColor: STATUS_COLOR[list.status] }} />
         {editing ? (
@@ -543,6 +550,8 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
       ) : (
         <Pressable
           disabled={total <= 1}
+          accessibilityRole="button" accessibilityLabel={`Delete list ${list.name}`}
+          accessibilityState={{disabled:total<=1}}
           onPress={() => setConfirmDel(true)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center', paddingVertical: 4, opacity: total <= 1 ? 0.3 : 1 }}
         >
@@ -629,6 +638,9 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
     <BoardMotion
       offset={offset}
       ref={cardRef}
+      accessibilityRole="button"
+      accessibilityLabel={`${t.title}, ${t.status}, ${t.priority} priority`}
+      onAccessibilityTap={() => openTask(t.id)}
       {...(editing ? {} : panHandlers)}
       onLayout={(e) => {
         const { y, height } = e.nativeEvent.layout;

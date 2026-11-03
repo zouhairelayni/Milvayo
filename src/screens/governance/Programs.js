@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
-import { Fold, EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
+import { EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
+import TaskMarkdown from '../../components/inline/TaskMarkdown';
 const { STATES } = require('../../domain/programs.cjs');
 const { programSummary, portfolioSummary } = require('../../domain/projectRelations.cjs');
 const { programMetric }=require('../../domain/governanceSummary.cjs');
@@ -23,8 +24,8 @@ export function Programs({embedded=false,openProject}){
  const select=p=>{setEditing(p?.id||'new');setName(p?.name||'');setDescription(p?.description||'');setStatus(p?.status||'Planned');setMembers(p?.portfolioIds||[]);setLegacyMembers(p?.projectIds||[]);setManager(p?.manager||'');setSponsor(p?.sponsor||'');setObjective(p?.objective||'');setGovernance(p?.governance||'');setPhase(p?.phase||'Definition');setStart(p?.start||'');setEnd(p?.end||'');setBenefits(p?.benefits||[])};
  const open=id=>openProject?openProject(id):switchProject(id);
  const save=()=>{if(saveProgram({id:editing==='new'?'':editing,name,description,status,portfolioIds:members,projectIds:legacyMembers,manager,sponsor,objective,governance,phase,start,end,benefits}))setEditing('')};
- const editor=(<Card style={{gap:12,backgroundColor:c.surfaceAlt}}>
-    <Labeled title="Program name" value={name} onChange={setName}/><Labeled title="Description" value={description} onChange={setDescription} multiline/>
+ const editor=(<View style={{gap:14}}>
+    <Labeled title="Program name" value={name} onChange={setName}/><Labeled title="Description" value={description} onChange={setDescription} markdown/>
     <T muted size={12}>Status</T><Pick values={STATES} value={status} onChange={setStatus}/>
     <Labeled title="Manager" value={manager} onChange={setManager}/><Labeled title="Sponsor" value={sponsor} onChange={setSponsor}/>
     <Labeled title="Objective" value={objective} onChange={setObjective} multiline/><Labeled title="Governance and review cadence" value={governance} onChange={setGovernance} multiline/>
@@ -41,14 +42,11 @@ export function Programs({embedded=false,openProject}){
     <T muted size={12}>Portfolios included in this program</T>
     {portfolios.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{portfolios.map(p=><Chip key={p.id} label={p.name} active={members.includes(p.id)} onPress={()=>setMembers(m=>m.includes(p.id)?m.filter(id=>id!==p.id):[...m,p.id])}/>)}</View>:<T muted size={12}>Create a portfolio in the Portfolios tab, then assign it here.</T>}
     {legacyMembers.length?<View style={{gap:7}}><T muted size={12}>Legacy directly linked projects (preserved until you remove them)</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{projects.filter(p=>legacyMembers.includes(p.id)).map(p=><Chip key={p.id} active label={p.name+' ×'} onPress={()=>setLegacyMembers(ids=>ids.filter(x=>x!==p.id))}/>)}</View></View>:null}
-    <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button label="Save program" small disabled={!name.trim()} onPress={save}/><Button label="Cancel" small variant="ghost" onPress={()=>setEditing('')}/></View>
-   </Card>);
+   </View>);
  const content=<>
-  <Sheet visible={!!editing} onClose={()=>setEditing('')} title={editing==='new'?'Create program':'Edit program'} showNotice={false}>{editor}</Sheet>
-  <Fold title="Manage programs" subtitle={`${programs.length} programs · portfolios linked without duplicating project data`} initial={programs.length===0}>
-   <Button label="Create program" small onPress={()=>select(null)}/>
-
-  </Fold>
+  <Sheet visible={!!editing} onClose={()=>setEditing('')} title={editing==='new'?'Create program':'Edit program'} showNotice={false}
+   footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setEditing('')}/><Button label="Save program" small disabled={!name.trim()} onPress={save}/></>}>{editor}</Sheet>
+  <Button label="Create program" icon="plus" small onPress={()=>select(null)}/>
   {programs.length===0?<T muted size={13}>No programs yet. Create one, then add portfolios to form a Program → Portfolio → Project hierarchy.</T>:null}
   {programs.map(p=>{
 
@@ -57,8 +55,8 @@ export function Programs({embedded=false,openProject}){
    const oldDirect=linked.filter(project=>(p.projectIds||[]).includes(project.id)&&!nestedIds.has(project.id));
    const totals=programMetric(workspace,p);
    return <Card key={p.id} style={{gap:12}}>
-    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8}}><T size={16} weight="600" style={{flex:1,minWidth:0}} numberOfLines={2}>{p.name}</T><T size={12} color={c.accent} weight="600">{p.status}</T></View>
-    {p.description?<T size={13} muted>{p.description}</T>:null}
+    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8}}><T size={16} weight="600" style={{flex:1,minWidth:0}} numberOfLines={2}>{p.name}</T><T size={12} color={c.accentText} weight="600">{p.status}</T></View>
+    {p.description?<TaskMarkdown source={p.description}/>:null}
     <T size={12} muted>{linkedPortfolios.length} portfolios · {linked.length} unique projects · {doneCount}/{taskCount} tasks done · {totals.health}</T>
     <Bar value={totals.progress} height={6}/><T size={12} muted>{Math.round(totals.progress*100)}% progress · ${Math.round(totals.spent).toLocaleString()} spent of ${Math.round(totals.budget).toLocaleString()} approved</T>
     <EditRow title="Program roadmap" summary={`${totals.list.length} projects · today marker`}>

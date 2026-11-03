@@ -37,11 +37,11 @@ export function NewListSheet({ visible, onClose, boardId }) {
       footer={<Button label="Add list to the left" icon="plus" disabled={!name.trim()} onPress={submit} />}
     >
       <View style={{ gap: 8 }}>
-        <T size={11} weight="600" muted upper>List name</T>
-        <Input value={name} onChangeText={setName} placeholder="e.g. Blocked" onSubmitEditing={submit} />
+        <T size={12} weight="500" muted>List name</T>
+        <Input accessibilityLabel="List name" value={name} onChangeText={setName} placeholder="e.g. Blocked" onSubmitEditing={submit} />
       </View>
       <View style={{ gap: 8 }}>
-        <T size={11} weight="600" muted upper>Counts as</T>
+        <T size={12} weight="500" muted>Counts as</T>
         <Segmented fill options={STATUS} value={status} onChange={setStatus} />
         <T size={12} muted>The status decides how cards in this list count in progress, overview and reports.</T>
       </View>

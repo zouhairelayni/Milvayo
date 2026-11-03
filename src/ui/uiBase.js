@@ -34,12 +34,13 @@ export const useWide = () => {
   return isDesktopLayout(width, Platform.OS, preference);
 };
 
-export function T({ children, size = 14, weight = '400', color, muted, serifFace, upper, center, numberOfLines, style, pointerEvents }) {
+export function T({ children, size = 14, weight = '400', color, muted, serifFace, upper, center, numberOfLines, style, pointerEvents, accessibilityRole }) {
   const { c } = useTheme();
   return (
     <Text
       numberOfLines={numberOfLines}
       pointerEvents={pointerEvents}
+      accessibilityRole={accessibilityRole}
       style={[
         {
           fontFamily: serifFace ? serif : font,
@@ -58,7 +59,7 @@ export function T({ children, size = 14, weight = '400', color, muted, serifFace
   );
 }
 
-export function Card({ children, style, onPress, pad = 16 }) {
+export function Card({ children, style, onPress, pad = 16, accessibilityLabel }) {
   const { c } = useTheme();
   const body = (
     <View style={[{ backgroundColor: c.surface, borderRadius: radius.md, borderWidth: 1, borderColor: c.line, padding: pad }, style]}>
@@ -67,17 +68,18 @@ export function Card({ children, style, onPress, pad = 16 }) {
   );
   if (!onPress) return body;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={({ pressed }) => ({ minHeight: 44, opacity: pressed ? 0.85 : 1 })}>
       {body}
     </Pressable>
   );
 }
 
 export function Pill({ label, color }) {
+  const { c } = useTheme();
   return (
     <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill, backgroundColor: color + '22' }}>
       <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />
-      <T size={11} weight="600" color={color}>{label}</T>
+      <T size={11} weight="600" color={c.ink}>{label}</T>
     </View>
   );
 }

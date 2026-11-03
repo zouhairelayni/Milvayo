@@ -67,16 +67,16 @@ export default function IslandNotice({notice,onDismiss,wide=false,topOffset=12})
     <Feather name={icon} size={15} color={color}/>
     <T size={12} weight="700" color="#F7F7F7" numberOfLines={1}>{compactLabels[type]}</T>
   </Pressable>;
-  const expanded=<View accessibilityLiveRegion="polite" style={{flex:1,justifyContent:'center',paddingHorizontal:18,paddingVertical:12}}>
+  const expanded=<View accessibilityLiveRegion={type === 'error' ? 'assertive' : 'polite'} style={{flex:1,justifyContent:'center',paddingHorizontal:18,paddingVertical:12}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:12,minWidth:0}}>
       <View style={{width:33,height:33,borderRadius:17,backgroundColor:color+'22',alignItems:'center',justifyContent:'center'}}><Feather name={icon} size={18} color={color}/></View>
       <View style={{flex:1,minWidth:0,gap:3}}>
         <T size={13} weight="700" color="#FFFFFF" numberOfLines={1}>{compactLabels[type]}</T>
         <T size={12} color="#D4D4D4" numberOfLines={3} style={{lineHeight:17}}>{display.text}</T>
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Dismiss notification" onPress={dismiss} hitSlop={12} style={{width:34,height:34,alignItems:'center',justifyContent:'center',borderRadius:17}}><Feather name="x" size={17} color="#CFCFCF"/></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Dismiss notification" onPress={dismiss} hitSlop={12} style={{width:44,height:44,alignItems:'center',justifyContent:'center',borderRadius:22}}><Feather name="x" size={17} color="#CFCFCF"/></Pressable>
     </View>
-    <Pressable accessibilityRole="button" accessibilityLabel="Collapse notification" onPress={()=>{setManual(true);setStage('compact');}} style={{alignSelf:'center',paddingTop:6,paddingHorizontal:16}}><View style={{width:30,height:3,borderRadius:2,backgroundColor:'#666666'}} /></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Collapse notification" hitSlop={12} onPress={()=>{setManual(true);setStage('compact');}} style={{alignSelf:'center',paddingTop:6,paddingHorizontal:16}}><View style={{width:30,height:3,borderRadius:2,backgroundColor:'#666666'}} /></Pressable>
   </View>;
   return <NoticeMotion key={display.id} state={stage} compact={compact} expanded={expanded} expandedHeight={expandedHeight} style={{position:'absolute',top:topOffset,alignSelf:'center',zIndex:1000,borderRadius:38,backgroundColor:'#090909',borderWidth:1,borderColor:'#383838',shadowColor:'#000',shadowOpacity:.30,shadowRadius:18,shadowOffset:{width:0,height:9},elevation:14,overflow:'hidden'}}/>;
 }

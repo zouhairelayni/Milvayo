@@ -5,9 +5,10 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
 import { StoreProvider, StoreFreeze, useStore } from '../store/store';
-import { IconBtn, LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
+import { Button, IconBtn, LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar, SideMenu } from '../components/shell/Menus';
-import { TopBar, TabBar } from '../components/shell/Bars';
+import { TopBar, TabBar, HeaderControls } from '../components/shell/Bars';
+import { HeaderActionsContext } from '../components/shell/HeaderActions';
 import ScreenErrorBoundary from '../components/shell/ScreenErrorBoundary';
 import Overview from '../screens/overview/Overview';
 import Board from '../screens/board/Board';
@@ -34,7 +35,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
   style.textContent =
     '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
     'input,textarea{-webkit-user-select:text;user-select:text}' +
-    '[role=button]:focus-visible,[role=tab]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #C65A3D;outline-offset:2px}' +
+    '[role=button]:focus-visible,[role=tab]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}' +
     '@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:0.01ms!important}}';
   document.head.appendChild(style);
 }
@@ -182,6 +183,8 @@ function Shell({}) {
   const [taskId, setTaskId] = useState(null);
   const [creatingTask, setCreatingTask] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [headerActions, setHeaderActions] = useState(null);
+  const registerHeaderActions = useCallback((value) => setHeaderActions(value), []);
   const [query, setQuery] = useState('');
   useEffect(() => {
     diagnosticMonitor.start();
@@ -243,7 +246,7 @@ function Shell({}) {
   const clearProjectRequest = useCallback(() => setProjectRequest(null), []);
   // A different workspace: close the open task and drop filters and requests that pointed into the old one.
   useEffect(() => { setTaskId(null); setCreatingTask(false); setQuery(''); setStatusRequest(null); setProjectRequest(null); setMenu(false); }, [workspaceId]);
-  const toggleMode = () => setPref(mode !== 'light' ? 'light' : 'dark');
+  const toggleMode = () => setPref(mode === 'light' ? 'dark' : mode === 'dark' ? 'amoled' : 'light');
   const newTask = useCallback(() => setCreatingTask(true), []);
   const saveNewTask = ({title, description, status, priority}) => {
     const id = addTask(title, status, MAIN, {description, priority});
@@ -255,15 +258,15 @@ function Shell({}) {
   };
 
   
-  const page = <>
+  const page = <HeaderActionsContext.Provider value={registerHeaderActions}>
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
       <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
     )}
     {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
-  </>;
+  </HeaderActionsContext.Provider>;
   const sheet = <>{taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null}{creatingTask ? <NewTaskSheet onClose={()=>setCreatingTask(false)} onSave={saveNewTask} /> : null}</>;
   const barStyle = mode !== 'light' ? 'light' : 'dark';
-  const screenTitle = NAV.flatMap(group=>group.items).find(([id])=>id===screen)?.[1] || 'Overview';
+  const controls = headerActions?.screen === screen ? headerActions.controls : null;
 
   return (
     <View style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
@@ -272,12 +275,13 @@ function Shell({}) {
         {wide ? <Sidebar nav={NAV} current={screen} go={go} onPickProject={pickProject}
           onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          {wide ? <TopBar query={query} onQuery={onQuery} onNew={newTask}
+          {wide ? <TopBar query={query} onQuery={onQuery} onNew={newTask} controls={controls}
             onPickProject={pickProject} /> :
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-              paddingHorizontal: 16, paddingVertical: 8, minHeight: 56, gap: 8 }}>
+              paddingHorizontal: 12, paddingVertical: 10, minHeight: 64, gap: 8 }}>
               <IconBtn icon="menu" label="Open menu" onPress={() => setMenu(true)} />
-              <IconBtn icon="plus" label="New task" solid onPress={newTask} />
+              <HeaderControls controls={controls} />
+              <Button label="New task" icon="plus" small headerCompact onPress={newTask} />
             </View>}
           <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
           {!wide ? <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} /> : null}

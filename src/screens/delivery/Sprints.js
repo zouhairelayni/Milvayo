@@ -93,7 +93,7 @@ export function Sprints({ openTask }) {
           <Pill label={selected.state} color={selected.state === 'completed' ? STATUS_COLOR.Done : selected.state === 'active' ? c.accent : c.muted} />
         </View>
         {selected.goal ? <View style={{ gap: 5 }}>
-          <T size={11} upper muted weight="600">Sprint goal</T>
+          <T size={12} muted weight="500">Sprint goal</T>
           <T size={14} style={{ lineHeight: 22, letterSpacing: 0 }}>{selected.goal}</T>
         </View> : <T size={13} muted>No goal specified for this sprint.</T>}
         <Bar value={selectedCount ? historyDone / selectedCount : 0} height={6} />
@@ -128,7 +128,7 @@ export function Sprints({ openTask }) {
           <SectionTitle>Assigned tasks · {assigned.length}</SectionTitle>
           {assigned.length === 0 ? <T size={13} muted>No tasks assigned yet.</T> : null}
           {assigned.slice(0, 60).map(t => <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line }}>
-            <Pressable style={{ flex: 1, gap: 3 }} onPress={() => openTask?.(t.id)}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} style={{ flex: 1, gap: 3, minHeight: 44, justifyContent: 'center' }} onPress={() => openTask?.(t.id)}>
               <T size={13} weight="500" numberOfLines={2}>{t.title}</T>
               <T size={11} muted>{t.status}</T>
             </Pressable>
@@ -140,7 +140,7 @@ export function Sprints({ openTask }) {
           <SectionTitle>Unscheduled backlog · {backlog.length}</SectionTitle>
           <Input value={search} onChangeText={v => { setSearch(v); setBacklogLimit(25); }} placeholder="Find tasks by title, ID or owner" />
           {backlog.slice(0, backlogLimit).map(t => <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line }}>
-            <Pressable style={{ flex: 1, gap: 3 }} onPress={() => openTask?.(t.id)}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} style={{ flex: 1, gap: 3, minHeight: 44, justifyContent: 'center' }} onPress={() => openTask?.(t.id)}>
               <T size={13} weight="500" numberOfLines={2}>{t.title}</T>
               <T size={11} muted>{t.priority} · {t.status}</T>
             </Pressable>
@@ -154,7 +154,7 @@ export function Sprints({ openTask }) {
         <T size={12} muted>Completed {selected.completedAt?.slice(0, 10) || '—'} · archived scope is read-only. Task names below reflect their current records, not historical status.</T>
         {(selected.taskIds || []).slice(0, 60).map(id => {
           const task = s.tasks.find(t => t.id === id);
-          return <Pressable key={id} disabled={!task} onPress={() => task && openTask?.(id)} style={{ paddingVertical: 6, borderBottomWidth: 1, borderColor: c.line }}>
+          return <Pressable key={id} accessibilityRole="button" accessibilityLabel={task ? `Open task ${task.title}` : `Deleted task ${id}`} accessibilityState={{disabled:!task}} disabled={!task} onPress={() => task && openTask?.(id)} style={{ minHeight: 44, justifyContent: 'center', paddingVertical: 6, borderBottomWidth: 1, borderColor: c.line }}>
             <T size={13} weight="500">{task?.title || `Deleted task (${id})`}</T>
             <T size={11} muted>{id}</T>
           </Pressable>;

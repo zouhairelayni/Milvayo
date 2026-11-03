@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
-import { useStore } from '../../store/store';
+import { useStore, useScreenActive } from '../../store/store';
+import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { TaskConfiguration } from '../management/Management';
@@ -27,6 +28,9 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [viewName,setViewName]=useState('');
   const [toolsOpen,setToolsOpen]=useState(false);
+  const screenActive = useScreenActive();
+  const headerControls = useMemo(() => ({actions:[{label:'Tools',icon:'sliders',variant:'secondary',onPress:()=>setToolsOpen(true)}]}),[]);
+  useHeaderActions('tasks', headerControls, screenActive);
   const [q, setQ] = useState(query);
   const [filter, setFilter] = useState('All');
   const [labelFilter,setLabelFilter]=useState('All');
@@ -79,7 +83,6 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
     <Page
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
-      actions={<View style={{flexDirection:'row',gap:8}}><Button label="Task configuration" icon="sliders" small variant="secondary" onPress={()=>setToolsOpen(true)}/><Button label="New task" icon="plus" small onPress={onNewTask} /></View>}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
@@ -87,7 +90,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
         </View>
       </View>
 
-      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Task configuration" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
+      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Tools" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
       <T size={16} weight="600">Filters & tags</T>
         <T size={12} muted weight="600">Status</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -141,7 +144,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
 
       <Card pad={0} style={{ overflow: 'hidden' }}>
         {roomForColumns && list.length ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 36, backgroundColor: c.surfaceAlt }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 44, backgroundColor: c.surfaceAlt }}>
             <View style={{ width: 20 }} />
             <T size={12} weight="500" muted style={{ flex: 1 }}>Task</T>
             <T size={12} weight="500" muted style={{ width: 150 }}>Owner</T>
@@ -158,6 +161,10 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
           return (
             <Pressable
               key={t.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${t.title}, ${t.status}, ${t.priority} priority`}
+              accessibilityHint="Long press to select for bulk actions"
+              accessibilityState={{selected:on}}
               onPressIn={() => {heldRef.current=false}}
               onPress={() => {if(heldRef.current)return;picked.length ? toggle(t.id) : openTask(t.id)}}
               onLongPress={() => {heldRef.current=true;toggle(t.id)}}
@@ -169,7 +176,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
             >
               <Pressable
                 onPress={(e) => {e?.stopPropagation?.();moveTask(t.id,t.status==='Done'?'In progress':'Done')}}
-                hitSlop={8}
+                hitSlop={12}
                 accessibilityRole="checkbox"
                 accessibilityState={{checked:t.status==='Done'}}
                 accessibilityLabel={t.status==='Done'?'Mark task in progress':'Mark task done'}

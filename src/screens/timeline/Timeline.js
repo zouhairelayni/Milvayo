@@ -1,9 +1,10 @@
 // /src/screens/timeline/Timeline.js
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Animated, Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { Button, Card, Chip, Page, Segmented, Sheet, T, useWide } from '../../ui/ui';
-import { useStore } from '../../store/store';
+import { useStore, useScreenActive } from '../../store/store';
+import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, STATUS_COLOR, PRIORITY_COLOR } from '../../ui/theme/theme';
 import { TODAY, addDays, daysBetween, fmt } from '../../store/data';
 import { useHoldDrag } from '../../gestures/gesture';
@@ -153,7 +154,7 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
     if (!whole && (left < paintLeft - 56 || left > paintLeft + paintWidth + 8)) return null;
     return (
       <>
-        <GestureArea drag={mv}
+        <GestureArea drag={mv} accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} onAccessibilityTap={() => onOpen(t.id)}
           style={{
             position: 'absolute', left, top: rowTop + 19, width: 16, height: 16, zIndex: hot ? 5 : 1,
           }}
@@ -194,7 +195,7 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
 
   return (
     <View style={{ position: 'absolute', left, top: rowTop + BAR_TOP, width, height: BAR_H, zIndex: hot || ln.lifted ? 5 : 1 }}>
-      <GestureArea drag={mv}
+      <GestureArea drag={mv} accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} onAccessibilityTap={() => onOpen(t.id)}
         style={{
           flex: 1, borderRadius: BAR_H / 4, backgroundColor: c.surface, borderWidth: hot || target || critical ? 2 : 1,
           borderColor: target ? c.accent : critical ? PRIORITY_COLOR.Critical : hot ? color : color + '99', overflow: 'hidden', justifyContent: 'center',
@@ -227,8 +228,12 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
 export default function Timeline({ openTask }) {
   const { c } = useTheme();
   const wide = useWide();
+  const screenActive = useScreenActive();
   const { s, updateTask, scheduleAfter, scheduleSample } = useStore();
   const [zoom, setZoom] = useState('Days');
+  // Header zoom remains visible at every vertical scroll position.
+  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoom, onChange:setZoom}), [zoom]);
+  useHeaderActions('timeline', zoomHeader, screenActive);
   const [showCritical, setShowCritical] = useState(false);
   const [collapsed, setCollapsed] = useState([]); // parent tasks folded in the hierarchy list
   const [drag, setDrag] = useState(null); // temporary date edits
@@ -239,9 +244,15 @@ export default function Timeline({ openTask }) {
   const [pick, setPick] = useState(null);
   const [viewportW, setViewportW] = useState(0);
   const [scrollXPaint, setScrollXPaint] = useState(0);
+  const paintOffsetRef = useRef(0);
+  paintOffsetRef.current = scrollXPaint;
   const [paint, setPaint] = useState({ first: 0, last: display.INITIAL_ROWS });
   const gridRef = useRef(null);
   const chartRef = useRef(null);
+  // One scroll authority: the chart. The pinned calendar follows its offset on the
+  // native animation driver instead of a separate, lagging imperative scroll view.
+  const horizontalOffset = useRef(new Animated.Value(0)).current;
+  const calendarShift = useMemo(() => Animated.multiply(horizontalOffset, -1), [horizontalOffset]);
   const pageRef = useRef(null);
   const allScheduled = useMemo(() => windowing.scheduled(s.tasks), [s.tasks]);
   const unscheduled = useMemo(() => s.tasks.filter((t) => !t.start && !t.due), [s.tasks]);
@@ -314,6 +325,18 @@ export default function Timeline({ openTask }) {
     };
   }
   const k = kRef.current;
+  // Keep the Animated event mapping attached throughout a pan. Replacing the
+  // event handler every time the virtualized drawing window changes can stall
+  // the native animation driver during fast Android swipes.
+  const horizontalScroll = useMemo(() => Animated.event(
+    [{ nativeEvent: { contentOffset: { x: horizontalOffset } } }],
+    { useNativeDriver: Platform.OS !== 'web', listener: (e) => {
+      const next = e.nativeEvent.contentOffset.x;
+      k.scroll.x = next;
+      // React redraw is only for virtualized bars/paths, not the pinned calendar.
+      if (Math.abs(next - paintOffsetRef.current) > 160) setScrollXPaint(next);
+    } }
+  ), [horizontalOffset, k]);
   const boxRef = useRef(null);
   k.size.cw = gridW;
   refreshMax(k);
@@ -362,7 +385,7 @@ export default function Timeline({ openTask }) {
   // Never override user scrolling, task drag or a later return to the retained tab.
   const firstFocus = useRef(false);
   useEffect(() => {
-    if (!active || !viewportW || !rows.length || firstFocus.current) return undefined;
+    if (!screenActive || !viewportW || !rows.length || firstFocus.current) return undefined;
     const todayTasks = rows.map((task,index)=>({task,index})).filter(({task})=>
       (task.start || task.due) <= TODAY && (task.due || task.start) >= TODAY);
     const upcoming = rows.map((task,index)=>({task,index})).filter(({task})=>(task.start||task.due) >= TODAY);
@@ -385,7 +408,7 @@ export default function Timeline({ openTask }) {
       }
     });
     return ()=>cancelAnimationFrame(frame);
-  },[active,viewportW,rows,gridW,w,START]);
+  },[screenActive,viewportW,rows,gridW,w,START]);
 
 
   // While something is held, scroll the chart near its sides, and the page near the window's top or bottom for a link.
@@ -621,61 +644,13 @@ export default function Timeline({ openTask }) {
 
   return (
     <TimelineGestureHost>
-    <Page
-      title="Timeline"
-      actions={<Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />}
-      scrollRef={pageRef}
-      scrollEnabled={Platform.OS === 'web' ? !active : true}
-      scrollProps={pageScrollProps}
-      onScroll={(e) => {
-        k.scroll.y = e.nativeEvent.contentOffset.y;
-        const now = Date.now();
-        if (now - lastMeasure.current > 110) { lastMeasure.current = now; refreshPaint(); }
-      }}
-    >
-      {notice ? <T size={13} weight="600" color={c.accent}>{notice}</T> : null}
-      {showCritical ? (
-        <Card style={{ gap: 6 }}>
-          {crit.error ? <T size={13} color={PRIORITY_COLOR.High}>{crit.error}. Remove the circular dependency to see the critical path.</T> : <>
-            <T size={13} weight="600">Critical path: {crit.criticalIds.length} of {crit.scheduledCount} scheduled tasks, {crit.totalDays} days end to end</T>
-            <T size={12} muted>Red bars and lines cannot slip without moving the finish date. {crit.assumption}.</T>
-            {crit.excludedIds.length ? <T size={12} muted>{crit.excludedIds.length} task{crit.excludedIds.length === 1 ? '' : 's'} without dates {crit.excludedIds.length === 1 ? 'is' : 'are'} left out.</T> : null}
-          </>}
-        </Card>
-      ) : null}
-      {conflicts.length ? (
-        <Card style={{ gap: 8 }}>
-          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{conflicts.length} dependenc{conflicts.length === 1 ? 'y starts' : 'ies start'} before the predecessor finishes</T>
-          {[...new Map(conflicts.map((x) => [x.taskId, x])).values()].slice(0, 5).map((x) => (
-            <View key={x.taskId} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-              <T size={12} style={{ flex: 1, minWidth: 180 }}>{tasksById.get(x.taskId)?.title || x.taskId} starts before {tasksById.get(x.predecessorId)?.title || x.predecessorId} ends</T>
-              <Button label="Move after predecessors" small variant="secondary" onPress={() => scheduleAfter(x.taskId)} />
-            </View>
-          ))}
-        </Card>
-      ) : null}
-      {invalid.length ? (
-        <Card style={{ gap: 8 }}>
-          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{invalid.length} task{invalid.length === 1 ? ' has' : 's have'} an unreadable or reversed date range</T>
-          {invalid.slice(0, 5).map((id) => <Button key={id} label={s.tasks.find((t) => t.id === id)?.title || id} small variant="ghost" onPress={() => openTask(id)} />)}
-        </Card>
-      ) : null}
-      {isSample && !allScheduled.length ? (
-        <Card style={{ gap: 8 }}>
-          <T size={13}>The sample project has no dates yet.</T>
-          <Button label="Schedule the sample tasks" small onPress={scheduleSample} />
-        </Card>
-      ) : null}
-      {pick && pickTgt && pickSrc ? (
-        <Card style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-          <T size={13} style={{ flex: 1, minWidth: 200 }}>Remove the dependency? "{pickTgt.title}" waits for "{pickSrc.title}".</T>
-          <Button label="Remove" small variant="danger" onPress={removePick} />
-          <Button label="Keep" small variant="ghost" onPress={() => setPick(null)} />
-        </Card>
-      ) : null}
-      <Card pad={0} style={{ overflow: 'hidden' }}>
-        {/* Task-related controls share one scrollable ribbon; the canvas retains its own gesture ownership. */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flexGrow:0,borderBottomWidth:1,borderBottomColor:c.line}} contentContainerStyle={{paddingHorizontal:12,paddingVertical:8,alignItems:'center',gap:8}}>
+    <View style={{ flex: 1 }}>
+      {/* The ribbon and calendar are outside Page's vertical ScrollView; neither can scroll away. */}
+      <View style={{ marginHorizontal: wide ? 32 : 16, marginTop: wide ? 12 : 8,
+        borderWidth: 1, borderBottomWidth: 0, borderColor: c.line,
+        borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden', backgroundColor: c.surface }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, borderBottomWidth: 1, borderBottomColor: c.line }}
+          contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', gap: 8 }}>
           <Chip label={showItems ? 'Hide Items' : 'Show Items'} active={showItems} onPress={() => setShowItems(!showItems)} />
           {rows.length ? <Chip label="First Task" onPress={goFirst} /> : null}
           <Chip label="Today" onPress={() => goToday(true)} />
@@ -683,17 +658,56 @@ export default function Timeline({ openTask }) {
           <Chip label={`Parent Tasks · ${summaries.size}`} active={taskPanel==='parents'} onPress={() => setTaskPanel('parents')} />
           <Chip label={`To Schedule · ${unscheduled.length}`} active={taskPanel==='schedule'} onPress={() => setTaskPanel('schedule')} />
         </ScrollView>
+        <View style={{ flexDirection: 'row', minHeight: HEAD, backgroundColor: c.surfaceAlt }}>
+          {showItems ? <View style={{ width: labelW, justifyContent: 'center', paddingHorizontal: 14,
+              borderRightWidth: 1, borderRightColor: c.line }}><T size={12} weight="600" muted>Task</T></View> : null}
+          <View style={{ flex: 1, overflow: 'hidden' }}>
+            <Animated.View pointerEvents="none" style={{ width: gridW, height: HEAD,
+              transform: [{ translateX: calendarShift }] }}>
+              {visibleTicks.map((i) => (
+                <View key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0,
+                  paddingLeft: 6, justifyContent: 'center', borderLeftWidth: 1, borderColor: c.line }}>
+                  <T size={11} weight="500" muted>{fmt(addDays(START, i))}</T>
+                </View>
+              ))}
+            </Animated.View>
+          </View>
+        </View>
+        {pick && pickTgt && pickSrc ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8,
+            padding: 8, borderTopWidth: 1, borderTopColor: c.line }}>
+            <T size={12} style={{ flex: 1, minWidth: 130 }} numberOfLines={2}>
+              Remove link? "{pickTgt.title}" waits for "{pickSrc.title}".
+            </T>
+            <Button label="Remove" small variant="danger" onPress={removePick} />
+            <Button label="Keep" small variant="ghost" onPress={() => setPick(null)} />
+          </View>
+        ) : null}
+      </View>
+    <Page
+      title="Timeline"
+      scrollRef={pageRef}
+      topPadding={0}
+      scrollEnabled={Platform.OS === 'web' ? !active : true}
+      scrollProps={{ ...pageScrollProps, nestedScrollEnabled: true }}
+      onScroll={(e) => {
+        k.scroll.y = e.nativeEvent.contentOffset.y;
+        const now = Date.now();
+        if (now - lastMeasure.current > 110) { lastMeasure.current = now; refreshPaint(); }
+      }}
+    >
+      <Card pad={0} style={{ overflow: 'hidden', borderTopWidth: 0,
+        borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
         <View style={{ flexDirection: 'row' }}>
           {/* Fixed label column, shown with the Items chip */}
           {showItems ? (
           <View style={{ width: labelW, borderRightWidth: 1, borderColor: c.line, backgroundColor: c.surface, zIndex: 2 }}>
-            <View style={{ height: HEAD, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line, backgroundColor:c.surfaceAlt }}>
-              <T size={12} weight="600" muted>Task</T>
-            </View>
             <View style={{ height: gridH }}>
               {paintedRows.map((t, i) => (
                 <Pressable
                   key={t.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open task ${t.title}`}
                   onPress={() => openTask(t.id)}
                   style={({ pressed }) => ({ position: 'absolute', top: (firstPaint + i) * ROW, left: 0, right: 0, height: ROW, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line, opacity: pressed ? 0.6 : 1 })}
                 >
@@ -709,35 +723,22 @@ export default function Timeline({ openTask }) {
 
           {/* Native scrolling retains touch ownership during a gesture; web locks only after lift. */}
           <View ref={boxRef} collapsable={false} style={{ flex: 1 }}>
-            <ScrollView
+            <Animated.ScrollView
               ref={chartRef}
               horizontal
+              nestedScrollEnabled
+              directionalLockEnabled
               showsHorizontalScrollIndicator
               scrollEnabled={Platform.OS === 'web' ? !active : true}
               scrollEventThrottle={16}
               onLayout={(e) => { k.size.vw = e.nativeEvent.layout.width; setViewportW(e.nativeEvent.layout.width); refreshMax(k); }}
-              onScroll={(e) => {
-                const next = e.nativeEvent.contentOffset.x;
-                k.scroll.x = next;
-                // Rebase only after enough horizontal travel, rather than re-rendering
-                // 30 task gestures and SVG paths for every scroll frame.
-                if (Math.abs(next - scrollXPaint) > 160) setScrollXPaint(next);
-              }}
+              onScroll={horizontalScroll}
             >
               <View style={{ width: gridW }}>
-                <View style={{ height: HEAD, borderBottomWidth: 1, borderColor: c.line, backgroundColor:c.surfaceAlt }}>
-                  {visibleTicks.map((i) => (
-                    <View key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0, paddingLeft: 6, justifyContent: 'center', borderLeftWidth: 1, borderColor: c.line }}>
-                      <T size={11} weight="500" muted>{fmt(addDays(START, i))}</T>
-                    </View>
-                  ))}
-                </View>
-
                 <View ref={gridRef} collapsable={false} onLayout={refreshPaint} style={{ height: gridH }}>
                   {/* Only an in-viewport Pressable; the former full-canvas responder
                       consumed native scroll gestures and allocated huge hit surfaces. */}
-                  {paintWidth > 0 && paintH > 0 && links.length > 0 ? <Pressable
-                    onPress={onGridTap}
+                  {paintWidth > 0 && paintH > 0 && links.length > 0 ? <Pressable onPress={onGridTap} accessible={false}
                     style={{ position: 'absolute', left: paintLeft, top: paintTop, width: paintWidth, height: paintH }}
                   /> : null}
                   {weekendDays.map((i) => (
@@ -816,11 +817,44 @@ export default function Timeline({ openTask }) {
 
                 </View>
               </View>
-            </ScrollView>
+            </Animated.ScrollView>
           </View>
         </View>
       </Card>
 
+      {notice ? <T size={13} weight="600" color={c.accentText}>{notice}</T> : null}
+      {showCritical ? (
+        <Card style={{ gap: 6 }}>
+          {crit.error ? <T size={13} color={PRIORITY_COLOR.High}>{crit.error}. Remove the circular dependency to see the critical path.</T> : <>
+            <T size={13} weight="600">Critical path: {crit.criticalIds.length} of {crit.scheduledCount} scheduled tasks, {crit.totalDays} days end to end</T>
+            <T size={12} muted>Red bars and lines cannot slip without moving the finish date. {crit.assumption}.</T>
+            {crit.excludedIds.length ? <T size={12} muted>{crit.excludedIds.length} task{crit.excludedIds.length === 1 ? '' : 's'} without dates {crit.excludedIds.length === 1 ? 'is' : 'are'} left out.</T> : null}
+          </>}
+        </Card>
+      ) : null}
+      {conflicts.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{conflicts.length} dependenc{conflicts.length === 1 ? 'y starts' : 'ies start'} before the predecessor finishes</T>
+          {[...new Map(conflicts.map((x) => [x.taskId, x])).values()].slice(0, 5).map((x) => (
+            <View key={x.taskId} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+              <T size={12} style={{ flex: 1, minWidth: 180 }}>{tasksById.get(x.taskId)?.title || x.taskId} starts before {tasksById.get(x.predecessorId)?.title || x.predecessorId} ends</T>
+              <Button label="Move after predecessors" small variant="secondary" onPress={() => scheduleAfter(x.taskId)} />
+            </View>
+          ))}
+        </Card>
+      ) : null}
+      {invalid.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13} weight="600" color={PRIORITY_COLOR.High}>{invalid.length} task{invalid.length === 1 ? ' has' : 's have'} an unreadable or reversed date range</T>
+          {invalid.slice(0, 5).map((id) => <Button key={id} label={s.tasks.find((t) => t.id === id)?.title || id} small variant="ghost" onPress={() => openTask(id)} />)}
+        </Card>
+      ) : null}
+      {isSample && !allScheduled.length ? (
+        <Card style={{ gap: 8 }}>
+          <T size={13}>The sample project has no dates yet.</T>
+          <Button label="Schedule the sample tasks" small onPress={scheduleSample} />
+        </Card>
+      ) : null}
       {taskPanel === 'parents' ? <Sheet visible onClose={()=>setTaskPanel(null)} title="Parent Tasks" showNotice={false}>
         <T size={12} muted>Parent tasks and subtasks. Select a task to edit it, or expand a parent to explore its children.</T>
         {hasParents ? (
@@ -830,7 +864,7 @@ export default function Timeline({ openTask }) {
             return (
               <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: r.depth * 16 }}>
                 {r.hasChildren ? <Chip label={r.collapsed ? '+' : '–'} onPress={() => setCollapsed((cur) => (cur.includes(r.task.id) ? cur.filter((x) => x !== r.task.id) : [...cur, r.task.id]))} /> : <View style={{ width: 34 }} />}
-                <Pressable onPress={() => {setTaskPanel(null);openTask(r.task.id);}} style={{ flex: 1, minHeight: 36, justifyContent: 'center' }}>
+                <Pressable accessibilityRole="button" accessibilityLabel={`Open task ${r.task.title}`} onPress={() => {setTaskPanel(null);openTask(r.task.id);}} style={{ flex: 1, minHeight: 44, justifyContent: 'center' }}>
                   <T size={13} weight={r.hasChildren ? '600' : '400'} numberOfLines={1}>{r.task.title}</T>
                   {sum ? <T size={11} muted numberOfLines={1}>{fmt(gantt.dateAt(sum.start))} to {fmt(gantt.dateAt(sum.end))} · {sum.progress}% · {sum.children} subtask{sum.children === 1 ? '' : 's'}</T> : null}
                 </Pressable>
@@ -843,7 +877,7 @@ export default function Timeline({ openTask }) {
       {taskPanel === 'schedule' ? <Sheet visible onClose={()=>setTaskPanel(null)} title="To Schedule" showNotice={false}>
         <T size={12} muted>Tasks without start or due dates. Select a task to set its schedule.</T>
         {unscheduled.length ? unscheduled.map(t => (
-          <Pressable key={t.id} accessibilityRole="button" onPress={()=>{setTaskPanel(null);openTask(t.id);}}
+          <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`Schedule task ${t.title}`} onPress={()=>{setTaskPanel(null);openTask(t.id);}}
             style={({pressed})=>({paddingVertical:12,paddingHorizontal:14,borderWidth:1,borderColor:c.line,borderRadius:10,backgroundColor:pressed?c.surfaceAlt:c.surface})}>
             <T size={13} numberOfLines={2}>{t.title}</T>
           </Pressable>
@@ -853,6 +887,7 @@ export default function Timeline({ openTask }) {
         Hold a bar and drag to move it. Hold its left or right edge and drag to change the start or due date. Hold the dot after a bar and drag onto another row to make that task wait for it. Tap a bar to open the task. Tap a dependency line to remove it. The accent-colored dashed line marks today.
       </T>
     </Page>
+    </View>
     </TimelineGestureHost>
   );
 }

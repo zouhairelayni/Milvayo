@@ -11,23 +11,22 @@ import InlineNotice from '../notice/InlineNotice';
 import CreateProjectSheet from '../../screens/governance/CreateProjectSheet';
 
 // Side navigation shared by the wide layout (Sidebar) and the phone layout (SideMenu).
-export function Brand({ narrow = false, symbolOnly = false }) {
-  const { c, mode } = useTheme();
+export function Brand({ narrow = false, symbolOnly = false, compact = false }) {
+  const { c } = useTheme();
   const mark = <Image source={require('../../../assets/niyarvo-mark-mask.png')}
-    resizeMode="contain" style={{width:symbolOnly?34:42,height:symbolOnly?34:42,tintColor:c.accent}} accessibilityLabel="Niyarvo mark" />;
+    resizeMode="contain" style={{width:symbolOnly?34:compact?25:42,height:symbolOnly?34:compact?25:42,tintColor:c.accent}} accessibilityLabel="Niyarvo mark" />;
   if(symbolOnly)return mark;
-  return <View accessible accessibilityLabel="Niyarvo Projects" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:narrow?172:220}}>
+  return <View accessible accessibilityLabel="Niyarvo Projects" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:compact?92:narrow?172:220}}>
     {mark}
-    <View style={{width:narrow?119:158,gap:2,alignItems:'flex-end'}}>
+    <View style={{width:compact?60:narrow?119:158,gap:1,alignItems:'flex-end'}}>
       <Image source={require('../../../assets/niyarvo-word-mask.png')} resizeMode="stretch"
-        style={{width:narrow?119:158,height:narrow?30:39,tintColor:c.ink}} />
-      <Image source={require('../../../assets/niyarvo-projects-mask.png')} resizeMode="stretch"
-        style={{width:narrow?76:102,height:narrow?10:14,tintColor:mode==='light'?'#111111':'#FFFFFF'}} />
+        style={{width:compact?60:narrow?119:158,height:compact?17:narrow?30:39,tintColor:c.ink}} />
+      <T weight="400" size={11} color={c.accentText} style={{letterSpacing:compact?0:narrow?1:2.1,textAlign:'right',width:compact?60:narrow?119:158}}>PROJECTS</T>
     </View>
   </View>;
 }
 
-function NavItem({ k, label, icon, current, go, collapsed = false }) {
+function NavItem({ k, label, icon, current, go, collapsed = false, dense = false }) {
   const { c } = useTheme();
   const on = current === k;
   return (
@@ -38,8 +37,8 @@ function NavItem({ k, label, icon, current, go, collapsed = false }) {
       onPress={() => go(k)}
       style={({ pressed }) => ({
         flexDirection: 'row', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
-        gap: 12, minHeight: 40, marginVertical: 2,
-        paddingHorizontal: collapsed ? 8 : 12, borderRadius: radius.sm,
+        gap: dense ? 8 : 12, minHeight: 44, marginVertical: 1,
+        paddingHorizontal: collapsed ? 8 : dense ? 8 : 12, borderRadius: radius.sm,
         backgroundColor: on ? c.surfaceAlt : pressed ? c.surfaceAlt : 'transparent',
         opacity: pressed ? 0.75 : 1,
       })}
@@ -47,12 +46,12 @@ function NavItem({ k, label, icon, current, go, collapsed = false }) {
       <View style={k === 'timeline' ? { transform: [{ rotate: '90deg' }] } : undefined}>
         <Feather name={icon} size={18} color={on ? c.accent : c.muted} />
       </View>
-      {!collapsed ? <T size={13} weight={on ? '600' : '500'} color={on ? c.ink : c.muted} numberOfLines={1}>{label}</T> : null}
+      {!collapsed ? <T size={dense ? 12 : 13} weight={on ? '600' : '500'} color={on ? c.ink : c.muted} numberOfLines={1}>{label}</T> : null}
     </Pressable>
   );
 }
 
-function NavGroups({ nav, current, go, collapsed = false }) {
+function NavGroups({ nav, current, go, collapsed = false, dense = false }) {
   const { c } = useTheme();
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 28 }} showsVerticalScrollIndicator={false}>
@@ -62,7 +61,7 @@ function NavGroups({ nav, current, go, collapsed = false }) {
             ? <View style={{ height: 1, backgroundColor: c.line, marginHorizontal: 12, marginBottom: 10 }} />
             : <T size={11} weight="500" muted style={{ paddingHorizontal: 12, marginBottom: 8 }}>{g.group}</T>}
           {g.items.map(([k, l, i]) => (
-            <NavItem key={k} k={k} label={l} icon={i} current={current} go={go} collapsed={collapsed} />
+            <NavItem key={k} k={k} label={l} icon={i} current={current} go={go} collapsed={collapsed} dense={dense} />
           ))}
         </View>
       ))}
@@ -93,6 +92,9 @@ function ProjectDrawer({ onClose, onPick, inModal }) {
         {projects.filter((p) => !p.archived).map((p) => (
           <Pressable
             key={p.id}
+            accessibilityRole="button"
+            accessibilityLabel={`Open project ${p.name}`}
+            accessibilityState={{selected:!!p.current}}
             onPress={() => onPick(p.id, false)}
             style={({ pressed }) => ({
               flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.md,
@@ -112,6 +114,7 @@ function ProjectDrawer({ onClose, onPick, inModal }) {
           <CreateProjectSheet visible onClose={()=>setNaming(false)} onCreated={create}/>
         ) : (
           <Pressable
+            accessibilityRole="button" accessibilityLabel="Create new project"
             onPress={() => setNaming(true)}
             style={({ pressed }) => ({
               flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.md,
@@ -164,6 +167,8 @@ function WorkspaceDrawer({ onClose, inModal }) {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Pressable
                   disabled={busy}
+                  accessibilityRole="button"
+                  accessibilityState={{selected:on,disabled:!!busy}}
                   onPress={() => (on ? onClose() : open(w.id))}
                   accessibilityLabel={on ? `${w.name}, open now` : `Open workspace ${w.name}`}
                   style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, opacity: pressed ? 0.7 : 1 })}
@@ -201,6 +206,7 @@ function WorkspaceDrawer({ onClose, inModal }) {
           </View>
         ) : (
           <Pressable
+            accessibilityRole="button" accessibilityLabel="Create new workspace"
             onPress={() => setNaming(true)}
             style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.md, borderWidth: 1, borderStyle: 'dashed', borderColor: c.faint, opacity: pressed ? 0.7 : 1 })}
           >
@@ -221,6 +227,7 @@ function WorkspaceRow({ onPress }) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
       accessibilityLabel={`Workspace ${name}. Switch workspace`}
       style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, paddingHorizontal: 10, marginBottom: 8, opacity: pressed ? 0.7 : 1 })}
     >
@@ -238,6 +245,7 @@ function ProjectCard({ onPress }) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
       accessibilityLabel="Switch project"
       style={({ pressed }) => ({
         flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: radius.md,
@@ -279,7 +287,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
       <NavGroups nav={nav} current={current} go={go} collapsed={compact} />
       <View style={{ borderTopWidth: 1, borderColor: c.line, paddingTop: 10, paddingHorizontal: 6 }}>
         {onAutoLayout ? <Pressable accessibilityRole="button" accessibilityLabel="Return to automatic layout" onPress={onAutoLayout}
-          style={{ minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: compact ? 'center' : 'flex-start', gap: 10 }}>
+          style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: compact ? 'center' : 'flex-start', gap: 10 }}>
           <Feather name="smartphone" size={17} color={c.muted} />
           {!compact ? <T size={12} muted>Automatic layout</T> : null}
         </Pressable> : !compact ? <T size={11} muted>Niyarvo Projects</T> : <Feather name="command" size={16} color={c.faint} />}
@@ -290,7 +298,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
             {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
             {spaces ? <WorkspaceDrawer inModal onClose={() => setSpaces(false)} /> : null}
           </View>
-          <Pressable accessibilityLabel="Close switcher" onPress={() => { setDrawer(false); setSpaces(false); }} style={{ flex: 1 }} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Close switcher" onPress={() => { setDrawer(false); setSpaces(false); }} style={{ flex: 1 }} />
         </View>
       </Modal>
     </View>
@@ -304,7 +312,7 @@ export function ProjectSwitcher({ onPickProject, compact = false }) {
   const [visible, setVisible] = useState(false);
   return <>
     <Pressable accessibilityRole="button" accessibilityLabel="Switch project" onPress={() => setVisible(true)}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: compact ? 190 : 250, flexShrink: 1, minWidth: 0, minHeight: 38,
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: compact ? 190 : 250, flexShrink: 1, minWidth: 0, minHeight: 44,
         paddingHorizontal: 12, backgroundColor: pressed ? c.surfaceAlt : c.surface, borderRadius: radius.sm, borderWidth: 1, borderColor: c.line })}>
       <Feather name="folder" size={16} color={c.muted} />
       <T weight="600" size={13} numberOfLines={1} style={{ flexShrink: 1 }}>{s.project.name}</T>
@@ -315,7 +323,7 @@ export function ProjectSwitcher({ onPickProject, compact = false }) {
         <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
           <ProjectDrawer inModal onClose={() => setVisible(false)} onPick={(id, isNew) => { setVisible(false); onPickProject(id, isNew); }} />
         </View>
-        <Pressable accessibilityLabel="Close projects" onPress={() => setVisible(false)} style={{ flex: 1 }} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Close projects" onPress={() => setVisible(false)} style={{ flex: 1 }} />
       </View>
     </Modal>
   </>;
@@ -334,20 +342,20 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject, on
       <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <View
           style={{
-            width: 300,
-            maxWidth: '85%',
+            width: 240,
+            maxWidth: '80%',
             backgroundColor: c.surface,
             borderRightWidth: 1,
             borderColor: c.line,
             paddingTop: Platform.OS === 'ios' ? 64 : 52,
-            paddingHorizontal: 14,
+            paddingHorizontal: 12,
             paddingBottom: 24,
             overflow: 'hidden',
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 20 }}>
-            <Brand />
-            <IconBtn icon={mode === 'light' ? 'moon' : 'sun'} label="Toggle light and dark appearance" onPress={onToggleMode} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 0, marginBottom: 16 }}>
+            <Brand narrow />
+            <IconBtn icon={mode === 'light' ? 'moon' : mode === 'amoled' ? 'moon' : 'sun'} label="Cycle light, dark and AMOLED appearance" onPress={onToggleMode} />
           </View>
           <WorkspaceRow onPress={() => setSpaces(true)} />
           <ProjectCard onPress={() => setDrawer(true)} />
@@ -361,7 +369,7 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject, on
           {spaces ? <WorkspaceDrawer inModal onClose={() => setSpaces(false)} /> : null}
           {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
         </View>
-        <Pressable onPress={onClose} style={{ flex: 1 }} accessibilityLabel="Dismiss menu" />
+        <Pressable accessibilityRole="button" accessibilityLabel="Dismiss menu" onPress={onClose} style={{ flex: 1 }} />
       </View>
     </Modal>
   );

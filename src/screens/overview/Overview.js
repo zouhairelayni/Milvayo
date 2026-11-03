@@ -18,7 +18,7 @@ export default function Overview({ openTask, go, openStatus }) {
   const release = s.releases.find((r) => r.stage !== 'Released');
   const gates = release ? gatesFor(release, s) : [];
   const upcoming = s.tasks
-    .filter((t) => t.status !== 'Done')
+    .filter((t) => t.status !== 'Done' && /^\d{4}-\d{2}-\d{2}$/.test(t.due || ''))
     .sort((a, b) => a.due.localeCompare(b.due))
     .slice(0, 5);
   const stages = STAGES.map((st) => ({ st, n: s.tasks.filter((t) => t.stage === st).length }));
@@ -90,6 +90,7 @@ export default function Overview({ openTask, go, openStatus }) {
         <Cell wide="48%">
           <Card style={{ gap: 4 }}>
             <SectionTitle right={<Button label="All tasks" small variant="ghost" onPress={() => go('tasks')} />}>Next due</SectionTitle>
+            {upcoming.length === 0 ? <T size={13} muted>No upcoming dated tasks. Open Tasks to schedule work.</T> : null}
             {upcoming.map((t, i) => (
               <View key={t.id}>
                 {i > 0 ? <View style={{ height: 1, backgroundColor: c.line, marginVertical: 10 }} /> : null}
@@ -112,7 +113,7 @@ export default function Overview({ openTask, go, openStatus }) {
 
 function Mini({ label, value, color, onPress }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => ({ gap: 2, opacity: pressed ? 0.6 : 1 })}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} style={({ pressed }) => ({ gap: 2, minHeight: 44, justifyContent: 'center', opacity: pressed ? 0.6 : 1 })}>
       <T size={20} weight="600" color={color}>{value}</T>
       <T size={12} muted>{label}</T>
     </Pressable>

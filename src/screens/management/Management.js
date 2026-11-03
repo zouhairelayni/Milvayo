@@ -3,7 +3,7 @@ import {useState} from 'react';
 import {View} from 'react-native';
 import {Page,T,Button,Chip} from '../../ui/ui';
 import {useStore} from '../../store/store';
-import {Fold,EditRow,Labeled,Pick,DangerConfirm} from '../../components/inline/CompactTools';
+import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
 const model=require('../../domain/model.cjs');
 const today=localDay;
@@ -29,17 +29,31 @@ export function Scheduling(){
  </Fold>
  <Fold title="Dependency types & lag" subtitle="Finish/start links with signed day offsets">
   <T size={12} muted>First create a dependency in the Task sheet. Then change its relationship here.</T>
-  <Labeled title="Predecessor task ID" value={pre} onChange={setPre}/><Labeled title="Successor task ID" value={succ} onChange={setSucc}/>
+  <View style={{gap:6}}><T size={12} muted weight="500">Predecessor task</T><Dropdown options={s.tasks.map(t=>({value:t.id,label:t.title}))} value={pre} onChange={setPre}/></View>
+  <View style={{gap:6}}><T size={12} muted weight="500">Successor task</T><Dropdown options={s.tasks.filter(t=>t.id!==pre).map(t=>({value:t.id,label:t.title}))} value={succ} onChange={setSucc}/></View>
   <Pick values={['FS','SS','FF','SF']} value={kind} onChange={setKind}/>
   <Labeled title="Lag (days, −365 to 365)" value={lag} onChange={setLag} keyboardType="numeric"/>
-  <Button label="Update relationship" small onPress={()=>{if(updateDependency(pre.trim(),succ.trim(),kind,Number(lag)))setNotice('Relationship updated.')}}/>
+  <Button label="Update relationship" small disabled={!pre||!succ||pre===succ} onPress={()=>{if(updateDependency(pre.trim(),succ.trim(),kind,Number(lag)))setNotice('Relationship updated.')}}/>
   {link.slice(0,100).map((x,i)=><T key={`${x.predecessorId}-${x.successorId}-${i}`} size={12} muted>{x.predecessorId} → {x.successorId}: {x.type||'FS'} {x.lagDays||0}d</T>)}
  </Fold>
  <Fold title="Propagation preview" subtitle="Preview before applying; recoverable and validated">
   <T muted size={12}>Select changed task IDs to calculate proposed downstream changes.</T>
   <View style={{flexDirection:'row',flexWrap:'wrap',gap:7}}>{s.tasks.slice(0,120).map(t=><Chip key={t.id} label={t.title.slice(0,27)} active={anchors.includes(t.id)} onPress={()=>setAnchors(a=>a.includes(t.id)?a.filter(x=>x!==t.id):[...a,t.id])}/>)}</View>
   <Button label="Preview changes" small onPress={()=>{const r=previewSchedule(anchors);setProposal(r.ok?r.proposal:null);setNotice(r.ok?'Review proposed changes before applying':r.error)}}/>
-  {proposal?<View style={{gap:8}}><T size={12} muted>{JSON.stringify(proposal).slice(0,800)}</T><DangerConfirm label="Apply schedule" onConfirm={()=>{if(applySchedule(proposal))setProposal(null)}}/></View>:null}
+  {proposal?<View accessibilityLiveRegion="polite" style={{gap:10}}>
+    <T size={13} weight="600">{proposal.changes.length} proposed date change{proposal.changes.length===1?'':'s'} · {proposal.issues.length} issue{proposal.issues.length===1?'':'s'}</T>
+    <T muted size={12}>{proposal.assumptions}</T>
+    {proposal.changes.slice(0,20).map(change=><View key={change.taskId} style={{gap:3}}>
+      <T size={13} weight="500">{s.tasks.find(task=>task.id===change.taskId)?.title || change.taskId}</T>
+      <T size={12} muted>{change.oldStart||'No start'} – {change.oldDue||'No due'} → {change.newStart||'No start'} – {change.newDue||'No due'}</T>
+    </View>)}
+    {proposal.changes.length>20?<T size={12} muted>Showing the first 20 proposed changes of {proposal.changes.length}.</T>:null}
+    {proposal.issues.slice(0,10).map((issue,i)=><T key={i} size={12}>{`${issue.code.replace(/_/g,' ')}: ${s.tasks.find(task=>task.id===issue.taskId)?.title||issue.taskId}`}</T>)}
+    {proposal.issues.length>10?<T size={12} muted>{proposal.issues.length-10} more issues. Resolve the reported dependencies before applying.</T>:null}
+    {!proposal.canApply?<T size={12} muted>Resolve the issues, then preview again before applying.</T>:proposal.changes.length?
+      <DangerConfirm label="Apply schedule" onConfirm={()=>{if(applySchedule(proposal))setProposal(null)}}/>:
+      <T muted size={12}>All downstream dates already satisfy the selected dependencies.</T>}
+  </View>:null}
  </Fold>
  {notice?<T size={12} muted>{notice}</T>:null}
  </Page>;
@@ -76,8 +90,11 @@ export function Collaboration({openTask}){
  const [taskId,setTaskId]=useState(''),[date,setDate]=useState(today()),[note,setNote]=useState('');
  return <Page title="Collaboration" subtitle="Local comments and reminders. No cloud messaging or notifications.">
   <Fold title="Reminders" subtitle={`${(p.reminders||[]).filter(r=>!r.done).length} open reminders`} initial>
-   <Labeled title="Task ID" value={taskId} onChange={setTaskId}/><Labeled title="Reminder date" value={date} onChange={setDate}/><Labeled title="Note" value={note} onChange={setNote}/>
-   <Button label="Create reminder" small onPress={()=>{if(addReminder({taskId,date,note})){setNote('');setTaskId('')}}}/>
+   <View style={{gap:6}}><T muted size={12} weight="500">Task</T>
+     <Dropdown options={s.tasks.map(t=>({value:t.id,label:t.title}))} value={taskId} onChange={setTaskId}/>
+   </View>
+   <Labeled title="Reminder date" value={date} onChange={setDate}/><Labeled title="Note" value={note} onChange={setNote}/>
+   <Button label="Create reminder" small disabled={!taskId} onPress={()=>{if(addReminder({taskId,date,note})){setNote('');setTaskId('')}}}/>
    {(p.reminders||[]).map(r=><EditRow key={r.id} title={r.note||'Reminder'} summary={`${r.date}${r.done?' · done':''}`}><Button small label="Open task" variant="secondary" onPress={()=>openTask?.(r.taskId)}/>{!r.done?<Button small label="Mark done" onPress={()=>finishReminder(r.id)}/>:null}<DangerConfirm label="Delete reminder" onConfirm={()=>deleteReminder(r.id)}/></EditRow>)}
   </Fold>
   <Fold title="Comment history" subtitle={`${(p.comments||[]).length} local records`}>
@@ -93,8 +110,8 @@ function SpecForm({kind,entry,onDone}){
  const set=(f,v)=>setD(x=>({...x,[f]:v}));
  return <View style={{gap:10}}>
   {spec.KINDS[kind].fields.map(f=>f==='stage'
-   ?<View key={f} style={{gap:6}}><T muted upper size={11} weight="600">Stage</T><Pick values={spec.STAGES} value={d.stage} onChange={v=>set('stage',v)}/></View>
-   :<Labeled key={f} title={SPEC_LABEL[f]} value={d[f]} onChange={v=>set(f,v)} multiline={SPEC_LONG.includes(f)}/>)}
+   ?<View key={f} style={{gap:6}}><T muted size={12} weight="500">Stage</T><Pick values={spec.STAGES} value={d.stage} onChange={v=>set('stage',v)}/></View>
+   :<Labeled key={f} title={SPEC_LABEL[f]} value={d[f]} onChange={v=>set(f,v)} markdown={SPEC_LONG.includes(f)}/>)}
   <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
    <Button label={entry?'Save changes':`Add ${spec.KINDS[kind].label}`} small disabled={!d.name.trim()} onPress={()=>{if(saveSpec(kind,{...d,id:entry?.id}))onDone&&onDone()}}/>
    {entry?null:<Button label="Cancel" small variant="ghost" onPress={onDone}/>}

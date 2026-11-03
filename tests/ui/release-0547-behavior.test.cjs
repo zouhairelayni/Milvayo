@@ -44,14 +44,16 @@ test('New task sheet remains draft-only until Save task explicitly calls the can
 
 test('Board Tools, mobile swiping, task configuration and governance editor are real controls', () => {
   const board=read('src/screens/board/Board.js');
-  assert.match(board,/label="Tools"/);
+  assert.match(board,/label: 'Tools'/);
+  assert.match(board,/useHeaderActions\('board', headerControls, active\)/);
   assert.match(board,/ScrollView horizontal showsHorizontalScrollIndicator=\{false\} style=\{\{flex:1/);
   assert.match(board,/const \[shown, setShown\] = useState\(10\)/);
   assert.match(board,/Show more \(\$\{cardTotal-shown\} remaining\)/);
   assert.match(board,/newTaskAtTop:true/);
   assert.match(read('src/components/shell/Bars.js'),/onTouchStart=/);
   assert.match(read('src/components/shell/Bars.js'),/onTouchEnd=/);
-  assert.match(read('src/screens/tasks/Tasks.js'),/Task configuration/);
+  assert.match(read('src/screens/tasks/Tasks.js'),/TaskConfiguration/);
+  assert.match(read('src/screens/tasks/Tasks.js'),/useHeaderActions\('tasks', headerControls, screenActive\)/);
   assert.match(read('src/screens/governance/CreateProjectSheet.js'),/<Sheet visible=\{visible\}/);
 });
 
@@ -65,14 +67,17 @@ test('Theme keeps four appearance modes, Claude Orange, and original Niyarvo mar
   const menu=read('src/components/shell/Menus.js');
   assert.match(menu,/onToggleMode/);
   assert.match(menu,/tintColor:c.accent/);
-  assert.match(menu,/mode==='light'\?'#111111':'#FFFFFF'/);
+  assert.match(menu,/color=\{c.accent(?:Text)?\}/);
+  assert.match(menu,/<T weight="400"/);
 });
 
-test('one consolidated changelog is the authoritative release history, without /docs', () => {
-  assert.equal(fs.existsSync(path.join(root,'docs')),false);
-  const files=fs.readdirSync(root).filter(x=>x.startsWith('CHG-NP-')&&x.endsWith('.md'));
-  assert.deepEqual(files,['CHG-NP-0.5.47.md']);
-  const log=read(files[0]);
-  for(let i=35;i<=47;i++) assert.match(log,new RegExp('0\\.5\\.'+i));
-  assert.ok(fs.statSync(path.join(root,'reference/niyav-format.md')).size>200);
+test('single cumulative changelog and organized QA/instructions are present without duplication', () => {
+  assert.deepEqual(fs.readdirSync(root).filter(x=>x.startsWith('CHG-NP-') && x.endsWith('.md')),[]);
+  const file='docs/changelog/CHANGELOG.md';
+  assert.ok(fs.statSync(path.join(root,file)).size>10000);
+  const log=read(file);
+  for (let i=35;i<=47;i++) assert.match(log,new RegExp('0\\.5\\.'+i));
+  for (const name of ['qa/README.md','instructions/README.md','instructions/niyav-format.md'])
+    assert.ok(fs.statSync(path.join(root,'docs',name)).size>200,name);
+  assert.deepEqual(fs.readdirSync(path.join(root,'docs/changelog')),['CHANGELOG.md']);
 });

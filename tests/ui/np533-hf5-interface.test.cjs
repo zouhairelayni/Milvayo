@@ -14,7 +14,9 @@ test('RIVNA palette has all ten accent themes and accurate sample surfaces', () 
   assert.equal(theme.palette('Lime','dark').bg,'#10120F');
   assert.equal(theme.palette('Lime','amoled').bg,'#000000');
   assert.equal(theme.palette('Orange','light').bg,'#F5F0EA');
-  assert.equal(theme.palette('Orange','light').accent,'#D97757');
+  assert.equal(theme.palette('Orange','dark').accent,'#D97757');
+  assert.equal(theme.palette('Orange','light').accent,'#DA643D');
+  assert.equal(theme.palette('Amber','light').accent,'#8A5A00');
   assert.equal(theme.palette('Violet','dark').surface,'#1B1C21');
 });
 test('appearance picker uses rounded square swatches in five-column mobile flow', () => {

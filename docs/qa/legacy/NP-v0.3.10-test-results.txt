@@ -1,0 +1,1598 @@
+
+> niyarvo-projects@0.3.10 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: v0.3.1 project migrates without sprint fields and does not change tasks
+ok 1 - v0.3.1 project migrates without sprint fields and does not change tasks
+  ---
+  duration_ms: 4.912629
+  type: 'test'
+  ...
+# Subtest: create sprint validates dates, IDs and 90-day maximum
+ok 2 - create sprint validates dates, IDs and 90-day maximum
+  ---
+  duration_ms: 1.346141
+  type: 'test'
+  ...
+# Subtest: assignment belongs to only one planned sprint and is referentially valid
+ok 3 - assignment belongs to only one planned sprint and is referentially valid
+  ---
+  duration_ms: 1.132006
+  type: 'test'
+  ...
+# Subtest: at most one sprint active, and start captures an authentic baseline
+ok 4 - at most one sprint active, and start captures an authentic baseline
+  ---
+  duration_ms: 1.971091
+  type: 'test'
+  ...
+# Subtest: status changes record progress; unchanged edits do not fabricate burndown events
+ok 5 - status changes record progress; unchanged edits do not fabricate burndown events
+  ---
+  duration_ms: 0.633402
+  type: 'test'
+  ...
+# Subtest: assigning to active sprint adds a progress snapshot without altering status
+ok 6 - assigning to active sprint adds a progress snapshot without altering status
+  ---
+  duration_ms: 0.465685
+  type: 'test'
+  ...
+# Subtest: finish is explicit and immutable history freezes while unfinished tasks become backlog
+ok 7 - finish is explicit and immutable history freezes while unfinished tasks become backlog
+  ---
+  duration_ms: 0.862249
+  type: 'test'
+  ...
+# Subtest: planned sprint deletion unassigns tasks; active sprint deletion is refused
+ok 8 - planned sprint deletion unassigns tasks; active sprint deletion is refused
+  ---
+  duration_ms: 0.653762
+  type: 'test'
+  ...
+# Subtest: burndown plots recorded days only, without fabricated future actuals
+ok 9 - burndown plots recorded days only, without fabricated future actuals
+  ---
+  duration_ms: 10.028449
+  type: 'test'
+  ...
+# Subtest: normalization round-trip preserves sprint history, scopes, and task assignment
+ok 10 - normalization round-trip preserves sprint history, scopes, and task assignment
+  ---
+  duration_ms: 2.47317
+  type: 'test'
+  ...
+# Subtest: reject missing sprint, completed-sprint assignment and duplicate IDs in imported data
+ok 11 - reject missing sprint, completed-sprint assignment and duplicate IDs in imported data
+  ---
+  duration_ms: 1.340192
+  type: 'test'
+  ...
+# Subtest: unrelated project data and the user-selected accent stay outside sprint changes
+ok 12 - unrelated project data and the user-selected accent stay outside sprint changes
+  ---
+  duration_ms: 0.297278
+  type: 'test'
+  ...
+# Subtest: advanced commands survive normalization and project JSON import
+ok 13 - advanced commands survive normalization and project JSON import
+  ---
+  duration_ms: 4.373285
+  type: 'test'
+  ...
+# Subtest: legacy simple rules remain supported
+ok 14 - legacy simple rules remain supported
+  ---
+  duration_ms: 0.648544
+  type: 'test'
+  ...
+# Subtest: status command applies exactly on entering requested status
+ok 15 - status command applies exactly on entering requested status
+  ---
+  duration_ms: 1.174989
+  type: 'test'
+  ...
+# Subtest: rule skips unmatched priority, board and disabled state
+ok 16 - rule skips unmatched priority, board and disabled state
+  ---
+  duration_ms: 0.771486
+  type: 'test'
+  ...
+# Subtest: card button changes only requested task
+ok 17 - card button changes only requested task
+  ---
+  duration_ms: 0.474238
+  type: 'test'
+  ...
+# Subtest: board button respects board scoping and emits history
+ok 18 - board button respects board scoping and emits history
+  ---
+  duration_ms: 0.251891
+  type: 'test'
+  ...
+# Subtest: due date checks are idempotent for each task and date
+ok 19 - due date checks are idempotent for each task and date
+  ---
+  duration_ms: 0.592942
+  type: 'test'
+  ...
+# Subtest: invalid commands fail atomically and do not mutate input
+ok 20 - invalid commands fail atomically and do not mutate input
+  ---
+  duration_ms: 0.588465
+  type: 'test'
+  ...
+# Subtest: actions limited to approved safe types
+ok 21 - actions limited to approved safe types
+  ---
+  duration_ms: 0.543159
+  type: 'test'
+  ...
+# Subtest: boards deletion disables bound automations without discarding tasks
+ok 22 - boards deletion disables bound automations without discarding tasks
+  ---
+  duration_ms: 0.634684
+  type: 'test'
+  ...
+# Subtest: day arithmetic crosses month and leap boundaries
+ok 23 - day arithmetic crosses month and leap boundaries
+  ---
+  duration_ms: 0.151373
+  type: 'test'
+  ...
+# Subtest: automation history preserved in workspace backup and restored
+ok 24 - automation history preserved in workspace backup and restored
+  ---
+  duration_ms: 0.973803
+  type: 'test'
+  ...
+# Subtest: screen and editor integration markers exist
+ok 25 - screen and editor integration markers exist
+  ---
+  duration_ms: 0.524772
+  type: 'test'
+  ...
+# Subtest: board button invoked from selected board affects only that board
+ok 26 - board button invoked from selected board affects only that board
+  ---
+  duration_ms: 0.233353
+  type: 'test'
+  ...
+# Subtest: drag movement changes lane and stores ordering
+ok 27 - drag movement changes lane and stores ordering
+  ---
+  duration_ms: 6.0202
+  type: 'test'
+  ...
+# Subtest: dependency completion guard, cycles, missing deps
+ok 28 - dependency completion guard, cycles, missing deps
+  ---
+  duration_ms: 1.272863
+  type: 'test'
+  ...
+# Subtest: automation applies only on entering configured status; preserves manual fields
+ok 29 - automation applies only on entering configured status; preserves manual fields
+  ---
+  duration_ms: 0.661914
+  type: 'test'
+  ...
+# Subtest: timeline shift shifts dates in UTC and preserves span
+ok 30 - timeline shift shifts dates in UTC and preserves span
+  ---
+  duration_ms: 1.228308
+  type: 'test'
+  ...
+# Subtest: attachments and dependency graph persist through import/export
+ok 31 - attachments and dependency graph persist through import/export
+  ---
+  duration_ms: 1.137735
+  type: 'test'
+  ...
+# Subtest: reject invalid imported dependency graph and oversized collections instead of truncating
+ok 32 - reject invalid imported dependency graph and oversized collections instead of truncating
+  ---
+  duration_ms: 5.143199
+  type: 'test'
+  ...
+# Subtest: release gate invalidated by unfinished dependencies
+ok 33 - release gate invalidated by unfinished dependencies
+  ---
+  duration_ms: 1.058087
+  type: 'test'
+  ...
+# Subtest: critical path finds the longest dependency chain (not every dependency)
+ok 34 - critical path finds the longest dependency chain (not every dependency)
+  ---
+  duration_ms: 1.821701
+  type: 'test'
+  ...
+# Subtest: critical path works with independent parallel tasks
+ok 35 - critical path works with independent parallel tasks
+  ---
+  duration_ms: 0.171963
+  type: 'test'
+  ...
+# Subtest: critical path handles empty, milestone-only and invalid dates
+ok 36 - critical path handles empty, milestone-only and invalid dates
+  ---
+  duration_ms: 0.297608
+  type: 'test'
+  ...
+# Subtest: critical path rejects a cycle in untrusted input
+ok 37 - critical path rejects a cycle in untrusted input
+  ---
+  duration_ms: 0.406228
+  type: 'test'
+  ...
+# Subtest: pointer hit target requires contact with a scheduled successor bar
+ok 38 - pointer hit target requires contact with a scheduled successor bar
+  ---
+  duration_ms: 6.752788
+  type: 'test'
+  ...
+# Subtest: independent link operations preserve other predecessors and reject cycles
+ok 39 - independent link operations preserve other predecessors and reject cycles
+  ---
+  duration_ms: 3.750841
+  type: 'test'
+  ...
+# Subtest: critical path data does not mutate task models or alter persisted schema
+ok 40 - critical path data does not mutate task models or alter persisted schema
+  ---
+  duration_ms: 1.102212
+  type: 'test'
+  ...
+# Subtest: curved paths have explicit endpoints and no straight-only geometry
+ok 41 - curved paths have explicit endpoints and no straight-only geometry
+  ---
+  duration_ms: 9.814713
+  type: 'test'
+  ...
+# Subtest: routes whose vertical spans overlap do not share the same trunk
+ok 42 - routes whose vertical spans overlap do not share the same trunk
+  ---
+  duration_ms: 0.34645
+  type: 'test'
+  ...
+# Subtest: routing is deterministic and leaves source tasks unchanged
+ok 43 - routing is deterministic and leaves source tasks unchanged
+  ---
+  duration_ms: 0.856571
+  type: 'test'
+  ...
+# Subtest: link gesture uses relative dx/dy and lands on successor bar
+ok 44 - link gesture uses relative dx/dy and lands on successor bar
+  ---
+  duration_ms: 0.269186
+  type: 'test'
+  ...
+# Subtest: relative pointer is stable regardless of window or status-bar offset
+ok 45 - relative pointer is stable regardless of window or status-bar offset
+  ---
+  duration_ms: 0.139936
+  type: 'test'
+  ...
+# Subtest: link pointer rejects invalid input or unscheduled source
+ok 46 - link pointer rejects invalid input or unscheduled source
+  ---
+  duration_ms: 0.157361
+  type: 'test'
+  ...
+# Subtest: selected dependency removal changes only the successor and preserves others
+ok 47 - selected dependency removal changes only the successor and preserves others
+  ---
+  duration_ms: 3.392513
+  type: 'test'
+  ...
+# Subtest: Timeline never creates a full height and width dependency SVG
+ok 48 - Timeline never creates a full height and width dependency SVG
+  ---
+  duration_ms: 1.054652
+  type: 'test'
+  ...
+# Subtest: Timeline limits task rows and date columns to the viewport
+ok 49 - Timeline limits task rows and date columns to the viewport
+  ---
+  duration_ms: 0.218752
+  type: 'test'
+  ...
+# Subtest: Overview no longer mounts a second interactive Kanban board
+ok 50 - Overview no longer mounts a second interactive Kanban board
+  ---
+  duration_ms: 0.362123
+  type: 'test'
+  ...
+# Subtest: mobile Kanban progressively loads cards instead of mounting 60 per lane initially
+ok 51 - mobile Kanban progressively loads cards instead of mounting 60 per lane initially
+  ---
+  duration_ms: 0.163661
+  type: 'test'
+  ...
+# Subtest: pointer tracking uses pan deltas, scroll compensation and measured contact offset
+ok 52 - pointer tracking uses pan deltas, scroll compensation and measured contact offset
+  ---
+  duration_ms: 0.696415
+  type: 'test'
+  ...
+# Subtest: dependency rendering is SVG and offers direct removal plus a touch fallback
+ok 53 - dependency rendering is SVG and offers direct removal plus a touch fallback
+  ---
+  duration_ms: 0.192984
+  type: 'test'
+  ...
+# Subtest: Unslop changes are in UI, not only in a rules document
+ok 54 - Unslop changes are in UI, not only in a rules document
+  ---
+  duration_ms: 0.249597
+  type: 'test'
+  ...
+# Subtest: Expo SDK 58 has matching SVG integration
+ok 55 - Expo SDK 58 has matching SVG integration
+  ---
+  duration_ms: 0.1765
+  type: 'test'
+  ...
+# Subtest: a 73-task project only mounts rows around the visible Android viewport
+ok 56 - a 73-task project only mounts rows around the visible Android viewport
+  ---
+  duration_ms: 1.207967
+  type: 'test'
+  ...
+# Subtest: large 10,000-task project renders bounded row window without deleting tasks
+ok 57 - large 10,000-task project renders bounded row window without deleting tasks
+  ---
+  duration_ms: 16.177898
+  type: 'test'
+  ...
+# Subtest: window boundary retains rows above and below during scroll updates
+ok 58 - window boundary retains rows above and below during scroll updates
+  ---
+  duration_ms: 0.413439
+  type: 'test'
+  ...
+# Subtest: horizontal window renders only date columns near the visible range
+ok 59 - horizontal window renders only date columns near the visible range
+  ---
+  duration_ms: 0.703736
+  type: 'test'
+  ...
+# Subtest: quantized horizontal scroll does not leave unrendered date columns
+ok 60 - quantized horizontal scroll does not leave unrendered date columns
+  ---
+  duration_ms: 0.214365
+  type: 'test'
+  ...
+# Subtest: visible curved dependencies are clipped without changing their coordinates
+ok 61 - visible curved dependencies are clipped without changing their coordinates
+  ---
+  duration_ms: 7.914267
+  type: 'test'
+  ...
+# Subtest: scrolling to a dependency retains both endpoints and original hit-test math
+ok 62 - scrolling to a dependency retains both endpoints and original hit-test math
+  ---
+  duration_ms: 0.799377
+  type: 'test'
+  ...
+# Subtest: invalid scroll input cannot create negative range indices
+ok 63 - invalid scroll input cannot create negative range indices
+  ---
+  duration_ms: 0.133266
+  type: 'test'
+  ...
+# Subtest: UTC calendar day conversion rejects rollover dates and DST drift
+ok 64 - UTC calendar day conversion rejects rollover dates and DST drift
+  ---
+  duration_ms: 1.237712
+  type: 'test'
+  ...
+# Subtest: Gantt includes undated tasks in the same grid and groups tasks by status
+ok 65 - Gantt includes undated tasks in the same grid and groups tasks by status
+  ---
+  duration_ms: 0.333041
+  type: 'test'
+  ...
+# Subtest: bar geometry uses inclusive date width and milestone diamond
+ok 66 - bar geometry uses inclusive date width and milestone diamond
+  ---
+  duration_ms: 0.840537
+  type: 'test'
+  ...
+# Subtest: dependency connector geometry points from predecessor finish to successor start
+ok 67 - dependency connector geometry points from predecessor finish to successor start
+  ---
+  duration_ms: 6.900615
+  type: 'test'
+  ...
+# Subtest: invalid overlapping predecessor date detected
+ok 68 - invalid overlapping predecessor date detected
+  ---
+  duration_ms: 0.341793
+  type: 'test'
+  ...
+# Subtest: align successor after all predecessors preserves duration and clears verification
+ok 69 - align successor after all predecessors preserves duration and clears verification
+  ---
+  duration_ms: 1.873177
+  type: 'test'
+  ...
+# Subtest: unscheduled predecessor prevents auto align
+ok 70 - unscheduled predecessor prevents auto align
+  ---
+  duration_ms: 2.258032
+  type: 'test'
+  ...
+# Subtest: gantt task milestone survives project roundtrip
+ok 71 - gantt task milestone survives project roundtrip
+  ---
+  duration_ms: 1.036966
+  type: 'test'
+  ...
+# Subtest: dependency and schedule edits invalidate task release metadata
+ok 72 - dependency and schedule edits invalidate task release metadata
+  ---
+  duration_ms: 1.253575
+  type: 'test'
+  ...
+# Subtest: valid adjacent finish-to-start linkage is not shown as a conflict
+ok 73 - valid adjacent finish-to-start linkage is not shown as a conflict
+  ---
+  duration_ms: 0.683866
+  type: 'test'
+  ...
+# Subtest: sample schedule is opt-in, limited to the sample workspace and never replaces dates
+ok 74 - sample schedule is opt-in, limited to the sample workspace and never replaces dates
+  ---
+  duration_ms: 0.420078
+  type: 'test'
+  ...
+# Subtest: malformed task dates do not persist through normalization
+ok 75 - malformed task dates do not persist through normalization
+  ---
+  duration_ms: 0.101459
+  type: 'test'
+  ...
+# Subtest: reversed task dates are flagged instead of silently shrinking the bar
+ok 76 - reversed task dates are flagged instead of silently shrinking the bar
+  ---
+  duration_ms: 0.268254
+  type: 'test'
+  ...
+# Subtest: calendar opens near actual tasks rather than showing a blank years-long runway
+ok 77 - calendar opens near actual tasks rather than showing a blank years-long runway
+  ---
+  duration_ms: 0.163721
+  type: 'test'
+  ...
+# Subtest: milestones are placed at their due date even when an earlier start is recorded
+ok 78 - milestones are placed at their due date even when an earlier start is recorded
+  ---
+  duration_ms: 0.08156
+  type: 'test'
+  ...
+# Subtest: hierarchy sorts roots and children and maintains depth
+ok 79 - hierarchy sorts roots and children and maintains depth
+  ---
+  duration_ms: 1.279172
+  type: 'test'
+  ...
+# Subtest: collapse hides descendants, not siblings, and does not change data
+ok 80 - collapse hides descendants, not siblings, and does not change data
+  ---
+  duration_ms: 0.301995
+  type: 'test'
+  ...
+# Subtest: summary span aggregates scheduled descendants and weighted leaf progress
+ok 81 - summary span aggregates scheduled descendants and weighted leaf progress
+  ---
+  duration_ms: 0.890291
+  type: 'test'
+  ...
+# Subtest: missing parent is shown as root and cyclic records are bounded
+ok 82 - missing parent is shown as root and cyclic records are bounded
+  ---
+  duration_ms: 0.207675
+  type: 'test'
+  ...
+# Subtest: parent summary without any scheduled descendant is omitted
+ok 83 - parent summary without any scheduled descendant is omitted
+  ---
+  duration_ms: 1.288827
+  type: 'test'
+  ...
+# Subtest: demo project roundtrip and required collections
+ok 84 - demo project roundtrip and required collections
+  ---
+  duration_ms: 4.202755
+  type: 'test'
+  ...
+# Subtest: no merge without successful verification evidence and SHA
+ok 85 - no merge without successful verification evidence and SHA
+  ---
+  duration_ms: 0.383774
+  type: 'test'
+  ...
+# Subtest: reject malformed file and duplicate IDs
+ok 86 - reject malformed file and duplicate IDs
+  ---
+  duration_ms: 0.336746
+  type: 'test'
+  ...
+# Subtest: workspace normalization selects existing project only
+ok 87 - workspace normalization selects existing project only
+  ---
+  duration_ms: 1.557172
+  type: 'test'
+  ...
+# Subtest: stats count status and check results deterministically
+ok 88 - stats count status and check results deterministically
+  ---
+  duration_ms: 0.424054
+  type: 'test'
+  ...
+# Subtest: import title and text are bounded
+ok 89 - import title and text are bounded
+  ---
+  duration_ms: 0.515358
+  type: 'test'
+  ...
+# Subtest: workspace import recovery preserves all projects, not just selected
+ok 90 - workspace import recovery preserves all projects, not just selected
+  ---
+  duration_ms: 1.341705
+  type: 'test'
+  ...
+# Subtest: project snapshots restore deleted projects without removing other projects
+ok 91 - project snapshots restore deleted projects without removing other projects
+  ---
+  duration_ms: 0.465585
+  type: 'test'
+  ...
+# Subtest: release cannot be recorded as released until all linked tasks are merged and SHA supplied
+ok 92 - release cannot be recorded as released until all linked tasks are merged and SHA supplied
+  ---
+  duration_ms: 0.529559
+  type: 'test'
+  ...
+# Subtest: document-picker cache file uses legacy UTF-8 reader, with no storage permission request
+ok 93 - document-picker cache file uses legacy UTF-8 reader, with no storage permission request
+  ---
+  duration_ms: 1.223881
+  type: 'test'
+  ...
+# Subtest: Android content provider URI is copied into app cache and the original is preserved
+ok 94 - Android content provider URI is copied into app cache and the original is preserved
+  ---
+  duration_ms: 1.247156
+  type: 'test'
+  ...
+# Subtest: temporary file is removed even if import read fails
+ok 95 - temporary file is removed even if import read fails
+  ---
+  duration_ms: 0.682815
+  type: 'test'
+  ...
+# Subtest: oversized picked document rejected before file access
+ok 96 - oversized picked document rejected before file access
+  ---
+  duration_ms: 0.252692
+  type: 'test'
+  ...
+# Subtest: oversized cache copy is rejected even if provider supplies no size
+ok 97 - oversized cache copy is rejected even if provider supplies no size
+  ---
+  duration_ms: 0.170881
+  type: 'test'
+  ...
+# Subtest: oversized returned text is rejected when metadata is absent
+ok 98 - oversized returned text is rejected when metadata is absent
+  ---
+  duration_ms: 0.140177
+  type: 'test'
+  ...
+# Subtest: fallback File.text is used for local file only when legacy reader fails
+ok 99 - fallback File.text is used for local file only when legacy reader fails
+  ---
+  duration_ms: 0.313381
+  type: 'test'
+  ...
+# Subtest: permission errors explain Downloads retry and do not expose internal URI
+ok 100 - permission errors explain Downloads retry and do not expose internal URI
+  ---
+  duration_ms: 0.361912
+  type: 'test'
+  ...
+# Subtest: unsupported arbitrary URI rejected without trying to read
+ok 101 - unsupported arbitrary URI rejected without trying to read
+  ---
+  duration_ms: 0.299511
+  type: 'test'
+  ...
+# Subtest: empty document result is handled without a crash
+ok 102 - empty document result is handled without a crash
+  ---
+  duration_ms: 0.330156
+  type: 'test'
+  ...
+# Subtest: unavailable metadata does not block reading a picker-granted cache file
+ok 103 - unavailable metadata does not block reading a picker-granted cache file
+  ---
+  duration_ms: 0.260754
+  type: 'test'
+  ...
+# Subtest: Android SAF picker reads directly from granted File instead of inaccessible DocumentPicker cache
+ok 104 - Android SAF picker reads directly from granted File instead of inaccessible DocumentPicker cache
+  ---
+  duration_ms: 0.261645
+  type: 'test'
+  ...
+# Subtest: Android SAF picker cancellation does not read or mutate anything
+ok 105 - Android SAF picker cancellation does not read or mutate anything
+  ---
+  duration_ms: 0.148879
+  type: 'test'
+  ...
+# Subtest: Android SAF picker supports older bare File return
+ok 106 - Android SAF picker supports older bare File return
+  ---
+  duration_ms: 0.186985
+  type: 'test'
+  ...
+# Subtest: Android SAF picker refuses overlarge document without reading it
+ok 107 - Android SAF picker refuses overlarge document without reading it
+  ---
+  duration_ms: 0.185953
+  type: 'test'
+  ...
+# Subtest: Android SAF picker refuses large text when provider reports no size
+ok 108 - Android SAF picker refuses large text when provider reports no size
+  ---
+  duration_ms: 0.171943
+  type: 'test'
+  ...
+# Subtest: Android SAF picker surfaces sanitized access errors, no private cache paths
+ok 109 - Android SAF picker surfaces sanitized access errors, no private cache paths
+  ---
+  duration_ms: 0.186674
+  type: 'test'
+  ...
+# Subtest: unsupported SDK lacking SAF picker has explicit compatibility error
+ok 110 - unsupported SDK lacking SAF picker has explicit compatibility error
+  ---
+  duration_ms: 0.117713
+  type: 'test'
+  ...
+# Subtest: Android SAF failure does not hide size-limit rejection
+ok 111 - Android SAF failure does not hide size-limit rejection
+  ---
+  duration_ms: 0.167276
+  type: 'test'
+  ...
+# Subtest: Android SAF file may be readable even if size metadata throws
+ok 112 - Android SAF file may be readable even if size metadata throws
+  ---
+  duration_ms: 0.154007
+  type: 'test'
+  ...
+# Subtest: legacy project is assigned a protected default board with all tasks
+ok 113 - legacy project is assigned a protected default board with all tasks
+  ---
+  duration_ms: 3.591215
+  type: 'test'
+  ...
+# Subtest: boards can be created independently with separate task membership
+ok 114 - boards can be created independently with separate task membership
+  ---
+  duration_ms: 1.266244
+  type: 'test'
+  ...
+# Subtest: board names are validated and unique case insensitively
+ok 115 - board names are validated and unique case insensitively
+  ---
+  duration_ms: 0.609156
+  type: 'test'
+  ...
+# Subtest: deleting a board moves task membership back to Main without deleting work
+ok 116 - deleting a board moves task membership back to Main without deleting work
+  ---
+  duration_ms: 1.213095
+  type: 'test'
+  ...
+# Subtest: cannot delete or rename default board or assign to invalid board
+ok 117 - cannot delete or rename default board or assign to invalid board
+  ---
+  duration_ms: 0.296156
+  type: 'test'
+  ...
+# Subtest: board references survive project and workspace JSON roundtrip
+ok 118 - board references survive project and workspace JSON roundtrip
+  ---
+  duration_ms: 1.450845
+  type: 'test'
+  ...
+# Subtest: invalid board references rejected by project validator
+ok 119 - invalid board references rejected by project validator
+  ---
+  duration_ms: 0.488389
+  type: 'test'
+  ...
+# Subtest: project metadata additions are backward compatible
+ok 120 - project metadata additions are backward compatible
+  ---
+  duration_ms: 0.259902
+  type: 'test'
+  ...
+# Subtest: portfolios maintain unique ids and valid project membership
+ok 121 - portfolios maintain unique ids and valid project membership
+  ---
+  duration_ms: 0.888447
+  type: 'test'
+  ...
+# Subtest: time logging rejects invalid date, unknown task and negative hours
+ok 122 - time logging rejects invalid date, unknown task and negative hours
+  ---
+  duration_ms: 0.535188
+  type: 'test'
+  ...
+# Subtest: recorded time and rate cards produce cost from actual entries
+ok 123 - recorded time and rate cards produce cost from actual entries
+  ---
+  duration_ms: 0.817022
+  type: 'test'
+  ...
+# Subtest: capacity summary does not include completed work
+ok 124 - capacity summary does not include completed work
+  ---
+  duration_ms: 0.254845
+  type: 'test'
+  ...
+# Subtest: task comments and reminders survive JSON without touching task
+ok 125 - task comments and reminders survive JSON without touching task
+  ---
+  duration_ms: 0.504552
+  type: 'test'
+  ...
+# Subtest: unsafe CSV formulas are escaped
+ok 126 - unsafe CSV formulas are escaped
+  ---
+  duration_ms: 0.639601
+  type: 'test'
+  ...
+# Subtest: CSV preserves task columns and escaped quotes
+ok 127 - CSV preserves task columns and escaped quotes
+  ---
+  duration_ms: 0.306431
+  type: 'test'
+  ...
+# Subtest: project template resets status and results without deleting hierarchy
+ok 128 - project template resets status and results without deleting hierarchy
+  ---
+  duration_ms: 0.719459
+  type: 'test'
+  ...
+# Subtest: task editor never renders whitespace as a raw child of a View after choice buttons
+ok 129 - task editor never renders whitespace as a raw child of a View after choice buttons
+  ---
+  duration_ms: 0.520657
+  type: 'test'
+  ...
+# Subtest: lanes are independently top-aligned instead of stretching to tallest
+ok 130 - lanes are independently top-aligned instead of stretching to tallest
+  ---
+  duration_ms: 0.429011
+  type: 'test'
+  ...
+# Subtest: rate snapshot protects historical time cost if contributor is removed
+ok 131 - rate snapshot protects historical time cost if contributor is removed
+  ---
+  duration_ms: 0.316786
+  type: 'test'
+  ...
+# Subtest: contributors with same normalized name cannot be duplicated
+ok 132 - contributors with same normalized name cannot be duplicated
+  ---
+  duration_ms: 0.203149
+  type: 'test'
+  ...
+# Subtest: task deletion removes orphaned time entries, comments and reminders
+ok 133 - task deletion removes orphaned time entries, comments and reminders
+  ---
+  duration_ms: 0.582968
+  type: 'test'
+  ...
+# Subtest: Atlas 73-task fixture imports with boards and all metadata
+ok 134 - Atlas 73-task fixture imports with boards and all metadata
+  ---
+  duration_ms: 5.837661
+  type: 'test'
+  ...
+# Subtest: leaf progress respects manual percentage
+ok 135 - leaf progress respects manual percentage
+  ---
+  duration_ms: 2.594409
+  type: 'test'
+  ...
+# Subtest: done leaf contributes 100, even when manual value is 0
+ok 136 - done leaf contributes 100, even when manual value is 0
+  ---
+  duration_ms: 0.308003
+  type: 'test'
+  ...
+# Subtest: parent progress weights by leaf effort
+ok 137 - parent progress weights by leaf effort
+  ---
+  duration_ms: 0.270167
+  type: 'test'
+  ...
+# Subtest: nested rollups never double count intermediate parent
+ok 138 - nested rollups never double count intermediate parent
+  ---
+  duration_ms: 1.098717
+  type: 'test'
+  ...
+# Subtest: project progress includes each root only
+ok 139 - project progress includes each root only
+  ---
+  duration_ms: 0.478224
+  type: 'test'
+  ...
+# Subtest: estimated effort falls back to a unit weight if unset
+ok 140 - estimated effort falls back to a unit weight if unset
+  ---
+  duration_ms: 0.993522
+  type: 'test'
+  ...
+# Subtest: task traversal detects cycles
+ok 141 - task traversal detects cycles
+  ---
+  duration_ms: 0.612812
+  type: 'test'
+  ...
+# Subtest: task traversal detects orphans
+ok 142 - task traversal detects orphans
+  ---
+  duration_ms: 0.237941
+  type: 'test'
+  ...
+# Subtest: task traversal detects duplicate IDs
+ok 143 - task traversal detects duplicate IDs
+  ---
+  duration_ms: 0.487107
+  type: 'test'
+  ...
+# Subtest: input clamping rejects non-finite and negative values
+ok 144 - input clamping rejects non-finite and negative values
+  ---
+  duration_ms: 0.495639
+  type: 'test'
+  ...
+# Subtest: normalizing old project gets savedViews empty and progress/effort zero
+ok 145 - normalizing old project gets savedViews empty and progress/effort zero
+  ---
+  duration_ms: 2.007304
+  type: 'test'
+  ...
+# Subtest: JSON roundtrip retains task effort, progress and saved query
+ok 146 - JSON roundtrip retains task effort, progress and saved query
+  ---
+  duration_ms: 1.938823
+  type: 'test'
+  ...
+# Subtest: backups and workspace normalization retain planning metadata
+ok 147 - backups and workspace normalization retain planning metadata
+  ---
+  duration_ms: 1.449673
+  type: 'test'
+  ...
+# Subtest: save view does not mutate original
+ok 148 - save view does not mutate original
+  ---
+  duration_ms: 0.3128
+  type: 'test'
+  ...
+# Subtest: saved view updates by id
+ok 149 - saved view updates by id
+  ---
+  duration_ms: 0.269026
+  type: 'test'
+  ...
+# Subtest: saved view supports delete without changing task data
+ok 150 - saved view supports delete without changing task data
+  ---
+  duration_ms: 0.347381
+  type: 'test'
+  ...
+# Subtest: saved view duplicate IDs are rejected
+ok 151 - saved view duplicate IDs are rejected
+  ---
+  duration_ms: 0.159014
+  type: 'test'
+  ...
+# Subtest: saved view enforces upper limit
+ok 152 - saved view enforces upper limit
+  ---
+  duration_ms: 0.350776
+  type: 'test'
+  ...
+# Subtest: text search and owner/status filters work together
+ok 153 - text search and owner/status filters work together
+  ---
+  duration_ms: 0.28488
+  type: 'test'
+  ...
+# Subtest: due sort pushes unscheduled tasks to end
+ok 154 - due sort pushes unscheduled tasks to end
+  ---
+  duration_ms: 9.26123
+  type: 'test'
+  ...
+# Subtest: query sorting does not modify source ordering
+ok 155 - query sorting does not modify source ordering
+  ---
+  duration_ms: 0.199613
+  type: 'test'
+  ...
+# Subtest: workspace normalization fails loudly for corrupted duplicate saved views
+ok 156 - workspace normalization fails loudly for corrupted duplicate saved views
+  ---
+  duration_ms: 0.36707
+  type: 'test'
+  ...
+# Subtest: status Done rollup remains separate from verification flags
+ok 157 - status Done rollup remains separate from verification flags
+  ---
+  duration_ms: 0.152234
+  type: 'test'
+  ...
+# Subtest: progress sort uses derived parent rollup
+ok 158 - progress sort uses derived parent rollup
+  ---
+  duration_ms: 0.235066
+  type: 'test'
+  ...
+# Subtest: deep nested project rolls up without double counting
+ok 159 - deep nested project rolls up without double counting
+  ---
+  duration_ms: 1.202649
+  type: 'test'
+  ...
+# Subtest: saved view import fails on more than 50 views rather than dropping extra data
+ok 160 - saved view import fails on more than 50 views rather than dropping extra data
+  ---
+  duration_ms: 0.393239
+  type: 'test'
+  ...
+# Subtest: planning mutation invalidates parents, dependents and released checkpoint
+ok 161 - planning mutation invalidates parents, dependents and released checkpoint
+  ---
+  duration_ms: 1.14116
+  type: 'test'
+  ...
+# Subtest: planning mutation preserves original on invalid input
+ok 162 - planning mutation preserves original on invalid input
+  ---
+  duration_ms: 0.331228
+  type: 'test'
+  ...
+# Subtest: identical planning update returns same object
+ok 163 - identical planning update returns same object
+  ---
+  duration_ms: 0.46857
+  type: 'test'
+  ...
+# Subtest: planning mutation refuses editing a completed task progress
+ok 164 - planning mutation refuses editing a completed task progress
+  ---
+  duration_ms: 0.182078
+  type: 'test'
+  ...
+# Subtest: switch selected project independently of managing projects
+ok 165 - switch selected project independently of managing projects
+  ---
+  duration_ms: 4.668972
+  type: 'test'
+  ...
+# Subtest: archiving hides project but does not delete data and selects next active
+ok 166 - archiving hides project but does not delete data and selects next active
+  ---
+  duration_ms: 2.184585
+  type: 'test'
+  ...
+# Subtest: last active project must not be archived
+ok 167 - last active project must not be archived
+  ---
+  duration_ms: 1.343367
+  type: 'test'
+  ...
+# Subtest: timeline resizing changes end, not start, and refuses inverted dates
+ok 168 - timeline resizing changes end, not start, and refuses inverted dates
+  ---
+  duration_ms: 0.595627
+  type: 'test'
+  ...
+# Subtest: archived status survives export/import and restored projects stay selectable
+ok 169 - archived status survives export/import and restored projects stay selectable
+  ---
+  duration_ms: 0.882228
+  type: 'test'
+  ...
+# Subtest: workspace import cannot strand user with only archived projects
+ok 170 - workspace import cannot strand user with only archived projects
+  ---
+  duration_ms: 0.263698
+  type: 'test'
+  ...
+# Subtest: restored project snapshots return an active, selectable project
+ok 171 - restored project snapshots return an active, selectable project
+  ---
+  duration_ms: 0.706279
+  type: 'test'
+  ...
+# Subtest: edge scroll keeps moving at board edges and rests at center
+ok 172 - edge scroll keeps moving at board edges and rests at center
+  ---
+  duration_ms: 0.164081
+  type: 'test'
+  ...
+# Subtest: board lane detection accounts for horizontal scroll offset
+ok 173 - board lane detection accounts for horizontal scroll offset
+  ---
+  duration_ms: 0.452776
+  type: 'test'
+  ...
+# Subtest: legacy projects gain explicit per-project FS links without changing task schedules
+ok 174 - legacy projects gain explicit per-project FS links without changing task schedules
+  ---
+  duration_ms: 3.053073
+  type: 'test'
+  ...
+# Subtest: full JSON project and workspace restore preserve typed links and calendar exceptions
+ok 175 - full JSON project and workspace restore preserve typed links and calendar exceptions
+  ---
+  duration_ms: 4.126402
+  type: 'test'
+  ...
+# Subtest: separate projects retain separate calendars and dependency settings
+ok 176 - separate projects retain separate calendars and dependency settings
+  ---
+  duration_ms: 0.787759
+  type: 'test'
+  ...
+# Subtest: unlinking, deleting task and re-linking keeps typed metadata in sync
+ok 177 - unlinking, deleting task and re-linking keeps typed metadata in sync
+  ---
+  duration_ms: 0.764956
+  type: 'test'
+  ...
+# Subtest: rejected imports with orphan, duplicate and malformed typed links
+ok 178 - rejected imports with orphan, duplicate and malformed typed links
+  ---
+  duration_ms: 0.996005
+  type: 'test'
+  ...
+# Subtest: validate project rejects stale stored relationships and normalizer repairs only deliberate internal unlink
+ok 179 - validate project rejects stale stored relationships and normalizer repairs only deliberate internal unlink
+  ---
+  duration_ms: 0.833787
+  type: 'test'
+  ...
+# Subtest: working calendar controls only affects selected project and audits do not mutate
+ok 180 - working calendar controls only affects selected project and audits do not mutate
+  ---
+  duration_ms: 0.952532
+  type: 'test'
+  ...
+# Subtest: calendar validation rejects empty weekdays, bad ISO dates and contradictions
+ok 181 - calendar validation rejects empty weekdays, bad ISO dates and contradictions
+  ---
+  duration_ms: 0.530071
+  type: 'test'
+  ...
+# Subtest: schedule preview is read-only, applying invalidates verification and stale edits reject
+ok 182 - schedule preview is read-only, applying invalidates verification and stale edits reject
+  ---
+  duration_ms: 1.237711
+  type: 'test'
+  ...
+# Subtest: edit metadata retained across task date adjustment and read-only audit
+ok 183 - edit metadata retained across task date adjustment and read-only audit
+  ---
+  duration_ms: 0.755903
+  type: 'test'
+  ...
+# Subtest: no unsanctioned automatic scheduling on imports and restored backups
+ok 184 - no unsanctioned automatic scheduling on imports and restored backups
+  ---
+  duration_ms: 0.535008
+  type: 'test'
+  ...
+# Subtest: editing typed links reopens successor verification and downgrades Released gate
+ok 185 - editing typed links reopens successor verification and downgrades Released gate
+  ---
+  duration_ms: 0.275185
+  type: 'test'
+  ...
+# Subtest: task dependency changes invalidate downstream evidence and release status
+ok 186 - task dependency changes invalidate downstream evidence and release status
+  ---
+  duration_ms: 0.287102
+  type: 'test'
+  ...
+# Subtest: deleting a task clears metadata and invalidates dependents, never leaves Released
+ok 187 - deleting a task clears metadata and invalidates dependents, never leaves Released
+  ---
+  duration_ms: 0.379438
+  type: 'test'
+  ...
+# Subtest: typed dependencies attach to correct Gantt anchor endpoints
+ok 188 - typed dependencies attach to correct Gantt anchor endpoints
+  ---
+  duration_ms: 7.501661
+  type: 'test'
+  ...
+# Subtest: UTC date validation rejects rollover and non-ISO dates
+ok 189 - UTC date validation rejects rollover and non-ISO dates
+  ---
+  duration_ms: 2.311391
+  type: 'test'
+  ...
+# Subtest: workdays calendar respects Friday-Monday, DST and explicit holiday
+ok 190 - workdays calendar respects Friday-Monday, DST and explicit holiday
+  ---
+  duration_ms: 0.444905
+  type: 'test'
+  ...
+# Subtest: opened weekend override is eligible and holiday exceptions cannot contradict
+ok 191 - opened weekend override is eligible and holiday exceptions cannot contradict
+  ---
+  duration_ms: 0.440248
+  type: 'test'
+  ...
+# Subtest: rejects invalid weekday sets and ambiguous override dates
+ok 192 - rejects invalid weekday sets and ambiguous override dates
+  ---
+  duration_ms: 0.347692
+  type: 'test'
+  ...
+# Subtest: calendar mode uses continuous days, not workdays
+ok 193 - calendar mode uses continuous days, not workdays
+  ---
+  duration_ms: 0.125775
+  type: 'test'
+  ...
+# Subtest: legacy dependsOn converts to FS lag zero
+ok 194 - legacy dependsOn converts to FS lag zero
+  ---
+  duration_ms: 0.997558
+  type: 'test'
+  ...
+# Subtest: typed links overlay only existing persisted edges
+ok 195 - typed links overlay only existing persisted edges
+  ---
+  duration_ms: 0.244299
+  type: 'test'
+  ...
+# Subtest: rejects duplicate typed links, bad types and out-of-range lag
+ok 196 - rejects duplicate typed links, bad types and out-of-range lag
+  ---
+  duration_ms: 0.457594
+  type: 'test'
+  ...
+# Subtest: cycle, self link, duplicate task IDs and missing predecessor are rejected
+ok 197 - cycle, self link, duplicate task IDs and missing predecessor are rejected
+  ---
+  duration_ms: 0.599071
+  type: 'test'
+  ...
+# Subtest: FS push-only preserves task duration, user-scheduled anchor and original project
+ok 198 - FS push-only preserves task duration, user-scheduled anchor and original project
+  ---
+  duration_ms: 1.206796
+  type: 'test'
+  ...
+# Subtest: FS zero lag skips weekends under workdays calendar
+ok 199 - FS zero lag skips weekends under workdays calendar
+  ---
+  duration_ms: 0.401581
+  type: 'test'
+  ...
+# Subtest: workdays skip holidays and preserve counted effort across weekends
+ok 200 - workdays skip holidays and preserve counted effort across weekends
+  ---
+  duration_ms: 0.241716
+  type: 'test'
+  ...
+# Subtest: FS positive lag adds days after next available date
+ok 201 - FS positive lag adds days after next available date
+  ---
+  duration_ms: 0.416242
+  type: 'test'
+  ...
+# Subtest: FS negative lag permits controlled overlap
+ok 202 - FS negative lag permits controlled overlap
+  ---
+  duration_ms: 0.288355
+  type: 'test'
+  ...
+# Subtest: SS constrains successor start against predecessor start
+ok 203 - SS constrains successor start against predecessor start
+  ---
+  duration_ms: 0.269306
+  type: 'test'
+  ...
+# Subtest: FF constrains successor finish while preserving duration
+ok 204 - FF constrains successor finish while preserving duration
+  ---
+  duration_ms: 0.135329
+  type: 'test'
+  ...
+# Subtest: SF constrains successor finish against predecessor start
+ok 205 - SF constrains successor finish against predecessor start
+  ---
+  duration_ms: 0.124563
+  type: 'test'
+  ...
+# Subtest: multiple incoming predecessors use the most restrictive constraint
+ok 206 - multiple incoming predecessors use the most restrictive constraint
+  ---
+  duration_ms: 0.145033
+  type: 'test'
+  ...
+# Subtest: cascade propagates through multiple successor levels in topological order
+ok 207 - cascade propagates through multiple successor levels in topological order
+  ---
+  duration_ms: 0.127367
+  type: 'test'
+  ...
+# Subtest: only descendants of explicit anchor may move
+ok 208 - only descendants of explicit anchor may move
+  ---
+  duration_ms: 0.116211
+  type: 'test'
+  ...
+# Subtest: never pulls already-later successor earlier
+ok 209 - never pulls already-later successor earlier
+  ---
+  duration_ms: 0.110322
+  type: 'test'
+  ...
+# Subtest: milestone represented by due-only date shifts due but preserves blank start
+ok 210 - milestone represented by due-only date shifts due but preserves blank start
+  ---
+  duration_ms: 0.158704
+  type: 'test'
+  ...
+# Subtest: audit reports conflicts with typed link metadata and no mutation
+ok 211 - audit reports conflicts with typed link metadata and no mutation
+  ---
+  duration_ms: 0.26538
+  type: 'test'
+  ...
+# Subtest: partial-date successor blocks preview rather than inventing date
+ok 212 - partial-date successor blocks preview rather than inventing date
+  ---
+  duration_ms: 0.255557
+  type: 'test'
+  ...
+# Subtest: missing predecessor date blocks preview and audit reports it
+ok 213 - missing predecessor date blocks preview and audit reports it
+  ---
+  duration_ms: 0.141849
+  type: 'test'
+  ...
+# Subtest: invalid project dates on closed days block workdays plan
+ok 214 - invalid project dates on closed days block workdays plan
+  ---
+  duration_ms: 0.125434
+  type: 'test'
+  ...
+# Subtest: invalid anchor dependency is reported and does not move anchor
+ok 215 - invalid anchor dependency is reported and does not move anchor
+  ---
+  duration_ms: 0.130412
+  type: 'test'
+  ...
+# Subtest: stale-preview refuses a changed task date or verification state
+ok 216 - stale-preview refuses a changed task date or verification state
+  ---
+  duration_ms: 0.283657
+  type: 'test'
+  ...
+# Subtest: empty changed anchors, unknown and duplicate anchors reject
+ok 217 - empty changed anchors, unknown and duplicate anchors reject
+  ---
+  duration_ms: 0.185493
+  type: 'test'
+  ...
+# Subtest: non-integer day shifts and oversized lags cannot enter scheduling
+ok 218 - non-integer day shifts and oversized lags cannot enter scheduling
+  ---
+  duration_ms: 0.164582
+  type: 'test'
+  ...
+# Subtest: deterministic preview contains no current-time dependent data
+ok 219 - deterministic preview contains no current-time dependent data
+  ---
+  duration_ms: 0.199524
+  type: 'test'
+  ...
+# Subtest: applied schedule clears checks only on moved successors
+ok 220 - applied schedule clears checks only on moved successors
+  ---
+  duration_ms: 0.13593
+  type: 'test'
+  ...
+# Subtest: existing project model stays import-export compatible after FS schedule
+ok 221 - existing project model stays import-export compatible after FS schedule
+  ---
+  duration_ms: 7.431577
+  type: 'test'
+  ...
+# Subtest: preview cannot be applied to another project with identical tasks
+ok 222 - preview cannot be applied to another project with identical tasks
+  ---
+  duration_ms: 0.159305
+  type: 'test'
+  ...
+# Subtest: rejects a pathological task span rather than scanning millions of days
+ok 223 - rejects a pathological task span rather than scanning millions of days
+  ---
+  duration_ms: 0.239212
+  type: 'test'
+  ...
+# Subtest: workday FF lag and milestone SF relationship align correctly
+ok 224 - workday FF lag and milestone SF relationship align correctly
+  ---
+  duration_ms: 0.201687
+  type: 'test'
+  ...
+# Subtest: applying a clean preview retains existing task objects and dependency structure
+ok 225 - applying a clean preview retains existing task objects and dependency structure
+  ---
+  duration_ms: 0.128229
+  type: 'test'
+  ...
+# Subtest: legacy projects receive a default task type and unrestricted workflow
+ok 226 - legacy projects receive a default task type and unrestricted workflow
+  ---
+  duration_ms: 3.94863
+  type: 'test'
+  ...
+# Subtest: config preserves types/fields and typed values through workspace export-import
+ok 227 - config preserves types/fields and typed values through workspace export-import
+  ---
+  duration_ms: 3.79865
+  type: 'test'
+  ...
+# Subtest: custom fields accept only their declared types and values
+ok 228 - custom fields accept only their declared types and values
+  ---
+  duration_ms: 0.707221
+  type: 'test'
+  ...
+# Subtest: configuration rejects collisions, invalid options and unknown task types
+ok 229 - configuration rejects collisions, invalid options and unknown task types
+  ---
+  duration_ms: 0.399358
+  type: 'test'
+  ...
+# Subtest: cannot add a required field while old records lack its value
+ok 230 - cannot add a required field while old records lack its value
+  ---
+  duration_ms: 0.535147
+  type: 'test'
+  ...
+# Subtest: only configured transitions apply when enabled, including type-specific rules
+ok 231 - only configured transitions apply when enabled, including type-specific rules
+  ---
+  duration_ms: 0.5777
+  type: 'test'
+  ...
+# Subtest: bulk status changes obey workflow and remain atomic
+ok 232 - bulk status changes obey workflow and remain atomic
+  ---
+  duration_ms: 0.623288
+  type: 'test'
+  ...
+# Subtest: remove custom field clears values but preserves other fields
+ok 233 - remove custom field clears values but preserves other fields
+  ---
+  duration_ms: 0.571321
+  type: 'test'
+  ...
+# Subtest: changes to verified task reopen linked released checkpoint and dependent verification
+ok 234 - changes to verified task reopen linked released checkpoint and dependent verification
+  ---
+  duration_ms: 0.531683
+  type: 'test'
+  ...
+# Subtest: cannot import unknown metadata or fields silently
+ok 235 - cannot import unknown metadata or fields silently
+  ---
+  duration_ms: 1.496332
+  type: 'test'
+  ...
+# Subtest: safe-area wrappers are present on root, modal windows and scheduling overlay
+ok 236 - safe-area wrappers are present on root, modal windows and scheduling overlay
+  ---
+  duration_ms: 1.060511
+  type: 'test'
+  ...
+# Subtest: text and numeric custom fields use an explicit save control instead of rejecting partial input
+ok 237 - text and numeric custom fields use an explicit save control instead of rejecting partial input
+  ---
+  duration_ms: 0.412998
+  type: 'test'
+  ...
+# Subtest: old projects normalize to parentId empty without date loss
+ok 238 - old projects normalize to parentId empty without date loss
+  ---
+  duration_ms: 2.524636
+  type: 'test'
+  ...
+# Subtest: hierarchy depth, order and descendants
+ok 239 - hierarchy depth, order and descendants
+  ---
+  duration_ms: 1.451897
+  type: 'test'
+  ...
+# Subtest: parent move is persisted and round-trips through project import/workspace recovery
+ok 240 - parent move is persisted and round-trips through project import/workspace recovery
+  ---
+  duration_ms: 3.315569
+  type: 'test'
+  ...
+# Subtest: reject missing parent, self-parent and parent cycles atomically
+ok 241 - reject missing parent, self-parent and parent cycles atomically
+  ---
+  duration_ms: 0.632761
+  type: 'test'
+  ...
+# Subtest: validate imported hierarchy against missing parents and circular cycles
+ok 242 - validate imported hierarchy against missing parents and circular cycles
+  ---
+  duration_ms: 0.608615
+  type: 'test'
+  ...
+# Subtest: delete parent detaches children and removes predecessor links
+ok 243 - delete parent detaches children and removes predecessor links
+  ---
+  duration_ms: 0.636496
+  type: 'test'
+  ...
+# Subtest: query filters status, priority and searches parent-independent text
+ok 244 - query filters status, priority and searches parent-independent text
+  ---
+  duration_ms: 0.405117
+  type: 'test'
+  ...
+# Subtest: bounded incremental pagination
+ok 245 - bounded incremental pagination
+  ---
+  duration_ms: 0.283678
+  type: 'test'
+  ...
+# Subtest: atomic bulk updates apply selected priority only and leave source unchanged
+ok 246 - atomic bulk updates apply selected priority only and leave source unchanged
+  ---
+  duration_ms: 0.665099
+  type: 'test'
+  ...
+# Subtest: bulk completed status validates blocking predecessor after proposed changes
+ok 247 - bulk completed status validates blocking predecessor after proposed changes
+  ---
+  duration_ms: 1.123534
+  type: 'test'
+  ...
+# Subtest: bulk rejects invalid priority, status, duplicates and unknown ids without mutation
+ok 248 - bulk rejects invalid priority, status, duplicates and unknown ids without mutation
+  ---
+  duration_ms: 0.352369
+  type: 'test'
+  ...
+# Subtest: bulk no-op keeps reference and does not claim changes
+ok 249 - bulk no-op keeps reference and does not claim changes
+  ---
+  duration_ms: 0.162399
+  type: 'test'
+  ...
+# Subtest: automation rules apply to bulk status changes
+ok 250 - automation rules apply to bulk status changes
+  ---
+  duration_ms: 0.248796
+  type: 'test'
+  ...
+# Subtest: large workspaces filter and paginate predictably
+ok 251 - large workspaces filter and paginate predictably
+  ---
+  duration_ms: 5.44998
+  type: 'test'
+  ...
+# Subtest: snapshot retains task hierarchy and bulk results
+ok 252 - snapshot retains task hierarchy and bulk results
+  ---
+  duration_ms: 0.998529
+  type: 'test'
+  ...
+# Subtest: RIVNA-inspired accent selector exposes ten unique named choices
+ok 253 - RIVNA-inspired accent selector exposes ten unique named choices
+  ---
+  duration_ms: 1.115131
+  type: 'test'
+  ...
+# Subtest: Claude clay orange is default and invalid names use safe fallback
+ok 254 - Claude clay orange is default and invalid names use safe fallback
+  ---
+  duration_ms: 0.128028
+  type: 'test'
+  ...
+# Subtest: changing accent recomputes foreground, border, and selection surface without changing semantic colors
+ok 255 - changing accent recomputes foreground, border, and selection surface without changing semantic colors
+  ---
+  duration_ms: 0.229067
+  type: 'test'
+  ...
+# Subtest: theme selection never changes project data or imports
+ok 256 - theme selection never changes project data or imports
+  ---
+  duration_ms: 6.655485
+  type: 'test'
+  ...
+# Subtest: pinch widths are bounded and reversible
+ok 257 - pinch widths are bounded and reversible
+  ---
+  duration_ms: 0.729313
+  type: 'test'
+  ...
+# Subtest: midpoint anchored scroll preserves the focused calendar position
+ok 258 - midpoint anchored scroll preserves the focused calendar position
+  ---
+  duration_ms: 0.117392
+  type: 'test'
+  ...
+# Subtest: pinch distance is Euclidean and handles a single pointer
+ok 259 - pinch distance is Euclidean and handles a single pointer
+  ---
+  duration_ms: 0.144182
+  type: 'test'
+  ...
+# Subtest: fit width respects both minimum readability and maximum render bounds
+ok 260 - fit width respects both minimum readability and maximum render bounds
+  ---
+  duration_ms: 0.108229
+  type: 'test'
+  ...
+# Subtest: edge pan has dead zone and symmetry
+ok 261 - edge pan has dead zone and symmetry
+  ---
+  duration_ms: 0.170421
+  type: 'test'
+  ...
+# Subtest: edge pan handles positions beyond the viewport and invalid positions safely
+ok 262 - edge pan handles positions beyond the viewport and invalid positions safely
+  ---
+  duration_ms: 0.145595
+  type: 'test'
+  ...
+# Subtest: bounded scroll values never go negative
+ok 263 - bounded scroll values never go negative
+  ---
+  duration_ms: 0.091134
+  type: 'test'
+  ...
+# Subtest: drag connection hit test compensates for horizontal and vertical auto-scroll
+ok 264 - drag connection hit test compensates for horizontal and vertical auto-scroll
+  ---
+  duration_ms: 1.260495
+  type: 'test'
+  ...
+1..264
+# tests 264
+# suites 0
+# pass 264
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 523.533482

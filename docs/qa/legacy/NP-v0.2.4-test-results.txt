@@ -1,0 +1,379 @@
+Niyarvo Projects v0.2.4 local source verification — 2026-10-30
+
+Node test result: 58 / 58 passed, zero failures.
+Original 47 model tests + 7 curved-geometry tests + 4 UI-source contract checks.
+JSX syntax: PASS (TypeScript JSX parser; App.js, src/GanttView.js; zero diagnostics).
+JSON: PASS (package.json, app.json, project schema).
+Existing project schema: unchanged from 0.2.3.
+Dependency version: react-native-svg 15.16.0 (Expo SDK 58 documented compatible).
+Expo install --check: NOT RUN (no node_modules in review runtime).
+Expo Metro web bundle: NOT RUN.
+Expo Go Android touches/rendering: NOT RUN.
+iOS runtime: NOT RUN.
+Git commit/push/merge: NOT RUN.
+Firebase deployment: NOT RUN.
+
+Full npm test output:
+---------------------
+
+> niyarvo-projects@0.2.4 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: drag movement changes lane and stores ordering
+ok 1 - drag movement changes lane and stores ordering
+  ---
+  duration_ms: 3.550786
+  type: 'test'
+  ...
+# Subtest: dependency completion guard, cycles, missing deps
+ok 2 - dependency completion guard, cycles, missing deps
+  ---
+  duration_ms: 1.871723
+  type: 'test'
+  ...
+# Subtest: automation applies only on entering configured status; preserves manual fields
+ok 3 - automation applies only on entering configured status; preserves manual fields
+  ---
+  duration_ms: 0.466792
+  type: 'test'
+  ...
+# Subtest: timeline shift shifts dates in UTC and preserves span
+ok 4 - timeline shift shifts dates in UTC and preserves span
+  ---
+  duration_ms: 0.295724
+  type: 'test'
+  ...
+# Subtest: attachments and dependency graph persist through import/export
+ok 5 - attachments and dependency graph persist through import/export
+  ---
+  duration_ms: 0.68542
+  type: 'test'
+  ...
+# Subtest: reject invalid imported dependency graph and oversized collections instead of truncating
+ok 6 - reject invalid imported dependency graph and oversized collections instead of truncating
+  ---
+  duration_ms: 5.178472
+  type: 'test'
+  ...
+# Subtest: release gate invalidated by unfinished dependencies
+ok 7 - release gate invalidated by unfinished dependencies
+  ---
+  duration_ms: 0.578188
+  type: 'test'
+  ...
+# Subtest: critical path finds the longest dependency chain (not every dependency)
+ok 8 - critical path finds the longest dependency chain (not every dependency)
+  ---
+  duration_ms: 2.566176
+  type: 'test'
+  ...
+# Subtest: critical path works with independent parallel tasks
+ok 9 - critical path works with independent parallel tasks
+  ---
+  duration_ms: 0.275173
+  type: 'test'
+  ...
+# Subtest: critical path handles empty, milestone-only and invalid dates
+ok 10 - critical path handles empty, milestone-only and invalid dates
+  ---
+  duration_ms: 0.417237
+  type: 'test'
+  ...
+# Subtest: critical path rejects a cycle in untrusted input
+ok 11 - critical path rejects a cycle in untrusted input
+  ---
+  duration_ms: 1.862199
+  type: 'test'
+  ...
+# Subtest: pointer hit target requires contact with a scheduled successor bar
+ok 12 - pointer hit target requires contact with a scheduled successor bar
+  ---
+  duration_ms: 9.875711
+  type: 'test'
+  ...
+# Subtest: independent link operations preserve other predecessors and reject cycles
+ok 13 - independent link operations preserve other predecessors and reject cycles
+  ---
+  duration_ms: 1.235226
+  type: 'test'
+  ...
+# Subtest: critical path data does not mutate task models or alter persisted schema
+ok 14 - critical path data does not mutate task models or alter persisted schema
+  ---
+  duration_ms: 1.221867
+  type: 'test'
+  ...
+# Subtest: curved paths have explicit endpoints and no straight-only geometry
+ok 15 - curved paths have explicit endpoints and no straight-only geometry
+  ---
+  duration_ms: 7.966211
+  type: 'test'
+  ...
+# Subtest: routes whose vertical spans overlap do not share the same trunk
+ok 16 - routes whose vertical spans overlap do not share the same trunk
+  ---
+  duration_ms: 0.306701
+  type: 'test'
+  ...
+# Subtest: routing is deterministic and leaves source tasks unchanged
+ok 17 - routing is deterministic and leaves source tasks unchanged
+  ---
+  duration_ms: 1.939135
+  type: 'test'
+  ...
+# Subtest: link gesture uses relative dx/dy and lands on successor bar
+ok 18 - link gesture uses relative dx/dy and lands on successor bar
+  ---
+  duration_ms: 0.257527
+  type: 'test'
+  ...
+# Subtest: relative pointer is stable regardless of window or status-bar offset
+ok 19 - relative pointer is stable regardless of window or status-bar offset
+  ---
+  duration_ms: 0.133231
+  type: 'test'
+  ...
+# Subtest: link pointer rejects invalid input or unscheduled source
+ok 20 - link pointer rejects invalid input or unscheduled source
+  ---
+  duration_ms: 0.214442
+  type: 'test'
+  ...
+# Subtest: selected dependency removal changes only the successor and preserves others
+ok 21 - selected dependency removal changes only the successor and preserves others
+  ---
+  duration_ms: 0.710137
+  type: 'test'
+  ...
+# Subtest: pointer mapping uses pan deltas, not asynchronous window measurement
+ok 22 - pointer mapping uses pan deltas, not asynchronous window measurement
+  ---
+  duration_ms: 0.762476
+  type: 'test'
+  ...
+# Subtest: dependency rendering is SVG and offers direct removal plus a touch fallback
+ok 23 - dependency rendering is SVG and offers direct removal plus a touch fallback
+  ---
+  duration_ms: 0.180652
+  type: 'test'
+  ...
+# Subtest: Unslop changes are in UI, not only in a rules document
+ok 24 - Unslop changes are in UI, not only in a rules document
+  ---
+  duration_ms: 0.159279
+  type: 'test'
+  ...
+# Subtest: Expo SDK 58 has matching SVG integration
+ok 25 - Expo SDK 58 has matching SVG integration
+  ---
+  duration_ms: 0.147822
+  type: 'test'
+  ...
+# Subtest: UTC calendar day conversion rejects rollover dates and DST drift
+ok 26 - UTC calendar day conversion rejects rollover dates and DST drift
+  ---
+  duration_ms: 1.165161
+  type: 'test'
+  ...
+# Subtest: Gantt includes undated tasks in the same grid and groups tasks by status
+ok 27 - Gantt includes undated tasks in the same grid and groups tasks by status
+  ---
+  duration_ms: 0.331798
+  type: 'test'
+  ...
+# Subtest: bar geometry uses inclusive date width and milestone diamond
+ok 28 - bar geometry uses inclusive date width and milestone diamond
+  ---
+  duration_ms: 2.754315
+  type: 'test'
+  ...
+# Subtest: dependency connector geometry points from predecessor finish to successor start
+ok 29 - dependency connector geometry points from predecessor finish to successor start
+  ---
+  duration_ms: 8.278801
+  type: 'test'
+  ...
+# Subtest: invalid overlapping predecessor date detected
+ok 30 - invalid overlapping predecessor date detected
+  ---
+  duration_ms: 0.377428
+  type: 'test'
+  ...
+# Subtest: align successor after all predecessors preserves duration and clears verification
+ok 31 - align successor after all predecessors preserves duration and clears verification
+  ---
+  duration_ms: 1.036127
+  type: 'test'
+  ...
+# Subtest: unscheduled predecessor prevents auto align
+ok 32 - unscheduled predecessor prevents auto align
+  ---
+  duration_ms: 0.870118
+  type: 'test'
+  ...
+# Subtest: gantt task milestone survives project roundtrip
+ok 33 - gantt task milestone survives project roundtrip
+  ---
+  duration_ms: 0.693502
+  type: 'test'
+  ...
+# Subtest: dependency and schedule edits invalidate task release metadata
+ok 34 - dependency and schedule edits invalidate task release metadata
+  ---
+  duration_ms: 0.787373
+  type: 'test'
+  ...
+# Subtest: valid adjacent finish-to-start linkage is not shown as a conflict
+ok 35 - valid adjacent finish-to-start linkage is not shown as a conflict
+  ---
+  duration_ms: 0.726471
+  type: 'test'
+  ...
+# Subtest: sample schedule is opt-in, limited to the sample workspace and never replaces dates
+ok 36 - sample schedule is opt-in, limited to the sample workspace and never replaces dates
+  ---
+  duration_ms: 0.536866
+  type: 'test'
+  ...
+# Subtest: malformed task dates do not persist through normalization
+ok 37 - malformed task dates do not persist through normalization
+  ---
+  duration_ms: 0.150586
+  type: 'test'
+  ...
+# Subtest: reversed task dates are flagged instead of silently shrinking the bar
+ok 38 - reversed task dates are flagged instead of silently shrinking the bar
+  ---
+  duration_ms: 0.193551
+  type: 'test'
+  ...
+# Subtest: calendar opens near actual tasks rather than showing a blank years-long runway
+ok 39 - calendar opens near actual tasks rather than showing a blank years-long runway
+  ---
+  duration_ms: 0.276376
+  type: 'test'
+  ...
+# Subtest: milestones are placed at their due date even when an earlier start is recorded
+ok 40 - milestones are placed at their due date even when an earlier start is recorded
+  ---
+  duration_ms: 0.135694
+  type: 'test'
+  ...
+# Subtest: demo project roundtrip and required collections
+ok 41 - demo project roundtrip and required collections
+  ---
+  duration_ms: 2.295028
+  type: 'test'
+  ...
+# Subtest: no merge without successful verification evidence and SHA
+ok 42 - no merge without successful verification evidence and SHA
+  ---
+  duration_ms: 1.823009
+  type: 'test'
+  ...
+# Subtest: reject malformed file and duplicate IDs
+ok 43 - reject malformed file and duplicate IDs
+  ---
+  duration_ms: 0.264708
+  type: 'test'
+  ...
+# Subtest: workspace normalization selects existing project only
+ok 44 - workspace normalization selects existing project only
+  ---
+  duration_ms: 0.764118
+  type: 'test'
+  ...
+# Subtest: stats count status and check results deterministically
+ok 45 - stats count status and check results deterministically
+  ---
+  duration_ms: 0.346571
+  type: 'test'
+  ...
+# Subtest: import title and text are bounded
+ok 46 - import title and text are bounded
+  ---
+  duration_ms: 0.224137
+  type: 'test'
+  ...
+# Subtest: workspace import recovery preserves all projects, not just selected
+ok 47 - workspace import recovery preserves all projects, not just selected
+  ---
+  duration_ms: 1.262457
+  type: 'test'
+  ...
+# Subtest: project snapshots restore deleted projects without removing other projects
+ok 48 - project snapshots restore deleted projects without removing other projects
+  ---
+  duration_ms: 0.253962
+  type: 'test'
+  ...
+# Subtest: release cannot be recorded as released until all linked tasks are merged and SHA supplied
+ok 49 - release cannot be recorded as released until all linked tasks are merged and SHA supplied
+  ---
+  duration_ms: 0.447462
+  type: 'test'
+  ...
+# Subtest: switch selected project independently of managing projects
+ok 50 - switch selected project independently of managing projects
+  ---
+  duration_ms: 1.704833
+  type: 'test'
+  ...
+# Subtest: archiving hides project but does not delete data and selects next active
+ok 51 - archiving hides project but does not delete data and selects next active
+  ---
+  duration_ms: 0.855505
+  type: 'test'
+  ...
+# Subtest: last active project must not be archived
+ok 52 - last active project must not be archived
+  ---
+  duration_ms: 0.955926
+  type: 'test'
+  ...
+# Subtest: timeline resizing changes end, not start, and refuses inverted dates
+ok 53 - timeline resizing changes end, not start, and refuses inverted dates
+  ---
+  duration_ms: 0.398368
+  type: 'test'
+  ...
+# Subtest: archived status survives export/import and restored projects stay selectable
+ok 54 - archived status survives export/import and restored projects stay selectable
+  ---
+  duration_ms: 0.34594
+  type: 'test'
+  ...
+# Subtest: workspace import cannot strand user with only archived projects
+ok 55 - workspace import cannot strand user with only archived projects
+  ---
+  duration_ms: 0.13303
+  type: 'test'
+  ...
+# Subtest: restored project snapshots return an active, selectable project
+ok 56 - restored project snapshots return an active, selectable project
+  ---
+  duration_ms: 0.329084
+  type: 'test'
+  ...
+# Subtest: edge scroll keeps moving at board edges and rests at center
+ok 57 - edge scroll keeps moving at board edges and rests at center
+  ---
+  duration_ms: 0.123185
+  type: 'test'
+  ...
+# Subtest: board lane detection accounts for horizontal scroll offset
+ok 58 - board lane detection accounts for horizontal scroll offset
+  ---
+  duration_ms: 0.252139
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 189.52537

@@ -41,7 +41,7 @@ export default function DiagnosticsPanel() {
         <Button label="Close" small variant="secondary" onPress={() => setOpen('')}/></>
     }>
       <T size={12} muted>Use Copy report to share a sanitized technical report. The text is also selectable.</T>
-      {copied ? <T size={12} color={c.accent}>{copied}</T> : null}
+      {copied ? <T size={12} color={c.accentText}>{copied}</T> : null}
       <TextInput multiline editable selectTextOnFocus showSoftInputOnFocus={false}
         value={report} onChangeText={() => {}}
         accessibilityLabel="Selectable diagnostics report"
