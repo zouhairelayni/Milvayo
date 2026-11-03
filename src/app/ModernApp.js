@@ -5,7 +5,7 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
 import { StoreProvider, StoreFreeze, useStore } from '../store/store';
-import { IconBtn, T, useWide } from '../ui/ui';
+import { IconBtn, LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar, SideMenu } from '../components/shell/Menus';
 import { TopBar, TabBar } from '../components/shell/Bars';
 import ScreenErrorBoundary from '../components/shell/ScreenErrorBoundary';
@@ -33,7 +33,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
   style.id = 'no-select-style';
   style.textContent =
     '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
-    'input,textarea{-webkit-user-select:text;user-select:text}';
+    'input,textarea{-webkit-user-select:text;user-select:text}' +
+    '[role=button]:focus-visible,[role=tab]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #C65A3D;outline-offset:2px}' +
+    '@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:0.01ms!important}}';
   document.head.appendChild(style);
 }
 
@@ -169,6 +171,7 @@ function Shell({}) {
   const { c, mode, setPref } = useTheme();
   const { addTask, switchProject, workspace, workspaceId, notice, dismissNotice } = useStore();
   const wide = useWide();
+  const { preference, setPreference } = useLayoutPreference();
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState('overview');
   const projectId = `${workspaceId}/${workspace.selectedId}`; // project ids repeat when a backup is imported as a second workspace
@@ -258,49 +261,36 @@ function Shell({}) {
   const barStyle = mode === 'dark' ? 'light' : 'dark';
   const screenTitle = NAV.flatMap(group=>group.items).find(([id])=>id===screen)?.[1] || 'Overview';
 
-  if (wide) {
-    return (
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
-        <StatusBar style={barStyle} translucent={false} />
-        <Sidebar nav={NAV} current={screen} go={go} onPickProject={pickProject} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <TopBar query={query} onQuery={onQuery} onNew={newTask} mode={mode} onToggleMode={toggleMode} />
-          <View style={{ flex: 1 }}>{page}</View>
-        </View>
-        {sheet}
-        <IslandNotice notice={notice} onDismiss={dismissNotice} wide topOffset={Math.max(20, insets.top + 16)} />
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.bg }}>
-        <StatusBar style={barStyle} translucent={false} />
-        <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal:18, paddingTop:17, paddingBottom:16, minHeight:83, gap:12 }}>
-          <View style={{ flex:1, minWidth:0, flexDirection:'row', alignItems:'center', gap:12 }}>
-            <IconBtn icon="menu" label="Open menu" onPress={() => setMenu(true)} />
-            <T weight="700" size={19} color={c.ink} numberOfLines={1} style={{flexShrink:1, letterSpacing:-0.25}}>{screenTitle}</T>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <IconBtn icon={mode === 'dark' ? 'sun' : 'moon'} label="Toggle theme" onPress={toggleMode} />
-            <IconBtn icon="plus" label="New task" solid onPress={newTask} />
-          </View>
+      <StatusBar style={barStyle} translucent={false} />
+      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
+        {wide ? <Sidebar nav={NAV} current={screen} go={go} onPickProject={pickProject}
+          onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          {wide ? <TopBar query={query} onQuery={onQuery} onNew={newTask} mode={mode} onToggleMode={toggleMode}
+            screenTitle={screenTitle} onPickProject={pickProject} /> :
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+              paddingHorizontal: 16, paddingVertical: 10, minHeight: 64, gap: 10,
+              backgroundColor: c.surface, borderBottomWidth: 1, borderBottomColor: c.line }}>
+              <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <IconBtn icon="menu" label="Open menu" onPress={() => setMenu(true)} />
+                <T weight="600" size={19} color={c.ink} numberOfLines={1} style={{ flexShrink: 1 }}>{screenTitle}</T>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <IconBtn icon={mode === 'dark' ? 'sun' : 'moon'} label="Toggle theme" onPress={toggleMode} />
+                <IconBtn icon="plus" label="New task" solid onPress={newTask} />
+              </View>
+            </View>}
+          <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
+          {!wide ? <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} /> : null}
+          {!wide ? <SideMenu nav={NAV} visible={menu} current={screen} go={go} onClose={() => setMenu(false)} onPickProject={pickProject}
+            onDesktopLayout={() => { setMenu(false); setPreference('desktop'); }} /> : null}
         </View>
-        <View style={{ flex: 1, minHeight: 0 }}>
-          {page}
-        </View>
-        <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} />
         {sheet}
-        <SideMenu nav={NAV} visible={menu} current={screen} go={go} onClose={() => setMenu(false)} onPickProject={pickProject} />
       </SafeAreaView>
-      {/* Place the island at the top of the app, below the device status bar/cutout.
-          Do not anchor it to the scrolling page or under the header. */}
-      <IslandNotice
-        notice={notice}
-        onDismiss={dismissNotice}
-        topOffset={noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)}
-      />
+      <IslandNotice notice={notice} onDismiss={dismissNotice} wide={wide}
+        topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />
     </View>
   );
 }
@@ -308,11 +298,13 @@ function Shell({}) {
 export default function ModernApp({}) {
   return (
     <SafeAreaProvider>
+      <LayoutProvider>
       <ThemeProvider>
         <StoreProvider>
           <Shell />
         </StoreProvider>
       </ThemeProvider>
+      </LayoutProvider>
     </SafeAreaProvider>
   );
 }

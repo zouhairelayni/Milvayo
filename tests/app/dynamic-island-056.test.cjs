@@ -35,6 +35,6 @@ test('Desktop web animates state transitions and safe-area anchors remain in the
  assert.match(web,/Animated\.timing/);
  assert.match(web,/inputRange/);
  const shell=read('src/app/ModernApp.js');
- assert.match(shell,/topOffset=\{Math\.max\(20, insets\.top \+ 16\)\}/);
- assert.match(shell,/topOffset=\{noticeTopOffset\(insets, Platform\.OS, NativeStatusBar\.currentHeight\)\}/);
+ assert.match(shell,/wide \? Math\.max\(20, insets\.top \+ 16\)/);
+ assert.match(shell,/noticeTopOffset\(insets, Platform\.OS, NativeStatusBar\.currentHeight\)/);
 });

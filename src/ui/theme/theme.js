@@ -2,32 +2,32 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const {ACCENTS,DEFAULT_ACCENT,STORAGE_KEY}=require('./theme.cjs');
+const {ACCENTS,DEFAULT_ACCENT,STORAGE_KEY,contrastInk}=require('./theme.cjs');
 export {ACCENTS};
 
 // Warm paper and graphite. One vermilion accent. Status colours are shared by both modes.
 export const LIGHT = {
   mode: 'light',
-  bg: '#F3F0E9',
+  bg: '#F7F6F3',
   surface: '#FFFFFF',
-  surfaceAlt: '#EAE5DB',
-  ink: '#1B1915',
-  muted: '#756E62',
-  faint: '#B3AB9C',
-  line: '#E2DCD0',
-  accent: '#E0512D',
+  surfaceAlt: '#F0EEE9',
+  ink: '#24231F',
+  muted: '#69655E',
+  faint: '#9E998F',
+  line: '#E5E2DC',
+  accent: '#C24328',
   accentInk: '#FFFFFF',
 };
 
 export const DARK = {
   mode: 'dark',
-  bg: '#0E0D0C',
-  surface: '#181614',
-  surfaceAlt: '#221F1B',
-  ink: '#F2EDE4',
-  muted: '#978F82',
-  faint: '#5C5649',
-  line: '#2B2723',
+  bg: '#111315',
+  surface: '#1B1D1F',
+  surfaceAlt: '#25272A',
+  ink: '#F2F0EA',
+  muted: '#ACA8A0',
+  faint: '#77746F',
+  line: '#343638',
   accent: '#FF7A55',
   accentInk: '#170B06',
 };
@@ -57,7 +57,7 @@ export const serif = Platform.select({
   default: 'serif',
 });
 
-export const radius = { sm: 10, md: 16, lg: 24, pill: 999 };
+export const radius = { sm: 9, md: 14, lg: 20, pill: 999 };
 
 const ThemeContext = createContext(null);
 
@@ -75,9 +75,7 @@ export function ThemeProvider({ children }) {
       const chosen = ACCENTS.find(a => a.id === accentPref);
       // Preserve the original vermilion Orange rather than replacing the brand color.
       const accent = accentPref === 'Orange' ? base.accent : chosen?.hex || base.accent;
-      const hex = accent.slice(1),r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
-      const luminance=(.2126*r+.7152*g+.0722*b);
-      return {pref,setPref,mode,accentPref,setAccent,c:{...base,accent,accentInk:luminance>165?'#171514':'#FFFFFF'}};
+      return {pref,setPref,mode,accentPref,setAccent,c:{...base,accent,accentInk:contrastInk(accent)}};
     },
     [pref, mode, accentPref]
   );

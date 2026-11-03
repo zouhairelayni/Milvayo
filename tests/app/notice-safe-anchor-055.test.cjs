@@ -30,7 +30,8 @@ test('top placement preserves iOS notch and Android system status area',()=>{
 
 test('native animation and desktop wide safe area remain intact',()=>{
  const app=read('src/app/ModernApp.js');
- assert.match(app,/wide topOffset=\{Math\.max\(20, insets\.top \+ 16\)\}/);
+ assert.match(app,/wide=\{wide\}/);
+ assert.match(app,/wide \? Math\.max\(20, insets\.top \+ 16\)/);
  const notice=read('src/components/notice/IslandNotice.js');
  assert.match(notice,/NoticeMotion key=\{display\.id\}/);
  assert.match(read('src/components/notice/NoticeMotion.native.js'),/pointerEvents="box-none"/);

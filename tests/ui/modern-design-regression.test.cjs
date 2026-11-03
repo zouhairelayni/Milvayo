@@ -42,7 +42,7 @@ test('Task sheet preserves discoverable inline dropdown rows and original sheet 
   assert.match(sheet, /Activity · \{t.comments.length\} comments/, 'Comment activity is no longer buried in an accordion');
   assert.match(sheet, /<T size=\{15\} weight="700">Labels<\/T>/, 'Labels are now prominent instead of buried in a dropdown');
   assert.match(sheet, /<TaskMarkdown source=\{t.description\}/, 'Description is always visible in read mode');
-  assert.match(ui, /contentContainerStyle=\{\{ padding: 20, paddingTop: 8, gap: 18, paddingBottom: 40 \}\}/);
+  assert.match(ui, /contentContainerStyle=\{\{ padding: 24, paddingTop: 12, gap: 18, paddingBottom: 48 \}\}/);
   assert.match(ui, /SafeAreaProvider/);
 });
 test('Modern shell uses maintained native safe-area context', () => {

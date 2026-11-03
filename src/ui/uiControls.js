@@ -11,10 +11,13 @@ export function Chip({ label, active, onPress, color }) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!active }}
       style={({ pressed }) => ({
         paddingHorizontal: 12,
         paddingVertical: 7,
-        borderRadius: radius.pill,
+        borderRadius: radius.sm,
+        minHeight: 36, justifyContent: 'center',
         borderWidth: 1,
         borderColor: active ? c.ink : c.line,
         backgroundColor: active ? c.ink : 'transparent',
@@ -30,14 +33,14 @@ export function Segmented({ options, value, onChange, fill }) {
   const { c } = useTheme();
   const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: radius.pill, padding: 3, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
+    <View style={{ flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: radius.sm, padding: 3, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
       {opts.map((o) => {
         const on = o.value === value;
         return (
           <Pressable
             key={String(o.value)}
             onPress={() => onChange(o.value)}
-            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: on ? c.surface : 'transparent' }}
+            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 7, minHeight: 34, justifyContent: 'center', backgroundColor: on ? c.surface : 'transparent' }}
           >
             <T size={13} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
           </Pressable>
@@ -55,6 +58,8 @@ export function Button({ label, onPress, icon, variant = 'primary', small, disab
   return (
     <Pressable
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       onPress={onPress}
       style={({ pressed }) => ({
         flexDirection: 'row',
@@ -63,7 +68,7 @@ export function Button({ label, onPress, icon, variant = 'primary', small, disab
         alignSelf: 'flex-start', maxWidth:'100%', flexShrink:1,
         paddingHorizontal: small ? 12 : 16,
         paddingVertical: small ? 7 : 11,
-        borderRadius: radius.pill,
+        borderRadius: radius.sm, minHeight: small ? 36 : 42,
         backgroundColor: bg,
         borderWidth: primary ? 0 : 1,
         borderColor: c.line,
@@ -82,8 +87,9 @@ export function IconBtn({ icon, onPress, solid, label }) {
     <Pressable
       onPress={onPress}
       accessibilityLabel={label || icon}
+      accessibilityRole="button"
       style={({ pressed }) => ({
-        width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center',
+        width: 38, height: 38, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center',
         backgroundColor: solid ? c.accent : c.surfaceAlt, opacity: pressed ? 0.7 : 1,
       })}
     >

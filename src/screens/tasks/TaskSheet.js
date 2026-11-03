@@ -96,7 +96,7 @@ export default function TaskSheet({ taskId, onClose }) {
   );
 
   return (
-    <Sheet visible={!!t} onClose={closeTask} title={t ? 'Task details' : ''} footer={footer}>
+    <Sheet visible={!!t} onClose={closeTask} title={t ? 'Task details' : ''} footer={footer} showNotice={false}>
       {t ? (
         <>
           <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontFamily:serif,fontSize:23,fontWeight:'600',backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,minHeight:48}} />

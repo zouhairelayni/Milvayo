@@ -23,9 +23,9 @@ const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs'
 const FIRST_CARDS = 6;
 const CARD_CHUNK = 6;
 const EMPTY_FEATURES = Object.freeze([]);
-const COL_WIDE = 290;
-const COL_NARROW = 272;
-const GAP = 12;
+const COL_WIDE = 320;
+const COL_NARROW = 280;
+const GAP = 14;
 const HEADER_H = 44;
 const DOUBLE_MS = 350;
 const EDGE_X = 70;       // strip scrolls when the finger is this close to its left or right side
@@ -198,7 +198,7 @@ export default function Board({ openTask }) {
   return (
     <Page
       title="Board"
-      subtitle={`${s.project.name} · ${board.name} · ${cards.length} cards · hold or double-tap a board to manage it`}
+      subtitle={`${board.name} / ${cards.length} visible tasks. Hold a card to move it; double-tap a board name to manage boards.`}
       scrollRef={pageRef}
       scrollEnabled={!locked}
       scrollProps={pageScrollProps}
@@ -274,7 +274,7 @@ export default function Board({ openTask }) {
             onPress={() => setAddingList(true)}
             accessibilityLabel="Add list to the left"
             style={({ pressed }) => ({
-              width: 52, minHeight: 240, borderRadius: 18, borderWidth: 1.5, borderStyle: 'dashed', borderColor: c.faint,
+              width: 64, minHeight: 240, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line,
               alignItems: 'center', justifyContent: 'center', gap: 10, opacity: pressed ? 0.6 : 1,
             })}
           >
@@ -467,8 +467,9 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
       style={{
         width,
         backgroundColor: c.surfaceAlt,
-        borderRadius: 18,
-        padding: 10,
+        borderRadius: 14,
+        borderWidth: 1, borderColor: c.line,
+        padding: 12,
         gap: 10,
         zIndex: lifted || listDragging || cardFromHere ? 6 : 0,
         opacity: lifted ? 0.94 : 1,
@@ -477,7 +478,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
     >
       <View
         {...(editing ? {} : panHandlers)}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4, paddingHorizontal: 4, ...NOSELECT }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 40, paddingHorizontal: 4, ...NOSELECT }}
       >
         <View style={{ width: 8, height: 8, borderRadius: 4, marginLeft: 4, backgroundColor: STATUS_COLOR[list.status] }} />
         {editing ? (
@@ -494,7 +495,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
             <T size={14} weight="600" numberOfLines={1}>{list.name}</T>
           </View>
         )}
-        <T size={12} muted>{cardTotal}</T>
+        <View style={{ minWidth: 26, paddingHorizontal: 6, paddingVertical: 3, backgroundColor: c.surface, borderRadius: 7, alignItems: 'center' }}><T size={12} weight="600" muted>{cardTotal}</T></View>
       </View>
 
       {cards.map((t) => (
@@ -515,7 +516,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
         />
       ))}
 
-      {cardTotal === 0 ? <T size={12} muted style={{ textAlign: 'center', padding: 8 }}>No cards</T> : null}
+      {cardTotal === 0 ? <View style={{ padding: 20, borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line }}><T size={12} muted center>No tasks in this list</T></View> : null}
 
       {cardHere && lineY !== null ? (
         <View
@@ -558,6 +559,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
 // Double-tap the title to edit it in place.
 
 const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={}, showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
+  const { c } = useTheme();
   const { updateTask, placeTask } = useStoreActions();
   const [editing, setEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(t.title);
@@ -639,11 +641,11 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
         ...liftShadow(lifted),
       }}
     >
-      <Card pad={12} style={{gap:9}}>
+      <Card pad={14} style={{gap:11, borderRadius:11}}>
         <TaskLabels labels={t.labels} colors={labelColors} compact />
         <View ref={titleRef} collapsable={false}>
           {editing?<Input value={titleDraft} autoFocus onChangeText={v=>{titleDraftRef.current=v;setTitleDraft(v);}} onSubmitEditing={endTitleEdit} onBlur={endTitleEdit} style={{backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,fontWeight:'600',fontSize:14}}/>:
-            <T size={14} weight="600" numberOfLines={3}>{t.title}</T>}
+            <T size={14} weight="500" numberOfLines={3} style={{lineHeight:21}}>{t.title}</T>}
         </View>
         {showDescriptions&&t.description?<T muted size={12} numberOfLines={2}>{t.description.replace(/[#*`_~]/g,'')}</T>:null}
         {features.includes('aging')&&t.status!=='Done'?<T muted size={11}>Updated {ageInDays(t)}d ago</T>:null}
@@ -651,9 +653,9 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
         <View style={{flexDirection:'row',alignItems:'center',gap:10,flexWrap:'wrap'}}>
           <View style={{width:7,height:7,borderRadius:4,backgroundColor:PRIORITY_COLOR[t.priority]}}/>
           {t.due?<T size={11} muted>{fmt(t.due)}</T>:null}
-          {t.tests?.length?<T size={11} muted>☑ {t.tests.filter(x=>x.result==='passed').length}/{t.tests.length}</T>:null}
-          {t.attachments?.length?<T size={11} muted>📎 {t.attachments.length}</T>:null}
-          {t.comments?.length?<T size={11} muted>◻ {t.comments.length}</T>:null}
+          {t.tests?.length?<View style={{flexDirection:'row',alignItems:'center',gap:4}}><Feather name="check-square" size={12} color={c.muted}/><T size={11} muted>{t.tests.filter(x=>x.result==='passed').length}/{t.tests.length}</T></View>:null}
+          {t.attachments?.length?<View style={{flexDirection:'row',alignItems:'center',gap:4}}><Feather name="paperclip" size={12} color={c.muted}/><T size={11} muted>{t.attachments.length}</T></View>:null}
+          {t.comments?.length?<View style={{flexDirection:'row',alignItems:'center',gap:4}}><Feather name="message-square" size={12} color={c.muted}/><T size={11} muted>{t.comments.length}</T></View>:null}
           {features.includes('github')&&t.githubLinks?.length?<T size={11} muted>GitHub {t.githubLinks.length}</T>:null}
           <View style={{flex:1}}/>
           {t.owner?<Avatar name={t.owner} size={20}/>:null}

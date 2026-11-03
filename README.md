@@ -1,3 +1,9 @@
+# Niyarvo Projects — current source update v0.5.31
+
+v0.5.31 is a responsive UI/UX update over v0.5.30. It uses the existing Expo SDK 58 development installation and retains local manifests, domain logic and stored data. It is not a standalone npm-installable archive. Updated release notes and verification status are in `docs/changelogs/modern-code/CHG-NP-0.5.31.md` and `docs/qa/modern-code/NP-QA-0.5.31.md`.
+
+## Historical release documentation
+
 # Niyarvo Projects v0.5.9 — Governance migration
 
 Niyarvo Projects is a local-first, cross-platform project management application using Expo and React Native. All screens now run inside the modern Niyarvo interface; the original v0.4.1 domain modules continue to validate the project data behind it.

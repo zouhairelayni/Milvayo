@@ -1,9 +1,38 @@
 // /src/ui/uiBase.js
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { createContext, useCallback, useContext, useState } from 'react';
+import { Platform, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { isDesktopLayout } from './layoutMode.cjs';
 import { font, radius, serif, useTheme } from './theme/theme';
 
-// Breakpoint: at or above this width the app shows the sidebar layout.
-export const useWide = () => useWindowDimensions().width >= 880;
+// Browser layout preference is purely visual; no workspace or task data is touched.
+const LayoutContext = createContext({ preference: 'auto', setPreference: () => {} });
+const STORAGE_KEY = 'niyarvo-projects:web-layout';
+
+export function LayoutProvider({ children }) {
+  const [preference, setValue] = useState(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return 'auto';
+    try { return window.localStorage.getItem(STORAGE_KEY) === 'desktop' ? 'desktop' : 'auto'; }
+    catch { return 'auto'; }
+  });
+  const setPreference = useCallback((next) => {
+    const value = next === 'desktop' && Platform.OS === 'web' ? 'desktop' : 'auto';
+    setValue(value);
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        if (value === 'auto') window.localStorage.removeItem(STORAGE_KEY);
+        else window.localStorage.setItem(STORAGE_KEY, value);
+      } catch { /* Private browsing may block storage; the current session still works. */ }
+    }
+  }, []);
+  return <LayoutContext.Provider value={{ preference, setPreference }}>{children}</LayoutContext.Provider>;
+}
+
+export const useLayoutPreference = () => useContext(LayoutContext);
+export const useWide = () => {
+  const { width } = useWindowDimensions();
+  const { preference } = useLayoutPreference();
+  return isDesktopLayout(width, Platform.OS, preference);
+};
 
 export function T({ children, size = 14, weight = '400', color, muted, serifFace, upper, center, numberOfLines, style, pointerEvents }) {
   const { c } = useTheme();

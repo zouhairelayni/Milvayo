@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { T } from '../ui/ui';
+import { T } from '../ui/uiBase';
 const model=require('../domain/model.cjs');
 const {localDay}=require('../utils/localDay.cjs');
 const bridge=require('../domain/modernBridge.cjs');

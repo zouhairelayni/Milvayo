@@ -226,7 +226,7 @@ export default function Timeline({ openTask }) {
   const [link, setLink] = useState(null); // temporary dependency gesture
   const [notice, setNotice] = useState('');
   const [showUnscheduled, setShowUnscheduled] = useState(false);
-  const [showItems, setShowItems] = useState(false);
+  const [showItems, setShowItems] = useState(wide);
   const [pick, setPick] = useState(null);
   const [viewportW, setViewportW] = useState(0);
   const [scrollXPaint, setScrollXPaint] = useState(0);
@@ -241,7 +241,7 @@ export default function Timeline({ openTask }) {
   const END = bounds.end;
   const span = bounds.span;
   const w = display.dayWidth(ZOOM[zoom], span);
-  const labelW = wide ? 240 : 150;
+  const labelW = wide ? 264 : 160;
   const rows = allScheduled; // no row pager and no disappearing out-of-window tasks
   const rowIndex = useMemo(() => Object.fromEntries(rows.map((t, i) => [t.id, i])), [rows]);
   const tasksById = useMemo(() => new Map(rows.map((t) => [t.id, t])), [rows]);
@@ -580,7 +580,7 @@ export default function Timeline({ openTask }) {
     <TimelineGestureHost>
     <Page
       title="Timeline"
-      subtitle={`${allScheduled.length} scheduled items · ${unscheduled.length} unscheduled · ${fmt(START)} to ${fmt(END)} · curves show dependencies`}
+      subtitle={`${allScheduled.length} scheduled tasks / ${unscheduled.length} without dates / ${fmt(START)}–${fmt(END)}. Drag bars to reschedule; lines represent dependencies.`}
       actions={
         <>
           <Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />
@@ -676,14 +676,14 @@ export default function Timeline({ openTask }) {
       <Card pad={0} style={{ overflow: 'hidden' }}>
         {/* Chart-local control is left-aligned, above hidden item labels. */}
         <View style={{ minHeight: 44, paddingHorizontal: 12, paddingVertical: 5, alignItems: 'flex-start', justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: c.line }}>
-          <Chip label="Items" active={showItems} onPress={() => setShowItems(!showItems)} />
+          <Chip label={showItems ? "Hide task names" : "Show task names"} active={showItems} onPress={() => setShowItems(!showItems)} />
         </View>
         <View style={{ flexDirection: 'row' }}>
           {/* Fixed label column, shown with the Items chip */}
           {showItems ? (
           <View style={{ width: labelW, borderRightWidth: 1, borderColor: c.line, backgroundColor: c.surface, zIndex: 2 }}>
-            <View style={{ height: HEAD, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line }}>
-              <T size={11} weight="600" muted upper>Item</T>
+            <View style={{ height: HEAD, justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 1, borderColor: c.line, backgroundColor:c.surfaceAlt }}>
+              <T size={12} weight="600" muted>Task</T>
             </View>
             <View style={{ height: gridH }}>
               {paintedRows.map((t, i) => (
@@ -720,10 +720,10 @@ export default function Timeline({ openTask }) {
               }}
             >
               <View style={{ width: gridW }}>
-                <View style={{ height: HEAD, borderBottomWidth: 1, borderColor: c.line }}>
+                <View style={{ height: HEAD, borderBottomWidth: 1, borderColor: c.line, backgroundColor:c.surfaceAlt }}>
                   {visibleTicks.map((i) => (
                     <View key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0, paddingLeft: 6, justifyContent: 'center', borderLeftWidth: 1, borderColor: c.line }}>
-                      <T size={11} muted>{fmt(addDays(START, i))}</T>
+                      <T size={11} weight="500" muted>{fmt(addDays(START, i))}</T>
                     </View>
                   ))}
                 </View>

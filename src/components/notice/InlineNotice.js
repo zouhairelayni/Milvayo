@@ -2,7 +2,7 @@
 import { useRef } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { T } from '../../ui/ui';
+import { T } from '../../ui/uiBase';
 import { useStore } from '../../store/store';
 import { useTheme } from '../../ui/theme/theme';
 import { inlineErrorText } from './inlineNotice.cjs';
