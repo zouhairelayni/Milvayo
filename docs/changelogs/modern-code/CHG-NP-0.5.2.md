@@ -1,9 +1,9 @@
 # CHG-NP-0.5.2 — Task completion, automation and premium UI refinement
 
-**Project:** Niyarvo Projects — single modern application
-**Base:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`
-**Version:** `0.5.2` · **Date:** 2026-10-31
-**Status:** Source-level QA candidate; Android/iOS runtime not tested by the assistant
+**Project:** Niyarvo Projects — single modern application  
+**Base:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`  
+**Version:** `0.5.2` · **Date:** 2026-10-31  
+**Status:** Source-level QA candidate; Android/iOS runtime not tested by the assistant  
 **Git commit, merge, deployment:** Not performed
 
 ## Read first

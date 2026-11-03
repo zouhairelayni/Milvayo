@@ -1,10 +1,10 @@
 # CHG-NP-0.5.1 — One modern app, legacy business-domain parity
 
-**Project:** Niyarvo Projects (not RIVNA, not Niyarvo Control Center)
-**Baseline:** `NiyarvoProjects-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip`; legacy reference `v0.4.1-FINAL`
-**Release type:** Source-level QA candidate, *not Android/iOS runtime accepted*
-**Date:** 2026-10-31
-**Package:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`
+**Project:** Niyarvo Projects (not RIVNA, not Niyarvo Control Center)  
+**Baseline:** `NiyarvoProjects-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip`; legacy reference `v0.4.1-FINAL`  
+**Release type:** Source-level QA candidate, *not Android/iOS runtime accepted*  
+**Date:** 2026-10-31  
+**Package:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`  
 **Git commit/deploy:** Not performed
 
 ## Read first

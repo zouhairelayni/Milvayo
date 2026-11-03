@@ -1,13 +1,14 @@
+// /src/diagnostics/monitor.js
 // Local, bounded diagnostics. No analytics SDK, network calls or private workspace fields.
 import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import core from './core.cjs';
+import app from '../../app.json';
 const KEY = '@niyarvo-projects/diagnostics/v1';
-const VERSION = '0.5.9';
+const VERSION = app.expo.version; // one place to bump per release
 let state = core.fresh(`${Date.now().toString(36)}`, Date.now(), {platform: Platform.OS, os: String(Platform.Version), version: VERSION});
 let booted = false;
 let isActive = true;
-let persistence = Promise.resolve();
 let lastTick = Date.now();
 let tickTimer = null;
 let appSubscription = null;
@@ -16,12 +17,9 @@ let listener = null;
 let originalWarn = null;
 let originalError = null;
 let ioGeneration = 0;
-function pushSave(){
-  const generation = ioGeneration;
-  const snapshot = JSON.stringify(state);
-  persistence = persistence.then(() => generation === ioGeneration ? AsyncStorage.setItem(KEY,snapshot) : undefined).catch(()=>{});
-  return persistence;
-}
+const writer = require('../store/latestWriter.cjs').createLatestWriter(generation =>
+ generation === ioGeneration ? AsyncStorage.setItem(KEY,JSON.stringify(state)) : undefined);
+function pushSave(){return writer.enqueue(ioGeneration);}
 function safeEvent(type, detail) { core.addEvent(state,type,detail); pushSave(); notify(); }
 function notify(){try {listener?.();} catch{}}
 function captureError(err, source = 'error boundary', screen = state.screen, componentStack = '', fatal = false) {
@@ -60,10 +58,10 @@ async function start(){
       const old = JSON.parse(saved);
       // Preserve reports for the previous run only. Never imply that Expo Go
       // being killed by Android was a proven app crash.
-      state.previous = {active:!!old.active,updatedAt:old.updatedAt};
-      state.crashes = Array.isArray(old.crashes) ? old.crashes.slice(-12) : [];
-      state.slow = Array.isArray(old.slow) ? old.slow.slice(-60) : [];
-      state.events = Array.isArray(old.events) ? old.events.slice(-60) : [];
+      state.previous = {active:!!old.active,updatedAt:old.updatedAt,runId:old.runId,version:old.version,
+        crashes:Array.isArray(old.crashes)?old.crashes.slice(-12):[]};
+      // Keep current-run counters and traces consistent. Previous-run status
+      // stays in the explicitly labelled summary, never mixed into these arrays.
     }
   }catch { /* diagnostics must never block startup */ }
   safeEvent('run started','local diagnostics enabled');

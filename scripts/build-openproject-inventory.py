@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# /scripts/build-openproject-inventory.py
 """Offline repository evidence index. It does not copy source code."""
 from pathlib import Path
 import zipfile,collections,sys

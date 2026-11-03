@@ -1,9 +1,9 @@
 # CHG-NP-0.4.8 — Timeline Controls, Sprint Crash, Screen Diagnostics
 
-**Date:** 2026-10-31
-**Status:** SOURCE QA CANDIDATE — Android/Expo Go runtime acceptance NOT VERIFIED
-**Baseline:** Niyarvo Projects v0.4.7 Sprint/Kanban/Nav QA
-**Deliverable:** NiyarvoProjects-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip
+**Date:** 2026-10-31  
+**Status:** SOURCE QA CANDIDATE — Android/Expo Go runtime acceptance NOT VERIFIED  
+**Baseline:** Niyarvo Projects v0.4.7 Sprint/Kanban/Nav QA  
+**Deliverable:** NiyarvoProjects-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip  
 **Commit:** Not committed; no Git branch merge or deployment performed.
 
 ## Read first (handoff)

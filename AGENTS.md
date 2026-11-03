@@ -33,4 +33,17 @@
 Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo mark. Do not add glow, gradient text, badges or decorative animation.
 
 ## Sprint lifecycle rule
-Keep sprint lifecycle and historical burndown semantics inside `src/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and `docs/legacy-code/notes/UNSLOP-NP-0.3.2.md`.
+Keep sprint lifecycle and historical burndown semantics inside `src/domain/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and `docs/legacy-code/notes/UNSLOP-NP-0.3.2.md`.
+
+## Timeline rules
+- A resize of a task in the Timeline is a duration modification. Dragging the left or right edge of a bar changes how long the task lasts (whole calendar days, both ends included, never below 1 day); the opposite end stays fixed. A move shifts both dates and never changes the duration. History text for a resize says "Changed duration of …". Rules live in `src/timeline/timelineEdit.cjs`.
+- While a bar is dragged, its dependency lines stay attached to it on every platform (the dates are previewed live).
+
+## Folder structure
+All code is in `src/` (nothing but the Expo entry `App.js`, a 3-line shim, sits in the project root). Put a new file in the folder that matches what it does:
+- `src/app/` app root, `ModernApp.js`, `navigation/` (tab and page rules). `src/screens/<feature>/` one folder per screen group (overview, board, timeline, tasks, delivery, workspace, management, governance).
+- `src/components/` shared pieces (`shell`, `notice`, `inline`, `charts`). `src/ui/` the shared UI kit and `ui/theme/`.
+- `src/domain/` pure business rules (`*.cjs`). `src/timeline/` and `src/board/` timeline/gantt and kanban logic. `src/gestures/` gesture, scroll and viewport code. `src/store/` store, seed data, import and backup. `src/governance/`, `src/diagnostics/`, `src/utils/`.
+- Platform pairs (`name.web.js` / `name.native.js` / `name.js`) always stay in the same folder.
+- Tests are `*.test.cjs` files in `tests/<group>/` (`app`, `board`, `diagnostics`, `domain`, `gestures`, `governance`, `store`, `timeline`, `ui`); shared test helpers are in `tests/helpers/`. `npm test` runs `node tests/run-all.cjs`, which finds them in any subfolder.
+- The first line of every code file is a comment with its own path, like `// /src/domain/model.cjs`. `tests/app/folder-structure.test.cjs` checks this, and checks that no import points to a missing file.

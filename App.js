@@ -1,5 +1,5 @@
-import AppGestureRoot from './src/AppGestureRoot';
-import ModernApp from './ModernApp';
+// /App.js
+import App from './src/app/App';
 
-// Niyarvo Projects has one UI. Legacy domain modules remain the business-rule authority.
-export default function App(){return <AppGestureRoot><ModernApp/></AppGestureRoot>;}
+// Expo's entry point (node_modules/expo/AppEntry.js) imports this root file. The app itself lives in src/app/.
+export default App;

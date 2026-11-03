@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// /scripts/deploy-hosting.cjs
 'use strict';
 const {spawnSync}=require('node:child_process');
 const project=process.env.NIYARVO_PROJECTS_FIREBASE_PROJECT_ID;
