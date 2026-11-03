@@ -2,10 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, T, useWide } from '../../ui/ui';
+import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
+import { TaskConfiguration } from '../management/Management';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, STATUS, fmt } from '../../store/data';
 
@@ -17,7 +18,7 @@ const PAGE_SIZE = Platform.OS === 'web' ? 80 : 20;
 const SORTS = { Due: { sort: 'due', descending: false }, Priority: { sort: 'priority', descending: true }, Progress: { sort: 'progress', descending: false }, Title: { sort: 'title', descending: false }, Manual: { sort: 'position', descending: false } };
 const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 
-export default function Tasks({ openTask, query = '', statusRequest = null }) {
+export default function Tasks({ openTask, onNewTask, query = '', statusRequest = null }) {
   const { c } = useTheme();
   const wide = useWide();
   // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
@@ -25,6 +26,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
   const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [viewName,setViewName]=useState('');
+  const [toolsOpen,setToolsOpen]=useState(false);
   const [q, setQ] = useState(query);
   const [filter, setFilter] = useState('All');
   const [labelFilter,setLabelFilter]=useState('All');
@@ -77,7 +79,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
     <Page
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
-      actions={<Button label="New task" icon="plus" small onPress={() => openTask(addTask('Untitled task', 'Backlog', MAIN))} />}
+      actions={<View style={{flexDirection:'row',gap:8}}><Button label="Task configuration" icon="sliders" small variant="secondary" onPress={()=>setToolsOpen(true)}/><Button label="New task" icon="plus" small onPress={onNewTask} /></View>}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
@@ -85,7 +87,8 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
         </View>
       </View>
 
-      <Fold title="Filters & tags" subtitle={`${filter === 'All' ? 'All statuses' : filter} · ${labelFilter === 'All' ? 'All tags' : labelFilter} · sorted by ${sort} · ${layout} · ${list.length} tasks`}>
+      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Task configuration" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
+      <T size={16} weight="600">Filters & tags</T>
         <T size={12} muted weight="600">Status</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {['All', ...STATUS].map(st => <Chip key={st} label={st==='All'?`All ${s.tasks.length}`:`${st} ${counts[st]||0}`} active={filter===st} onPress={()=>setFilter(st)}/>)}
@@ -113,13 +116,13 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
           {allLabels.map(tag=><Chip key={tag} label={tag} active={labelFilter===tag} onPress={()=>setLabelFilter(tag)}/>)}
         </View>
         <T size={12} muted>Hold a task row to select it for bulk actions. Tap its square to update completion.</T>
-      </Fold>
-
       <Fold title="Saved task views" subtitle={`${(project.savedViews||[]).length} saved filters and sorting presets`}>
         <Input value={viewName} onChangeText={setViewName} placeholder="Name this view"/>
         <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,priority:prioFilter,owner:ownerFilter,text:q,label:labelFilter},sort:SORTS[sort].sort,descending:SORTS[sort].descending}))setViewName('')}}/>
         {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
       </Fold>
+      <TaskConfiguration embedded />
+      </Sheet>
       {picked.length > 0 ? (
         <Card style={{ gap: 12, backgroundColor: c.surfaceAlt, width: '100%' }}>
           <T weight="600" style={{ flexShrink: 0 }} numberOfLines={1}>{picked.length} selected</T>

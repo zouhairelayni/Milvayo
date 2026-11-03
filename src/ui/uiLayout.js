@@ -52,15 +52,7 @@ export function Page({ title, subtitle, actions, children, scrollRef, onScroll, 
   return (
     <ScrollView ref={scrollRef} onScroll={onScroll} scrollEventThrottle={16} scrollEnabled={scrollEnabled} {...scrollProps} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: wide ? 32 : 16, paddingTop: wide ? 28 : 16, paddingBottom: wide ? 72 : 96 }}>
       <View style={{ width: '100%', minWidth: 0, alignSelf: 'stretch', gap: wide ? 22 : 16 }}>
-        {(wide || subtitle || actions) ? (
-          <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'stretch', justifyContent: 'space-between', gap: wide ? 20 : 12, width: '100%', paddingBottom: wide ? 6 : 0 }}>
-            <View style={{ minWidth: 0, flex: wide ? 1 : undefined, alignSelf: 'stretch', gap: wide ? 6 : 0 }}>
-              {wide ? <T size={30} weight="600">{title}</T> : null}
-              {subtitle ? <T muted size={wide ? 13 : 12} style={{ lineHeight: wide ? 21 : 19, flexShrink: 1 }}>{subtitle}</T> : null}
-            </View>
-            {actions ? <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: wide ? 'flex-end' : 'flex-start', flexWrap: 'wrap', gap: 8, flexShrink: 0, maxWidth: '100%' }}>{actions}</View> : null}
-          </View>
-        ) : null}
+        {actions ? <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>{actions}</View> : null}
         {children}
       </View>
     </ScrollView>

@@ -43,7 +43,7 @@ test('shell files import only paths that exist', () => {
   }
   assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-white.png')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-dark.png')));
-  assert.match(read('src/components/shell/Menus.js'), /require\('\.\.\/\.\.\/\.\.\/assets\/niyarvo-projects-white\.png'\)/);
+  assert.match(read('src/components/shell/Menus.js'), /require\('\.\.\/\.\.\/\.\.\/assets\/niyarvo-mark-mask\.png'\)/);
 });
 
 test('ui.js only re-exports; every shared component is still exported once', () => {

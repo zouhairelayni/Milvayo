@@ -177,6 +177,7 @@ export default function Backup() {
               <View style={{ gap: 8 }}>
                 <Input secure value={pw} onChangeText={setPw} placeholder={`Password (${MIN_PASSWORD}+ characters)`} />
                 <Input secure value={pw2} onChangeText={setPw2} placeholder="Repeat password" />
+                {pw2 ? <T size={12} color={pw===pw2?c.ink:'#E0512D'} accessibilityRole="text">{pw===pw2?'Passwords match. Ready to encrypt.':'Passwords do not match. Nothing will be encrypted.'}</T> : null}
                 <Segmented options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} value={level} onChange={pickLevel} />
                 <T size={11} muted>{LEVEL_TEXT[level]} All three use AES-256 encryption; the level only sets how slow it is to guess the password. The level is saved in the file, so opening it never asks for it.</T>
                 <T size={11} muted>The password is never stored or sent anywhere. If it is forgotten, this backup cannot be opened by anyone, including Niyarvo. Keep it somewhere safe.</T>
@@ -188,7 +189,7 @@ export default function Backup() {
           <Chip label="Include recovery snapshots (larger file)" active={withSnapshots} onPress={() => setWithSnapshots(!withSnapshots)} />
         </View>
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-          <Button label={scope === 'project' ? `Back up "${chosen.name}"` : 'Back up entire workspace'} icon="download" small disabled={!!busy} onPress={() => exportBackup(scope === 'workspace')} />
+          <Button label={scope === 'project' ? `Back up "${chosen.name}"` : 'Back up entire workspace'} icon="download" small disabled={!!busy || (fmt==='niyav' && protect && (Array.from(pw).length<MIN_PASSWORD || pw!==pw2))} onPress={() => exportBackup(scope === 'workspace')} />
         </View>
       </Card>
 

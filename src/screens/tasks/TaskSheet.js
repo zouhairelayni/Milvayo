@@ -15,6 +15,26 @@ import { localDay } from '../../utils/localDay.cjs';
 import { descendants } from '../../domain/taskWorkflows.cjs';
 const NONE = new Set();
 
+// A new task is only created on explicit Save. Dismissing this sheet discards its draft.
+export function NewTaskSheet({ onClose, onSave }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('Backlog');
+  const [priority, setPriority] = useState('Medium');
+  const save = () => {
+    const name = title.trim();
+    if (!name || name.length > 240) return;
+    onSave({ title: name, description, status, priority });
+  };
+  return <Sheet visible onClose={onClose} title="Create task" showNotice={false}
+    footer={<><Button label="Cancel" small variant="ghost" onPress={onClose}/><Button label="Save task" small icon="check" disabled={!title.trim() || title.trim().length>240} onPress={save}/></>}>
+    <View style={{gap:8}}><T weight="600">Task title</T><Input value={title} onChangeText={setTitle} autoFocus accessibilityLabel="New task title" placeholder="What needs to be done?"/></View>
+    <View style={{gap:8}}><T weight="600">Description</T><Input value={description} onChangeText={setDescription} multiline placeholder="Details (optional)"/></View>
+    <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>
+    <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>
+  </Sheet>;
+}
+
 export default function TaskSheet({ taskId, onClose }) {
   const { c } = useTheme();
   const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
@@ -27,7 +47,7 @@ export default function TaskSheet({ taskId, onClose }) {
   const [labelEditor, setLabelEditor] = useState(false);
   const [comment, setComment] = useState('');
   const [githubUrl,setGithubUrl]=useState('');
-  const [confirmDelete,setConfirmDelete]=useState(false),[subTitle,setSubTitle]=useState(''),[logHours,setLogHours]=useState('1');
+  const [confirmDelete,setConfirmDelete]=useState(false),[confirmDuplicate,setConfirmDuplicate]=useState(false),[subTitle,setSubTitle]=useState(''),[logHours,setLogHours]=useState('1');
   const [depDraft, setDepDraft] = useState('');
   const [parentDraft, setParentDraft] = useState('');
   const [labelDraft, setLabelDraft] = useState('');
@@ -37,7 +57,7 @@ export default function TaskSheet({ taskId, onClose }) {
 
   useEffect(() => {
     setOpen(null); setMode('Standard'); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
-    setConfirmDelete(false); setGithubUrl(''); setSubTitle(''); setLogHours('1');
+    setConfirmDelete(false); setConfirmDuplicate(false); setGithubUrl(''); setSubTitle(''); setLogHours('1');
     setComment(''); setDepDraft(''); setParentDraft(''); setLabelDraft('');
     setCheckDraft(''); setAttachmentName(''); setAttachmentUrl('');
   }, [taskId]);
@@ -82,10 +102,10 @@ export default function TaskSheet({ taskId, onClose }) {
   const footer = t ? (
     <>
       <InlineNotice />
-      <Button
-        label="Duplicate" icon="copy" small variant="secondary"
-        onPress={() => {duplicateTask(t.id);onClose();}}
-      />
+      {confirmDuplicate ? <><Button label="Confirm duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/><Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDuplicate(false)}/></> :
+        <Button label="Duplicate" icon="copy" small variant="secondary" onPress={()=>{setConfirmDelete(false);setConfirmDuplicate(true);}}/>}
+      {confirmDelete ? <><Button label="Confirm delete" small variant="danger" onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/><Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDelete(false)}/></> :
+        <Button label="Delete" icon="trash-2" small variant="danger" onPress={()=>{setConfirmDuplicate(false);setConfirmDelete(true);}}/>}
       <View style={{ flex: 1 }} />
       <Button label="Done" small onPress={closeTask} />
     </>
@@ -132,10 +152,7 @@ export default function TaskSheet({ taskId, onClose }) {
             </Card>:null}
           </View>
           <View style={{gap:10}}>
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-              <T size={16} weight="700">Description</T>
-              <Button small variant="secondary" icon={descriptionEditing?'check':'edit-2'} label={descriptionEditing?'Save':'Edit'} onPress={()=>{if(descriptionEditing){if(descriptionDraft!==t.description)set({description:descriptionDraft});setDescriptionEditing(false);}else{setDescriptionDraft(t.description||'');setDescriptionEditing(true);}}}/>
-            </View>
+            <T size={16} weight="700">Description</T>
             {descriptionEditing?<Card pad={12} style={{gap:10}}>
               <T size={12} muted>Markdown source · **bold**, *italic*, headings and lists</T>
               <Input value={descriptionDraft} onChangeText={setDescriptionDraft} multiline placeholder="Add a description..." style={{minHeight:160,fontSize:14}}/>
@@ -308,8 +325,7 @@ export default function TaskSheet({ taskId, onClose }) {
                   <Button label="Record merge" small variant="secondary" disabled={!canMerge || !!t.merged} onPress={() => mergeTask(t.id)} />
                 </View>
               </View>)}
-            {row('delete', 'Delete task', 'Requires confirmation · creates recovery snapshot',
-             <View style={{gap:10}}><T muted size={12}>Deletes the task and cleans dependencies. Saved recovery snapshot first.</T>{confirmDelete?<><Button small label="Confirm delete" variant="danger" onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false)}}/><Button small label="Cancel" variant="ghost" onPress={()=>setConfirmDelete(false)}/></>:<Button label="Delete task" small variant="ghost" onPress={()=>setConfirmDelete(true)}/>}</View>)}
+
           </View>:null}
           <T size={11} muted>Task {t.id} · Due {fmt(t.due)} · {t.progress}% · {t.effort}h estimated</T>
         </>

@@ -7,26 +7,20 @@ import { Button, IconBtn, Input, T } from '../../ui/ui';
 import { diagnosticMonitor } from '../../diagnostics/monitor';
 import { ProjectSwitcher } from './Menus';
 
-export function TopBar({ query, onQuery, onNew, mode, onToggleMode, screenTitle, onPickProject }) {
+export function TopBar({ query, onQuery, onNew, onPickProject }) {
   const { c } = useTheme();
   const { width } = useWindowDimensions();
   const compact = width < 1120;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: compact ? 10 : 16, paddingHorizontal: compact ? 16 : 32, minHeight: compact ? 64 : 72,
-      borderBottomWidth: 1, borderBottomColor: c.line, backgroundColor: c.surface }}>
+      backgroundColor: c.bg }}>
       <ProjectSwitcher onPickProject={onPickProject} compact={compact} />
-      {!compact ? <>
-        <Feather name="chevron-right" size={14} color={c.faint} />
-        <T size={13} color={c.muted} numberOfLines={1} style={{ flexShrink: 1 }}>{screenTitle}</T>
-        <View style={{ flex: 1 }} />
-      </> : null}
       <View style={{ flex: 1, maxWidth: compact ? 240 : 320, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8,
         backgroundColor: c.bg, borderWidth: 1, borderColor: c.line, borderRadius: radius.sm, paddingHorizontal: 12 }}>
         <Feather name="search" size={16} color={c.muted} />
         <Input value={query} onChangeText={onQuery} accessibilityLabel="Search tasks" placeholder="Search tasks"
           style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, minHeight: 38 }} />
       </View>
-      <IconBtn icon={mode !== 'light' ? 'sun' : 'moon'} label="Toggle theme" onPress={onToggleMode} />
       {compact ? <IconBtn icon="plus" label="New task" solid onPress={onNew} />
         : <Button label="New task" icon="plus" small onPress={onNew} />}
     </View>
@@ -35,13 +29,18 @@ export function TopBar({ query, onQuery, onNew, mode, onToggleMode, screenTitle,
 
 export function TabBar({ tabs, current, go, intent }) {
   const touches = useRef({});
+  const swipeStart = useRef(null);
+  const swipedAt = useRef(0);
   const { c } = useTheme();
   return (
-    <View style={{ flexDirection:'row', backgroundColor:c.surface, borderTopColor:c.line, borderTopWidth:1, paddingHorizontal:8, paddingTop:7, paddingBottom:Platform.OS==='ios'?12:7 }}>
+    <View onTouchStart={e=>{const p=e.nativeEvent.touches?.[0];swipeStart.current=p?{x:p.pageX,y:p.pageY}:null;}}
+      onTouchEnd={e=>{const p=e.nativeEvent.changedTouches?.[0];const a=swipeStart.current;swipeStart.current=null;if(!p||!a)return;const dx=p.pageX-a.x,dy=p.pageY-a.y;if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.4)return;const i=tabs.findIndex(([k])=>k===current),next=i+(dx<0?1:-1);if(next<0||next>=tabs.length)return;swipedAt.current=Date.now();go(tabs[next][0]);}}
+      style={{ flexDirection:'row', backgroundColor:c.surface, borderTopColor:c.line, borderTopWidth:1, paddingHorizontal:8, paddingTop:7, paddingBottom:Platform.OS==='ios'?12:7 }}>
       {tabs.map(([k,l,i]) => {
         const on=current===k;
         return <Pressable key={k} accessibilityRole="tab" accessibilityLabel={l} accessibilityState={{selected:on}} pressRetentionOffset={0} onPressIn={(e)=>{ touches.current[k] = {...intent.begin(k), at: e.nativeEvent.timestamp ?? e.timeStamp}; }} onPress={(e)=>{
           const press = touches.current[k]; delete touches.current[k];
+          if(Date.now()-swipedAt.current<450)return;
           if (!intent.accept(press,k)) { diagnosticMonitor.recordAction(`ignored stale tab press: ${k}`); return; }
           diagnosticMonitor.recordAction(`tab input: ${k}; down=${press.at}; up=${e.nativeEvent.timestamp ?? e.timeStamp}`);
           go(k);

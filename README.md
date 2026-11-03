@@ -1,6 +1,6 @@
 # Niyarvo Projects — current source update v0.5.31
 
-v0.5.31 is a responsive UI/UX update over v0.5.30. It uses the existing Expo SDK 58 development installation and retains local manifests, domain logic and stored data. It is not a standalone npm-installable archive. Updated release notes and verification status are in `docs/changelogs/modern-code/CHG-NP-0.5.31.md` and `docs/qa/modern-code/NP-QA-0.5.31.md`.
+v0.5.47 is a complete local-first Expo SDK 58 project source release. It builds on the verified v0.5.34 baseline, preserves the existing project/workspace data format and uses a single release changelog: `CHG-NP-0.5.47.md`.
 
 ## Historical release documentation
 
@@ -37,7 +37,7 @@ The existing AsyncStorage key remains `niyarvo-projects-v1`. Never clear app dat
 
 ## Verification
 
-Source-level tests and syntax checks verify business-logic pathways but **cannot certify native Expo Go rendering or gestures**. In particular, verify Timeline task bars and dependency SVGs stay visible after initial mount, Kanban scrolling and long-press dragging, and navigation responsiveness on Android/iOS. The v0.5.9 changelog is under `docs/changelogs/modern-code/`, and its QA checklist is under `docs/qa/modern-code/`. Historical source documentation is archived separately in `docs/legacy-code/`.
+Source-level tests and syntax checks verify business-logic pathways but **cannot certify native Expo Go rendering or gestures**. In particular, verify Timeline task bars and dependency SVGs stay visible after initial mount, Kanban scrolling and long-press dragging, and navigation responsiveness on Android/iOS. The consolidated v0.5.35–v0.5.47 change history is in the repository-root `CHG-NP-0.5.47.md`.
 
 ## v0.5.2 task experience
 
@@ -80,7 +80,7 @@ Native inline notices use Reanimated motion and are anchored below the phone hea
 
 ## v0.5.7 — Dynamic Island at the top safe area
 
-Moved the existing in-app Dynamic Island animation to a top-of-window layer with a platform-aware status-bar/notch inset and 10-point visual clearance. The animation and dismissal behavior are unchanged. On phones it may temporarily overlap the header while expanded, but it no longer sits over task filters or the scrolling page. This is not a system notification. See `docs/changelogs/modern-code/CHG-NP-0.5.7.md`.
+Moved the existing in-app Dynamic Island animation to a top-of-window layer with a platform-aware status-bar/notch inset and 10-point visual clearance. The animation and dismissal behavior are unchanged. On phones it may temporarily overlap the header while expanded, but it no longer sits over task filters or the scrolling page. This is not a system notification. See the current consolidated changelog (`CHG-NP-0.5.47.md`) for new changes.
 
 ## v0.5.8 — Web scroll and offscreen rendering fix
 

@@ -8,14 +8,23 @@ import { useStore } from '../../store/store';
 import { Button, IconBtn, Input, T } from '../../ui/ui';
 import { DangerConfirm } from '../inline/CompactTools';
 import InlineNotice from '../notice/InlineNotice';
+import CreateProjectSheet from '../../screens/governance/CreateProjectSheet';
 
 // Side navigation shared by the wide layout (Sidebar) and the phone layout (SideMenu).
-function Brand({ narrow = false }) {
-  const { mode } = useTheme();
-  return (
-    <Image source={mode!=='light'?require('../../../assets/niyarvo-projects-white.png'):require('../../../assets/niyarvo-projects-dark.png')}
-      style={{width:narrow ? 160 : 205,height:52}} resizeMode="contain" accessibilityLabel="Niyarvo Projects" />
-  );
+export function Brand({ narrow = false, symbolOnly = false }) {
+  const { c, mode } = useTheme();
+  const mark = <Image source={require('../../../assets/niyarvo-mark-mask.png')}
+    resizeMode="contain" style={{width:symbolOnly?34:42,height:symbolOnly?34:42,tintColor:c.accent}} accessibilityLabel="Niyarvo mark" />;
+  if(symbolOnly)return mark;
+  return <View accessible accessibilityLabel="Niyarvo Projects" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:narrow?172:220}}>
+    {mark}
+    <View style={{width:narrow?119:158,gap:2,alignItems:'flex-end'}}>
+      <Image source={require('../../../assets/niyarvo-word-mask.png')} resizeMode="stretch"
+        style={{width:narrow?119:158,height:narrow?30:39,tintColor:c.ink}} />
+      <Image source={require('../../../assets/niyarvo-projects-mask.png')} resizeMode="stretch"
+        style={{width:narrow?76:102,height:narrow?10:14,tintColor:mode==='light'?'#111111':'#FFFFFF'}} />
+    </View>
+  </View>;
 }
 
 function NavItem({ k, label, icon, current, go, collapsed = false }) {
@@ -66,13 +75,7 @@ function ProjectDrawer({ onClose, onPick, inModal }) {
   const { c } = useTheme();
   const { projects, createProject } = useStore();
   const [naming, setNaming] = useState(false);
-  const [name, setName] = useState('');
-  const create = () => {
-    const id = createProject(name);
-    setName('');
-    setNaming(false);
-    if (id) onPick(id, true);
-  };
+  const create = id => {setNaming(false);onPick(id,true);};
 
   return (
     <DrawerMotion
@@ -106,13 +109,7 @@ function ProjectDrawer({ onClose, onPick, inModal }) {
         ))}
 
         {naming ? (
-          <View style={{ gap: 10, padding: 12, borderRadius: radius.md, borderWidth: 1, borderColor: c.line }}>
-            <Input value={name} onChangeText={setName} placeholder="Project name" autoFocus onSubmitEditing={create} />
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Button label="Create" small onPress={create} disabled={!name.trim()} />
-              <Button label="Cancel" small variant="ghost" onPress={() => { setNaming(false); setName(''); }} />
-            </View>
-          </View>
+          <CreateProjectSheet visible onClose={()=>setNaming(false)} onCreated={create}/>
         ) : (
           <Pressable
             onPress={() => setNaming(true)}
@@ -268,7 +265,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
     <View style={{ width: compact ? 72 : 264, borderRightWidth: 1, borderRightColor: c.line, backgroundColor: c.surface, paddingTop: 20, paddingBottom: 12, paddingHorizontal: compact ? 8 : 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, marginBottom: 12, paddingHorizontal: compact ? 4 : 6 }}>
         {compact
-          ? <Image source={require('../../../assets/brand-symbol.png')} resizeMode="contain" style={{ width: 28, height: 28 }} accessibilityLabel="Niyarvo Projects" />
+          ? <Brand symbolOnly />
           : <Brand narrow />}
         {width >= 1120 ? <IconBtn icon={compact ? 'chevrons-right' : 'chevrons-left'} label={compact ? 'Expand sidebar' : 'Collapse sidebar'} onPress={() => setCollapsed(v => !v)} /> : null}
       </View>
@@ -325,7 +322,7 @@ export function ProjectSwitcher({ onPickProject, compact = false }) {
 }
 
 // Phone side menu: slides in from the left, opened by the menu button in the header.
-export function SideMenu({ nav, visible, current, go, onClose, onPickProject, onDesktopLayout }) {
+export function SideMenu({ nav, visible, current, go, onClose, onPickProject, onDesktopLayout, onToggleMode }) {
   const { c, mode } = useTheme();
   const [drawer, setDrawer] = useState(false);
   const [spaces, setSpaces] = useState(false);
@@ -350,7 +347,7 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject, on
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 20 }}>
             <Brand />
-            <IconBtn icon="x" label="Close menu" onPress={onClose} />
+            <IconBtn icon={mode === 'light' ? 'moon' : 'sun'} label="Toggle light and dark appearance" onPress={onToggleMode} />
           </View>
           <WorkspaceRow onPress={() => setSpaces(true)} />
           <ProjectCard onPress={() => setDrawer(true)} />

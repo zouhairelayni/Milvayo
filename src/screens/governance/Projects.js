@@ -13,6 +13,7 @@ import { PM_DOCS, DOC_GROUPS, DOC_COLOR, DOC_BY_KEY, docOf, docProgress, PHASES,
 import { DocView, BudgetView } from './pm/PmDocs';
 import PmRisks from './pm/PmRisks';
 import PmWbs from './pm/PmWbs';
+import CreateProjectSheet from './CreateProjectSheet';
 import { Field, Choice, DateInput } from './pm/pmui';
 
 // Project lifecycle lives here; Backup contains files and recovery, not editing.
@@ -22,13 +23,11 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
  const [detail,setDetail]=useState(projectRequest),[tab,setTab]=useState('overview');
  // Opened from a portfolio or program: show that project's governance detail.
  useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest);setTab('overview');onProjectRequestHandled?.()},[projectRequest]);
- const [draft,setDraft]=useState('');
+ const [creating,setCreating]=useState(false);
  const openDetail=useCallback(id=>{setDetail(id);setTab('overview')},[]);
  const content=<>
-  <Fold title="Create project" subtitle="A new project starts with an empty board" initial={false}>
-   <Labeled title="Project name" value={draft} onChange={setDraft} placeholder="Project name"/>
-   <Button label="Create project" small disabled={!draft.trim()} onPress={()=>{if(createProject(draft)){setDraft('')}}}/>
-  </Fold>
+  <Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>
+  <CreateProjectSheet visible={creating} onClose={()=>setCreating(false)} onCreated={openDetail}/>
   {open.map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
   <T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>
  </>;

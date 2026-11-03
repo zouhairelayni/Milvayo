@@ -2,7 +2,7 @@
 import { Pressable, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect} from 'react';
-import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, downloadText } from '../../ui/ui';
+import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, downloadText } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { money, openHours } from '../../store/data';
@@ -240,7 +240,11 @@ export function Settings({go}) {
     <DiagnosticsPanel />
     <Card style={{gap:12}}>
       <SectionTitle>Appearance</SectionTitle>
-      <Segmented options={[{value:'system',label:'System'},{value:'light',label:'Light'},{value:'dark',label:'Dark'},{value:'amoled',label:'AMOLED'}]} value={pref} onChange={setPref}/>
+      <T size={12} muted>Use the sun/moon control in the menu for Light and Dark. System and AMOLED remain available here.</T>
+      <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}>
+        <Chip label="System" active={pref==='system'} onPress={()=>setPref('system')}/>
+        <Chip label="AMOLED" active={pref==='amoled'} onPress={()=>setPref('amoled')}/>
+      </View>
       <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:12,gap:12}}>
         <Button label={`Accent · ${accentPref}`} small icon="droplet" variant="secondary" onPress={()=>setColorsOpen(!colorsOpen)}/>
         {colorsOpen?<View accessibilityRole="radiogroup" style={{flexDirection:'row',flexWrap:'wrap',gap:8,justifyContent:'space-between'}}>{ACCENTS.map(option=>{
@@ -254,7 +258,6 @@ export function Settings({go}) {
         })}</View>:null}
       </View>
     </Card>
-    <Card style={{gap:8}}><SectionTitle>Workspace data</SectionTitle><T size={12} muted>Manage projects from Projects. Import, export and restore data from the Backup tab.</T><Button label="Open Backup tab" small variant="secondary" onPress={()=>setTab('backup')}/></Card>
     </>}
   </Page>;
 }

@@ -64,8 +64,8 @@ test('Governance group exposes independent screens with one shared relationship 
  for(const screen of ['Projects','Portfolios','Programs'])assert.ok(read('src/screens/governance/'+screen+'.js').length>300);
  assert.ok(read('src/domain/projectRelations.cjs').length>200);
 });
-test('mobile Page puts subtitle and action buttons on distinct rows',()=>{
- const source=require('../helpers/ui-source.cjs')();assert.match(source,/flexDirection: wide \? 'row' : 'column'/);
- assert.match(source,/minWidth: 0, flex: wide \? 1 : undefined/);
- assert.match(source,/maxWidth: '100%'/);
+test('Page removes redundant title/subtitle header while preserving its actions row',()=>{
+ const source=require('../helpers/ui-source.cjs')();assert.doesNotMatch(source,/subtitle \? <T/);
+ assert.match(source,/actions \? <View style=/);
+ assert.match(source,/width: '100%', minWidth: 0/);
 });

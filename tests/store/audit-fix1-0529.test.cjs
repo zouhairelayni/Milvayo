@@ -45,7 +45,7 @@ test('5: removed dead imports stay removed and the native gesture file has no we
     ['src/screens/delivery/Delivery.js', /\bAvatar\b|\bSTAGES\b/], ['src/screens/governance/Portfolios.js', /PRIORITY_COLOR|STATUS_COLOR/],
     ['src/screens/governance/Programs.js', /\bGrid\b|\bCell\b|\bStat\b|\bInput\b/], ['src/screens/governance/Projects.js', /setDocStatus/],
     ['src/screens/management/Management.js', /Pressable|SectionTitle|useTheme/], ['src/screens/tasks/TaskSheet.js', /\baddTask\b/],
-    ['src/screens/workspace/Workspace.js', /\bChip\b|useWide|\bfmt\b|toCSV/], ['src/store/store.js', /\bButton\b/],
+    ['src/screens/workspace/Workspace.js', /useWide|\bfmt\b|toCSV/], ['src/store/store.js', /\bButton\b/],
     ['src/domain/automation.cjs', /DEFAULT_BOARD_ID/], ['src/timeline/timelineDisplay.cjs', /\bfinite\b/],
     ['src/board/boardGesture.native.js', /attachDoc|detachDoc|IS_WEB|document\.|Platform/],
   ];

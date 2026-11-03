@@ -1,7 +1,7 @@
 // /src/screens/governance/Portfolios.js
 import { View } from 'react-native';
 import { useState } from 'react';
-import { Bar, Button, Card, Chip, Page, Pill, T } from '../../ui/ui';
+import { Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
 import { Fold, EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
 import { useStore } from '../../store/store';
 import { useTheme } from '../../ui/theme/theme';
@@ -23,13 +23,14 @@ export default function Portfolios({embedded=false,openProject}) {
     <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}><Button label="Save portfolio" small disabled={!name.trim()} onPress={save}/><Button label="Cancel" small variant="ghost" onPress={()=>setEditing(null)}/></View>
    </Card>);
  const content=<>
+  <Sheet visible={!!editing} onClose={()=>setEditing(null)} title={editing==='new'?'Create portfolio':'Edit portfolio'} showNotice={false}>{editor}</Sheet>
   <Fold title="Manage portfolios" subtitle={`${(workspace.portfolios||[]).length} portfolios · assign projects to one or more groups`} initial={!(workspace.portfolios||[]).length}>
    <Button small label="Create portfolio" onPress={()=>select(null)}/>
-   {editing==='new'?editor:null}
+
   </Fold>
   {!(workspace.portfolios||[]).length?<T muted size={13}>No portfolios yet. Create one to group projects, then include it in a program.</T>:null}
   {(workspace.portfolios||[]).map(p=>{
-   if(editing===p.id)return <View key={p.id}>{editor}</View>;
+
    const linked=portfolioSummary(workspace,p).linked; const totals=portfolioMetric(workspace,p);
    const total=linked.reduce((n,project)=>n+projectSummary(project).taskCount,0);
    const done=linked.reduce((n,project)=>n+projectSummary(project).doneCount,0);

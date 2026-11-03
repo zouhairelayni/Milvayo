@@ -1,6 +1,6 @@
 {
   "name": "Niyarvo Projects",
-  "version": "0.5.34",
+  "version": "0.5.47",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {

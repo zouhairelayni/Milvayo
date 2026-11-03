@@ -44,12 +44,12 @@ export function Scheduling(){
  {notice?<T size={12} muted>{notice}</T>:null}
  </Page>;
 }
-export function TaskConfiguration(){
+export function TaskConfiguration({embedded=false}){
  const p=useProject();const {saveTaskSchema,removeTaskField,removeTaskType}=useStore();
  const [name,setName]=useState(''),[id,setId]=useState(''),[kind,setKind]=useState('text'),[options,setOptions]=useState(''),[required,setRequired]=useState(false),[mode,setMode]=useState('field');
  const [from,setFrom]=useState('Backlog'),[to,setTo]=useState('In progress'),[enforced,setEnforced]=useState(p.workflow.enabled);
  const add=()=>{const itemId=id.trim();if(!itemId||!name.trim())return;const config=mode==='field'?{customFields:[...p.customFields,{id:itemId,name:name.trim(),type:kind,required,options:kind==='select'?options.split(',').map(x=>x.trim()).filter(Boolean):[]}]}:{taskTypes:[...p.taskTypes,{id:itemId,name:name.trim(),description:''}]};if(saveTaskSchema(config)){setName('');setId('');}};
- return <Page title="Task configuration" subtitle="Types, custom fields and permitted workflow changes.">
+ const content = <>
  <Fold title="Task types" subtitle={`${p.taskTypes.length} types · managed locally`} initial>
   {p.taskTypes.map(tp=><EditRow key={tp.id} title={tp.name} summary={tp.id}><T muted size={12}>{tp.description||'No description'}</T>{tp.id!=='task'?<DangerConfirm label="Remove type" onConfirm={()=>removeTaskType(tp.id)}/>:null}</EditRow>)}
  </Fold>
@@ -68,7 +68,8 @@ export function TaskConfiguration(){
   <Button small label="Allow transition" onPress={()=>saveTaskSchema({workflow:{...p.workflow,transitions:[...p.workflow.transitions,{from,to,typeId:''}]}})}/>
   {(p.workflow.transitions||[]).map((tr,i)=><EditRow key={i} title={`${tr.from} → ${tr.to}`} summary={tr.typeId||'All types'}><Button small variant="ghost" label="Remove" onPress={()=>saveTaskSchema({workflow:{...p.workflow,transitions:p.workflow.transitions.filter((_,j)=>i!==j)}})}/></EditRow>)}
  </Fold>
- </Page>;
+ </>;
+ return embedded ? content : <Page title="Task configuration">{content}</Page>;
 }
 export function Collaboration({openTask}){
  const p=useProject();const {s,addReminder,finishReminder,deleteReminder,deleteComment}=useStore();

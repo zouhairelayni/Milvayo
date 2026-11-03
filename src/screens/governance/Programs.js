@@ -1,7 +1,7 @@
 // /src/screens/governance/Programs.js
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Bar, Card, Button, Chip, Page, T } from '../../ui/ui';
+import { Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
 import { Fold, EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
@@ -44,13 +44,14 @@ export function Programs({embedded=false,openProject}){
     <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button label="Save program" small disabled={!name.trim()} onPress={save}/><Button label="Cancel" small variant="ghost" onPress={()=>setEditing('')}/></View>
    </Card>);
  const content=<>
+  <Sheet visible={!!editing} onClose={()=>setEditing('')} title={editing==='new'?'Create program':'Edit program'} showNotice={false}>{editor}</Sheet>
   <Fold title="Manage programs" subtitle={`${programs.length} programs · portfolios linked without duplicating project data`} initial={programs.length===0}>
    <Button label="Create program" small onPress={()=>select(null)}/>
-   {editing==='new'?editor:null}
+
   </Fold>
   {programs.length===0?<T muted size={13}>No programs yet. Create one, then add portfolios to form a Program → Portfolio → Project hierarchy.</T>:null}
   {programs.map(p=>{
-   if(editing===p.id)return <View key={p.id}>{editor}</View>;
+
    const {portfolios:linkedPortfolios,linked,taskCount,doneCount}=programSummary(workspace,p);
    const nestedIds=new Set(linkedPortfolios.flatMap(x=>x.projectIds||[]));
    const oldDirect=linked.filter(project=>(p.projectIds||[]).includes(project.id)&&!nestedIds.has(project.id));

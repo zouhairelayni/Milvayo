@@ -46,8 +46,10 @@ function archiveBoard(p,id,archived){if(id===MAIN)throw Error('Main board cannot
 function deleteBoard(p,id){return model.boards.deleteBoard(p,id);}
 function addTask(p,title,status='Backlog',bid=MAIN,extra={}){
  const b=boardFor(p,bid);if(!b)throw Error('Board missing');const n=String(title||'').trim();if(!n||n.length>240)throw Error('Task needs a title (1–240 characters)');const l=(extra.list&&listFor(b,extra.list))||listSafe(b).find(l=>l.status===status)||listSafe(b)[0];
- const task=model.defaultTask({id:token(p.code||'task'),title:n,status:l.status,boardId:bid,listId:l.id,owner:extra.owner||'Solo operator',priority:extra.priority||'Medium',stage:extra.stage||'Development',estimateHours:extra.effort||0,taskTypeId:extra.type==='Milestone'?'milestone':'task',labels:extra.labels||[],start:extra.start||'',due:extra.due||'',position:p.tasks.filter(t=>t.status===l.status).length});
- return {project:{...p,tasks:[...p.tasks,task]},id:task.id};
+ const task=model.defaultTask({id:token(p.code||'task'),title:n,description:extra.description||'',status:l.status,boardId:bid,listId:l.id,owner:extra.owner||'Solo operator',priority:extra.priority||'Medium',stage:extra.stage||'Development',estimateHours:extra.effort||0,taskTypeId:extra.type==='Milestone'?'milestone':'task',labels:extra.labels||[],start:extra.start||'',due:extra.due||'',position:Math.max(-1,...p.tasks.filter(t=>taskBoard(t)===bid&&taskList(p,t)===l.id).map(t=>Number.isFinite(t.position)?t.position:-1))+1});
+ const toTop = p.kanbanViews?.[bid]?.newTaskAtTop===true;
+ const other = toTop ? p.tasks.map(t=>taskBoard(t)===bid && taskList(p,t)===l.id ? {...t,position:t.position+1} : t) : p.tasks;
+ return {project:{...p,tasks:[...other,toTop?{...task,position:0}:task]},id:task.id};
 }
 function patchTask(p,id,patch={}){
  const t=getTask(p,id);let next=p;const input={...patch};

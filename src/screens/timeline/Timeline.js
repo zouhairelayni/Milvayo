@@ -358,9 +358,34 @@ export default function Timeline({ openTask }) {
     loggedViewport.current = true;
     diagnosticMonitor.recordAction(`timeline canvas ${Math.round(gridW)}px, viewport ${Math.round(viewportW)}px, scheduled ${rows.length}, first render ${drawnBars.length} bars`);
   }, [viewportW, gridW, rows.length, drawnBars.length]);
-  // Do NOT scroll to Today automatically after first paint. This used to display
-  // bars at the initial offset, then move them offscreen a second later. Today is
-  // an explicit action. The horizontal scroll position persists between renders.
+  // Focus the first task active today once, after the chart has a measured viewport.
+  // Never override user scrolling, task drag or a later return to the retained tab.
+  const firstFocus = useRef(false);
+  useEffect(() => {
+    if (!active || !viewportW || !rows.length || firstFocus.current) return undefined;
+    const todayTasks = rows.map((task,index)=>({task,index})).filter(({task})=>
+      (task.start || task.due) <= TODAY && (task.due || task.start) >= TODAY);
+    const upcoming = rows.map((task,index)=>({task,index})).filter(({task})=>(task.start||task.due) >= TODAY);
+    const selected = todayTasks[0] || upcoming.sort((a,b)=>(a.task.start||a.task.due).localeCompare(b.task.start||b.task.due))[0] || {task:rows[0],index:0};
+    const anchor = (selected.task.start && selected.task.start > TODAY ? selected.task.start : TODAY);
+    const xNext = clamp(x(anchor) - viewportW/3, 0, Math.max(0,gridW-viewportW));
+    const frame = requestAnimationFrame(()=>{
+      firstFocus.current = true;
+      chartRef.current?.scrollTo({x:xNext,animated:false});
+      k.scroll.x=xNext;
+      setScrollXPaint(xNext);
+      if(selected.index>0){
+        gridRef.current?.measureInWindow((_gx,gy)=>{
+          pageRef.current?.measureInWindow((_px,py)=>{
+            const yNext=Math.max(0,k.scroll.y + (gy-py) + selected.index*ROW - 120);
+            pageRef.current?.scrollTo({y:yNext,animated:false});
+            k.scroll.y=yNext;
+          });
+        });
+      }
+    });
+    return ()=>cancelAnimationFrame(frame);
+  },[active,viewportW,rows,gridW,w,START]);
 
 
   // While something is held, scroll the chart near its sides, and the page near the window's top or bottom for a link.
@@ -598,7 +623,6 @@ export default function Timeline({ openTask }) {
     <TimelineGestureHost>
     <Page
       title="Timeline"
-      subtitle={`${allScheduled.length} scheduled tasks / ${unscheduled.length} without dates / ${fmt(START)}–${fmt(END)}. Drag bars to reschedule; lines represent dependencies.`}
       actions={<Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />}
       scrollRef={pageRef}
       scrollEnabled={Platform.OS === 'web' ? !active : true}

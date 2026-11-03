@@ -14,14 +14,11 @@ import { BoardMotion } from '../../board/boardMotion';
 import { committedName } from '../../board/boardInteractions.cjs';
 
 const {visibleColumns} = require('../../board/boardColumns.cjs');
-const {initialCount, nextCount} = require('../../utils/progressiveCount.cjs');
 const {filterCards, dropBefore} = require('../../board/kanbanUX.cjs');
 const DUE_FILTERS = [['all', 'Any date'], ['overdue', 'Overdue'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'Next 7 days'], ['month', 'Next 30 days'], ['none', 'No date']];
 const {dueSoon, ageInDays} = require('../../domain/powerUps.cjs');
 const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs');
 // Native only: first cards per column appear immediately, the rest follow in small chunks.
-const FIRST_CARDS = 6;
-const CARD_CHUNK = 6;
 const EMPTY_FEATURES = Object.freeze([]);
 const COL_WIDE = 320;
 const COL_NARROW = 280;
@@ -199,19 +196,17 @@ export default function Board({ openTask }) {
   return (
     <Page
       title="Board"
-      subtitle={`${board.name} / ${cards.length} visible tasks. Hold a card to move it; double-tap a board name to manage boards.`}
       scrollRef={pageRef}
       scrollEnabled={!locked}
       scrollProps={pageScrollProps}
       onScroll={(e) => { k.scroll.y = e.nativeEvent.contentOffset.y; }}
     >
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-        {boards.map((b) => (
-          <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />
-        ))}
+      <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
+        <Button label="Tools" icon="sliders" small variant="secondary" onPress={()=>setBoardToolsOpen(true)} />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex:1,flexGrow:1}} contentContainerStyle={{gap:8,alignItems:'center'}}>
+          {boards.map((b) => <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />)}
+        </ScrollView>
         <IconBtn icon={creating ? 'x' : 'plus'} label={creating ? 'Cancel new board' : 'New board'} onPress={() => setCreating(!creating)} />
-        <Button label="Board tools" icon="sliders" small variant="secondary" onPress={() => setBoardToolsOpen(true)} />
-        {(q || urgentOnly || filtersOn) ? <T muted size={12} numberOfLines={1}>{cards.length} matching</T> : null}
       </View>
 
       {(project.powerUps?.[board.id]||[]).includes('calendar') ? (() => {
@@ -290,7 +285,7 @@ export default function Board({ openTask }) {
         </ScrollView>
       </View>
 
-      <Sheet visible={boardToolsOpen} onClose={() => setBoardToolsOpen(false)} title="Board tools" showNotice={false}
+      <Sheet visible={boardToolsOpen} onClose={() => setBoardToolsOpen(false)} title="Tools" showNotice={false}
         footer={<Button label="Done" onPress={() => setBoardToolsOpen(false)} />}>
         <View style={{gap:8}}>
           <T size={14} weight="600">Find cards</T>
@@ -310,6 +305,11 @@ export default function Board({ openTask }) {
         <View style={{gap:10}}>
           <T size={14} weight="600">Options</T>
           <Chip label="Descriptions on cards" active={project.kanbanViews?.[board.id]?.showDescriptions===true} onPress={()=>setBoardView(board.id,{showDescriptions:project.kanbanViews?.[board.id]?.showDescriptions!==true})}/>
+          <T size={12} muted>Place new tasks</T>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
+            <Chip label="Top of list" active={project.kanbanViews?.[board.id]?.newTaskAtTop===true} onPress={()=>setBoardView(board.id,{newTaskAtTop:true})}/>
+            <Chip label="Bottom of list" active={project.kanbanViews?.[board.id]?.newTaskAtTop!==true} onPress={()=>setBoardView(board.id,{newTaskAtTop:false})}/>
+          </View>
           <T size={12} muted>Power-Ups for this board</T>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{[['github','GitHub references'],['calendar','Upcoming dates'],['aging','Card age'],['checklist','Acceptance progress']].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>)}</View>
           {(project.automationCommands||[]).filter(c=>c.trigger==='boardButton'&&(!c.boardId||c.boardId===board.id)&&c.enabled).map(c=><Button key={c.id} small variant="secondary" label={`Run: ${c.name}`} onPress={()=>runCommand(c.id,'',board.id)}/>) }
@@ -370,17 +370,10 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
   const titleRef = useRef(null);
   const colRef = useRef(null);
   const active = useScreenActive();
-  // First screenful at once (initialCount); a list that fits entirely is simply fully shown.
-  const [shown, setShown] = useState(() => (Platform.OS === 'web' || initialCount(allCards.length, FIRST_CARDS) >= allCards.length ? Infinity : initialCount(allCards.length, FIRST_CARDS)));
+  // User-controlled card window keeps the board responsive without silently mounting every card.
+  const [shown, setShown] = useState(10);
   const cardTotal = allCards.length;
-  // `cards` is what is mounted now; allCards keeps the true count for the header and empty state.
-  const cards = shown >= cardTotal ? allCards : allCards.slice(0, shown);
-  useEffect(() => {
-    if (!active || shown >= cardTotal) return undefined; // hidden page: do not spend JS time on cards nobody sees
-    // Once every card is out, stay fully shown: a card dropped into this list must appear at once.
-    const frame = requestAnimationFrame(() => setShown((n) => { const next = nextCount(n, cardTotal, CARD_CHUNK); return next >= cardTotal ? Infinity : next; }));
-    return () => cancelAnimationFrame(frame);
-  }, [shown, cardTotal, active]);
+  const cards = allCards.slice(0, shown);
   useEffect(() => {
     if (!editingRef.current) { nameDraftRef.current = list.name; setNameDraft(list.name); }
   }, [list.name]);
@@ -522,6 +515,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
         />
       ))}
 
+      {shown < cardTotal ? <Button label={`Show more (${cardTotal-shown} remaining)`} small variant="secondary" onPress={()=>setShown(n=>Math.min(cardTotal,n+10))} /> : null}
       {cardTotal === 0 ? <View style={{ padding: 20, borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line }}><T size={12} muted center>No tasks in this list</T></View> : null}
 
       {cardHere && lineY !== null ? (

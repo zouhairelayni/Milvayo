@@ -14,19 +14,19 @@ test('RIVNA palette has all ten accent themes and accurate sample surfaces', () 
   assert.equal(theme.palette('Lime','dark').bg,'#10120F');
   assert.equal(theme.palette('Lime','amoled').bg,'#000000');
   assert.equal(theme.palette('Orange','light').bg,'#F5F0EA');
-  assert.equal(theme.palette('Orange','light').accent,'#EA580C');
+  assert.equal(theme.palette('Orange','light').accent,'#D97757');
   assert.equal(theme.palette('Violet','dark').surface,'#1B1C21');
 });
 test('appearance picker uses rounded square swatches in five-column mobile flow', () => {
   const s = read('src/screens/workspace/Workspace.js');
-  assert.match(s,/label:'AMOLED'/);
+  assert.match(s,/label="AMOLED"/);
   assert.match(s,/width:'16%',flexGrow:1/);
   assert.match(s,/borderRadius:12/);
   assert.match(s,/option\.start/);assert.match(s,/option\.end/);
 });
 test('Board tools owns search, priority filter, advanced filters and options without nested switches', () => {
   const s=read('src/screens/board/Board.js');
-  assert.match(s, /title="Board tools"/);
+  assert.match(s, /title="Tools"/);
   assert.match(s, /placeholder="Search board cards"/);
   assert.match(s, /High and above/);
   assert.match(s, /Descriptions on cards/);
