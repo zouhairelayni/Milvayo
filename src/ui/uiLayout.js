@@ -13,8 +13,8 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <SafeAreaProvider style={{ flex: 1 }}>
-      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
-      <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: 'flex-end', backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
+      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
+      <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: 'flex-end', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <Pressable onPress={onClose} style={{ flex: 1 }} />
         <View
           style={{

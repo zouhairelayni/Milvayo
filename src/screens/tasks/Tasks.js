@@ -1,6 +1,6 @@
 // /src/screens/tasks/Tasks.js
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
@@ -20,6 +20,8 @@ const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 export default function Tasks({ openTask, query = '', statusRequest = null }) {
   const { c } = useTheme();
   const wide = useWide();
+  // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
+  const roomForColumns = useWindowDimensions().width >= 1080;
   const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [viewName,setViewName]=useState('');
@@ -135,6 +137,16 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
       ) : null}
 
       <Card pad={0} style={{ overflow: 'hidden' }}>
+        {roomForColumns && list.length ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 36, backgroundColor: c.surfaceAlt }}>
+            <View style={{ width: 20 }} />
+            <T size={12} weight="500" muted style={{ flex: 1 }}>Task</T>
+            <T size={12} weight="500" muted style={{ width: 150 }}>Owner</T>
+            <T size={12} weight="500" muted style={{ width: 62 }}>Due</T>
+            <T size={12} weight="500" muted style={{ width: 104 }}>Status</T>
+            <T size={12} weight="500" muted style={{ width: 80 }}>Priority</T>
+          </View>
+        ) : null}
         {list.length === 0 ? <Empty>No tasks match these filters.</Empty> : null}
         {pageOf.items.map((row, i) => {
           if (row.kind === 'group') return <View key={row.key} style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: c.surfaceAlt, borderTopWidth: i ? 1 : 0, borderColor: c.line }}><T size={12} weight="600" muted>{row.title} · {row.count}</T></View>;
@@ -148,7 +160,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
               onLongPress={() => {heldRef.current=true;toggle(t.id)}}
               delayLongPress={450}
               style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 12,
+                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 10,
                 borderTopWidth: i ? 1 : 0, borderColor: c.line, opacity: pressed ? 0.7 : 1, backgroundColor: on ? c.surfaceAlt : undefined,
               })}
             >
@@ -171,18 +183,18 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
                 <T size={12} muted numberOfLines={1}>
                   {t.type} · {t.stage}{roll && roll.rollup ? ` · ${roll.progress}% of ${roll.children} subtask${roll.children === 1 ? '' : 's'}` : ''}
                 </T>
-                {!!t.labels.length?<TaskLabels labels={t.labels.slice(0,wide?4:2)} colors={project?.labelColors||{}} compact/>:null}
+                {!!t.labels.length?<TaskLabels labels={t.labels.slice(0,roomForColumns?4:2)} colors={project?.labelColors||{}} compact/>:null}
               </View>
 
-              {wide ? (
+              {roomForColumns ? (
                 <View style={{ width: 150, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Avatar name={t.owner} size={22} />
                   <T size={12} muted numberOfLines={1}>{t.owner}</T>
                 </View>
               ) : null}
-              {wide ? <T size={12} muted style={{ width: 62 }}>{fmt(t.due)}</T> : null}
-              {wide ? <Pill label={t.status} color={STATUS_COLOR[t.status]} /> : <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: STATUS_COLOR[t.status] }} />}
-              <Pill label={wide ? t.priority : t.priority.slice(0, 1)} color={PRIORITY_COLOR[t.priority]} />
+              {roomForColumns ? <T size={12} muted style={{ width: 62 }}>{fmt(t.due)}</T> : null}
+              {roomForColumns ? <View style={{ width: 104 }}><Pill label={t.status} color={STATUS_COLOR[t.status]} /></View> : <View accessibilityLabel={t.status} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: STATUS_COLOR[t.status] }} />}
+              <View style={roomForColumns ? { width: 80 } : undefined}><Pill label={roomForColumns ? t.priority : t.priority.slice(0, 1)} color={PRIORITY_COLOR[t.priority]} /></View>
             </Pressable>
           );
         })}

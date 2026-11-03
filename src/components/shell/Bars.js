@@ -26,7 +26,7 @@ export function TopBar({ query, onQuery, onNew, mode, onToggleMode, screenTitle,
         <Input value={query} onChangeText={onQuery} accessibilityLabel="Search tasks" placeholder="Search tasks"
           style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, minHeight: 38 }} />
       </View>
-      <IconBtn icon={mode === 'dark' ? 'sun' : 'moon'} label="Toggle theme" onPress={onToggleMode} />
+      <IconBtn icon={mode !== 'light' ? 'sun' : 'moon'} label="Toggle theme" onPress={onToggleMode} />
       {compact ? <IconBtn icon="plus" label="New task" solid onPress={onNew} />
         : <Button label="New task" icon="plus" small onPress={onNew} />}
     </View>

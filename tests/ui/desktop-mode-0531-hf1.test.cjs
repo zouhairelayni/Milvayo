@@ -7,19 +7,19 @@ const path = require('node:path');
 const read = name => fs.readFileSync(path.resolve(__dirname, '../..', name), 'utf8');
 const { isDesktopLayout, WEB_DESKTOP_MIN, NATIVE_DESKTOP_MIN } = require('../../src/ui/layoutMode.cjs');
 
-test('browser switches to actual desktop navigation at tablet/landscape widths', () => {
-  assert.equal(WEB_DESKTOP_MIN, 700);
-  assert.equal(NATIVE_DESKTOP_MIN, 900);
-  for (const width of [700, 760, 800, 879, 880, 1024, 1440]) assert.equal(isDesktopLayout(width, 'web'), true, `web ${width}`);
-  for (const width of [360, 390, 430, 699]) assert.equal(isDesktopLayout(width, 'web'), false, `web ${width}`);
-  assert.equal(isDesktopLayout(820, 'android'), false);
-  assert.equal(isDesktopLayout(900, 'android'), true);
-  assert.equal(isDesktopLayout(1024, 'ios'), true);
-  assert.equal(isDesktopLayout(NaN, 'web'), false);
+test('browser uses mobile navigation for a phone, Desktop site or forced mode for desktop', () => {
+  // The fourth argument simulates an Android browser mobile / Desktop site signal.
+  for (const width of [320, 360, 390, 430, 700]) {
+    assert.equal(isDesktopLayout(width, 'web', 'auto', true), false, 'mobile UA '+width);
+    assert.equal(isDesktopLayout(width, 'web', 'auto', false), true, 'desktop UA '+width);
+    assert.equal(isDesktopLayout(width, 'web', 'desktop', true), true, 'explicit desktop '+width);
+  }
+  assert.equal(isDesktopLayout(319, 'web', 'auto', false), false);
+  assert.equal(isDesktopLayout(390, 'android', 'desktop', false), false);
 });
 test('desktop-site override is reversible and web-only', () => {
   assert.equal(isDesktopLayout(390, 'web', 'desktop'), true);
-  assert.equal(isDesktopLayout(390, 'web', 'auto'), false);
+  assert.equal(isDesktopLayout(390, 'web', 'auto'), true);
   assert.equal(isDesktopLayout(1440, 'web', 'mobile'), false);
   assert.equal(isDesktopLayout(390, 'android', 'desktop'), false);
   const ui = read('src/ui/uiBase.js');

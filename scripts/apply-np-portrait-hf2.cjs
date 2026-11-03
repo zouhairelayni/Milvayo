@@ -1,3 +1,4 @@
+// /scripts/apply-np-portrait-hf2.cjs
 'use strict';
 // Niyarvo Projects v0.5.31-DESKTOP-HF1: narrow Web viewports should use the desktop shell.
 // This deliberately patches the installed sources in place, rather than replacing newer versions.
@@ -14,8 +15,8 @@ try {
   const previousLayout = fs.readFileSync(layoutPath, 'utf8');
   const previousStore = fs.readFileSync(storePath, 'utf8');
   if (!previousLayout.includes('isDesktopLayout')) throw Error('Desktop layout selector not found. No files changed.');
-  const oldStoreImport = "import { T } from '../ui/ui';";
-  const newStoreImport = "import { T } from '../ui/uiBase';";
+  const oldStoreImport = "import { T } from " + String.fromCharCode(39) + "../ui/ui" + String.fromCharCode(39) + ";";
+  const newStoreImport = "import { T } from " + String.fromCharCode(39) + "../ui/uiBase" + String.fromCharCode(39) + ";";
   if (!previousStore.includes(oldStoreImport) && !previousStore.includes(newStoreImport)) {
     throw Error('Store UI import does not match supported versions. No files changed.');
   }

@@ -2,7 +2,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, T, useWide } from '../../ui/ui';
+import { Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import {Fold} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
@@ -62,6 +62,7 @@ export default function Board({ openTask }) {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [managing, setManaging] = useState(false);
+  const [boardToolsOpen, setBoardToolsOpen] = useState(false);
   const [addingList, setAddingList] = useState(false);
   const [drag, setDrag] = useState(null); // { kind: 'card'|'list', id, from, to, before? }
   const [mountedColumns, setMountedColumns] = useState({});
@@ -209,30 +210,10 @@ export default function Board({ openTask }) {
           <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />
         ))}
         <IconBtn icon={creating ? 'x' : 'plus'} label={creating ? 'Cancel new board' : 'New board'} onPress={() => setCreating(!creating)} />
-        <View style={{ flex: 1, minWidth: 180, maxWidth: 320 }}>
-          <Input lazy value={q} onChangeText={setQ} placeholder="Filter cards" />
-        </View>
-        <Chip label="High and above" active={urgentOnly} onPress={() => setUrgentOnly(!urgentOnly)} />
+        <Button label="Board tools" icon="sliders" small variant="secondary" onPress={() => setBoardToolsOpen(true)} />
+        {(q || urgentOnly || filtersOn) ? <T muted size={12} numberOfLines={1}>{cards.length} matching</T> : null}
       </View>
 
-      <Fold title="Filters" subtitle={filtersOn ? `${cards.length} of ${s.tasks.filter((t) => t.board === board.id).length} cards shown` : 'Due date, priority, owner and tag'}>
-        <T size={12} muted weight="600">Due</T>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{DUE_FILTERS.map(([v, label]) => <Chip key={v} label={label} active={dueF === v} onPress={() => setDueF(v)} />)}</View>
-        <T size={12} muted weight="600">Priority</T>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...PRIORITIES].map((v) => <Chip key={v} label={v} active={prioF === v} onPress={() => setPrioF(v)} />)}</View>
-        {owners.length ? <><T size={12} muted weight="600">Owner</T>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...owners].map((v) => <Chip key={v} label={v} active={ownerF === v} onPress={() => setOwnerF(v)} />)}</View></> : null}
-        {tags.length ? <><T size={12} muted weight="600">Tag</T>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['All', ...tags].map((v) => <Chip key={v} label={v} active={labelF === v} onPress={() => setLabelF(v)} />)}</View></> : null}
-        {filtersOn ? <Button label="Clear filters" small variant="ghost" onPress={clearFilters} /> : null}
-      </Fold>
-
-      <Fold title="Board tools" subtitle="Power-Ups, card previews and local board commands">
-        <T muted size={12}>Optional features for this board only. GitHub references are links, not authenticated synchronization.</T>
-        {[["github","GitHub references"],["calendar","Upcoming dates"],["aging","Card age"],["checklist","Acceptance progress"]].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>) }
-        <Chip label="Show descriptions on cards" active={project.kanbanViews?.[board.id]?.showDescriptions===true} onPress={()=>setBoardView(board.id,{showDescriptions:project.kanbanViews?.[board.id]?.showDescriptions!==true})}/>
-        {(project.automationCommands||[]).filter(c=>c.trigger==='boardButton'&&(!c.boardId||c.boardId===board.id)&&c.enabled).map(c=><Button key={c.id} small variant="secondary" label={`Run: ${c.name}`} onPress={()=>runCommand(c.id,'',board.id)}/>)}
-      </Fold>
       {(project.powerUps?.[board.id]||[]).includes('calendar') ? (() => {
         const upcoming = dueSoon(project, board.id);
         return <Card style={{ gap: 8 }}>
@@ -309,6 +290,31 @@ export default function Board({ openTask }) {
         </ScrollView>
       </View>
 
+      <Sheet visible={boardToolsOpen} onClose={() => setBoardToolsOpen(false)} title="Board tools" showNotice={false}
+        footer={<Button label="Done" onPress={() => setBoardToolsOpen(false)} />}>
+        <View style={{gap:8}}>
+          <T size={14} weight="600">Find cards</T>
+          <Input lazy value={q} onChangeText={setQ} placeholder="Search board cards" accessibilityLabel="Search board cards" />
+          <Chip label="High and above" active={urgentOnly} onPress={() => setUrgentOnly(!urgentOnly)} />
+        </View>
+        <View style={{gap:10}}>
+          <T size={14} weight="600">Filters</T>
+          <T size={12} muted>Due date</T>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{DUE_FILTERS.map(([v,label])=><Chip key={v} label={label} active={dueF===v} onPress={()=>setDueF(v)}/>)}</View>
+          <T size={12} muted>Priority</T>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{['All',...PRIORITIES].map(v=><Chip key={v} label={v} active={prioF===v} onPress={()=>setPrioF(v)}/>)}</View>
+          {owners.length ? <><T size={12} muted>Owner</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{['All',...owners].map(v=><Chip key={v} label={v} active={ownerF===v} onPress={()=>setOwnerF(v)}/>)}</View></> : null}
+          {tags.length ? <><T size={12} muted>Tag</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{['All',...tags].map(v=><Chip key={v} label={v} active={labelF===v} onPress={()=>setLabelF(v)}/>)}</View></> : null}
+          {q || urgentOnly || filtersOn ? <Button label="Clear filters" small variant="secondary" onPress={()=>{setQ('');setUrgentOnly(false);clearFilters();}} /> : null}
+        </View>
+        <View style={{gap:10}}>
+          <T size={14} weight="600">Options</T>
+          <Chip label="Descriptions on cards" active={project.kanbanViews?.[board.id]?.showDescriptions===true} onPress={()=>setBoardView(board.id,{showDescriptions:project.kanbanViews?.[board.id]?.showDescriptions!==true})}/>
+          <T size={12} muted>Power-Ups for this board</T>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{[['github','GitHub references'],['calendar','Upcoming dates'],['aging','Card age'],['checklist','Acceptance progress']].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>)}</View>
+          {(project.automationCommands||[]).filter(c=>c.trigger==='boardButton'&&(!c.boardId||c.boardId===board.id)&&c.enabled).map(c=><Button key={c.id} small variant="secondary" label={`Run: ${c.name}`} onPress={()=>runCommand(c.id,'',board.id)}/>) }
+        </View>
+      </Sheet>
       <NewListSheet visible={addingList} onClose={() => setAddingList(false)} boardId={board.id} />
       <BoardsManager visible={managing} onClose={() => setManaging(false)} />
     </Page>
@@ -651,7 +657,7 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
         {features.includes('aging')&&t.status!=='Done'?<T muted size={11}>Updated {ageInDays(t)}d ago</T>:null}
         {t.progress>0&&!t.milestone?<Bar value={t.progress/100} height={4} color={STATUS_COLOR.Done}/>:null}
         <View style={{flexDirection:'row',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-          <View style={{width:7,height:7,borderRadius:4,backgroundColor:PRIORITY_COLOR[t.priority]}}/>
+          <View accessible accessibilityLabel={`Priority ${t.priority}`} style={{width:7,height:7,borderRadius:4,backgroundColor:PRIORITY_COLOR[t.priority]}}/>
           {t.due?<T size={11} muted>{fmt(t.due)}</T>:null}
           {t.tests?.length?<View style={{flexDirection:'row',alignItems:'center',gap:4}}><Feather name="check-square" size={12} color={c.muted}/><T size={11} muted>{t.tests.filter(x=>x.result==='passed').length}/{t.tests.length}</T></View>:null}
           {t.attachments?.length?<View style={{flexDirection:'row',alignItems:'center',gap:4}}><Feather name="paperclip" size={12} color={c.muted}/><T size={11} muted>{t.attachments.length}</T></View>:null}

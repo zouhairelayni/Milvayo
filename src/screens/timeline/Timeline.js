@@ -2,10 +2,9 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
-import { Button, Card, Chip, Page, Segmented, T, useWide } from '../../ui/ui';
+import { Button, Card, Chip, Page, Segmented, Sheet, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, STATUS_COLOR, PRIORITY_COLOR } from '../../ui/theme/theme';
-import { Fold } from '../../components/inline/CompactTools';
 import { TODAY, addDays, daysBetween, fmt } from '../../store/data';
 import { useHoldDrag } from '../../gestures/gesture';
 import { GestureArea } from '../../gestures/gestureSurface';
@@ -21,6 +20,16 @@ const gantt = require('../../timeline/gantt.cjs');
 const planning = require('../../domain/planning.cjs');
 const { refreshMax } = require('../../gestures/scrollLimits.cjs');
 import { diagnosticMonitor } from '../../diagnostics/monitor';
+
+
+// NP533_COLORED_DEPENDENCIES: stable, distinct dependency colors; no routing or gesture changes.
+const NP533_DEP_COLORS = ['#E0512D', '#3B6FE0', '#2F9E6B', '#D89614', '#8E5CD6', '#14A3B8', '#E6399B'];
+function np533DependencyColor(link) {
+  const id = String(link.key || String(link.pid) + '>' + String(link.tid));
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (Math.imul(hash, 31) + id.charCodeAt(i)) >>> 0;
+  return NP533_DEP_COLORS[hash % NP533_DEP_COLORS.length];
+}
 
 const ZOOM = { Days: 34, Weeks: 14, Months: 6 };
 // Default minimum coverage; the actual span extends across every scheduled task.
@@ -225,7 +234,7 @@ export default function Timeline({ openTask }) {
   const [drag, setDrag] = useState(null); // temporary date edits
   const [link, setLink] = useState(null); // temporary dependency gesture
   const [notice, setNotice] = useState('');
-  const [showUnscheduled, setShowUnscheduled] = useState(false);
+  const [taskPanel, setTaskPanel] = useState(null);
   const [showItems, setShowItems] = useState(wide);
   const [pick, setPick] = useState(null);
   const [viewportW, setViewportW] = useState(0);
@@ -263,6 +272,15 @@ export default function Timeline({ openTask }) {
   const paintWidth = drawViewport.width;
   const dayTicks = useMemo(() => display.ticks(span, zoom, w), [span, zoom, w]);
   const visibleTicks = dayTicks.filter((i) => viewport.intersects(i * w, i * w + 80, paintLeft, paintWidth));
+  // NP533_WEEKENDS: shade only viewport-visible weekend columns in Days zoom. No full-canvas nodes.
+  const weekendDays = [];
+  if (zoom === 'Days' && w > 0) {
+    const [year, month, day] = START.split('-').map(Number);
+    const startDay = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+    const first = Math.max(0, Math.floor(paintLeft / w));
+    const last = Math.min(span - 1, Math.ceil((paintLeft + paintWidth) / w));
+    for (let i = first; i <= last; i++) if ((startDay + i) % 7 === 0 || (startDay + i) % 7 === 6) weekendDays.push(i);
+  }
   const x = (iso) => daysBetween(START, iso) * w;
   const firstPaint = Math.min(rows.length, paint.first);
   const lastPaint = Math.min(rows.length, Math.max(paint.last, firstPaint));
@@ -581,14 +599,7 @@ export default function Timeline({ openTask }) {
     <Page
       title="Timeline"
       subtitle={`${allScheduled.length} scheduled tasks / ${unscheduled.length} without dates / ${fmt(START)}–${fmt(END)}. Drag bars to reschedule; lines represent dependencies.`}
-      actions={
-        <>
-          <Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />
-          <Chip label="Critical path" active={showCritical} onPress={() => setShowCritical((v) => !v)} />
-          {rows.length ? <Chip label="First task" onPress={goFirst} /> : null}
-          <Chip label="Today" onPress={() => goToday(true)} />
-        </>
-      }
+      actions={<Segmented options={['Days', 'Weeks', 'Months']} value={zoom} onChange={setZoom} />}
       scrollRef={pageRef}
       scrollEnabled={Platform.OS === 'web' ? !active : true}
       scrollProps={pageScrollProps}
@@ -598,25 +609,6 @@ export default function Timeline({ openTask }) {
         if (now - lastMeasure.current > 110) { lastMeasure.current = now; refreshPaint(); }
       }}
     >
-      {unscheduled.length ? (
-        <View style={{ borderBottomWidth: 1, borderBottomColor: c.line, paddingBottom: 8, gap: 8 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showUnscheduled }}
-            onPress={() => setShowUnscheduled((v) => !v)}
-            style={{ minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 8 }}
-          >
-            <T size={12} weight="600" style={{ flex: 1 }}>Needs scheduling · {unscheduled.length} tasks</T>
-            <T size={12} muted>{showUnscheduled ? 'Hide' : 'Show'}</T>
-          </Pressable>
-          {showUnscheduled ? (
-            <View style={{ gap: 8 }}>
-              <T size={12} muted>Tasks without dates are preserved. Add dates from their task sheets.</T>
-              {unscheduled.map((t) => <Button key={t.id} label={t.title} small variant="ghost" onPress={() => openTask(t.id)} />)}
-            </View>
-          ) : null}
-        </View>
-      ) : null}
       {notice ? <T size={13} weight="600" color={c.accent}>{notice}</T> : null}
       {showCritical ? (
         <Card style={{ gap: 6 }}>
@@ -650,22 +642,6 @@ export default function Timeline({ openTask }) {
           <Button label="Schedule the sample tasks" small onPress={scheduleSample} />
         </Card>
       ) : null}
-      {hasParents ? (
-        <Fold title="Parent tasks and subtasks" subtitle={`${summaries.size} parent task${summaries.size === 1 ? '' : 's'} with combined dates and progress`}>
-          {hierarchy.filter((r) => r.hasChildren || r.depth > 0).slice(0, 60).map((r) => {
-            const sum = summaries.get(r.task.id);
-            return (
-              <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: r.depth * 16 }}>
-                {r.hasChildren ? <Chip label={r.collapsed ? '+' : '–'} onPress={() => setCollapsed((cur) => (cur.includes(r.task.id) ? cur.filter((x) => x !== r.task.id) : [...cur, r.task.id]))} /> : <View style={{ width: 34 }} />}
-                <Pressable onPress={() => openTask(r.task.id)} style={{ flex: 1, minHeight: 36, justifyContent: 'center' }}>
-                  <T size={13} weight={r.hasChildren ? '600' : '400'} numberOfLines={1}>{r.task.title}</T>
-                  {sum ? <T size={11} muted numberOfLines={1}>{fmt(gantt.dateAt(sum.start))} to {fmt(gantt.dateAt(sum.end))} · {sum.progress}% · {sum.children} subtask{sum.children === 1 ? '' : 's'}</T> : null}
-                </Pressable>
-              </View>
-            );
-          })}
-        </Fold>
-      ) : null}
       {pick && pickTgt && pickSrc ? (
         <Card style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <T size={13} style={{ flex: 1, minWidth: 200 }}>Remove the dependency? "{pickTgt.title}" waits for "{pickSrc.title}".</T>
@@ -674,10 +650,15 @@ export default function Timeline({ openTask }) {
         </Card>
       ) : null}
       <Card pad={0} style={{ overflow: 'hidden' }}>
-        {/* Chart-local control is left-aligned, above hidden item labels. */}
-        <View style={{ minHeight: 44, paddingHorizontal: 12, paddingVertical: 5, alignItems: 'flex-start', justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: c.line }}>
-          <Chip label={showItems ? "Hide task names" : "Show task names"} active={showItems} onPress={() => setShowItems(!showItems)} />
-        </View>
+        {/* Task-related controls share one scrollable ribbon; the canvas retains its own gesture ownership. */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flexGrow:0,borderBottomWidth:1,borderBottomColor:c.line}} contentContainerStyle={{paddingHorizontal:12,paddingVertical:8,alignItems:'center',gap:8}}>
+          <Chip label={showItems ? 'Hide Items' : 'Show Items'} active={showItems} onPress={() => setShowItems(!showItems)} />
+          {rows.length ? <Chip label="First Task" onPress={goFirst} /> : null}
+          <Chip label="Today" onPress={() => goToday(true)} />
+          <Chip label="Critical Path" active={showCritical} onPress={() => setShowCritical(v=>!v)} />
+          <Chip label={`Parent Tasks · ${summaries.size}`} active={taskPanel==='parents'} onPress={() => setTaskPanel('parents')} />
+          <Chip label={`To Schedule · ${unscheduled.length}`} active={taskPanel==='schedule'} onPress={() => setTaskPanel('schedule')} />
+        </ScrollView>
         <View style={{ flexDirection: 'row' }}>
           {/* Fixed label column, shown with the Items chip */}
           {showItems ? (
@@ -735,6 +716,9 @@ export default function Timeline({ openTask }) {
                     onPress={onGridTap}
                     style={{ position: 'absolute', left: paintLeft, top: paintTop, width: paintWidth, height: paintH }}
                   /> : null}
+                  {weekendDays.map((i) => (
+                    <View key={'we' + i} pointerEvents="none" style={{ position: 'absolute', left: i * w, top: paintTop, height: paintH, width: w, backgroundColor: c.surfaceAlt, opacity: 0.3 }} />
+                  ))}
                   {visibleTicks.map((i) => (
                     <View key={'g' + i} style={{ position: 'absolute', left: i * w, top: paintTop, height: paintH, width: 1, backgroundColor: c.line, opacity: 0.6 }} pointerEvents="none" />
                   ))}
@@ -782,7 +766,7 @@ export default function Timeline({ openTask }) {
                         <Path
                           key={l.key}
                           d={l.d}
-                          stroke={showCritical && critEdges.has(`${l.pid}->${l.tid}`) ? PRIORITY_COLOR.Critical : l.color}
+                          stroke={showCritical && critEdges.has(`${l.pid}->${l.tid}`) ? PRIORITY_COLOR.Critical : np533DependencyColor(l)}
                           strokeWidth={pick && pick.key === l.key ? 4 : showCritical && critEdges.has(`${l.pid}->${l.tid}`) ? 3.5 : 2}
                           fill="none"
                           strokeLinecap="round"
@@ -790,7 +774,7 @@ export default function Timeline({ openTask }) {
                         />
                       ))}
                       {links.map((l) => (
-                        <Circle key={'a' + l.key} cx={l.x2} cy={l.y2} r={3.5} fill={l.color} />
+                        <Circle key={'a' + l.key} cx={l.x2} cy={l.y2} r={3.5} fill={np533DependencyColor(l)} />
                       ))}
                       {drawing ? (
                         <Path
@@ -813,8 +797,36 @@ export default function Timeline({ openTask }) {
         </View>
       </Card>
 
+      {taskPanel === 'parents' ? <Sheet visible onClose={()=>setTaskPanel(null)} title="Parent Tasks" showNotice={false}>
+        <T size={12} muted>Parent tasks and subtasks. Select a task to edit it, or expand a parent to explore its children.</T>
+        {hasParents ? (
+          <View style={{gap:8}}>
+          {hierarchy.filter((r) => r.hasChildren || r.depth > 0).slice(0, 60).map((r) => {
+            const sum = summaries.get(r.task.id);
+            return (
+              <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: r.depth * 16 }}>
+                {r.hasChildren ? <Chip label={r.collapsed ? '+' : '–'} onPress={() => setCollapsed((cur) => (cur.includes(r.task.id) ? cur.filter((x) => x !== r.task.id) : [...cur, r.task.id]))} /> : <View style={{ width: 34 }} />}
+                <Pressable onPress={() => {setTaskPanel(null);openTask(r.task.id);}} style={{ flex: 1, minHeight: 36, justifyContent: 'center' }}>
+                  <T size={13} weight={r.hasChildren ? '600' : '400'} numberOfLines={1}>{r.task.title}</T>
+                  {sum ? <T size={11} muted numberOfLines={1}>{fmt(gantt.dateAt(sum.start))} to {fmt(gantt.dateAt(sum.end))} · {sum.progress}% · {sum.children} subtask{sum.children === 1 ? '' : 's'}</T> : null}
+                </Pressable>
+              </View>
+            );
+          })}
+          </View>
+        ) : <T muted size={13}>No parent tasks or subtasks in this project.</T>}
+      </Sheet> : null}
+      {taskPanel === 'schedule' ? <Sheet visible onClose={()=>setTaskPanel(null)} title="To Schedule" showNotice={false}>
+        <T size={12} muted>Tasks without start or due dates. Select a task to set its schedule.</T>
+        {unscheduled.length ? unscheduled.map(t => (
+          <Pressable key={t.id} accessibilityRole="button" onPress={()=>{setTaskPanel(null);openTask(t.id);}}
+            style={({pressed})=>({paddingVertical:12,paddingHorizontal:14,borderWidth:1,borderColor:c.line,borderRadius:10,backgroundColor:pressed?c.surfaceAlt:c.surface})}>
+            <T size={13} numberOfLines={2}>{t.title}</T>
+          </Pressable>
+        )) : <T muted size={13}>Everything is scheduled.</T>}
+      </Sheet> : null}
       <T size={12} muted>
-        Hold a bar and drag to move it. Hold its left or right edge and drag to change the start or due date. Hold the dot after a bar and drag onto another row to make that task wait for it. Tap a bar to open the task. Tap a dependency line to remove it. The vermilion line is today.
+        Hold a bar and drag to move it. Hold its left or right edge and drag to change the start or due date. Hold the dot after a bar and drag onto another row to make that task wait for it. Tap a bar to open the task. Tap a dependency line to remove it. The accent-colored dashed line marks today.
       </T>
     </Page>
     </TimelineGestureHost>

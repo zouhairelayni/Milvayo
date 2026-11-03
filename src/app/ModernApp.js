@@ -243,7 +243,7 @@ function Shell({}) {
   const clearProjectRequest = useCallback(() => setProjectRequest(null), []);
   // A different workspace: close the open task and drop filters and requests that pointed into the old one.
   useEffect(() => { setTaskId(null); setQuery(''); setStatusRequest(null); setProjectRequest(null); setMenu(false); }, [workspaceId]);
-  const toggleMode = () => setPref(mode === 'dark' ? 'light' : 'dark');
+  const toggleMode = () => setPref(mode !== 'light' ? 'light' : 'dark');
   const newTask = () => { const id=addTask('Untitled task', 'Backlog', MAIN); if(id)setTaskId(id); };
   const onQuery = (q) => {
     setQuery(q);
@@ -258,7 +258,7 @@ function Shell({}) {
     {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
   </>;
   const sheet = taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null;
-  const barStyle = mode === 'dark' ? 'light' : 'dark';
+  const barStyle = mode !== 'light' ? 'light' : 'dark';
   const screenTitle = NAV.flatMap(group=>group.items).find(([id])=>id===screen)?.[1] || 'Overview';
 
   return (
@@ -278,7 +278,7 @@ function Shell({}) {
                 <T weight="600" size={19} color={c.ink} numberOfLines={1} style={{ flexShrink: 1 }}>{screenTitle}</T>
               </View>
               <View style={{ flexDirection: 'row', gap: 8 }}>
-                <IconBtn icon={mode === 'dark' ? 'sun' : 'moon'} label="Toggle theme" onPress={toggleMode} />
+                <IconBtn icon={mode !== 'light' ? 'sun' : 'moon'} label="Toggle theme" onPress={toggleMode} />
                 <IconBtn icon="plus" label="New task" solid onPress={newTask} />
               </View>
             </View>}

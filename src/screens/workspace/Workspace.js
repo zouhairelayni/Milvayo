@@ -240,15 +240,16 @@ export function Settings({go}) {
     <DiagnosticsPanel />
     <Card style={{gap:12}}>
       <SectionTitle>Appearance</SectionTitle>
-      <Segmented options={[{value:'system',label:'System'},{value:'light',label:'Light'},{value:'dark',label:'Dark'}]} value={pref} onChange={setPref}/>
-      <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:10,gap:10}}>
+      <Segmented options={[{value:'system',label:'System'},{value:'light',label:'Light'},{value:'dark',label:'Dark'},{value:'amoled',label:'AMOLED'}]} value={pref} onChange={setPref}/>
+      <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:12,gap:12}}>
         <Button label={`Accent · ${accentPref}`} small icon="droplet" variant="secondary" onPress={()=>setColorsOpen(!colorsOpen)}/>
-        {colorsOpen?<View style={{flexDirection:'row',flexWrap:'wrap',gap:9}}>{ACCENTS.map(option=>{
-          const swatch=option.id==='Orange'?(c.mode==='dark'?'#FF7A55':'#E0512D'):option.hex;
-          return <Pressable accessibilityRole="radio" accessibilityState={{checked:option.id===accentPref}} accessibilityLabel={`${option.id} accent`} key={option.id} onPress={()=>{setAccent(option.id);setColorsOpen(false)}} style={{width:60,alignItems:'center',gap:6,paddingVertical:4}}>
-            <View style={{width:34,height:34,borderRadius:17,backgroundColor:swatch,borderWidth:option.id===accentPref?3:1,borderColor:option.id===accentPref?c.ink:c.line,alignItems:'center',justifyContent:'center'}}>
-              {option.id===accentPref?<T size={15} color="#171514" weight="700">✓</T>:null}
-            </View><T size={10} muted>{option.id}</T>
+        {colorsOpen?<View accessibilityRole="radiogroup" style={{flexDirection:'row',flexWrap:'wrap',gap:8,justifyContent:'space-between'}}>{ACCENTS.map(option=>{
+          return <Pressable accessibilityRole="radio" accessibilityState={{checked:option.id===accentPref}} accessibilityLabel={`${option.id} accent`} key={option.id} onPress={()=>setAccent(option.id)} style={{width:'16%',flexGrow:1,alignItems:'center',gap:6,paddingVertical:6,minWidth:0}}>
+            <View style={{width:46,height:46,borderRadius:12,overflow:'hidden',borderWidth:option.id===accentPref?2:1,borderColor:option.id===accentPref?c.ink:c.line,flexDirection:'row'}}>
+              <View style={{backgroundColor:option.start,flex:1}} />
+              <View style={{backgroundColor:option.end,flex:1}} />
+              {option.id===accentPref?<View style={{position:'absolute',right:2,bottom:2,width:18,height:18,borderRadius:9,backgroundColor:c.ink,alignItems:'center',justifyContent:'center'}}><T size={12} color={c.bg} weight="700">✓</T></View>:null}
+            </View><T size={10} numberOfLines={1} color={option.id===accentPref?c.ink:c.muted}>{option.id}</T>
           </Pressable>;
         })}</View>:null}
       </View>

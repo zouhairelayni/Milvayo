@@ -13,7 +13,7 @@ import InlineNotice from '../notice/InlineNotice';
 function Brand({ narrow = false }) {
   const { mode } = useTheme();
   return (
-    <Image source={mode==='dark'?require('../../../assets/niyarvo-projects-white.png'):require('../../../assets/niyarvo-projects-dark.png')}
+    <Image source={mode!=='light'?require('../../../assets/niyarvo-projects-white.png'):require('../../../assets/niyarvo-projects-dark.png')}
       style={{width:narrow ? 160 : 205,height:52}} resizeMode="contain" accessibilityLabel="Niyarvo Projects" />
   );
 }
@@ -32,7 +32,6 @@ function NavItem({ k, label, icon, current, go, collapsed = false }) {
         gap: 12, minHeight: 40, marginVertical: 2,
         paddingHorizontal: collapsed ? 8 : 12, borderRadius: radius.sm,
         backgroundColor: on ? c.surfaceAlt : pressed ? c.surfaceAlt : 'transparent',
-        borderLeftWidth: on && !collapsed ? 3 : 0, borderLeftColor: c.accent,
         opacity: pressed ? 0.75 : 1,
       })}
     >
@@ -289,7 +288,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
         </Pressable> : !compact ? <T size={11} muted>Niyarvo Projects</T> : <Feather name="command" size={16} color={c.faint} />}
       </View>
       <Modal visible={drawer || spaces} transparent animationType="fade" onRequestClose={() => { setDrawer(false); setSpaces(false); }}>
-        <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode === 'dark' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
+        <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
           <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
             {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
             {spaces ? <WorkspaceDrawer inModal onClose={() => setSpaces(false)} /> : null}
@@ -315,7 +314,7 @@ export function ProjectSwitcher({ onPickProject, compact = false }) {
       <Feather name="chevron-down" size={14} color={c.muted} />
     </Pressable>
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode === 'dark' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
+      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
         <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
           <ProjectDrawer inModal onClose={() => setVisible(false)} onPick={(id, isNew) => { setVisible(false); onPickProject(id, isNew); }} />
         </View>
@@ -335,7 +334,7 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject, on
   }, [visible]);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
+      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <View
           style={{
             width: 300,

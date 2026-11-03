@@ -1,0 +1,69 @@
+// /tests/ui/layout-0531.test.cjs
+'use strict';
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const L = require('../../src/ui/theme/layout.cjs');
+
+test('breakpoints: phone below 720, tablet to 1099, desktop from 1100', () => {
+  assert.equal(L.breakpoint(360), 'phone');
+  assert.equal(L.breakpoint(719), 'phone');
+  assert.equal(L.breakpoint(720), 'tablet');
+  assert.equal(L.breakpoint(1099), 'tablet');
+  assert.equal(L.breakpoint(1100), 'desktop');
+});
+test('sidebar: rail on tablets, full on desktop, never on phones; the user choice wins and toggles', () => {
+  assert.equal(L.sidebarCollapsed('phone', 'collapsed'), false);
+  assert.equal(L.sidebarWidth('phone', false), 0);
+  assert.equal(L.sidebarCollapsed('tablet', null), true);
+  assert.equal(L.sidebarCollapsed('desktop', null), false);
+  assert.equal(L.sidebarCollapsed('tablet', 'open'), false);
+  assert.equal(L.sidebarCollapsed('desktop', 'collapsed'), true);
+  assert.equal(L.sidebarWidth('desktop', false), 248);
+  assert.equal(L.sidebarWidth('desktop', true), 64);
+  assert.equal(L.toggledPref('desktop', null), 'collapsed');
+  assert.equal(L.toggledPref('tablet', null), 'open');
+  assert.equal(L.toggledPref('desktop', 'collapsed'), 'open');
+});
+test('grid cells: phones use the mobile basis, tablets two columns or full width, desktops the wide basis', () => {
+  assert.equal(L.cellBasis('phone', '23%', '48%'), '48%');
+  assert.equal(L.cellBasis('desktop', '23%', '48%'), '23%');
+  assert.equal(L.cellBasis('tablet', '23%', '48%'), '48%');
+  assert.equal(L.cellBasis('tablet', '48%', '100%'), '48%');
+  assert.equal(L.cellBasis('tablet', '58%', '100%'), '100%');
+  assert.equal(L.cellBasis('tablet', 300, '100%'), 300);
+});
+test('board columns: fixed on phones, share the free width on large screens within 290 to 380', () => {
+  assert.equal(L.boardColumnWidth('phone', 360, 4), 272);
+  assert.equal(L.boardColumnWidth('desktop', 0, 4), 272);
+  assert.equal(L.boardColumnWidth('desktop', 1500, 3), 380);
+  assert.equal(L.boardColumnWidth('desktop', 1200, 4), 290);
+  assert.equal(L.boardColumnWidth('desktop', 1300, 4), 290 > Math.floor((1300 - 52 - 48) / 4) ? 290 : Math.floor((1300 - 52 - 48) / 4));
+  assert.ok(L.boardColumnWidth('tablet', 800, 2) >= 290);
+});
+test('page gutter grows with the screen', () => {
+  assert.deepEqual(['phone', 'tablet', 'desktop'].map(L.pageGutter), [16, 20, 28]);
+});
+
+// ---- contrast: accents, text and status marks stay readable in both modes
+const T = require('../../src/ui/theme/theme.cjs');
+test('every accent keeps 3:1 marks, 4.5:1 text and 4.5:1 button labels in light and dark', () => {
+  for (const base of [T.LIGHT, T.DARK]) {
+    for (const a of T.ACCENTS) {
+      const k = T.accentTokens(a.hex, base);
+      assert.ok(T.contrast(k.accent, base.surface) >= 3, `${a.id} mark on ${base.mode}`);
+      assert.ok(T.contrast(k.accentText, base.surface) >= 4.5, `${a.id} text on ${base.mode}`);
+      assert.ok(T.contrast(k.accentInk, k.accentFill) >= 4.5, `${a.id} button label on ${base.mode}`);
+    }
+  }
+});
+test('neutral text roles and the danger colour meet 4.5:1; status and priority dots meet 3:1', () => {
+  for (const base of [T.LIGHT, T.DARK]) {
+    for (const bg of [base.surface, base.bg, base.surfaceAlt]) {
+      assert.ok(T.contrast(base.ink, bg) >= 7, `ink ${base.mode}`);
+      assert.ok(T.contrast(base.muted, bg) >= 4.5, `muted ${base.mode}`);
+    }
+    assert.ok(T.contrast(base.danger, base.surface) >= 4.5, `danger ${base.mode}`);
+    assert.ok(T.contrast(base.faint, base.surface) >= 4, `placeholder ${base.mode}`);
+    for (const col of [...Object.values(T.STATUS_COLOR), ...Object.values(T.PRIORITY_COLOR)]) assert.ok(T.contrast(col, base.surface) >= 3, `${col} on ${base.mode}`);
+  }
+});

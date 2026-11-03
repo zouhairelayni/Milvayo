@@ -11,3 +11,25 @@ function isDesktopLayout(width, platform, preference = 'auto') {
   return Number.isFinite(width) && width >= (platform === 'web' ? WEB_DESKTOP_MIN : NATIVE_DESKTOP_MIN);
 }
 module.exports = { WEB_DESKTOP_MIN, NATIVE_DESKTOP_MIN, isDesktopLayout };
+
+// NP533_MOBILE_BROWSER_MODE: Web's CSS viewport alone cannot distinguish a portrait phone from Desktop site.
+function np533MobileBrowser() {
+  if (typeof navigator === 'undefined') return false;
+  // Some browsers keep a mobile UA on Desktop site but expand the CSS viewport.
+  if (typeof window !== 'undefined') {
+    const sw = Number(window.screen && window.screen.width);
+    const vw = Number(window.innerWidth);
+    if (sw > 0 && sw <= 600 && vw >= 700 && vw / sw >= 1.6) return false;
+  }
+  const hints = navigator.userAgentData;
+  if (hints && typeof hints.mobile === 'boolean') return hints.mobile;
+  return /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(String(navigator.userAgent || ''));
+}
+const np533OriginalDesktopLayout = module.exports.isDesktopLayout;
+module.exports.isDesktopLayout = function(width, platform, preference = 'auto', mobileHint) {
+  if (platform === 'web' && preference !== 'desktop') {
+    const mobile = typeof mobileHint === 'boolean' ? mobileHint : np533MobileBrowser();
+    if (mobile) return false;
+  }
+  return np533OriginalDesktopLayout(width, platform, preference);
+};

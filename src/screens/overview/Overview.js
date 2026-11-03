@@ -52,7 +52,7 @@ export default function Overview({ openTask, go, openStatus }) {
         </Cell>
 
         <Cell wide="38%">
-          <Card style={{ gap: 12 }} onPress={() => go('releases')}>
+          <Card style={{ gap: 12 }}>
             <SectionTitle right={<Pill label={release ? release.stage : 'None'} color={c.accent} />}>
               Release {release ? release.name : ''} readiness
             </SectionTitle>
@@ -63,7 +63,10 @@ export default function Overview({ openTask, go, openStatus }) {
                 <T size={13}>{g.label}</T>
               </View>
             ))}
-            <Button label="Open testing" icon="arrow-right" small variant="ghost" onPress={() => go('testing')} />
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+              <Button label="Open releases" small variant="secondary" onPress={() => go('releases')} />
+              <Button label="Open testing" icon="arrow-right" small variant="ghost" onPress={() => go('testing')} />
+            </View>
           </Card>
         </Cell>
       </Grid>
