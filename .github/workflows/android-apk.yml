@@ -43,11 +43,6 @@ jobs:
           packages: 'platform-tools'
           log-accepted-android-sdk-licenses: 'false'
 
-      - name: Cache Gradle build inputs
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-provider: basic
-
       - name: Install dependencies from lockfile
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
@@ -56,6 +51,11 @@ jobs:
 
       - name: Generate Android project locally
         run: npx expo prebuild --platform android --clean --no-install
+
+      - name: Cache Gradle build inputs
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Restore existing Niyarvo signing key and check certificate
         shell: bash
