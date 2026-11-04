@@ -43,7 +43,7 @@ test('task-check and selection affordances are separate',()=>{
 test('single-app design has safe notification, drawer branding, theme picker and main section disclosures',()=>{
  const app=require('../helpers/shell-source.cjs')(),ui=read('src/components/inline/CompactTools.js'),ws=read('src/screens/workspace/Workspace.js'),theme=read('src/ui/theme/theme.js');
  assert.ok(app.includes('<IslandNotice')&&app.includes("edges={['top', 'bottom', 'left', 'right']}"));
- assert.ok(app.includes('niyarvo-word-mask.png') && app.includes('>PROJECTS</T>')); // original wordmark + accent-coloured, regular-weight PROJECTS
+ assert.ok(app.includes('niyarvo-word-mask.png') && app.includes('projects-word-mask.png')); // original wordmark + accent-coloured, regular-weight PROJECTS
  const header=app.split("<SafeAreaView edges={['top', 'bottom', 'left', 'right']}")[1].split('<TabBar')[0];
  assert.ok(header&&!header.includes('<Brand />'),'logo must not be duplicated in mobile header');
  assert.ok(ui.includes('<DisclosureGlyph')&&ui.includes("name={open?'chevron-up':'chevron-down'}"));

@@ -82,12 +82,12 @@ test('Activity is progressively rendered and overspent cost gets semantic color'
 test('Critical notices announce errors assertively',()=>{
   const s=read('src/components/notice/IslandNotice.js');
   assert.match(s,/accessibilityLiveRegion=\{type === 'error' \? 'assertive' : 'polite'\}/);
-  assert.match(s,/if\(display\.type==='error'\) return undefined/);
+  assert.match(s,/display\.type === 'error'\) return undefined/);
 });
 
 test('Current release is a full source version with one cumulative changelog',()=>{
   const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
-  assert.equal(pkg.version,'0.5.53');
+  assert.equal(pkg.version,'0.5.58');
   assert.equal(app.expo.version,pkg.version);
   assert.equal(lock.version,pkg.version);
   assert.equal(lock.packages[''].version,pkg.version);

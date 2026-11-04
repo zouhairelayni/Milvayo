@@ -1,6 +1,6 @@
 # Niyarvo Projects — Complete release history
 
-**Historical coverage:** v0.1.0 through v0.5.53, with recovered source notes and verified subsequent release records.  
+**Historical coverage:** v0.1.0 through v0.5.58, with recovered source notes and verified subsequent release records.  
 **Source preservation:** Original historical changelog text recovered from the supplied pre-v0.5.34 archives; later releases recovered from their verified changelogs. Original hotfix records are included under their parent version.  
 **Important:** These are release and development records, not evidence that every historical QA candidate was deployed, committed, or device-tested. Historical commands and URLs may be obsolete.  
 
@@ -10,7 +10,7 @@
 - **0.2.x** — 10 documented version(s), 0.2.0 to 0.2.9
 - **0.3.x** — 13 documented version(s), 0.3.0 to 0.3.12
 - **0.4.x** — 8 documented version(s), 0.4.2 to 0.4.9
-- **0.5.x** — 54 documented version(s), 0.5.0 to 0.5.53
+- **0.5.x** — 59 documented version(s), 0.5.0 to 0.5.58
 
 ---
 
@@ -4968,3 +4968,96 @@ Restored original pre-RIVNA Claude Orange `#D97757` for Orange accent; all nine 
 - **QA:** Updated legacy source-contract assertions to test the native synchronization instead of the superseded lagging calendar and added targeted regression checks. See `docs/qa/NP-QA-v0.5.53.md`.
 
 **Limits:** Automated source and Node tests do not reproduce actual Android scroll inertia or touch interleaving. Verify on a physical Android device, on mobile Web and when zooming/reopening Timeline before checkpointing.
+
+---
+
+## v0.5.54 — Noble crypto migration, persistent backup jobs and compact controls
+
+**Baseline:** v0.5.53 FULL source. **Method:** Ponytail Audit of cryptographic backup, job lifetime, local encrypted-file persistence and shared button sizing. This release remains local-first and preserves the existing project/workspace storage schema and `.niyav` v1 backup format.
+
+- **Dependency fix:** Remove `@noble/hashes` and `@noble/ciphers`, whose package internals triggered Metro `./crypto.js` exports fallback. AES-256-GCM now uses SDK 58 `expo-crypto` async native API, HMAC-SHA256 for the existing cancellable PBKDF2 implementation uses `js-sha256@1.0.0`. No global Metro resolver suppression. Old encrypted backups remain compatible by design, with Node known-answer reference tests.
+- **Memory safety:** Derivation errors/cancellations wipe password and key byte arrays; the codec performs runtime crypto/gzip self-tests before trusting encrypted operations.
+- **Keep working after leaving the Backup screen:** An app-wide, single-flight job controller owns the encryption/decryption operation. Navigation no longer cancels jobs. Progress and explicit Cancel remain available when Backup is reopened.
+- **Download after completion:** Completed **password-protected** files are kept in app-private `Paths.document`, with nonsecret metadata in AsyncStorage. Settings → Backup shows Download backup and explicit Discard saved backup. Finished files survive ordinary app restarts; a new ready backup replaces the previous one. Unprotected JSON and gzip files still share immediately and are never stored as completed 'encrypted' jobs.
+- **Deferred decryption application:** Unlocking may continue while another screen is shown, but decrypted text stays only in memory until the user chooses to import or review a full-workspace restore. Original workspace ID is checked before project import; no auto-apply across workspaces.
+- **Interrupted sessions:** If a process dies before completing, a nonsecret operation marker explains the interruption on return. Passwords and plaintext are never stored for automatic resume. Actual work when the OS backgrounds the app is **best effort only**: Expo Go cannot guarantee uninterrupted execution, and a native Android foreground service would require a separate development APK. This release does **not** implement such a service.
+- **Global buttons:** Main UI-kit button, chip, segmented and icon control visuals are unified at a 40-point control rhythm, based on the compact New task header button. Existing user-selected theme accents remain intact; touch padding is retained.
+- **QA:** `docs/qa/NP-PONYTAIL-AUDIT-v0.5.54.md`, `tests/store/crypto-migration-0554.test.cjs` and `tests/store/backup-background-0554.test.cjs`. Automated Node and source parsing checks only; Android/iOS native behavior and npm install still require real-device verification before committing.
+
+**Install/rollback:** Keep `.git`, `node_modules` and app local storage. Extract the full v0.5.54 ZIP at project root, run `npm install`, `npm test`, and `npx expo start --clear`. Do not uninstall the app; export a working full-workspace backup on v0.5.53 first. Revert the source/lock files to v0.5.53 if any old `.niyav` file fails to open, then report the runtime error. No Firebase or Git operations were performed.
+
+
+---
+
+## v0.5.55 — Backup completion Island, safe retry UX, daylight accents and deep AMOLED
+
+**Baseline:** v0.5.54 full source, retaining its independent backup job controller, crypto packages and `.niyav` v1 wire format. No migrations, package dependencies, or Firebase operations.
+
+- **Island notices:** Finished encryption, finished decryption, failures and cancellation now send a job event from the screen-independent backup controller. The application shell renders a themed Island for the event, including when the Backup screen is unmounted; if completion occurs while the operating system has backgrounded the app, the Island appears on return to the active state. Events contain a message and route only, never passwords, plaintext, or derived keys.
+- **Action and gestures:** Tapping a backup Island opens Settings → Backup and selects its Backup tab. Swipe horizontally to dismiss, pull down to expand; a further downward pull reveals the rest of a long message; swipe up or use the collapse affordance to close. Backup completion notices remain until interacted with. Existing routine informational notices still auto-collapse, and errors require manual dismissal. Island background uses the selected theme's accent with contrast-appropriate foreground.
+- **Password UX, without weakening crypto:** The encrypted file remains selected in memory after a failed password attempt, so the user can retry without selecting it again while the Backup screen is mounted. Typed password inputs are cleared at job start. The progress copy explains that safe wrong-password detection needs PBKDF2 to finish, and that a cheap early password verifier would accelerate offline guessing. No password verifier or lighter KDF was added. AES-GCM cannot distinguish a wrong password from file tampering; failure messaging preserves that ambiguity.
+- **Daylight:** Amber uses a golden amber `#A88100` rather than muddy brown `#8A5A00`; Claude Orange is brighter `#E57351`. Their button text remains contrast-checked.
+- **AMOLED:** Pure-black `#000000` background, surface and secondary surface RGB reduced to ~20% of their Dark counterparts, darker accent control fills and boundaries. Main text and accessible foregrounds remain readable rather than dimming all text.
+- **Tests:** Existing source and Node regression checks, plus `tests/store/backup-notices-0555.test.cjs` for notification events, deep linking, retry semantics, surface darkness, and all-accent button contrast. QA notes in `docs/qa/NP-QA-v0.5.55.md`.
+
+**Limitations:** No instantaneous detection of an incorrect password for `.niyav` v1. Android/iOS can suspend/terminate ordinary JavaScript when the app is backgrounded; no foreground service was added. Gestures and native Web/Expo Go behavior still need physical-device acceptance. No Git commit or push was performed.
+
+
+---
+
+## v0.5.56 — Daylight Amber/Orange calibration and AMOLED surface visibility
+
+**Baseline:** v0.5.55 complete ZIP. No storage-format, cryptography, workflow, notification, or dependency changes.
+
+- **Daylight Amber:** replace `#A88100` with clear golden amber `#C58F00` (more yellow and luminous, less brown). The lighter visual target is intentionally more vivid, while the foreground remains contrast-calculated.
+- **Daylight Claude Orange:** replace `#E57351` with slightly brighter `#EB805E`, preserving the original warm Claude-orange identity.
+- **Preview fidelity:** Settings → Appearance → accent picker shows the actual light-mode primary color in the second half of each swatch when Daylight is active; the first half remains the palette reference. The Dark/AMOLED picker preserves existing gradient stops.
+- **AMOLED contrast:** background stays pure black `#000000`, but card surfaces shift from 20% to 92% and alternate surfaces from 20% to 88% of the existing Dark RGB values; outlines lighten to `#33383A` and filled accents from 47% to 86%. This avoids unreadably crushed black-on-black cards while remaining distinct from Dark mode.
+- **Regression tests:** update superseded exact-color/80%-dimming contracts, and add tests for Dark/Daylight invariants, ten-accent button/text contrast and live Daylight swatches. Version manifests synchronized to 0.5.56.
+
+**Device acceptance:** Switch Settings → Appearance to Daylight before judging Amber and Claude Orange; the screenshot that prompted the fix showed Dark selected. Compare AMOLED/Dark visually on Android portrait. Node/source tests cannot establish actual device appearance. No Git or Firebase action performed.
+
+---
+
+## v0.5.57 — Rename theme palette module
+
+- Rename `src/ui/theme/rivnaPalette.cjs` to `src/ui/theme/themePalette.cjs` and update its direct imports in theme, governance risk screen, and regression tests.
+- No color, theme ID, saved preference key, layout, domain, or backup format change.
+- Existing historical changelog entries retain old filenames as the accurate record of their release.
+- Full source archive: extract at project root, no enclosing folder. Re-run the tests and Metro on the Android device before committing.
+
+
+### v0.5.57 corrected build — user palette, navigation icons and wordmark
+
+**Version stays 0.5.57** in the app, package metadata and install ZIP. No new product release number or data migration.
+
+- Apply all ten supplied `src/ui/theme/themePalette.cjs` color rows exactly. AMOLED keeps `#000000` background, `surface` = 50% of accent Dark card RGB, and `surfaceAlt` = 35% of Dark background RGB. Theme preference ID and saved appearance key are unchanged.
+- Make only the shared **New task** primary button's label and plus icon white in Daylight. Other primary actions keep the usual contrast-aware color choice, as before.
+- Show a **sun** for Daylight, **outline moon** for Dark, and **filled moon** for AMOLED on the hamburger drawer's appearance control. Retain the three-mode cycle.
+- Replace the 15px hamburger icon with a three-stroke 18px custom icon, rotating between horizontal (closed) and vertical (open); both the header and visible modal close affordance animate without adding a new dependency.
+- Replace the platform-system-font **PROJECTS** text with a transparent, theme-tinted monoline vector mask drawn to match the existing custom-stroked **niyarvo** wordmark. The original brand letterforms are custom paths rather than a font file, so this is a companion drawing, not an installed font. Logo scale, right alignment and color intent remain.
+- Update stale exact-palette/logo assertions and add `tests/ui/theme-prefs-057.test.cjs` for the user palette, glyph behavior and version invariance.
+
+**Limits:** Android/iOS/Web menu motion, wordmark legibility and Daylight white-ink contrast on very light user-selected accents require visual testing. Source tests are not proof of a native render. No backup, crypto, workspace or project-state change.
+
+
+### v0.5.57 UI hotfix — button ink, navigation anchor, logo scale
+
+**Version remains 0.5.57.** Based on the corrected full source. No palette, AMOLED multiplier, encryption, backup, schema, storage-key or dependency change.
+
+- **Accent-filled controls:** Main `Button` primary actions now display white labels and glyphs for all theme modes, rather than a contrast-selected dark foreground on lighter accent fills. The same white glyph is used for solid icon buttons, completed-task checkboxes, and the accent-filled Island notification. Tappable custom-color task labels also display white; noninteractive labels retain contrast-aware ink. This is an explicit visual preference; white on bright accent fills (especially Amber and dark-mode Lime) may not satisfy contrast guidelines.
+- **Mobile hamburger:** The open-state toggle appears inside the drawer, aligned to the same top-left position as the closed-state button. The old extra button to the right of the open drawer is gone. The underlying header toggle is not rendered while the native Modal is visible. Keep the horizontal-closed / vertical-open 190ms native animation and backdrop-to-dismiss behavior.
+- **Logo:** PROJECTS text mask uses `c.accent`, the same color token as the N monogram, at 80% of its former dimensions in compact, narrow and full-width brands; right-edge alignment is retained. Original Niyarvo lettering remains unchanged.
+- **QA:** `tests/ui/release-057-ui-hotfix.test.cjs` covers white accent controls, all brand sizes, single visible menu toggle, version and palette invariants; legacy source expectations were updated to match the user's design requirements. Physical device acceptance still required.
+
+---
+
+## v0.5.58 — Brand morph cold start and drawer integration
+
+- Based on the user-verified v0.5.57 UI Hotfix. Version synchronized in `package.json`, `package-lock.json` and `app.json`.
+- Added a logo-only, centered cold start using the approved flicker-free N→Board SVG geometry at **1× speed** (3.7 seconds); the workspace mounts after completion. Selected accent and appearance are restored first.
+- Replaced the legacy N in Projects sidebar branding with the finished Board icon. The phone drawer replays the identical morph at **1.5×** on every open. `PROJECTS` and other wordmark assets retain their sizes and theme tint.
+- Moved the appearance-cycle control beside the hamburger at the top of the phone drawer; keeps one menu toggle.
+- Precomputed the original 72-point vector contour alignment; changed runtime to pure `react-native-svg` compound path geometry with no WebView or masks. Three ribbons remain fully visible through morph. Six cutouts reveal in 3–2–1 order after the columns settle.
+- Includes reduced-motion support and cleanup of animation frames on unmount. No new dependencies, business-logic changes or `.niyav` backup format changes.
+- Added 5 targeted motion tests and updated version/brand expectations in older tests. See `docs/qa/modern/NP-v0.5.58-PONYTAIL-AUDIT.md`. Native device motion and startup acceptance remain to be checked.

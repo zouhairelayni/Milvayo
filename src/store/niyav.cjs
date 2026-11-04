@@ -2,7 +2,7 @@
 'use strict';
 
 // .niyav backup container. Pure logic: every primitive (gzip, key derivation, cipher, randomness) is injected,
-// so the format is tested here against Node's own zlib and crypto and runs in the app on fflate + @noble.
+// so the format is tested against Node's zlib/crypto and runs in-app on fflate, js-sha256 and expo-crypto.
 //
 // Plain  .niyav = a standard gzip stream of the backup JSON (UTF-8). `gunzip file.niyav` opens it.
 // Protected .niyav = fixed 40-byte header, then AES-256-GCM(ciphertext || 16-byte tag) of that gzip stream:
@@ -133,17 +133,18 @@ function createCodec(prim) {
       throw new NiyavError('NIYAV_INPUT', 'Unsafe key derivation settings.');
     }
     const pw = passwordBytes(password, { forWriting: true });
-    const salt = prim.randomBytes(SALT_BYTES);
-    const nonce = prim.randomBytes(NONCE_BYTES);
-    const header = buildHeader(iterations, salt, nonce);
-    const key = await prim.pbkdf2(pw, salt, iterations, KEY_BYTES, { onProgress, signal });
+    let key;
     try {
+      const salt = prim.randomBytes(SALT_BYTES);
+      const nonce = prim.randomBytes(NONCE_BYTES);
+      const header = buildHeader(iterations, salt, nonce);
+      key = await prim.pbkdf2(pw, salt, iterations, KEY_BYTES, { onProgress, signal });
       const sealed = await prim.aesGcmEncrypt(key, nonce, header, gz);
       // Prove the file can be opened with the key already in memory (no second key derivation) before it is saved.
       const check = await prim.aesGcmDecrypt(key, nonce, header, sealed);
       if (!sameBytes(check, gz)) throw new NiyavError('NIYAV_SELFCHECK', 'The protected backup failed its own check and was not created.');
       return concat(header, sealed);
-    } finally { key.fill(0); pw.fill(0); }
+    } finally { if (key) key.fill(0); pw.fill(0); }
   }
 
   // bytes -> backup JSON text. Accepts plain JSON, gzip and protected files.
@@ -160,14 +161,15 @@ function createCodec(prim) {
     const parsed = parseHeader(bytes);
     if (password === undefined || password === null) throw new NiyavError('NIYAV_NEEDS_PASSWORD', 'This backup is password protected.');
     const pw = passwordBytes(password, { forWriting: false });
-    const key = await prim.pbkdf2(pw, parsed.salt, parsed.iterations, KEY_BYTES, { onProgress, signal });
+    let key;
     let gz;
     try {
+      key = await prim.pbkdf2(pw, parsed.salt, parsed.iterations, KEY_BYTES, { onProgress, signal });
       try { gz = await prim.aesGcmDecrypt(key, parsed.nonce, parsed.header, parsed.sealed); } catch {
         // GCM cannot tell a wrong password from a modified file, and the message should not pretend it can.
         throw new NiyavError('NIYAV_BAD_PASSWORD', 'Wrong password, or the file has been changed.');
       }
-    } finally { key.fill(0); pw.fill(0); }
+    } finally { if (key) key.fill(0); pw.fill(0); }
     return prim.strFromU8(await inflate(gz, maxBytes));
   }
 

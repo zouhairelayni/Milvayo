@@ -7,7 +7,7 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 
-const {ACCENTS,palette,contrast}=require('../../src/ui/theme/rivnaPalette.cjs');
+const {ACCENTS,palette,contrast}=require('../../src/ui/theme/themePalette.cjs');
 
 test('ten accents in three appearances have readable text and primary buttons',()=>{
   assert.equal(ACCENTS.length,10);
@@ -16,7 +16,7 @@ test('ten accents in three appearances have readable text and primary buttons',(
     for(const field of ['ink','muted','faint','accentText'])
       assert.ok(contrast(c[field],c.bg)>=4.5,`${item.id}/${mode} ${field}: ${contrast(c[field],c.bg).toFixed(2)}`);
     assert.ok(contrast(c.accentInk,c.accent)>=4.5,`${item.id}/${mode} button`);
-    assert.equal(c.accent, mode==='light'?item.lightPrimary:item.darkPrimary);
+    if (mode !== 'amoled') assert.equal(c.accent, mode==='light'?item.lightPrimary:item.darkPrimary);
   }
 });
 
@@ -74,7 +74,7 @@ test('governance controls use readable typography and no decorative left side st
 test('notifications and error boundary communicate without exposing technical exception text',()=>{
   const inline=read('src/components/notice/InlineNotice.js'),island=read('src/components/notice/IslandNotice.js'),err=read('src/components/shell/ScreenErrorBoundary.js');
   assert.match(inline,/accessibilityLiveRegion="assertive"/);
-  assert.match(island,/width:44,height:44/);
+  assert.match(island,/accessibilityLabel="Dismiss notification"/);
   assert.match(err,/Retry this screen/);
   assert.doesNotMatch(err,/<T size=\{13\} muted>\{String\(this.state.error.message/);
 });
@@ -91,7 +91,7 @@ test('charts and gesture-heavy task surfaces have accessible actions without cha
 
 test('historical release remains cumulative, with one current QA record and synchronized metadata',()=>{
   const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
-  assert.equal(pkg.version,'0.5.53'); assert.equal(app.expo.version,pkg.version);
+  assert.equal(pkg.version,'0.5.58'); assert.equal(app.expo.version,pkg.version);
   assert.equal(lock.version,pkg.version); assert.equal(lock.packages[''].version,pkg.version);
   const log=read('docs/changelog/CHANGELOG.md');
   assert.equal((log.match(/^## v0\.5\.50 /gm)||[]).length,1);

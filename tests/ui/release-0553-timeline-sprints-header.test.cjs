@@ -42,9 +42,9 @@ test('Global New task header action is compact but remains accessible', () => {
   const mobile = read('src/app/ModernApp.js');
   const desktop = read('src/components/shell/Bars.js');
   const controls = read('src/ui/uiControls.js');
-  assert.match(mobile, /label="New task" icon="plus" small headerCompact/);
-  assert.match(desktop, /label="New task" icon="plus" small headerCompact/);
-  assert.match(controls, /minHeight: headerCompact \? 40 : 44/);
-  assert.match(controls, /hitSlop=\{headerCompact \? 4 : undefined\}/);
-  assert.match(controls, /headerCompact \? 12 : small \? 13 : 14/);
+  assert.match(mobile, /label="New task" icon="plus" small/);
+  assert.match(desktop, /label="New task" icon="plus" small/);
+  assert.match(controls, /minHeight: 40/);
+  assert.match(controls, /hitSlop=\{4\}/);
+  assert.match(controls, /size=\{12\}/);
 });

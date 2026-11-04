@@ -16,9 +16,9 @@ test('Dynamic Island has distinct compact, expanded and closing phases with inte
 });
 test('errors stay visible until dismissed and ordinary updates auto-collapse',()=>{
  const source=read('src/components/notice/IslandNotice.js');
- assert.match(source,/display\.type==='error'\) return undefined/);
- assert.match(source,/setStage\('compact'\),display\.type==='warning'/);
- assert.match(source,/setTimeout\(dismiss,1250\)/);
+ assert.match(source,/display\.type === 'error'\) return undefined/);
+ assert.match(source,/setStage\('compact'\), display\.type === 'warning'/);
+ assert.match(source,/setTimeout\(dismiss, 1250\)/);
 });
 test('Android and iOS use Reanimated UI-thread worklets to animate island dimensions',()=>{
  const native=read('src/components/notice/NoticeMotion.native.js');

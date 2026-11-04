@@ -236,10 +236,11 @@ export function Activity() {
 
 // ---- Settings (includes project, data and appearance) -----------------------
 
-export function Settings({go}) {
+export function Settings({go, backupRequest}) {
   const { c, pref, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false);
-  const [tab,setTab]=useState('general');
+  const [tab,setTab]=useState(backupRequest ? 'backup' : 'general');
+  useEffect(() => { if (backupRequest) setTab('backup'); }, [backupRequest]);
   return <Page title="Settings" subtitle={tab==='backup'?'Import, export and recover project data. Files stay on this device.':'Appearance and diagnostics stay on this device.'}>
     <Segmented options={[{value:'general',label:'General'},{value:'backup',label:'Backup'}]} value={tab} onChange={setTab}/>
     {tab==='backup'?<Backup/>:<>
@@ -258,7 +259,7 @@ export function Settings({go}) {
           return <Pressable accessibilityRole="radio" accessibilityState={{checked:option.id===accentPref}} accessibilityLabel={`${option.id} accent`} key={option.id} onPress={()=>setAccent(option.id)} style={{width:'16%',flexGrow:1,alignItems:'center',gap:6,paddingVertical:6,minWidth:0}}>
             <View style={{width:46,height:46,borderRadius:12,overflow:'hidden',borderWidth:option.id===accentPref?2:1,borderColor:option.id===accentPref?c.ink:c.line,flexDirection:'row'}}>
               <View style={{backgroundColor:option.start,flex:1}} />
-              <View style={{backgroundColor:option.end,flex:1}} />
+              <View style={{backgroundColor:c.mode==='light'?option.lightPrimary:option.end,flex:1}} />
               {option.id===accentPref?<View style={{position:'absolute',right:2,bottom:2,width:18,height:18,borderRadius:9,backgroundColor:c.ink,alignItems:'center',justifyContent:'center'}}><T size={12} color={c.bg} weight="700">✓</T></View>:null}
             </View><T size={10} numberOfLines={1} color={option.id===accentPref?c.ink:c.muted}>{option.id}</T>
           </Pressable>;

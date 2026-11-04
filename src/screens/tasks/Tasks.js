@@ -185,7 +185,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
                   borderColor: t.status==='Done' ? c.accent : c.faint, backgroundColor: t.status==='Done' ? c.accent : 'transparent',
                 }}
               >
-                {t.status==='Done' ? <Feather name="check" size={13} color={c.accentInk} /> : null}
+                {t.status==='Done' ? <Feather name="check" size={13} color="#FFFFFF" /> : null}
               </Pressable>
 
               <View style={{ flex: 1, minWidth: 0, gap: 4 }}>

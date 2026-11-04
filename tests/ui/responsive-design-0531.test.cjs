@@ -30,7 +30,7 @@ test('all screens inherit a fluid page frame and shared tokenized controls', () 
   const layout = read('src/ui/uiLayout.js');
   assert.doesNotMatch(layout, /maxWidth: 1180/);
   assert.match(layout, /alignSelf: 'stretch'/);
-  assert.match(read('src/ui/uiControls.js'), /minHeight: 44/);
+  assert.match(read('src/ui/uiControls.js'), /minHeight: 40/);
 });
 test('Kanban keeps gestures while revealing useful card metadata without emoji icons', () => {
   const board = read('src/screens/board/Board.js');

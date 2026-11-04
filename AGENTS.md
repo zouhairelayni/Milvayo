@@ -30,7 +30,7 @@
 - **Moments:** the Gantt diagram, Kanban task movement and verified progress are the content-rich moments.
 - **Signature:** one user-selected accent (default Claude clay orange) and meaningful dependency/status colors.
 
-Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo mark. Do not add glow, gradient text, badges or decorative animation.
+Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo Projects Board mark. The company ribbon N belongs to the parent brand and Control Center. Do not add glow, gradient text, badges or decorative animation.
 
 ## Sprint lifecycle rule
 Keep sprint lifecycle and historical burndown semantics inside `src/domain/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and the bundled `.opencode/skills/unslop/SKILL.md`.

@@ -43,15 +43,16 @@ export function ThemeProvider({ children }) {
   const system = useColorScheme();
   const [pref, changeMode] = useState('system');
   const [accentPref, changeAccent] = useState(DEFAULT_ACCENT);
-  useEffect(() => { let active=true; Promise.all([AsyncStorage.getItem('niyarvo-projects-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{});return()=>{active=false}; }, []);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => { let active=true; const fallback=setTimeout(()=>{if(active)setRestored(true);},1500); Promise.all([AsyncStorage.getItem('niyarvo-projects-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{}).finally(()=>{clearTimeout(fallback);if(active)setRestored(true);});return()=>{active=false;clearTimeout(fallback)}; }, []);
   const setPref = (value) => {changeMode(value);AsyncStorage.setItem('niyarvo-projects-appearance-v1',value).catch(()=>{});};
   const setAccent = (value) => {if(!ACCENTS.some(a=>a.id===value))return;changeAccent(value);AsyncStorage.setItem(STORAGE_KEY,value).catch(()=>{});};
   const mode = pref === 'system' ? (system === 'dark' ? 'dark' : 'light') : pref;
   const value = useMemo(
     () => {
-      return {pref,setPref,mode,accentPref,setAccent,c:palette(accentPref, mode)};
+      return {pref,setPref,mode,accentPref,setAccent,restored,c:palette(accentPref, mode)};
     },
-    [pref, mode, accentPref]
+    [pref, mode, accentPref, restored]
   );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

@@ -62,15 +62,15 @@ test('Delete and Duplicate confirmations show only their selected primary action
 test('Menu cycles three modes, logo is regular accent text, and Settings offers four modes',()=>{
  const app=source('src/app/ModernApp.js'), menu=source('src/components/shell/Menus.js'),settings=source('src/screens/workspace/Workspace.js');
  assert.match(app,/mode === 'light' \? 'dark' : mode === 'dark' \? 'amoled' : 'light'/);
- assert.match(menu,/>PROJECTS<\/T>/);
- assert.match(menu,/<T weight="400"/);
- assert.match(menu,/color=\{c.accent(?:Text)?\}/);
+ assert.match(menu,/projects-word-mask\.png/);
+ assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
+ assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
  assert.match(menu,/width: 240/);
  for(const label of ['System','Daylight','Dark','AMOLED']) assert.ok(settings.includes(`label="${label}"`),label);
- const {palette}=require('../../src/ui/theme/rivnaPalette.cjs');
- assert.equal(palette('Amber','light').accent,'#8A5A00');
- assert.equal(palette('Orange','light').accent,'#DA643D');
- assert.equal(palette('Orange','dark').accent,'#D97757');
+ const {palette}=require('../../src/ui/theme/themePalette.cjs');
+ assert.equal(palette('Amber','light').accent,'#FFA500');
+ assert.equal(palette('Orange','light').accent,'#E65A19');
+ assert.equal(palette('Orange','dark').accent,'#FF6F61');
 });
 
 test('one complete historical changelog and categorized QA/instructions only',()=>{

@@ -1,6 +1,6 @@
 // /src/app/ModernApp.js
 import { Profiler, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, StatusBar as NativeStatusBar, View } from 'react-native';
+import { AppState, Platform, StatusBar as NativeStatusBar, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
@@ -8,6 +8,8 @@ import { StoreProvider, StoreFreeze, useStore } from '../store/store';
 import { Button, IconBtn, LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar, SideMenu } from '../components/shell/Menus';
 import { TopBar, TabBar, HeaderControls } from '../components/shell/Bars';
+import MenuToggle from '../components/shell/MenuToggle';
+import BoardMorph from '../components/brand/BoardMorph';
 import { HeaderActionsContext } from '../components/shell/HeaderActions';
 import ScreenErrorBoundary from '../components/shell/ScreenErrorBoundary';
 import Overview from '../screens/overview/Overview';
@@ -24,6 +26,7 @@ import Portfolios from '../screens/governance/Portfolios';
 import { Programs } from '../screens/governance/Programs';
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import IslandNotice from '../components/notice/IslandNotice';
+import { backupJobs } from '../store/backupJobs';
 import { noticeTopOffset } from '../components/notice/noticePlacement.cjs';
 import { shouldRenderPage, retainsHiddenTabs } from './navigation/pageRetention.cjs';
 import { resolveVisited, addVisited } from './navigation/visitedTabs.cjs';
@@ -174,6 +177,25 @@ function Shell({}) {
   const { preference, setPreference } = useLayoutPreference();
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState('overview');
+  const [backupRequest, setBackupRequest] = useState(0);
+  const [backupNotice, setBackupNotice] = useState(null);
+  const lastBackupEvent = useRef(null);
+  const queuedBackupEvent = useRef(null);
+  useEffect(() => {
+    const subscription = backupJobs.subscribe(({event}) => {
+      if (!event || event.id === lastBackupEvent.current) return;
+      lastBackupEvent.current = event.id;
+      if (AppState.currentState !== 'active') queuedBackupEvent.current = event;
+      else setBackupNotice(event);
+    });
+    const app = AppState.addEventListener('change', status => {
+      if (status === 'active' && queuedBackupEvent.current) {
+        setBackupNotice(queuedBackupEvent.current);
+        queuedBackupEvent.current = null;
+      }
+    });
+    return () => { subscription(); app.remove(); };
+  }, []);
   const projectId = `${workspaceId}/${workspace.selectedId}`; // project ids repeat when a backup is imported as a second workspace
   const projectIdRef = useRef(projectId);
   projectIdRef.current = projectId;
@@ -262,7 +284,7 @@ function Shell({}) {
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
       <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
     )}
-    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
+    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} backupRequest={backupRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
   </HeaderActionsContext.Provider>;
   const sheet = <>{taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null}{creatingTask ? <NewTaskSheet onClose={()=>setCreatingTask(false)} onSave={saveNewTask} /> : null}</>;
   const barStyle = mode !== 'light' ? 'light' : 'dark';
@@ -279,9 +301,9 @@ function Shell({}) {
             onPickProject={pickProject} /> :
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
               paddingHorizontal: 12, paddingVertical: 10, minHeight: 64, gap: 8 }}>
-              <IconBtn icon="menu" label="Open menu" onPress={() => setMenu(true)} />
+              {menu ? <View style={{ width: 40, height: 40 }} /> : <MenuToggle open={false} onPress={() => setMenu(true)} />}
               <HeaderControls controls={controls} />
-              <Button label="New task" icon="plus" small headerCompact onPress={newTask} />
+              <Button label="New task" icon="plus" small onPress={newTask} />
             </View>}
           <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
           {!wide ? <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} /> : null}
@@ -290,22 +312,27 @@ function Shell({}) {
         </View>
         {sheet}
       </SafeAreaView>
-      <IslandNotice notice={notice} onDismiss={dismissNotice} wide={wide}
+      <IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
+        onAction={action => { if (action === 'backup') { setBackupRequest(n => n + 1); go('settings', 'backup notice'); } }} wide={wide}
         topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />
     </View>
   );
 }
 
+// The intro belongs to a cold app mount, not navigation or resuming from the background.
+function ColdStartGate() {
+  const { c, restored } = useTheme();
+  const [complete, setComplete] = useState(false);
+  const finish = useCallback(() => setComplete(true), []);
+  if (complete) return <StoreProvider><Shell /></StoreProvider>;
+  return <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
+    <StatusBar hidden />
+    {restored ? <BoardMorph size={200} active speed={1} onFinish={finish} /> : null}
+  </View>;
+}
+
 export default function ModernApp({}) {
-  return (
-    <SafeAreaProvider>
-      <LayoutProvider>
-      <ThemeProvider>
-        <StoreProvider>
-          <Shell />
-        </StoreProvider>
-      </ThemeProvider>
-      </LayoutProvider>
-    </SafeAreaProvider>
-  );
+  return <SafeAreaProvider>
+    <LayoutProvider><ThemeProvider><ColdStartGate /></ThemeProvider></LayoutProvider>
+  </SafeAreaProvider>;
 }

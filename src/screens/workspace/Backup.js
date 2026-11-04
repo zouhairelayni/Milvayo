@@ -1,5 +1,5 @@
 // /src/screens/workspace/Backup.js
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { File } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,6 +7,7 @@ import { loadBackupLevel, saveBackupLevel } from '../../store/backupLevel';
 const { DEFAULT_LEVEL } = require('../../store/niyav.cjs');
 const {MAX_IMPORT_BYTES,tooBig,parseBackupJson,pickAndroidFileBytes,pickDocumentFileBytes}=require('../../store/importFiles.cjs');
 import { niyavCodec } from '../../store/niyavPrimitives';
+import { backupJobs } from '../../store/backupJobs';
 import { Bar, Button, Card, Chip, Empty, Input, SectionTitle, Segmented, T, downloadBytes, downloadText } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import {Fold,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
@@ -53,27 +54,23 @@ export default function Backup() {
   const [level, setLevel] = useState(DEFAULT_LEVEL); // remembered protection level: 'low' | 'medium' | 'high'
   const [withSnapshots, setWithSnapshots] = useState(false);
   const [busy, setBusy] = useState(null); // message while compressing / deriving a key
-  const [progress, setProgress] = useState(null); // 0..1 while a password key is derived, else null
   const [scope, setScope] = useState('project'); // what to back up: 'project' | 'workspace'
   const [pickedId, setPickedId] = useState(null);
-  const abortRef = useRef(null);
+  const [jobState, setJobState] = useState(() => backupJobs.getState());
+  useEffect(() => { const unsubscribe = backupJobs.subscribe(setJobState); backupJobs.hydrate(); return unsubscribe; }, []);
   const projectId = projects.some((p) => p.id === pickedId) ? pickedId : s.project.id;
   const chosen = projects.find((p) => p.id === projectId) || s.project;
-  // The key derivation can be stopped from the screen, and leaving the screen stops it too.
-  const begin = (message) => { const ac = new AbortController(); abortRef.current = ac; setBusy(message); setProgress(0); return { signal: ac.signal, onProgress: (v) => setProgress(Math.round(v * 100) / 100) }; };
-  const end = () => { abortRef.current = null; setBusy(null); setProgress(null); };
-  const cancel = () => abortRef.current && abortRef.current.abort();
-  useEffect(() => () => { if (abortRef.current) abortRef.current.abort(); }, []);
   useEffect(() => { let live = true; loadBackupLevel().then((v) => { if (live) setLevel(v); }); return () => { live = false; }; }, []);
   const pickLevel = (v) => { setLevel(v); saveBackupLevel(v); };
   const [locked, setLocked] = useState(null); // { bytes, purpose } protected file waiting for its password
   const [unlockPw, setUnlockPw] = useState('');
   const archived = projects.filter((p) => p.archived);
+  useEffect(() => { if (jobState.decrypted) setLocked(null); }, [jobState.decrypted]);
 
   const say = (ok, text) => setNotice({ ok, text });
-  const runImport = (text) => {
+  const runImport = (text, originWorkspaceId = workspaceId) => {
     if(tooBig(text)){say(false,'Import exceeds 5 MB limit');return;}
-    const r = importProject(text, workspaceId); // the file may take seconds to open; refuse if another workspace is open by now
+    const r = importProject(text, originWorkspaceId); // the file may take seconds to open; refuse if another workspace is open by now
     if (r.ok) {
       say(true, r.names.length === 1 ? `Imported "${r.names[0]}" and opened it.` : `Imported ${r.names.length} projects. "${r.names[r.names.length - 1]}" is open.`);
     } else say(false, r.error);
@@ -101,56 +98,102 @@ export default function Backup() {
   };
   const chooseProject=()=>readPicked('project');
   const chooseWorkspace=()=>readPicked('workspace');
-  const unlock=async()=>{
-    if(!locked||busy)return;
-    const job=begin('Unlocking… leaving this screen cancels it.');
-    try{
-      await paint();
-      const text=await niyavCodec.decode(locked.bytes,{password:unlockPw,...job});
-      const purpose=locked.purpose;setLocked(null);setUnlockPw('');
-      route(text,purpose);
-    }catch(e){say(e.code==='NIYAV_CANCELLED',e.code==='NIYAV_CANCELLED'?'Cancelled. The backup was not opened.':e.message)}finally{end()}
+  const unlock=()=>{
+    if(!locked||busy||jobState.running)return;
+    try {
+      // The job owns these bytes and the password while it runs. Nothing secret is stored on disk.
+      backupJobs.startUnlock({ bytes: locked.bytes, password: unlockPw, purpose: locked.purpose, workspaceId });
+      // Keep the selected ciphertext in memory so a wrong password can be retried without picking the file again.
+      setUnlockPw('');
+      say(true,'Checking password in the background. You can navigate away and retry here if it fails.');
+    } catch (e) { say(false,e.message); }
   };
-
+  const applyDecrypted=()=>{
+    const result=backupJobs.getDecrypted();
+    if(!result)return;
+    try {
+      if(result.purpose==='project') {
+        if(result.workspaceId!==workspaceId){say(false,'You switched workspaces while unlocking. Return to the original workspace to import this file.');return;}
+        runImport(result.text,result.workspaceId);
+        backupJobs.discardDecrypted();
+      } else {
+        stageWorkspace(result.text);
+        backupJobs.discardDecrypted();
+        say(true,'Workspace file decrypted. Review the restore confirmation below.');
+      }
+    } catch(e){say(false,e.message);}
+  };
   const exportBackup=async(all)=>{
-    if(busy)return;
+    if(busy||jobState.running)return;
     const base=all?'niyarvo-all-projects-backup':`${slug(chosen.name)}-backup`;
     let text;try{text=backupText(all,{snapshots:withSnapshots,projectId})}catch(e){say(false,e.message);return}
-    const what=all?`Workspace backup includes ${projects.length} projects, programs and portfolios${withSnapshots?' and recovery snapshots':''}.`:'Backup of this project is ready.';
-    if(fmt==='json'){if(await downloadText(`${base}.json`,text,'application/json'))say(true,what);return}
+    if(fmt==='json'){
+      if(await downloadText(`${base}.json`,text,'application/json'))say(true,'JSON backup exported.');
+      return;
+    }
+    if(!protect){
+      try { setBusy('Compressing backup…'); await paint();
+        const bytes = await niyavCodec.encode(text);
+        if(await downloadBytes(`${base}.niyav`, bytes, 'application/octet-stream')) say(true,'Compressed .niyav file exported. This file is NOT password protected.');
+      } catch(e){say(false,e.message);} finally{setBusy(null)}
+      return;
+    }
     if(protect){
       if(Array.from(pw).length<MIN_PASSWORD){say(false,`Use a password of at least ${MIN_PASSWORD} characters.`);return}
       if(pw!==pw2){say(false,'The two passwords do not match.');return}
     }
-    const job=begin(protect?'Protecting your backup… leaving this screen cancels it.':'Compressing…');
-    try{
-      await paint();
-      const bytes=await niyavCodec.encode(text,{password:protect?pw:undefined,level,...job});
-      if(await downloadBytes(`${base}.niyav`,bytes,'application/octet-stream')){
-        say(true,`${protect?'Password-protected':'Compressed'} backup is ready (${kb(bytes.length)}). ${what}`);
-        if(protect){setPw('');setPw2('')}
-      }
-    }catch(e){say(e.code==='NIYAV_CANCELLED',e.code==='NIYAV_CANCELLED'?'Cancelled. No backup file was created.':e.message)}finally{end()}
+    try {
+      // Create a fixed snapshot NOW: later edits do not change the export that is being encrypted.
+      backupJobs.startExport({ filename: `${base}.niyav`, text, password: protect?pw:undefined, level, protected:protect });
+      setPw('');setPw2('');
+      say(true,'Encrypted backup started. You may visit other screens. Return here to download the finished file.');
+    } catch(e){say(false,e.message);}
   };
+  const downloadReady=async()=>{try{await backupJobs.shareReady();say(true,'The encrypted file is still saved here and can be downloaded again.');}catch(e){say(false,e.message)}};
+  const discardReady=async()=>{try{await backupJobs.discardReady();say(true,'Saved encrypted file removed from this device.');}catch(e){say(false,e.message)}};
 
   return (
     <>
-      {busy ? (
+      {jobState.running ? (
         <Card style={{ gap: 10 }}>
-          <T size={13} weight="600">{busy}</T>
-          {abortRef.current ? <><Bar value={progress || 0} /><T size={12} muted>{Math.round((progress || 0) * 100)}%</T></> : null}
-          {abortRef.current ? <Button label="Cancel" small variant="secondary" onPress={cancel} /> : null}
+          <SectionTitle>{jobState.running.label}</SectionTitle>
+          <Bar value={jobState.running.progress || 0} />
+          <T size={12} muted>{Math.round((jobState.running.progress || 0) * 100)}% {jobState.running.kind === 'decrypt' ? 'checking password and unlocking' : 'deriving the encryption key'}. On Android, a correct and incorrect password require the same expensive key check. This protects against rapid password guessing. You can navigate away; switching apps may pause progress.</T>
+          <Button label="Cancel operation" small variant="secondary" onPress={backupJobs.cancel} />
         </Card>
       ) : null}
+      {jobState.ready ? (
+        <Card style={{ gap: 10 }}>
+          <SectionTitle>Backup ready to download</SectionTitle>
+          <T size={12} muted>{jobState.ready.name} · {kb(jobState.ready.bytes)} · {jobState.ready.protected?'AES-256 protected':'Compressed'}. {Platform.OS==='web'?'The file remains available while this web tab stays open; download before reloading.':'The finished file is kept in app storage across normal restarts.'} Sharing does not delete it.</T>
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <Button label="Download backup" icon="download" small onPress={downloadReady} />
+            <DangerConfirm label="Discard saved backup" onConfirm={discardReady} />
+          </View>
+        </Card>
+      ) : null}
+      {jobState.decrypted ? (
+        <Card style={{ gap: 10 }}>
+          <SectionTitle>Decryption complete</SectionTitle>
+          <T size={12} muted>The password-protected file was opened in memory. No project has been imported or replaced yet. Review the result before applying it.</T>
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <Button label={jobState.decrypted.purpose==='project'?'Import decrypted project':'Review workspace restore'} small onPress={applyDecrypted} />
+            <Button label="Discard decrypted data" small variant="ghost" onPress={backupJobs.discardDecrypted} />
+          </View>
+        </Card>
+      ) : null}
+      {jobState.interrupted ? <T size={12} muted>{jobState.interrupted}</T> : null}
+      {jobState.error ? <T size={12} color={c.accent}>{jobState.error}</T> : null}
+      {busy ? <Card style={{ gap: 10 }}><T size={13} weight="600">{busy}</T></Card> : null}
       {notice ? <T size={13} weight="600" color={notice.ok ? c.ink : c.accent}>{notice.text}</T> : null}
 
-      {locked ? (
+      {locked && !jobState.running && !jobState.decrypted ? (
         <Card style={{ gap: 10 }}>
           <SectionTitle>Password required</SectionTitle>
-          <T size={12} muted>This backup is password protected. The password is not stored anywhere.</T>
+          <T size={12} muted>This backup is password protected. To safely detect a wrong password, the entire key-derivation step must finish. This can take time on Android; a fast password hint would weaken offline protection.</T>
           <Input secure value={unlockPw} onChangeText={setUnlockPw} placeholder="Backup password" autoFocus onSubmitEditing={unlock} />
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            <Button label="Unlock" small variant="secondary" onPress={unlock} disabled={!!busy || !unlockPw} />
+            <Button label="Unlock" small variant="secondary" onPress={unlock} disabled={!!busy || !!jobState.running || !unlockPw} />
             <Button label="Cancel" small variant="ghost" onPress={() => { setLocked(null); setUnlockPw(''); }} />
           </View>
         </Card>
@@ -158,7 +201,7 @@ export default function Backup() {
 
       <Card style={{ gap: 12 }}>
         <SectionTitle>Back up</SectionTitle>
-        <T size={12} muted>Saves a file you can import again later, here or on another device. .niyav is compressed and much smaller; add a password to protect sensitive data.</T>
+        <T size={12} muted>JSON and unprotected .niyav files download immediately. Password-protected backups continue if you navigate away; return here to download the encrypted result. The app must remain installed. Android or iOS may pause the operation when you switch apps; interrupted work must be restarted.</T>
         <Segmented options={[{ value: 'project', label: 'Project' }, { value: 'workspace', label: 'Workspace' }]} value={scope} onChange={setScope} />
         {scope === 'project'
           ? <Dropdown options={projects.map((p) => ({ value: p.id, label: p.archived ? `${p.name} (archived)` : p.name }))} value={projectId} onChange={setPickedId} />
@@ -189,19 +232,19 @@ export default function Backup() {
           <Chip label="Include recovery snapshots (larger file)" active={withSnapshots} onPress={() => setWithSnapshots(!withSnapshots)} />
         </View>
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-          <Button label={scope === 'project' ? `Back up "${chosen.name}"` : 'Back up entire workspace'} icon="download" small disabled={!!busy || (fmt==='niyav' && protect && (Array.from(pw).length<MIN_PASSWORD || pw!==pw2))} onPress={() => exportBackup(scope === 'workspace')} />
+          <Button label={scope === 'project' ? `Back up "${chosen.name}"` : 'Back up entire workspace'} icon="download" small disabled={!!busy || !!jobState.running || (fmt==='niyav' && protect && (Array.from(pw).length<MIN_PASSWORD || pw!==pw2))} onPress={() => exportBackup(scope === 'workspace')} />
         </View>
       </Card>
 
       <Card style={{ gap: 12 }}>
         <SectionTitle>Import project</SectionTitle>
         <T size={12} muted>Opens a .json or .niyav backup as a new project. Your current projects are not changed.</T>
-        <Button label="Import .json or .niyav file" icon="upload" small variant="secondary" onPress={chooseProject} disabled={!!busy} />
+        <Button label="Import .json or .niyav file" icon="upload" small variant="secondary" onPress={chooseProject} disabled={!!busy || !!jobState.running} />
       </Card>
 
       <Fold title="Full workspace recovery" subtitle="Restores projects, programs, portfolios and local history together. Explicit confirmation required.">
         <T size={12} muted>Only use a complete Niyarvo workspace backup (.json or .niyav). An automatic snapshot of the current workspace is created before replacement. To add projects without replacing your workspace, use Import project above.</T>
-        <Button label="Choose workspace file" icon="upload" small variant="secondary" onPress={chooseWorkspace} disabled={!!busy}/>
+        <Button label="Choose workspace file" icon="upload" small variant="secondary" onPress={chooseWorkspace} disabled={!!busy || !!jobState.running}/>
         {wholeFile?<View style={{gap:8}}><T size={12} muted>{wholeFile.projects} project(s) in selected workspace. This replaces current workspace data after confirmation.</T><DangerConfirm label="Restore entire workspace" onConfirm={()=>{const r=restoreWorkspace(wholeFile.text);say(r.ok,r.ok?'Whole workspace restored; prior snapshot retained.':r.error);if(r.ok)setWholeFile(null)}}/><Button label="Cancel selection" small variant="ghost" onPress={()=>setWholeFile(null)}/></View>:null}
         <Button label="Create recovery snapshot" small variant="secondary" onPress={()=>{if(createSnapshot())say(true,'Local recovery snapshot created')}}/>
       </Fold>

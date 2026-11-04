@@ -1,8 +1,22 @@
-# Niyarvo Projects — current source update v0.5.31
+# Niyarvo Projects — full source v0.5.58
 
-v0.5.53 is a complete local-first Expo SDK 58 project source release. It builds on the v0.5.52 baseline, preserves the existing project/workspace data format and uses a single release changelog: `docs/changelog/CHANGELOG.md`.
+Expo SDK 58 app for Android/iOS and Web, based on verified v0.5.57 UI Hotfix. **Application version is 0.5.58**; there is no workspace, backup, or `.niyav` format change.
 
-## Historical release documentation
+**v0.5.58 brand motion:** The user-approved flicker-free N-to-Board logo morph is now a single cross-platform `react-native-svg` component. A logo-only splash plays at 1× on each cold JS launch, after saved theme preferences load, before the workspace mounts. The mobile drawer shows the animated Board mark at 1.5× on every opening; the desktop rail uses the finished static Board mark. The appearance toggle is immediately beside the drawer hamburger. Source animation data and math live in `src/components/brand/`. No WebView, new packages, masks or extra branding elements are used. Six Board windows open sequentially in 3–2–1 order. Reduced-motion users see the completed mark immediately.
+
+**User-selected color palette:** `src/ui/theme/themePalette.cjs` contains the exact 10 color rows supplied by the user (including Daylight Amber `#FFA500`, Orange `#E65A19`, and Dark Orange `#FF6F61`). AMOLED keeps pure black `#000000` and darkens card/secondary surfaces with multipliers `0.50` and `0.35`. Other brightness tokens are unchanged. All theme-accent-filled action buttons and their icons now use white ink by explicit user request. This can reduce text contrast on the lightest accent colors.
+
+**Navigation and branding:** The hamburger has three horizontal strokes at 18px (20% larger than the previous 15px icon), rotating into three vertical strokes while the menu is open. The drawer appearance icon is sun in Daylight, outline moon in Dark, and filled moon in AMOLED. The open hamburger is rendered once inside the drawer at the original top-left header position, never floating outside the panel. **PROJECTS** uses a custom vector monoline word mask matching the hand-outlined Niyarvo wordmark; its transparent PNG is 20% smaller, tinted to the exact active accent (matching the selected Board accent family), and right aligned. No font assets or new dependencies are needed.
+
+**Password checks:** An existing encrypted `.niyav` backup cannot verify an incorrect password until its stored PBKDF2 key-derivation work is complete. We do not add a cheap password check because that would speed up offline attacks. The Backup UI explains progress and keeps the selected encrypted file in memory for a retry after a wrong password; typed passwords are cleared promptly.
+
+**Background limitations:** Navigating within the app does not cancel jobs. On Web, completed encrypted backups are memory-only and are lost after a page reload; download before refreshing. Android/iOS may pause ordinary Expo Go JavaScript after switching apps, and process termination interrupts unfinished jobs. Completed encrypted files are retained for later download; encrypted material only is persisted. A completion event received while backgrounded is shown when the app returns to the foreground. This is an in-app notification, not an operating-system push.
+
+**Termux update:** Keep existing `.git`, dependencies and app data. Extract this full ZIP into `~/NiyarvoProjects`, run `npm test`, then `npx expo start --clear`. This version adds no dependencies; `npm install` is not required if v0.5.54 is already installed. Confirm a newly exported encrypted file and an older `.niyav` open on your Android before committing. The archive has no enclosing top-level folder.
+
+Current release notes and QA: `docs/changelog/CHANGELOG.md` and `docs/qa/modern/NP-v0.5.58-PONYTAIL-AUDIT.md`.
+
+## Historical release documentation (older setup instructions below are archival)
 
 # Niyarvo Projects v0.5.9 — Governance migration
 

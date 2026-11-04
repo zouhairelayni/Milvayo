@@ -17,7 +17,7 @@ export function HeaderControls({controls}) {
       contentContainerStyle={{flexDirection:'row',alignItems:'center',minHeight:44,paddingHorizontal:2,borderRadius:radius.sm,backgroundColor:c.surfaceAlt}}>
       {['Days','Weeks','Months'].map(value => <Pressable key={value} accessibilityRole="button" accessibilityLabel={`${value} zoom`}
         accessibilityState={{selected:controls.value===value}} onPress={()=>controls.onChange(value)}
-        style={({pressed})=>({paddingHorizontal:9,minHeight:44,borderRadius:radius.sm,
+        style={({pressed})=>({paddingHorizontal:8,minHeight:40,borderRadius:radius.sm,
           backgroundColor:controls.value===value?c.surface:'transparent',justifyContent:'center',opacity:pressed?.75:1})}>
         <T size={12} weight={controls.value===value?'600':'400'} color={controls.value===value?c.ink:c.muted}>{value}</T>
       </Pressable>)}
@@ -45,7 +45,7 @@ export function TopBar({ query, onQuery, onNew, onPickProject, controls }) {
           style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
       </View>
       <HeaderControls controls={controls} />
-      <Button label="New task" icon="plus" small headerCompact onPress={onNew} />
+      <Button label="New task" icon="plus" small onPress={onNew} />
     </View>
   );
 }

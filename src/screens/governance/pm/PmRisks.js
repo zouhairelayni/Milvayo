@@ -6,7 +6,7 @@ import { Pressable, View } from 'react-native';
 import { Button, Card, Cell, Chip, Grid, Input, Segmented, SectionTitle, Stat, T } from '../../../ui/ui';
 import { DangerConfirm } from '../../../components/inline/CompactTools';
 import MarkdownField from '../../../components/inline/MarkdownField';
-const {buttonInk} = require('../../../ui/theme/rivnaPalette.cjs');
+const {buttonInk} = require('../../../ui/theme/themePalette.cjs');
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import {

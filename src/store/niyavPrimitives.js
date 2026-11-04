@@ -1,16 +1,16 @@
 // /src/store/niyavPrimitives.js
 import { Gunzip, gzipSync, strFromU8, strToU8 } from 'fflate';
-import { hmac } from '@noble/hashes/hmac';
-import { sha256 } from '@noble/hashes/sha256';
-import { gcm } from '@noble/ciphers/aes';
+import { sha256 } from 'js-sha256';
 import * as Crypto from 'expo-crypto';
 
 const { createCodec, NiyavError } = require('./niyav.cjs');
 const { pbkdf2Chunked } = require('./pbkdf2Chunked.cjs');
+const { createExpoAesGcm } = require('./expoAesGcm.cjs');
+const aes = createExpoAesGcm(Crypto);
 
-// Pure-JavaScript, audited primitives that run unchanged in Expo Go, Android, iOS and the browser:
-// fflate (gzip), @noble/hashes (HMAC-SHA256 for PBKDF2), @noble/ciphers (AES-256-GCM), expo-crypto (secure randomness).
-// Install: npm install fflate@0.8.2 @noble/hashes@1.8.0 @noble/ciphers@1.3.0 && npx expo install expo-crypto
+// Portable backup: fflate gzip, maintained js-sha256 HMAC for sliced PBKDF2 on Expo Go,
+// and Expo SDK 58 native AES-256-GCM + secure randomness. Web Crypto accelerates PBKDF2 on HTTPS.
+// The .niyav v1 wire format, SHA-256 KDF and 16-byte GCM authentication tag are unchanged.
 
 const concat = (chunks, total) => {
   const out = new Uint8Array(total);
@@ -72,11 +72,12 @@ const primitives = {
   pbkdf2: async (password, salt, iterations, dkLen, options) => {
     const fast = await nativePbkdf2(password, salt, iterations, dkLen, options);
     if (fast) return fast;
-    const keyed = hmac.create(sha256, password);
-    return pbkdf2Chunked((message) => keyed.clone().update(message).digest(), salt, iterations, dkLen, options);
+    // Create a new HMAC per PBKDF2 round; always pass binary data, never strings.
+    // The algorithm and the derived keys are unchanged from Noble/Node PBKDF2.
+    return pbkdf2Chunked((message) => Uint8Array.from(sha256.hmac.create(password).update(message).array()), salt, iterations, dkLen, options);
   },
-  aesGcmEncrypt: (key, nonce, aad, plain) => gcm(key, nonce, aad).encrypt(plain),
-  aesGcmDecrypt: (key, nonce, aad, sealed) => gcm(key, nonce, aad).decrypt(sealed),
+  aesGcmEncrypt: aes.encrypt,
+  aesGcmDecrypt: aes.decrypt,
   randomBytes: (n) => Crypto.getRandomBytes(n),
 };
 
@@ -106,12 +107,12 @@ async function checkCrypto() {
     const key = Uint8Array.from({ length: 32 }, (_, i) => i);
     const nonce = Uint8Array.from({ length: 12 }, (_, i) => i + 100);
     const aad = strToU8('niyav-kat-aad');
-    const sealed = primitives.aesGcmEncrypt(key, nonce, aad, strToU8('niyarvo known answer'));
+    const sealed = await primitives.aesGcmEncrypt(key, nonce, aad, strToU8('niyarvo known answer'));
     if (toHex(sealed) !== KAT.aes) throw fail();
-    if (strFromU8(primitives.aesGcmDecrypt(key, nonce, aad, sealed)) !== 'niyarvo known answer') throw fail();
+    if (strFromU8(await primitives.aesGcmDecrypt(key, nonce, aad, sealed)) !== 'niyarvo known answer') throw fail();
     const bad = sealed.slice(); bad[0] ^= 1;
     let rejected = false;
-    try { primitives.aesGcmDecrypt(key, nonce, aad, bad); } catch { rejected = true; }
+    try { await primitives.aesGcmDecrypt(key, nonce, aad, bad); } catch { rejected = true; }
     if (!rejected) throw fail();
     const a = primitives.randomBytes(16), b = primitives.randomBytes(16);
     if (a.length !== 16 || toHex(a) === toHex(b)) throw fail();

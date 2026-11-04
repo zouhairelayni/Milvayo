@@ -1,8 +1,10 @@
 // /src/components/shell/Menus.js
 import { useEffect, useState } from 'react';
 import { Image, Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import DrawerMotion from './DrawerMotion';
+import MenuToggle from './MenuToggle';
+import BoardMorph from '../brand/BoardMorph';
 import { radius, useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
 import { Button, IconBtn, Input, T } from '../../ui/ui';
@@ -11,17 +13,17 @@ import InlineNotice from '../notice/InlineNotice';
 import CreateProjectSheet from '../../screens/governance/CreateProjectSheet';
 
 // Side navigation shared by the wide layout (Sidebar) and the phone layout (SideMenu).
-export function Brand({ narrow = false, symbolOnly = false, compact = false }) {
+export function Brand({ narrow = false, symbolOnly = false, compact = false, animated = false, active = false }) {
   const { c } = useTheme();
-  const mark = <Image source={require('../../../assets/niyarvo-mark-mask.png')}
-    resizeMode="contain" style={{width:symbolOnly?34:compact?25:42,height:symbolOnly?34:compact?25:42,tintColor:c.accent}} accessibilityLabel="Niyarvo mark" />;
+  const mark = <BoardMorph size={symbolOnly?34:compact?25:42} speed={1.5} active={animated && active} />;
   if(symbolOnly)return mark;
   return <View accessible accessibilityLabel="Niyarvo Projects" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:compact?92:narrow?172:220}}>
     {mark}
     <View style={{width:compact?60:narrow?119:158,gap:1,alignItems:'flex-end'}}>
       <Image source={require('../../../assets/niyarvo-word-mask.png')} resizeMode="stretch"
         style={{width:compact?60:narrow?119:158,height:compact?17:narrow?30:39,tintColor:c.ink}} />
-      <T weight="400" size={11} color={c.accentText} style={{letterSpacing:compact?0:narrow?1:2.1,textAlign:'right',width:compact?60:narrow?119:158}}>PROJECTS</T>
+      <Image source={require('../../../assets/projects-word-mask.png')} resizeMode="stretch"
+        style={{width:compact?38:narrow?75:102,height:compact?7:narrow?11:14,tintColor:c.accent,alignSelf:'flex-end'}} />
     </View>
   </View>;
 }
@@ -347,16 +349,23 @@ export function SideMenu({ nav, visible, current, go, onClose, onPickProject, on
             backgroundColor: c.surface,
             borderRightWidth: 1,
             borderColor: c.line,
-            paddingTop: Platform.OS === 'ios' ? 64 : 52,
+            paddingTop: Platform.OS === 'ios' ? 52 : 12,
             paddingHorizontal: 12,
             paddingBottom: 24,
             overflow: 'hidden',
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 0, marginBottom: 16 }}>
-            <Brand narrow />
-            <IconBtn icon={mode === 'light' ? 'moon' : mode === 'amoled' ? 'moon' : 'sun'} label="Cycle light, dark and AMOLED appearance" onPress={onToggleMode} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <MenuToggle open={visible} animateBeforeClose onPress={onClose} />
+            <Pressable accessibilityRole="button" accessibilityLabel="Cycle light, dark and AMOLED appearance"
+              onPress={onToggleMode} hitSlop={4} style={({ pressed }) => ({ width: 40, height: 40, borderRadius: radius.sm,
+                alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceAlt, opacity: pressed ? .7 : 1 })}>
+              {mode === 'light' ? <Feather name="sun" size={17} color={c.ink} />
+                : mode === 'amoled' ? <FontAwesome5 name="moon" solid size={17} color={c.ink} />
+                : <Feather name="moon" size={17} color={c.ink} />}
+            </Pressable>
           </View>
+          <View style={{ marginBottom: 16 }}><Brand narrow animated active={visible} /></View>
           <WorkspaceRow onPress={() => setSpaces(true)} />
           <ProjectCard onPress={() => setDrawer(true)} />
           <NavGroups nav={nav} current={current} go={go} />

@@ -9,19 +9,19 @@ const { createCommitBuffer } = require('./commitBuffer.cjs');
 export function Chip({ label, active, onPress, color }) {
   const { c } = useTheme();
   const style = (pressed = false) => ({
-        paddingHorizontal: 12,
-        paddingVertical: 7,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: radius.sm,
-        minHeight: 44, justifyContent: 'center',
+        minHeight: 40, justifyContent: 'center',
         borderWidth: 1,
         borderColor: active ? c.ink : c.line,
         backgroundColor: active ? c.ink : 'transparent',
         opacity: pressed ? 0.7 : 1,
   });
-  const content = <T size={13} weight="600" color={active ? c.bg : color || c.ink}>{label}</T>;
+  const content = <T size={12} weight="600" color={active ? c.bg : color || c.ink}>{label}</T>;
   if (!onPress) return <View style={style()}>{content}</View>;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={String(label)}
+    <Pressable onPress={onPress} hitSlop={2} accessibilityRole="button" accessibilityLabel={String(label)}
       accessibilityState={{ selected: !!active }} style={({ pressed }) => style(pressed)}>
       {content}
     </Pressable>
@@ -39,12 +39,13 @@ export function Segmented({ options, value, onChange, fill }) {
           <Pressable
             key={String(o.value)}
             onPress={() => onChange(o.value)}
+            hitSlop={2}
             accessibilityRole="radio"
             accessibilityLabel={String(o.label)}
             accessibilityState={{checked:on}}
-            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 7, minHeight: 44, justifyContent: 'center', backgroundColor: on ? c.surface : 'transparent' }}
+            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 7, minHeight: 40, justifyContent: 'center', backgroundColor: on ? c.surface : 'transparent' }}
           >
-            <T size={13} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
+            <T size={12} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -52,10 +53,12 @@ export function Segmented({ options, value, onChange, fill }) {
   );
 }
 
-export function Button({ label, onPress, icon, variant = 'primary', small, disabled, headerCompact = false }) {
+// One visual action size throughout the app. Legacy small/headerCompact callers use the same
+// 40-point visual height; hitSlop keeps isolated actions at least 44 points to touch.
+export function Button({ label, onPress, icon, variant = 'primary', disabled }) {
   const { c } = useTheme();
   const primary = variant === 'primary';
-  const fg = primary ? c.accentInk : variant === 'danger' ? c.accent : c.ink;
+  const fg = primary ? '#FFFFFF' : variant === 'danger' ? c.accent : c.ink;
   const bg = primary ? c.accent : variant === 'ghost' ? 'transparent' : c.surface;
   return (
     <Pressable
@@ -64,23 +67,23 @@ export function Button({ label, onPress, icon, variant = 'primary', small, disab
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      hitSlop={headerCompact ? 4 : undefined}
+      hitSlop={4}
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        gap: headerCompact ? 6 : 8,
+        gap: 6,
         alignSelf: 'flex-start', maxWidth:'100%', flexShrink:1,
-        paddingHorizontal: headerCompact ? 10 : small ? 12 : 16,
-        paddingVertical: headerCompact ? 6 : small ? 7 : 11,
-        borderRadius: radius.sm, minHeight: headerCompact ? 40 : 44,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: radius.sm, minHeight: 40,
         backgroundColor: bg,
         borderWidth: primary ? 0 : 1,
         borderColor: c.line,
         opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
       })}
     >
-      {icon ? <Feather name={icon} size={headerCompact ? 13 : small ? 14 : 16} color={fg} /> : null}
-      <T size={headerCompact ? 12 : small ? 13 : 14} weight="600" color={fg} numberOfLines={1} style={{flexShrink:1,lineHeight:headerCompact ? 16 : small?18:20}}>{label}</T>
+      {icon ? <Feather name={icon} size={13} color={fg} /> : null}
+      <T size={12} weight="600" color={fg} numberOfLines={1} style={{flexShrink:1,lineHeight:16}}>{label}</T>
     </Pressable>
   );
 }
@@ -92,12 +95,13 @@ export function IconBtn({ icon, onPress, solid, label }) {
       onPress={onPress}
       accessibilityLabel={label || icon}
       accessibilityRole="button"
+      hitSlop={4}
       style={({ pressed }) => ({
-        width: 44, height: 44, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center',
+        width: 40, height: 40, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center',
         backgroundColor: solid ? c.accent : c.surfaceAlt, opacity: pressed ? 0.7 : 1,
       })}
     >
-      <Feather name={icon} size={17} color={solid ? c.accentInk : c.ink} />
+      <Feather name={icon} size={15} color={solid ? '#FFFFFF' : c.ink} />
     </Pressable>
   );
 }
