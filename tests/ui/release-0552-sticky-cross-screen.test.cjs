@@ -87,7 +87,7 @@ test('Critical notices announce errors assertively',()=>{
 
 test('Current release is a full source version with one cumulative changelog',()=>{
   const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
-  assert.equal(pkg.version,'0.5.58');
+  assert.equal(pkg.version,'0.5.59');
   assert.equal(app.expo.version,pkg.version);
   assert.equal(lock.version,pkg.version);
   assert.equal(lock.packages[''].version,pkg.version);

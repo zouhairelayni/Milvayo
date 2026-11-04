@@ -59,5 +59,5 @@ test('Appearance uses sun / outline moon / filled moon, custom PROJECTS wordmark
   for (const file of ['assets/projects-word-mask.png','assets/projects-word-mask.svg']) {
     assert.ok(fs.statSync(path.join(root,file)).size>250,file);
   }
-  assert.equal(require('../../package.json').version,'0.5.58');
+  assert.equal(require('../../package.json').version,'0.5.59');
 });

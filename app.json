@@ -2,10 +2,10 @@
   "expo": {
     "name": "Niyarvo Projects",
     "slug": "niyarvoprojects",
-    "version": "0.5.58",
+    "version": "0.5.59",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#101217",
+    "backgroundColor": "#071328",
     "scheme": "niyarvoprojects",
     "web": {
       "name": "Niyarvo Projects",
@@ -13,19 +13,29 @@
       "description": "Local-first multi-project task and roadmap workspace",
       "bundler": "metro",
       "output": "single",
-      "favicon": "./public/icons/favicon.png"
+      "favicon": "./public/icons/favicon.png",
+      "themeColor": "#071328"
     },
     "android": {
       "package": "com.niyarvo.projects",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#101217"
-      }
+        "backgroundColor": "#071328",
+        "monochromeImage": "./assets/adaptive-monochrome.png"
+      },
+      "versionCode": 59
     },
     "ios": {
       "bundleIdentifier": "com.niyarvo.projects",
-      "icon": "./assets/icon.png"
+      "icon": "./assets/icon.png",
+      "buildNumber": "59"
     },
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "extra": {
+      "eas": {
+        "projectId": "4d326a78-51ce-401b-8fce-c8ba1aef3f29"
+      }
+    },
+    "owner": "zouhairelayni"
   }
 }
