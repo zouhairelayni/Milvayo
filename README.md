@@ -1,3 +1,23 @@
+# Niyarvo Projects — full source v0.5.58
+
+Expo SDK 58 app for Android/iOS and Web, based on verified v0.5.57 UI Hotfix. **Application version is 0.5.58**; there is no workspace, backup, or `.niyav` format change.
+
+**v0.5.58 brand motion:** The user-approved flicker-free N-to-Board logo morph is now a single cross-platform `react-native-svg` component. A logo-only splash plays at 1× on each cold JS launch, after saved theme preferences load, before the workspace mounts. The mobile drawer shows the animated Board mark at 1.5× on every opening; the desktop rail uses the finished static Board mark. The appearance toggle is immediately beside the drawer hamburger. Source animation data and math live in `src/components/brand/`. No WebView, new packages, masks or extra branding elements are used. Six Board windows open sequentially in 3–2–1 order. Reduced-motion users see the completed mark immediately.
+
+**User-selected color palette:** `src/ui/theme/themePalette.cjs` contains the exact 10 color rows supplied by the user (including Daylight Amber `#FFA500`, Orange `#E65A19`, and Dark Orange `#FF6F61`). AMOLED keeps pure black `#000000` and darkens card/secondary surfaces with multipliers `0.50` and `0.35`. Other brightness tokens are unchanged. All theme-accent-filled action buttons and their icons now use white ink by explicit user request. This can reduce text contrast on the lightest accent colors.
+
+**Navigation and branding:** The hamburger has three horizontal strokes at 18px (20% larger than the previous 15px icon), rotating into three vertical strokes while the menu is open. The drawer appearance icon is sun in Daylight, outline moon in Dark, and filled moon in AMOLED. The open hamburger is rendered once inside the drawer at the original top-left header position, never floating outside the panel. **PROJECTS** uses a custom vector monoline word mask matching the hand-outlined Niyarvo wordmark; its transparent PNG is 20% smaller, tinted to the exact active accent (matching the selected Board accent family), and right aligned. No font assets or new dependencies are needed.
+
+**Password checks:** An existing encrypted `.niyav` backup cannot verify an incorrect password until its stored PBKDF2 key-derivation work is complete. We do not add a cheap password check because that would speed up offline attacks. The Backup UI explains progress and keeps the selected encrypted file in memory for a retry after a wrong password; typed passwords are cleared promptly.
+
+**Background limitations:** Navigating within the app does not cancel jobs. On Web, completed encrypted backups are memory-only and are lost after a page reload; download before refreshing. Android/iOS may pause ordinary Expo Go JavaScript after switching apps, and process termination interrupts unfinished jobs. Completed encrypted files are retained for later download; encrypted material only is persisted. A completion event received while backgrounded is shown when the app returns to the foreground. This is an in-app notification, not an operating-system push.
+
+**Termux update:** Keep existing `.git`, dependencies and app data. Extract this full ZIP into `~/NiyarvoProjects`, run `npm test`, then `npx expo start --clear`. This version adds no dependencies; `npm install` is not required if v0.5.54 is already installed. Confirm a newly exported encrypted file and an older `.niyav` open on your Android before committing. The archive has no enclosing top-level folder.
+
+Current release notes and QA: `docs/changelog/CHANGELOG.md` and `docs/qa/modern/NP-v0.5.58-PONYTAIL-AUDIT.md`.
+
+## Historical release documentation (older setup instructions below are archival)
+
 # Niyarvo Projects v0.5.9 — Governance migration
 
 Niyarvo Projects is a local-first, cross-platform project management application using Expo and React Native. All screens now run inside the modern Niyarvo interface; the original v0.4.1 domain modules continue to validate the project data behind it.
@@ -31,7 +51,7 @@ The existing AsyncStorage key remains `niyarvo-projects-v1`. Never clear app dat
 
 ## Verification
 
-Source-level tests and syntax checks verify business-logic pathways but **cannot certify native Expo Go rendering or gestures**. In particular, verify Timeline task bars and dependency SVGs stay visible after initial mount, Kanban scrolling and long-press dragging, and navigation responsiveness on Android/iOS. The v0.5.9 changelog is under `docs/changelogs/modern-code/`, and its QA checklist is under `docs/qa/modern-code/`. Historical source documentation is archived separately in `docs/legacy-code/`.
+Source-level tests and syntax checks verify business-logic pathways but **cannot certify native Expo Go rendering or gestures**. In particular, verify Timeline ribbon and calendar remain pinned while vertically scrolling, and task bars and dependency SVGs stay visible after initial mount, Kanban scrolling and long-press dragging, and navigation responsiveness on Android/iOS. The consolidated complete v0.1.0–v0.5.53 change history is in the repository-root `docs/changelog/CHANGELOG.md`.
 
 ## v0.5.2 task experience
 
@@ -74,7 +94,7 @@ Native inline notices use Reanimated motion and are anchored below the phone hea
 
 ## v0.5.7 — Dynamic Island at the top safe area
 
-Moved the existing in-app Dynamic Island animation to a top-of-window layer with a platform-aware status-bar/notch inset and 10-point visual clearance. The animation and dismissal behavior are unchanged. On phones it may temporarily overlap the header while expanded, but it no longer sits over task filters or the scrolling page. This is not a system notification. See `docs/changelogs/modern-code/CHG-NP-0.5.7.md`.
+Moved the existing in-app Dynamic Island animation to a top-of-window layer with a platform-aware status-bar/notch inset and 10-point visual clearance. The animation and dismissal behavior are unchanged. On phones it may temporarily overlap the header while expanded, but it no longer sits over task filters or the scrolling page. This is not a system notification. See the current consolidated changelog (`docs/changelog/CHANGELOG.md`) for new changes.
 
 ## v0.5.8 — Web scroll and offscreen rendering fix
 

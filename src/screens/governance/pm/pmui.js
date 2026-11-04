@@ -13,7 +13,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const Field = ({ label, children, hint, style }) => (
   <View style={[{ gap: 8 }, style]}>
-    <T size={11} weight="600" muted upper>{label}</T>
+    <T size={12} weight="500" muted>{label}</T>
     {hint ? <T size={12} muted style={{ marginTop: -4 }}>{hint}</T> : null}
     {children}
   </View>
@@ -66,8 +66,10 @@ export function MiniBtn({ icon, onPress, label, danger, disabled }) {
       onPress={onPress}
       disabled={disabled}
       accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{disabled:!!disabled}}
       hitSlop={6}
-      style={({ pressed }) => ({ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceAlt, opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}
+      style={({ pressed }) => ({ width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceAlt, opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}
     >
       <Feather name={icon} size={15} color={danger ? c.accent : c.ink} />
     </Pressable>
@@ -122,7 +124,7 @@ export function TableEditor({ cols, rows, onChange, addLabel = 'Add row' }) {
       {arr.map((r, n) => (
         <View key={r.id} style={{ gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: c.line, backgroundColor: c.bg }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <T size={11} weight="700" muted upper>Row {n + 1}</T>
+            <T size={12} weight="500" muted>Row {n + 1}</T>
             <MiniBtn icon="trash-2" label="Delete row" danger onPress={() => onChange(arr.filter((x) => x.id !== r.id))} />
           </View>
           <Row>

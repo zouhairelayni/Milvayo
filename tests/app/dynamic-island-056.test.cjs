@@ -16,9 +16,9 @@ test('Dynamic Island has distinct compact, expanded and closing phases with inte
 });
 test('errors stay visible until dismissed and ordinary updates auto-collapse',()=>{
  const source=read('src/components/notice/IslandNotice.js');
- assert.match(source,/display\.type==='error'\) return undefined/);
- assert.match(source,/setStage\('compact'\),display\.type==='warning'/);
- assert.match(source,/setTimeout\(dismiss,1250\)/);
+ assert.match(source,/display\.type === 'error'\) return undefined/);
+ assert.match(source,/setStage\('compact'\), display\.type === 'warning'/);
+ assert.match(source,/setTimeout\(dismiss, 1250\)/);
 });
 test('Android and iOS use Reanimated UI-thread worklets to animate island dimensions',()=>{
  const native=read('src/components/notice/NoticeMotion.native.js');
@@ -35,6 +35,6 @@ test('Desktop web animates state transitions and safe-area anchors remain in the
  assert.match(web,/Animated\.timing/);
  assert.match(web,/inputRange/);
  const shell=read('src/app/ModernApp.js');
- assert.match(shell,/topOffset=\{Math\.max\(20, insets\.top \+ 16\)\}/);
- assert.match(shell,/topOffset=\{noticeTopOffset\(insets, Platform\.OS, NativeStatusBar\.currentHeight\)\}/);
+ assert.match(shell,/wide \? Math\.max\(20, insets\.top \+ 16\)/);
+ assert.match(shell,/noticeTopOffset\(insets, Platform\.OS, NativeStatusBar\.currentHeight\)/);
 });

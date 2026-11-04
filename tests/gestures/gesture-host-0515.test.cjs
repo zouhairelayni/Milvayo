@@ -14,8 +14,9 @@ test('Timeline owns its intercepting detector and seeds it so it is born in Rean
  assert.match(host,/<InterceptingGestureDetector gesture=\{seed\}>/);
  const timeline=read('src/screens/timeline/Timeline.js');
  assert.match(timeline,/import TimelineGestureHost from '\.\.\/\.\.\/gestures\/TimelineGestureHost'/);
- assert.match(timeline,/<TimelineGestureHost>\s*<Page\s+title="Timeline"/);
- assert.match(timeline,/<\/Page>\s*<\/TimelineGestureHost>/);
+ assert.match(timeline,/<TimelineGestureHost>\s*<View style=\{\{ flex: 1 \}\}>/);
+ assert.match(timeline,/<Page\s+title="Timeline"/);
+ assert.match(timeline,/<\/Page>\s*<\/View>\s*<\/TimelineGestureHost>/);
  assert.equal(/InterceptingGestureDetector/.test(read('src/gestures/TimelineGestureHost.js')),false,'web/fallback has no native wrapper');
 });
 test('no recovery layers mask a remount; a tripwire reports it instead',()=>{

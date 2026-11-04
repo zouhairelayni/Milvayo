@@ -151,5 +151,5 @@ heading+='''
 
 The repository inventory does not verify which capabilities are paid Enterprise features, which services require extra infrastructure, or every branch of their underlying domain rules. For implementation, inspect the corresponding tests/contracts and design a Niyarvo-specific specification per batch. In particular, OpenProject's accounting, BIM, external storages, and enterprise identity integrations are **not** implicit commitments to implement those capabilities immediately.
 '''
-out=Path(__file__).resolve().parents[1]/'docs/NP-OPENPROJECT-CAPABILITY-MAP-v1.md';out.write_text(heading)
+out=Path(__file__).resolve().parents[1]/'reference/NP-OPENPROJECT-CAPABILITY-MAP-v1.md';out.write_text(heading)
 print('wrote',out,len(C),'capabilities',len(modules),'modules','bytes',len(heading))

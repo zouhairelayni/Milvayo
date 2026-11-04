@@ -114,7 +114,7 @@ test('store wiring: per-key writer, serialized switches, epoch and import guards
   assert.match(store, /epoch!==epochRef\.current\)return false/);
   assert.match(store, /expectWorkspaceId&&expectWorkspaceId!==/);
   assert.match(store, /workspaces\.removeItem\(cur,id\); \/\/ refuses the last workspace/);
-  assert.match(read('src/screens/workspace/Backup.js'), /importProject\(text, workspaceId\)/);
+  assert.match(read('src/screens/workspace/Backup.js'), /importProject\(text, originWorkspaceId\)/);
   const app = read('src/app/ModernApp.js');
   assert.match(app, /const projectId = `\$\{workspaceId\}\//);
   assert.doesNotMatch(app, /key=\{`\$\{workspace\.selectedId\}/);

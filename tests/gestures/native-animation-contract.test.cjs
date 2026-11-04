@@ -39,9 +39,9 @@ test('web retains original mock drag behavior, task sheet is inline', () => {
 test('native drag and timeline reuse original card and grid spacing', () => {
   const board = read('src/screens/board/Board.js');
   const time = read('src/screens/timeline/Timeline.js');
-  assert.match(board, /COL_WIDE = 290/);
-  assert.match(board, /COL_NARROW = 272/);
-  assert.match(board, /GAP = 12/);
+  assert.match(board, /COL_WIDE = 320/);
+  assert.match(board, /COL_NARROW = 280/);
+  assert.match(board, /GAP = 14/);
   assert.match(board, /BoardMotion/);
   assert.match(board, /from '\.\.\/\.\.\/board\/boardGesture'/);
   assert.doesNotMatch(board, /DragMotion|GestureArea|gestureSurface/);

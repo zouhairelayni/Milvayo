@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { T } from '../ui/ui';
+import { T } from '../ui/uiBase';
 const model=require('../domain/model.cjs');
 const {localDay}=require('../utils/localDay.cjs');
 const bridge=require('../domain/modernBridge.cjs');
@@ -124,8 +124,11 @@ export function StoreProvider({children}){
    }catch(e){notify(e.message,'error');return false}},
   flush:()=>writer.current?.flush()??Promise.resolve(true), // no writer yet (startup): nothing to save
   switchProject:id=>trans(w=>model.selectWorkspaceProject(w,id),`Opened project ${id}`),
-  createProject:name=>{const clean=String(name||'').trim();if(!clean){setFault('Project name required');return null;}
-    const p=model.makeProject({id:model.id('project'),name:clean,code:clean.replace(/[^a-z0-9]/gi,'').slice(0,7).toUpperCase()||'NEW'});
+  createProject:input=>{const details=input&&typeof input==='object'?input:{name:input};
+    const clean=String(details.name||'').trim();if(!clean){setFault('Project name required');return null;}
+    const code=String(details.code||clean.replace(/[^a-z0-9]/gi,'').slice(0,7).toUpperCase()||'NEW').trim();
+    const p=model.makeProject({id:model.id('project'),name:clean,code,description:details.description||'',
+      governance:{info:{manager:details.manager||'',sponsor:details.sponsor||'',objective:details.objective||''}}});
     if(!trans(w=>({...w,selectedId:p.id,projects:[...w.projects,p]}),`Created project ${p.name}`))return null;return p.id;},
   archiveProject:id=>{const w=currentRef.current;if((w?.projects||[]).filter(p=>!p.archived).length<2)return 'last';return trans(w=>model.archiveProject(w,id,true),`Archived project ${id}`)},
   recoverProject:id=>trans(w=>model.archiveProject(w,id,false),`Recovered project ${id}`),

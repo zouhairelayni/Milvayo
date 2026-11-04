@@ -4,7 +4,7 @@ const { NiyavError } = require('./niyav.cjs');
 
 // PBKDF2-HMAC-SHA256 for ONE 32-byte block (all .niyav files use dkLen 32), run in short slices.
 // Between slices it waits on a timer (a macrotask), so taps and screen changes are handled while the key is
-// derived. @noble's pbkdf2Async only yields on a microtask, which never lets the phone process a touch.
+// derived. Microtask-only PBKDF2 would block phone touches; yield to timers instead.
 // `mac(message)` is HMAC-SHA256 keyed with the password, injected so this file is tested against Node's crypto.
 // shortcut: dkLen above 32 is refused, add block counters if a longer key is ever needed.
 const wait = () => new Promise((resolve) => setTimeout(resolve, 0));

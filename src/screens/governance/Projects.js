@@ -13,6 +13,8 @@ import { PM_DOCS, DOC_GROUPS, DOC_COLOR, DOC_BY_KEY, docOf, docProgress, PHASES,
 import { DocView, BudgetView } from './pm/PmDocs';
 import PmRisks from './pm/PmRisks';
 import PmWbs from './pm/PmWbs';
+import CreateProjectSheet from './CreateProjectSheet';
+import TaskMarkdown from '../../components/inline/TaskMarkdown';
 import { Field, Choice, DateInput } from './pm/pmui';
 
 // Project lifecycle lives here; Backup contains files and recovery, not editing.
@@ -22,13 +24,11 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
  const [detail,setDetail]=useState(projectRequest),[tab,setTab]=useState('overview');
  // Opened from a portfolio or program: show that project's governance detail.
  useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest);setTab('overview');onProjectRequestHandled?.()},[projectRequest]);
- const [draft,setDraft]=useState('');
+ const [creating,setCreating]=useState(false);
  const openDetail=useCallback(id=>{setDetail(id);setTab('overview')},[]);
  const content=<>
-  <Fold title="Create project" subtitle="A new project starts with an empty board" initial={false}>
-   <Labeled title="Project name" value={draft} onChange={setDraft} placeholder="Project name"/>
-   <Button label="Create project" small disabled={!draft.trim()} onPress={()=>{if(createProject(draft)){setDraft('')}}}/>
-  </Fold>
+  <Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>
+  <CreateProjectSheet visible={creating} onClose={()=>setCreating(false)} onCreated={openDetail}/>
   {open.map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
   <T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>
  </>;
@@ -55,9 +55,9 @@ const ProjectCard=memo(function ProjectCard({p,canArchive,canDelete,onOpen}){
    <EditRow title="Project settings" summary="Name, code, description and management">
     {editing?<View style={{gap:10}}>
      <Labeled title="Name" value={name} onChange={setName}/><Labeled title="Code" value={code} onChange={setCode}/>
-     <Labeled title="Description" value={description} onChange={setDescription} multiline/>
+     <Labeled title="Description" value={description} onChange={setDescription} markdown/>
      <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button small label="Save changes" disabled={!name.trim()||!code.trim()} onPress={save}/><Button small label="Cancel" variant="ghost" onPress={()=>setEditing(false)}/></View>
-    </View>:<Button label="Edit project" small variant="secondary" onPress={start}/>}
+    </View>:<View style={{gap:10}}>{p.description?<TaskMarkdown source={p.description}/>:null}<Button label="Edit project" small variant="secondary" onPress={start}/></View>}
     <Button label="Duplicate as template" small variant="secondary" onPress={()=>{const id=duplicateProject(p.id,`${p.name} template`);if(id)onOpen(id)}}/>
     <T muted size={12}>Archiving hides this project without deleting data. Deleting removes it from portfolios and programs and creates a recovery snapshot.</T>
     {canArchive?<DangerConfirm label="Archive project" onConfirm={()=>archiveProject(p.id)}/>:<T size={12} muted>Last active project cannot be archived.</T>}
@@ -71,7 +71,7 @@ const DocGroups=memo(function DocGroups({pm,setTab}){
  const {c}=useTheme();
  return <>{DOC_GROUPS.map(group=><Card key={group} style={{gap:10}}><T size={13} weight="700">{group}</T>{PM_DOCS.filter(d=>d.group===group).map(d=>{
     const status=docOf(pm,d.key).status,done=docProgress(pm,d.key);
-    return <Pressable key={d.key} onPress={()=>setTab(d.key)} style={{gap:6,paddingVertical:7,borderBottomWidth:1,borderColor:c.line}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{flex:1,gap:3}}><T weight="600">{d.title}</T><T size={11} muted>{Math.round(done*100)}% complete</T></View><Pill label={status} color={DOC_COLOR[status]}/><Feather name="chevron-right" size={16} color={c.muted}/></View><Bar height={4} value={done} color={DOC_COLOR[status]}/></Pressable>})}</Card>)}</>;
+    return <Pressable key={d.key} accessibilityRole="button" accessibilityLabel={`Open ${d.title}`} onPress={()=>setTab(d.key)} style={{gap:6,paddingVertical:7,borderBottomWidth:1,borderColor:c.line}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{flex:1,gap:3}}><T weight="600">{d.title}</T><T size={11} muted>{Math.round(done*100)}% complete</T></View><Pill label={status} color={DOC_COLOR[status]}/><Feather name="chevron-right" size={16} color={c.muted}/></View><Bar height={4} value={done} color={DOC_COLOR[status]}/></Pressable>})}</Card>)}</>;
 },(a,b)=>a.setTab===b.setTab&&a.pm.docs===b.pm.docs&&a.pm.wbs===b.pm.wbs&&a.pm.budget===b.pm.budget&&a.pm.risks===b.pm.risks);
 
 function ProjectGovernance({back,tab,setTab}){

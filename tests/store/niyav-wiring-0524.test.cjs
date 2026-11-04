@@ -26,8 +26,8 @@ test('the known-answer vectors embedded in the app primitives match Node crypto 
 
 test('the app primitives fail closed: self-test before any protected file is made or opened', () => {
   const src = read('src/store/niyavPrimitives.js');
-  assert.match(src, /from 'fflate'/); assert.match(src, /from '@noble\/hashes\/hmac'/);
-  assert.match(src, /from '@noble\/ciphers\/aes'/); assert.match(src, /from 'expo-crypto'/);
+  assert.match(src, /from 'fflate'/); assert.match(src, /from 'js-sha256'/);
+  assert.match(src, /from 'expo-crypto'/); assert.match(src, /createExpoAesGcm\(Crypto\)/);
   assert.match(src, /encode: async \(text, options\) => \{ await selfTest\(/);
   assert.match(src, /decode: async \(bytes, options\) => \{ await selfTest\(base\.sniff\(bytes\) === 'encrypted'\)/);
   assert.match(src, /new Gunzip\(/, 'inflate is streamed and limited, never one unbounded call');
@@ -57,17 +57,19 @@ test('byte readers: Android picker, iOS picker, cancel, size limits', async () =
 
 test('Backup screen: formats, password rules, protected-file unlock, no password kept', () => {
   const src = read('src/screens/workspace/Backup.js');
-  assert.match(src, /niyavCodec\.encode\(text,\{password:protect\?pw:undefined,level,\.\.\.job\}\)/, 'no password means a plain gzip file, never an empty one');
+  assert.match(src, /niyavCodec\.encode\(text\)/, 'unprotected .niyav still contains gzip');
+  assert.match(src, /backupJobs\.startExport\(\{ filename: `\$\{base\}\.niyav`, text, password: protect\?pw:undefined, level, protected:protect \}\)/);
   assert.match(src, /Array\.from\(pw\)\.length<MIN_PASSWORD/);
   assert.match(src, /pw!==pw2/);
-  assert.match(src, /if\(protect\)\{setPw\(''\);setPw2\(''\)\}/, 'the password fields are cleared after a protected export');
+  assert.match(src, /setPw\(''\);setPw2\(''\)/, 'passwords cleared as soon as background operation starts');
   assert.match(src, /niyavCodec\.sniff\(bytes\)==='encrypted'\)\{setLocked\(/);
-  assert.match(src, /niyavCodec\.decode\(locked\.bytes,\{password:unlockPw,\.\.\.job\}\)/);
-  assert.match(src, /setLocked\(null\);setUnlockPw\(''\)/);
+  assert.match(src, /backupJobs\.startUnlock\(\{ bytes: locked\.bytes, password: unlockPw/);
+  assert.match(src, /setLocked\(null\);\s*setUnlockPw\(''\)/);
   assert.equal((src.match(/<Input secure/g) || []).length, 3, 'every password field is a secure field');
   assert.equal(/console\.|AsyncStorage|diagnosticMonitor/.test(src), false, 'the password never reaches logs, storage or diagnostics');
   assert.match(src, /\.niyav/);
   assert.match(src, /downloadBytes\(`\$\{base\}\.niyav`/);
+  assert.match(src, /label="Download backup"/);
   assert.match(src, /backupText\(all,\{snapshots:withSnapshots,projectId\}\)/);
   assert.match(src, /cannot be opened by anyone/);
 });

@@ -1,11 +1,13 @@
 // /src/screens/tasks/Tasks.js
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, T, useWide } from '../../ui/ui';
-import { useStore } from '../../store/store';
+import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
+import { useStore, useScreenActive } from '../../store/store';
+import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
+import { TaskConfiguration } from '../management/Management';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, STATUS, fmt } from '../../store/data';
 
@@ -17,12 +19,18 @@ const PAGE_SIZE = Platform.OS === 'web' ? 80 : 20;
 const SORTS = { Due: { sort: 'due', descending: false }, Priority: { sort: 'priority', descending: true }, Progress: { sort: 'progress', descending: false }, Title: { sort: 'title', descending: false }, Manual: { sort: 'position', descending: false } };
 const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 
-export default function Tasks({ openTask, query = '', statusRequest = null }) {
+export default function Tasks({ openTask, onNewTask, query = '', statusRequest = null }) {
   const { c } = useTheme();
   const wide = useWide();
+  // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
+  const roomForColumns = useWindowDimensions().width >= 1080;
   const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [viewName,setViewName]=useState('');
+  const [toolsOpen,setToolsOpen]=useState(false);
+  const screenActive = useScreenActive();
+  const headerControls = useMemo(() => ({actions:[{label:'Tools',icon:'sliders',variant:'secondary',onPress:()=>setToolsOpen(true)}]}),[]);
+  useHeaderActions('tasks', headerControls, screenActive);
   const [q, setQ] = useState(query);
   const [filter, setFilter] = useState('All');
   const [labelFilter,setLabelFilter]=useState('All');
@@ -75,7 +83,6 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
     <Page
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
-      actions={<Button label="New task" icon="plus" small onPress={() => openTask(addTask('Untitled task', 'Backlog', MAIN))} />}
     >
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
@@ -83,7 +90,8 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
         </View>
       </View>
 
-      <Fold title="Filters & tags" subtitle={`${filter === 'All' ? 'All statuses' : filter} · ${labelFilter === 'All' ? 'All tags' : labelFilter} · sorted by ${sort} · ${layout} · ${list.length} tasks`}>
+      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Tools" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
+      <T size={16} weight="600">Filters & tags</T>
         <T size={12} muted weight="600">Status</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {['All', ...STATUS].map(st => <Chip key={st} label={st==='All'?`All ${s.tasks.length}`:`${st} ${counts[st]||0}`} active={filter===st} onPress={()=>setFilter(st)}/>)}
@@ -111,13 +119,13 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
           {allLabels.map(tag=><Chip key={tag} label={tag} active={labelFilter===tag} onPress={()=>setLabelFilter(tag)}/>)}
         </View>
         <T size={12} muted>Hold a task row to select it for bulk actions. Tap its square to update completion.</T>
-      </Fold>
-
       <Fold title="Saved task views" subtitle={`${(project.savedViews||[]).length} saved filters and sorting presets`}>
         <Input value={viewName} onChangeText={setViewName} placeholder="Name this view"/>
         <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,priority:prioFilter,owner:ownerFilter,text:q,label:labelFilter},sort:SORTS[sort].sort,descending:SORTS[sort].descending}))setViewName('')}}/>
         {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
       </Fold>
+      <TaskConfiguration embedded />
+      </Sheet>
       {picked.length > 0 ? (
         <Card style={{ gap: 12, backgroundColor: c.surfaceAlt, width: '100%' }}>
           <T weight="600" style={{ flexShrink: 0 }} numberOfLines={1}>{picked.length} selected</T>
@@ -135,6 +143,16 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
       ) : null}
 
       <Card pad={0} style={{ overflow: 'hidden' }}>
+        {roomForColumns && list.length ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 44, backgroundColor: c.surfaceAlt }}>
+            <View style={{ width: 20 }} />
+            <T size={12} weight="500" muted style={{ flex: 1 }}>Task</T>
+            <T size={12} weight="500" muted style={{ width: 150 }}>Owner</T>
+            <T size={12} weight="500" muted style={{ width: 62 }}>Due</T>
+            <T size={12} weight="500" muted style={{ width: 104 }}>Status</T>
+            <T size={12} weight="500" muted style={{ width: 80 }}>Priority</T>
+          </View>
+        ) : null}
         {list.length === 0 ? <Empty>No tasks match these filters.</Empty> : null}
         {pageOf.items.map((row, i) => {
           if (row.kind === 'group') return <View key={row.key} style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: c.surfaceAlt, borderTopWidth: i ? 1 : 0, borderColor: c.line }}><T size={12} weight="600" muted>{row.title} · {row.count}</T></View>;
@@ -143,18 +161,22 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
           return (
             <Pressable
               key={t.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${t.title}, ${t.status}, ${t.priority} priority`}
+              accessibilityHint="Long press to select for bulk actions"
+              accessibilityState={{selected:on}}
               onPressIn={() => {heldRef.current=false}}
               onPress={() => {if(heldRef.current)return;picked.length ? toggle(t.id) : openTask(t.id)}}
               onLongPress={() => {heldRef.current=true;toggle(t.id)}}
               delayLongPress={450}
               style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 12,
+                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 10,
                 borderTopWidth: i ? 1 : 0, borderColor: c.line, opacity: pressed ? 0.7 : 1, backgroundColor: on ? c.surfaceAlt : undefined,
               })}
             >
               <Pressable
                 onPress={(e) => {e?.stopPropagation?.();moveTask(t.id,t.status==='Done'?'In progress':'Done')}}
-                hitSlop={8}
+                hitSlop={12}
                 accessibilityRole="checkbox"
                 accessibilityState={{checked:t.status==='Done'}}
                 accessibilityLabel={t.status==='Done'?'Mark task in progress':'Mark task done'}
@@ -163,7 +185,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
                   borderColor: t.status==='Done' ? c.accent : c.faint, backgroundColor: t.status==='Done' ? c.accent : 'transparent',
                 }}
               >
-                {t.status==='Done' ? <Feather name="check" size={13} color={c.accentInk} /> : null}
+                {t.status==='Done' ? <Feather name="check" size={13} color="#FFFFFF" /> : null}
               </Pressable>
 
               <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
@@ -171,18 +193,18 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
                 <T size={12} muted numberOfLines={1}>
                   {t.type} · {t.stage}{roll && roll.rollup ? ` · ${roll.progress}% of ${roll.children} subtask${roll.children === 1 ? '' : 's'}` : ''}
                 </T>
-                {!!t.labels.length?<TaskLabels labels={t.labels.slice(0,wide?4:2)} colors={project?.labelColors||{}} compact/>:null}
+                {!!t.labels.length?<TaskLabels labels={t.labels.slice(0,roomForColumns?4:2)} colors={project?.labelColors||{}} compact/>:null}
               </View>
 
-              {wide ? (
+              {roomForColumns ? (
                 <View style={{ width: 150, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Avatar name={t.owner} size={22} />
                   <T size={12} muted numberOfLines={1}>{t.owner}</T>
                 </View>
               ) : null}
-              {wide ? <T size={12} muted style={{ width: 62 }}>{fmt(t.due)}</T> : null}
-              {wide ? <Pill label={t.status} color={STATUS_COLOR[t.status]} /> : <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: STATUS_COLOR[t.status] }} />}
-              <Pill label={wide ? t.priority : t.priority.slice(0, 1)} color={PRIORITY_COLOR[t.priority]} />
+              {roomForColumns ? <T size={12} muted style={{ width: 62 }}>{fmt(t.due)}</T> : null}
+              {roomForColumns ? <View style={{ width: 104 }}><Pill label={t.status} color={STATUS_COLOR[t.status]} /></View> : <View accessibilityLabel={t.status} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: STATUS_COLOR[t.status] }} />}
+              <View style={roomForColumns ? { width: 80 } : undefined}><Pill label={roomForColumns ? t.priority : t.priority.slice(0, 1)} color={PRIORITY_COLOR[t.priority]} /></View>
             </Pressable>
           );
         })}

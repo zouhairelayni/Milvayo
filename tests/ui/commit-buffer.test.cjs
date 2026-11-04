@@ -26,11 +26,13 @@ test('store-writing text fields use the lazy Input, and Input flushes on blur, s
  assert.match(read('src/screens/tasks/TaskSheet.js'),/<Input lazy\s+value=\{t\.title\}/);
 });
 
-test('Releases: Edit metadata opens the form fold and scrolls to it',()=>{
+test('Releases: edit and create open a proper draft sheet instead of an inline fold',()=>{
  const read=f=>fs.readFileSync(path.join(__dirname,'../..',f),'utf8');
  const d=read('src/screens/delivery/Delivery.js');
- assert.match(d,/const edit=r=>\{reset\(r\);setFormOpen\(true\);pageRef\.current\?\.scrollTo/);
+ assert.match(d,/const edit=r=>\{reset\(r\);setFormOpen\(true\)\}/);
  assert.match(d,/onPress=\{\(\)=>edit\(r\)\}/);
- assert.match(d,/<Fold [^>]*open=\{formOpen\} onToggle=\{setFormOpen\}/);
- assert.match(read('src/components/inline/CompactTools.js'),/export function Fold\(\{[^}]*open,onToggle\}\)/);
+ assert.match(d,/<Sheet visible=\{formOpen\}/);
+ assert.match(d,/footer=\{<><Button label="Cancel"/);
+ assert.match(d,/<Labeled title="Notes"[^>]+markdown/);
+ assert.doesNotMatch(d,/<Fold title=\{editing\?/);
 });

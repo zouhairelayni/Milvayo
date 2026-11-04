@@ -1,19 +1,22 @@
 // /src/app/ModernApp.js
 import { Profiler, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, StatusBar as NativeStatusBar, View } from 'react-native';
+import { AppState, Platform, StatusBar as NativeStatusBar, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
 import { StoreProvider, StoreFreeze, useStore } from '../store/store';
-import { IconBtn, T, useWide } from '../ui/ui';
+import { Button, IconBtn, LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar, SideMenu } from '../components/shell/Menus';
-import { TopBar, TabBar } from '../components/shell/Bars';
+import { TopBar, TabBar, HeaderControls } from '../components/shell/Bars';
+import MenuToggle from '../components/shell/MenuToggle';
+import BoardMorph from '../components/brand/BoardMorph';
+import { HeaderActionsContext } from '../components/shell/HeaderActions';
 import ScreenErrorBoundary from '../components/shell/ScreenErrorBoundary';
 import Overview from '../screens/overview/Overview';
 import Board from '../screens/board/Board';
 import Timeline from '../screens/timeline/Timeline';
 import Tasks from '../screens/tasks/Tasks';
-import TaskSheet from '../screens/tasks/TaskSheet';
+import TaskSheet, { NewTaskSheet } from '../screens/tasks/TaskSheet';
 import { Sprints, Releases, Testing } from '../screens/delivery/Delivery';
 import { Resources, Costs, Automations, Reports, Activity, Settings } from '../screens/workspace/Workspace';
 import { MAIN } from '../store/data';
@@ -23,6 +26,7 @@ import Portfolios from '../screens/governance/Portfolios';
 import { Programs } from '../screens/governance/Programs';
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import IslandNotice from '../components/notice/IslandNotice';
+import { backupJobs } from '../store/backupJobs';
 import { noticeTopOffset } from '../components/notice/noticePlacement.cjs';
 import { shouldRenderPage, retainsHiddenTabs } from './navigation/pageRetention.cjs';
 import { resolveVisited, addVisited } from './navigation/visitedTabs.cjs';
@@ -33,7 +37,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
   style.id = 'no-select-style';
   style.textContent =
     '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
-    'input,textarea{-webkit-user-select:text;user-select:text}';
+    'input,textarea{-webkit-user-select:text;user-select:text}' +
+    '[role=button]:focus-visible,[role=tab]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}' +
+    '@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:0.01ms!important}}';
   document.head.appendChild(style);
 }
 
@@ -76,7 +82,6 @@ const NAV = [
   {
     group: 'Operate',
     items: [
-      ['taskconfig', 'Task configuration', 'sliders'],
       ['automations', 'Automations', 'cpu'],
       ['reports', 'Reports', 'pie-chart'],
       ['activity', 'Activity', 'activity'],
@@ -129,7 +134,7 @@ const DEFERRED_NATIVE_TABS = ['timeline', 'board', 'tasks', 'sprints'];
 // Native retains visited primary tabs (a tab switch is a visibility toggle, not a rebuild). Hidden pages sit behind
 // StoreFreeze, so they no longer re-render on every edit. Web keeps unmounting heavy hidden screens.
 const retainHiddenTab = () => retainsHiddenTabs(Platform.OS);
-const CachedPage = memo(function CachedPage({ pageId, active, openTask, go, query, openStatus, statusRequest }) {
+const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTask, go, query, openStatus, statusRequest }) {
   // Heavy native screens (Timeline SVG/gestures, Board cards, Tasks, Sprints): commit the tab change first so the
   // bar, title and press feedback respond at once, then mount the screen two frames later. Only the first visit pays;
   // afterwards the page stays mounted and hidden.
@@ -154,10 +159,10 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, go, quer
   // unless the store or its query really changed while it was hidden.
   const content = useMemo(() => ready
     ? <Profiler id={pageId} onRender={(_, __, duration) => diagnosticMonitor.recordRender(pageId, duration)}>
-        <ScreenComponent openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
+        <ScreenComponent openTask={openTask} onNewTask={onNewTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
       </Profiler>
     : <View accessible accessibilityLabel={`Opening ${pageId}`} style={{ flex:1,justifyContent:'center',alignItems:'center' }}><T size={13} muted>{`Preparing ${pageId}…`}</T></View>,
-  [ready, pageId, ScreenComponent, openTask, go, query, openStatus, statusRequest]);
+  [ready, pageId, ScreenComponent, openTask, onNewTask, go, query, openStatus, statusRequest]);
   return <View style={{ flex: 1, display: active ? 'flex' : 'none' }}>
     <StoreFreeze frozen={!active}>
       <ScreenErrorBoundary screenId={pageId} go={go}>{content}</ScreenErrorBoundary>
@@ -169,8 +174,28 @@ function Shell({}) {
   const { c, mode, setPref } = useTheme();
   const { addTask, switchProject, workspace, workspaceId, notice, dismissNotice } = useStore();
   const wide = useWide();
+  const { preference, setPreference } = useLayoutPreference();
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState('overview');
+  const [backupRequest, setBackupRequest] = useState(0);
+  const [backupNotice, setBackupNotice] = useState(null);
+  const lastBackupEvent = useRef(null);
+  const queuedBackupEvent = useRef(null);
+  useEffect(() => {
+    const subscription = backupJobs.subscribe(({event}) => {
+      if (!event || event.id === lastBackupEvent.current) return;
+      lastBackupEvent.current = event.id;
+      if (AppState.currentState !== 'active') queuedBackupEvent.current = event;
+      else setBackupNotice(event);
+    });
+    const app = AppState.addEventListener('change', status => {
+      if (status === 'active' && queuedBackupEvent.current) {
+        setBackupNotice(queuedBackupEvent.current);
+        queuedBackupEvent.current = null;
+      }
+    });
+    return () => { subscription(); app.remove(); };
+  }, []);
   const projectId = `${workspaceId}/${workspace.selectedId}`; // project ids repeat when a backup is imported as a second workspace
   const projectIdRef = useRef(projectId);
   projectIdRef.current = projectId;
@@ -178,7 +203,10 @@ function Shell({}) {
   // After a project switch only the visible tab is rebuilt; other tabs mount lazily on their next visit.
   const visited = resolveVisited(visitedState, projectId, screen, CACHED_TABS);
   const [taskId, setTaskId] = useState(null);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [headerActions, setHeaderActions] = useState(null);
+  const registerHeaderActions = useCallback((value) => setHeaderActions(value), []);
   const [query, setQuery] = useState('');
   useEffect(() => {
     diagnosticMonitor.start();
@@ -239,80 +267,72 @@ function Shell({}) {
   }, [switchProject, go]);
   const clearProjectRequest = useCallback(() => setProjectRequest(null), []);
   // A different workspace: close the open task and drop filters and requests that pointed into the old one.
-  useEffect(() => { setTaskId(null); setQuery(''); setStatusRequest(null); setProjectRequest(null); setMenu(false); }, [workspaceId]);
-  const toggleMode = () => setPref(mode === 'dark' ? 'light' : 'dark');
-  const newTask = () => { const id=addTask('Untitled task', 'Backlog', MAIN); if(id)setTaskId(id); };
+  useEffect(() => { setTaskId(null); setCreatingTask(false); setQuery(''); setStatusRequest(null); setProjectRequest(null); setMenu(false); }, [workspaceId]);
+  const toggleMode = () => setPref(mode === 'light' ? 'dark' : mode === 'dark' ? 'amoled' : 'light');
+  const newTask = useCallback(() => setCreatingTask(true), []);
+  const saveNewTask = ({title, description, status, priority}) => {
+    const id = addTask(title, status, MAIN, {description, priority});
+    if (id) { setCreatingTask(false); setTaskId(id); }
+  };
   const onQuery = (q) => {
     setQuery(q);
     if (q && screen !== 'tasks') go('tasks');
   };
 
   
-  const page = <>
+  const page = <HeaderActionsContext.Provider value={registerHeaderActions}>
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
-      <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
+      <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
     )}
-    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
-  </>;
-  const sheet = taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null;
-  const barStyle = mode === 'dark' ? 'light' : 'dark';
-  const screenTitle = NAV.flatMap(group=>group.items).find(([id])=>id===screen)?.[1] || 'Overview';
-
-  if (wide) {
-    return (
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
-        <StatusBar style={barStyle} translucent={false} />
-        <Sidebar nav={NAV} current={screen} go={go} onPickProject={pickProject} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <TopBar query={query} onQuery={onQuery} onNew={newTask} mode={mode} onToggleMode={toggleMode} />
-          <View style={{ flex: 1 }}>{page}</View>
-        </View>
-        {sheet}
-        <IslandNotice notice={notice} onDismiss={dismissNotice} wide topOffset={Math.max(20, insets.top + 16)} />
-      </View>
-    );
-  }
+    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} backupRequest={backupRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
+  </HeaderActionsContext.Provider>;
+  const sheet = <>{taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null}{creatingTask ? <NewTaskSheet onClose={()=>setCreatingTask(false)} onSave={saveNewTask} /> : null}</>;
+  const barStyle = mode !== 'light' ? 'light' : 'dark';
+  const controls = headerActions?.screen === screen ? headerActions.controls : null;
 
   return (
     <View style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: c.bg }}>
-        <StatusBar style={barStyle} translucent={false} />
-        <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal:18, paddingTop:17, paddingBottom:16, minHeight:83, gap:12 }}>
-          <View style={{ flex:1, minWidth:0, flexDirection:'row', alignItems:'center', gap:12 }}>
-            <IconBtn icon="menu" label="Open menu" onPress={() => setMenu(true)} />
-            <T weight="700" size={19} color={c.ink} numberOfLines={1} style={{flexShrink:1, letterSpacing:-0.25}}>{screenTitle}</T>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <IconBtn icon={mode === 'dark' ? 'sun' : 'moon'} label="Toggle theme" onPress={toggleMode} />
-            <IconBtn icon="plus" label="New task" solid onPress={newTask} />
-          </View>
+      <StatusBar style={barStyle} translucent={false} />
+      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
+        {wide ? <Sidebar nav={NAV} current={screen} go={go} onPickProject={pickProject}
+          onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          {wide ? <TopBar query={query} onQuery={onQuery} onNew={newTask} controls={controls}
+            onPickProject={pickProject} /> :
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+              paddingHorizontal: 12, paddingVertical: 10, minHeight: 64, gap: 8 }}>
+              {menu ? <View style={{ width: 40, height: 40 }} /> : <MenuToggle open={false} onPress={() => setMenu(true)} />}
+              <HeaderControls controls={controls} />
+              <Button label="New task" icon="plus" small onPress={newTask} />
+            </View>}
+          <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
+          {!wide ? <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} /> : null}
+          {!wide ? <SideMenu nav={NAV} visible={menu} current={screen} go={go} onClose={() => setMenu(false)} onPickProject={pickProject}
+            onDesktopLayout={() => { setMenu(false); setPreference('desktop'); }} onToggleMode={toggleMode} /> : null}
         </View>
-        <View style={{ flex: 1, minHeight: 0 }}>
-          {page}
-        </View>
-        <TabBar tabs={TABS} current={screen} go={requestTab} intent={intentRef.current} />
         {sheet}
-        <SideMenu nav={NAV} visible={menu} current={screen} go={go} onClose={() => setMenu(false)} onPickProject={pickProject} />
       </SafeAreaView>
-      {/* Place the island at the top of the app, below the device status bar/cutout.
-          Do not anchor it to the scrolling page or under the header. */}
-      <IslandNotice
-        notice={notice}
-        onDismiss={dismissNotice}
-        topOffset={noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)}
-      />
+      <IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
+        onAction={action => { if (action === 'backup') { setBackupRequest(n => n + 1); go('settings', 'backup notice'); } }} wide={wide}
+        topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />
     </View>
   );
 }
 
+// The intro belongs to a cold app mount, not navigation or resuming from the background.
+function ColdStartGate() {
+  const { c, restored } = useTheme();
+  const [complete, setComplete] = useState(false);
+  const finish = useCallback(() => setComplete(true), []);
+  if (complete) return <StoreProvider><Shell /></StoreProvider>;
+  return <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
+    <StatusBar hidden />
+    {restored ? <BoardMorph size={200} active speed={1} onFinish={finish} /> : null}
+  </View>;
+}
+
 export default function ModernApp({}) {
-  return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <StoreProvider>
-          <Shell />
-        </StoreProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
-  );
+  return <SafeAreaProvider>
+    <LayoutProvider><ThemeProvider><ColdStartGate /></ThemeProvider></LayoutProvider>
+  </SafeAreaProvider>;
 }

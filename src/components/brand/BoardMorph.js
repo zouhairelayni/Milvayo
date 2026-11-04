@@ -1,0 +1,48 @@
+// /src/components/brand/BoardMorph.js
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { AccessibilityInfo, Platform } from 'react-native';
+import Svg, { Defs, G, LinearGradient, Path, Stop } from 'react-native-svg';
+import { useTheme } from '../../ui/theme/theme';
+const data = require('./morphGeometry.cjs');
+const { DURATION, ribbonPath, windowProgress } = require('./morphMotion.cjs');
+
+
+// Approved three-ribbon no-flicker morph. Even-odd board cutouts avoid platform-sensitive SVG masks.
+export default function BoardMorph({ size = 42, speed = 1, active = false, onFinish }) {
+  const { accentPref } = useTheme();
+  const ramps = data.palettes[accentPref] || data.palettes.Orange;
+  const id = useId().replace(/[^A-Za-z0-9_-]/g, '');
+  const [progress, setProgress] = useState(active ? 0 : 1);
+  const done = useRef(onFinish);
+  done.current = onFinish;
+  useEffect(() => {
+    if (!active) { setProgress(1); return undefined; }
+    let cancelled = false, frame = null, start = null;
+    setProgress(0);
+    const finish = () => { if (!cancelled) { setProgress(1); done.current?.(); } };
+    const tick = stamp => {
+      if (cancelled) return;
+      if (start === null) start = stamp;
+      const p = Math.min(1, (stamp - start) * speed / DURATION);
+      setProgress(p);
+      if (p >= 1) finish(); else frame = requestAnimationFrame(tick);
+    };
+    const reduce = Platform.OS === 'web' && typeof window !== 'undefined'
+      ? Promise.resolve(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false)
+      : AccessibilityInfo.isReduceMotionEnabled().catch(() => false);
+    reduce.then(enabled => { if (cancelled) return; if (enabled) finish(); else frame = requestAnimationFrame(tick); });
+    return () => { cancelled = true; if (frame !== null) cancelAnimationFrame(frame); };
+  }, [active, speed]);
+  const shapes = useMemo(() => [0,1,2].map(i => ribbonPath(i,progress)), [progress]);
+  return <Svg width={size} height={size} viewBox="0 0 256 256" accessible accessibilityLabel="Niyarvo Projects Board logo">
+    <Defs>
+      {ramps.map(([light, dark], i) => <LinearGradient key={'g'+i} id={`${id}-gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
+        <Stop offset="0" stopColor={light}/><Stop offset="1" stopColor={dark}/>
+      </LinearGradient>)}
+    </Defs>
+    <G>
+      {/* Keep the middle diagonal above the right ribbon, matching the approved preview's layering. */}
+      {[0,2,1].map(i => <Path key={i} d={shapes[i]} fill={`url(#${id}-gradient-${i})`} fillRule="evenodd" />)}
+    </G>
+  </Svg>;
+}

@@ -48,7 +48,7 @@ test('timeline shows all scheduled rows with viewport virtualization, no paging 
  assert.doesNotMatch(s,/Next rows|Previous rows|Previous window|Next window/);
  assert.match(s,/const rows = allScheduled/);
  assert.match(s,/paintedRows = rows\.slice/);
- assert.match(s,/label="Items"/);
+ assert.match(s,/label=\{showItems \? 'Hide Items' : 'Show Items'\}/);
  assert.match(s,/label="Today"/);
 });
 test('sprint screen imports useState after sprint management refactor',()=>{

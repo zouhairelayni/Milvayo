@@ -1,27 +1,29 @@
 // /src/ui/uiControls.js
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Platform, Pressable, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { font, radius, useTheme } from './theme/theme';
-import { T } from './uiBase';
+import { T, useWide } from './uiBase';
 const { createCommitBuffer } = require('./commitBuffer.cjs');
 
 export function Chip({ label, active, onPress, color }) {
   const { c } = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        paddingHorizontal: 12,
-        paddingVertical: 7,
-        borderRadius: radius.pill,
+  const style = (pressed = false) => ({
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: radius.sm,
+        minHeight: 40, justifyContent: 'center',
         borderWidth: 1,
         borderColor: active ? c.ink : c.line,
         backgroundColor: active ? c.ink : 'transparent',
         opacity: pressed ? 0.7 : 1,
-      })}
-    >
-      <T size={13} weight="600" color={active ? c.bg : color || c.ink}>{label}</T>
+  });
+  const content = <T size={12} weight="600" color={active ? c.bg : color || c.ink}>{label}</T>;
+  if (!onPress) return <View style={style()}>{content}</View>;
+  return (
+    <Pressable onPress={onPress} hitSlop={2} accessibilityRole="button" accessibilityLabel={String(label)}
+      accessibilityState={{ selected: !!active }} style={({ pressed }) => style(pressed)}>
+      {content}
     </Pressable>
   );
 }
@@ -30,16 +32,20 @@ export function Segmented({ options, value, onChange, fill }) {
   const { c } = useTheme();
   const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: radius.pill, padding: 3, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
+    <View style={{ flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: radius.sm, padding: 3, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
       {opts.map((o) => {
         const on = o.value === value;
         return (
           <Pressable
             key={String(o.value)}
             onPress={() => onChange(o.value)}
-            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: on ? c.surface : 'transparent' }}
+            hitSlop={2}
+            accessibilityRole="radio"
+            accessibilityLabel={String(o.label)}
+            accessibilityState={{checked:on}}
+            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 7, minHeight: 40, justifyContent: 'center', backgroundColor: on ? c.surface : 'transparent' }}
           >
-            <T size={13} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
+            <T size={12} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -47,31 +53,37 @@ export function Segmented({ options, value, onChange, fill }) {
   );
 }
 
-export function Button({ label, onPress, icon, variant = 'primary', small, disabled }) {
+// One visual action size throughout the app. Legacy small/headerCompact callers use the same
+// 40-point visual height; hitSlop keeps isolated actions at least 44 points to touch.
+export function Button({ label, onPress, icon, variant = 'primary', disabled }) {
   const { c } = useTheme();
   const primary = variant === 'primary';
-  const fg = primary ? c.accentInk : variant === 'danger' ? c.accent : c.ink;
+  const fg = primary ? '#FFFFFF' : variant === 'danger' ? c.accent : c.ink;
   const bg = primary ? c.accent : variant === 'ghost' ? 'transparent' : c.surface;
   return (
     <Pressable
       disabled={disabled}
+      accessibilityState={{disabled:!!disabled}}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       onPress={onPress}
+      hitSlop={4}
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
         alignSelf: 'flex-start', maxWidth:'100%', flexShrink:1,
-        paddingHorizontal: small ? 12 : 16,
-        paddingVertical: small ? 7 : 11,
-        borderRadius: radius.pill,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: radius.sm, minHeight: 40,
         backgroundColor: bg,
         borderWidth: primary ? 0 : 1,
         borderColor: c.line,
         opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
       })}
     >
-      {icon ? <Feather name={icon} size={small ? 14 : 16} color={fg} /> : null}
-      <T size={small ? 13 : 14} weight="600" color={fg} style={{flexShrink:1,lineHeight:small?18:20}}>{label}</T>
+      {icon ? <Feather name={icon} size={13} color={fg} /> : null}
+      <T size={12} weight="600" color={fg} numberOfLines={1} style={{flexShrink:1,lineHeight:16}}>{label}</T>
     </Pressable>
   );
 }
@@ -82,12 +94,14 @@ export function IconBtn({ icon, onPress, solid, label }) {
     <Pressable
       onPress={onPress}
       accessibilityLabel={label || icon}
+      accessibilityRole="button"
+      hitSlop={4}
       style={({ pressed }) => ({
-        width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center',
+        width: 40, height: 40, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center',
         backgroundColor: solid ? c.accent : c.surfaceAlt, opacity: pressed ? 0.7 : 1,
       })}
     >
-      <Feather name={icon} size={17} color={solid ? c.accentInk : c.ink} />
+      <Feather name={icon} size={15} color={solid ? '#FFFFFF' : c.ink} />
     </Pressable>
   );
 }
@@ -96,7 +110,9 @@ export function IconBtn({ icon, onPress, solid, label }) {
 // Use it for fields that save into the store on every change; plain fields behave as before.
 export function Input({ value, onChangeText, placeholder, style, multiline, onSubmitEditing, keyboardType, editable = true, autoFocus, onBlur, lazy = false, secure = false, accessibilityLabel }) {
   const { c } = useTheme();
+  const wide = useWide();
   const [text, setText] = useState(value);
+  const [focused, setFocused] = useState(false);
   const latest = useRef(onChangeText);
   latest.current = onChangeText;
   const buffer = useRef(null);
@@ -107,14 +123,16 @@ export function Input({ value, onChangeText, placeholder, style, multiline, onSu
   return (
     <TextInput
       value={lazy ? text : value}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel || placeholder || undefined}
+      accessibilityState={{disabled:!editable}}
       onChangeText={change}
       placeholder={placeholder}
       placeholderTextColor={c.faint}
       multiline={multiline}
       editable={editable}
       autoFocus={autoFocus}
-      onBlur={() => { if (lazy) buffer.current.flush(); onBlur && onBlur(); }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => { setFocused(false); if (lazy) buffer.current.flush(); onBlur && onBlur(); }}
       onSubmitEditing={(e) => { if (lazy) buffer.current.flush(); onSubmitEditing && onSubmitEditing(e); }}
       keyboardType={keyboardType}
       // Password fields: masked, no suggestions, no spell-check or auto-capitalisation that would copy the text elsewhere.
@@ -127,12 +145,14 @@ export function Input({ value, onChangeText, placeholder, style, multiline, onSu
         {
           fontFamily: font,
           color: c.ink,
-          fontSize: 14,
-          backgroundColor: c.surfaceAlt,
+          fontSize: Platform.OS === 'web' && !wide ? 16 : 14, // Prevent mobile Safari from zooming the page on input focus.
+          backgroundColor: c.surface,
+          borderWidth: 1,
+          borderColor: focused ? c.accentText : c.faint + 'A8',
           borderRadius: radius.sm,
           paddingHorizontal: 12,
-          paddingVertical: multiline ? 10 : 9,
-          minHeight: multiline ? 80 : 0,
+          paddingVertical: multiline ? 12 : 9,
+          minHeight: multiline ? 104 : 44,
           textAlignVertical: multiline ? 'top' : 'center',
         },
         style,

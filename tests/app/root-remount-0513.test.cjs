@@ -17,10 +17,10 @@ test('heavy native tabs defer their first mount; web and Overview do not',()=>{
  assert.match(src,/Platform\.OS==='web' \|\| !DEFERRED_NATIVE_TABS\.includes\(pageId\)/);
  assert.equal(/DEFERRED_NATIVE_TABS = \[[^\]]*overview/.test(src),false);
 });
-test('Board mounts cards progressively on native only and stays fully shown afterwards',()=>{
+test('Board initially renders ten cards and explicitly expands by ten without dropping visited cards',()=>{
  const src=read('src/screens/board/Board.js');
- assert.match(src,/Platform\.OS === 'web' \|\| initialCount\(allCards\.length, FIRST_CARDS\) >= allCards\.length \? Infinity : initialCount\(allCards\.length, FIRST_CARDS\)/);
- assert.match(src,/return next >= cardTotal \? Infinity : next/);
+ assert.match(src,/const \[shown, setShown\] = useState\(10\)/);
+ assert.match(src,/setShown\(n=>Math\.min\(cardTotal,n\+10\)\)/);
  assert.match(src,/allCards\.slice\(0, shown\)/);
  assert.match(src,/\{cardTotal\}<\/T>/,'header count shows every card, not only the mounted ones');
  assert.match(src,/cardTotal === 0 \?/,'empty state follows the true count');

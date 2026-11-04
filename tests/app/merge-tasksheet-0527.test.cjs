@@ -7,7 +7,7 @@ const model=require('../../src/domain/model.cjs');
 
 test('Board keeps wire-engines filters and drop position AND shows Task Sheet colored cards',()=>{
  const b=read('src/screens/board/Board.js');
- for(const re of [/filterCards\(/,/dropBefore\(/,/initialCount\(/,/DUE_FILTERS/,/<TaskLabels labels=\{t\.labels\} colors=\{labelColors\}/,/labelColors=\{project\.labelColors\|\|\{\}\}/,/placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore/]) assert.match(b,re,String(re));
+ for(const re of [/filterCards\(/,/dropBefore\(/,/useState\(10\)/,/DUE_FILTERS/,/<TaskLabels labels=\{t\.labels\} colors=\{labelColors\}/,/labelColors=\{project\.labelColors\|\|\{\}\}/,/placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore/]) assert.match(b,re,String(re));
  assert.doesNotMatch(b,/\{t\.id\.toUpperCase\(\)\} · \{t\.type\}/,'no internal ID on cards');
 });
 test('Tasks keeps wire-engines search/layouts/bulk edit AND colored labels without a visible ID',()=>{

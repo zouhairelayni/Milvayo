@@ -43,7 +43,7 @@ test('shell files import only paths that exist', () => {
   }
   assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-white.png')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-dark.png')));
-  assert.match(read('src/components/shell/Menus.js'), /require\('\.\.\/\.\.\/\.\.\/assets\/niyarvo-projects-white\.png'\)/);
+  assert.match(read('src/components/shell/Menus.js'), /BoardMorph/);
 });
 
 test('ui.js only re-exports; every shared component is still exported once', () => {
@@ -52,13 +52,13 @@ test('ui.js only re-exports; every shared component is still exported once', () 
   assert.doesNotMatch(barrel, /function /);
   const files = ['src/ui/uiBase.js', 'src/ui/uiControls.js', 'src/ui/uiLayout.js', 'src/ui/downloadText.js'].map(read).join('\n');
   const names = [...files.matchAll(/^export (?:async )?(?:function|const) (\w+)/gm)].map((m) => m[1]).sort();
-  assert.deepEqual(names, ['Avatar', 'Bar', 'Button', 'Card', 'Cell', 'Chip', 'Empty', 'Grid', 'IconBtn', 'Input', 'Page', 'Pill', 'SectionTitle', 'Segmented', 'Sheet', 'Stat', 'T', 'downloadBytes', 'downloadText', 'useWide']);
+  assert.deepEqual(names, ['Avatar', 'Bar', 'Button', 'Card', 'Cell', 'Chip', 'Empty', 'Grid', 'IconBtn', 'Input', 'LayoutProvider', 'Page', 'Pill', 'SectionTitle', 'Segmented', 'Sheet', 'Stat', 'T', 'downloadBytes', 'downloadText', 'useLayoutPreference', 'useWide']);
 });
 
 test('no cycle: base imports no other ui file, controls only base, layout only base and controls', () => {
   const imports = (f) => [...read(f).matchAll(/from '\.\/(ui\w*)'/g)].map((m) => m[1]);
   assert.deepEqual(imports('src/ui/uiBase.js'), []);
   assert.deepEqual(imports('src/ui/uiControls.js'), ['uiBase']);
-  assert.deepEqual(imports('src/ui/uiLayout.js').sort(), ['uiBase', 'uiControls']);
+  assert.deepEqual(imports('src/ui/uiLayout.js').sort(), ['uiBase']); // no unused dependency on uiControls
   assert.deepEqual(imports('src/ui/downloadText.js'), []);
 });

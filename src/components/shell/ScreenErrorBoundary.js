@@ -21,8 +21,8 @@ export default class ScreenErrorBoundary extends Component {
     if (!this.state.error) return this.props.children;
     return <View style={{ flex: 1, padding: 22, gap: 14 }}>
       <T size={19} weight="600">{this.props.screenId} couldn't open</T>
-      <T size={13} muted>{String(this.state.error.message || this.state.error)}</T>
-      <T size={12} muted>The rest of your workspace is unchanged. See the Metro log for the component stack.</T>
+      <T size={13} muted>Retry this screen. If the problem continues, open Settings diagnostics to see the error details.</T>
+      <T size={12} muted>Other screens remain available while this one is unavailable.</T>
       <Button label="Retry screen" small variant="secondary" onPress={() => { diagnosticMonitor.recordAction('retry screen'); this.setState({ error: null }); }} />
       {this.props.go ? <Button label="Open Settings diagnostics" small variant="ghost" onPress={() => this.props.go('settings')} /> : null}
     </View>;

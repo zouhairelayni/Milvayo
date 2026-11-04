@@ -19,8 +19,10 @@ test('only the Back up button is accent coloured on the Backup tab', () => {
   const src = read('src/screens/workspace/Backup.js');
   const buttons = src.match(/<Button [^>]*>/g) || [];
   const primary = buttons.filter((b) => !/variant=/.test(b));
-  assert.equal(primary.length, 1);
-  assert.match(primary[0], /Back up/);
+  assert.equal(primary.length, 3, 'backup, download-ready and decrypted-import actions are primary');
+  assert.ok(primary.some(b=>/Back up/.test(b)));
+  assert.ok(primary.some(b=>/Download backup/.test(b)));
+  assert.ok(primary.some(b=>/Import decrypted project/.test(b)));
 });
 test('backup scope: Project or Workspace, each with its own dropdown, and the chosen project is exported', () => {
   const src = read('src/screens/workspace/Backup.js');
@@ -32,12 +34,12 @@ test('backup scope: Project or Workspace, each with its own dropdown, and the ch
   assert.match(store, /options&&options\.projectId\?w\.projects\.find\(x=>x\.id===options\.projectId\):current\(w\)/);
   assert.match(store, /throw Error\('Project not found'\)/);
 });
-test('a running encryption shows progress and a Cancel button, and leaving the screen cancels it', () => {
+test('a running encryption shows progress and explicit Cancel while screen navigation retains the job', () => {
   const src = read('src/screens/workspace/Backup.js');
-  assert.match(src, /<Bar value=\{progress \|\| 0\} \/>/);
-  assert.match(src, /label="Cancel" small variant="secondary" onPress=\{cancel\}/);
-  assert.match(src, /useEffect\(\(\) => \(\) => \{ if \(abortRef\.current\) abortRef\.current\.abort\(\); \}, \[\]\)/);
-  assert.match(src, /NIYAV_CANCELLED/);
+  assert.match(src, /<Bar value=\{jobState\.running\.progress \|\| 0\} \/>/);
+  assert.match(src, /label="Cancel operation" small variant="secondary" onPress=\{backupJobs\.cancel\}/);
+  assert.doesNotMatch(src, /abortRef\.current\.abort/);
+  assert.match(src, /backupJobs\.startExport/);
 });
 test('Specifications offers add, edit and delete', () => {
   const src = read('src/screens/management/Management.js');

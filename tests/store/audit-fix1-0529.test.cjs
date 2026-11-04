@@ -45,10 +45,11 @@ test('5: removed dead imports stay removed and the native gesture file has no we
     ['src/screens/delivery/Delivery.js', /\bAvatar\b|\bSTAGES\b/], ['src/screens/governance/Portfolios.js', /PRIORITY_COLOR|STATUS_COLOR/],
     ['src/screens/governance/Programs.js', /\bGrid\b|\bCell\b|\bStat\b|\bInput\b/], ['src/screens/governance/Projects.js', /setDocStatus/],
     ['src/screens/management/Management.js', /Pressable|SectionTitle|useTheme/], ['src/screens/tasks/TaskSheet.js', /\baddTask\b/],
-    ['src/screens/workspace/Workspace.js', /\bChip\b|useWide|\bfmt\b|toCSV/], ['src/store/store.js', /\bButton\b/],
+    ['src/screens/workspace/Workspace.js', /\bfmt\b|toCSV/], ['src/store/store.js', /\bButton\b/],
     ['src/domain/automation.cjs', /DEFAULT_BOARD_ID/], ['src/timeline/timelineDisplay.cjs', /\bfinite\b/],
     ['src/board/boardGesture.native.js', /attachDoc|detachDoc|IS_WEB|document\.|Platform/],
   ];
   for (const [file, pattern] of gone) assert.doesNotMatch(read(file), pattern, file);
+  assert.match(read('src/screens/workspace/Workspace.js'), /const wide = useWide\(\)/); // Activity rows now adapt to phone width.
   assert.match(read('src/screens/timeline/Timeline.js'), /const SPAN = display\.BASE_DAYS/); // kept: native-animation-contract asserts it
 });

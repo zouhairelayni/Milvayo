@@ -8,6 +8,6 @@ test('Open project from Portfolios and Programs navigates to the project detail'
  for(const f of ['Portfolios','Programs']){const s=read(`src/screens/governance/${f}.js`);assert.ok(s.includes('openProject?openProject(id)'));assert.ok(!s.includes('onPress={()=>switchProject('))}
  const p=read('src/screens/governance/Projects.js');assert.ok(p.includes('projectRequest')&&p.includes('onProjectRequestHandled'));
 });
-test('Edit portfolio and Edit program show the editor in place, not inside a collapsed fold',()=>{
- for(const f of ['Portfolios','Programs']){const s=read(`src/screens/governance/${f}.js`);assert.ok(s.includes("editing==='new'?editor:null"));assert.ok(s.includes('if(editing===p.id)return'))}
+test('Portfolio and Program create/edit editors are accessible sheets rather than inline forms',()=>{
+ for(const f of ['Portfolios','Programs']){const s=read(`src/screens/governance/${f}.js`);assert.ok(s.includes('<Sheet visible={!!editing}'));assert.ok(s.includes("title={editing==='new'"))}
 });

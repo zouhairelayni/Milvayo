@@ -8,6 +8,7 @@ import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../../ui/theme/theme'
 import { money } from '../../../governance/data';
 import { DOC_BY_KEY, DOC_COLOR, DOC_STATUS, budgetOf, docOf, docProgress, financeOf } from '../../../governance/pm';
 import { Field, ListEditor, MiniBtn, NumInput, Row, TableEditor } from './pmui';
+import MarkdownField from '../../../components/inline/MarkdownField';
 
 // Title, what the document is for, its status and how much of the template has content.
 export function DocHeader({ docKey }) {
@@ -104,7 +105,7 @@ export function DocView({ docKey, bare }) {
         <Card key={sec.key} style={{ gap: 12 }}>
           <SectionTitle>{sec.label}</SectionTitle>
           {sec.hint ? <T size={12} muted style={{ marginTop: -6 }}>{sec.hint}</T> : null}
-          {sec.kind === 'text' ? <Input lazy multiline value={vals[sec.key] || ''} onChangeText={(t) => setDocValue(docKey, sec.key, t)} placeholder="Write here" /> : null}
+          {sec.kind === 'text' ? <MarkdownField showLabel={false} label={sec.label} lazy value={vals[sec.key] || ''} onChangeText={(t) => setDocValue(docKey, sec.key, t)} placeholder="Write here" /> : null}
           {sec.kind === 'list' ? <ListEditor items={vals[sec.key]} onChange={(v) => setDocValue(docKey, sec.key, v)} /> : null}
           {sec.kind === 'table' ? <TableEditor cols={sec.cols} rows={vals[sec.key]} onChange={(v) => setDocValue(docKey, sec.key, v)} /> : null}
           {sec.kind === 'finance' ? <Finance value={vals[sec.key]} onChange={(v) => setDocValue(docKey, sec.key, v)} /> : null}

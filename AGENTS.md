@@ -10,7 +10,7 @@
 4. Plan controlled patch scope; preserve the stable Metro setup, existing data and import format, and existing verified workflows. Record any migration requirements explicitly.
 5. Implement model / security invariants first, then UI. Add tests for success, failure, edge cases, and persistence/import round trips. Prefer pure, deterministic functions for scheduling and dependency logic.
 6. Run `npm test`, check JSX syntax, and run `npx expo install --check`; test Web and Expo Go with `npx expo start` and Fast Refresh. If device/browser testing cannot be run in this environment, say **Not run**; never claim a source check equals runtime acceptance.
-7. Deliver one project-root ZIP with history under `docs/changelogs/legacy-code` (pre-0.4.2) and `docs/changelogs/modern-code` (0.4.2+). Store release QA in `docs/qa/modern-code`, none at root. Preserve local package.json and package-lock.json (exclude both). Record Pass/Fail/Not run and a reversible installation plan.
+7. Deliver one complete project-root ZIP with version-synchronized `package.json`, `package-lock.json` and `app.json`, plus exactly one cumulative release changelog at `docs/changelog/CHANGELOG.md`. Keep QA in `docs/qa` and usage guides in `docs/instructions`; ship no other changelog or installer scripts. Record Pass/Fail/Not run and a reversible installation plan.
 8. Work on Git `work`. Never force-push, commit, deploy or merge automatically. User validates on Termux before a checkpoint; only merge to `main` after passing acceptance gates.
 
 ## Architecture / safety
@@ -30,10 +30,10 @@
 - **Moments:** the Gantt diagram, Kanban task movement and verified progress are the content-rich moments.
 - **Signature:** one user-selected accent (default Claude clay orange) and meaningful dependency/status colors.
 
-Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo mark. Do not add glow, gradient text, badges or decorative animation.
+Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo Projects Board mark. The company ribbon N belongs to the parent brand and Control Center. Do not add glow, gradient text, badges or decorative animation.
 
 ## Sprint lifecycle rule
-Keep sprint lifecycle and historical burndown semantics inside `src/domain/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and `docs/legacy-code/notes/UNSLOP-NP-0.3.2.md`.
+Keep sprint lifecycle and historical burndown semantics inside `src/domain/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and the bundled `.opencode/skills/unslop/SKILL.md`.
 
 ## Timeline rules
 - A resize of a task in the Timeline is a duration modification. Dragging the left or right edge of a bar changes how long the task lasts (whole calendar days, both ends included, never below 1 day); the opposite end stays fixed. A move shifts both dates and never changes the duration. History text for a resize says "Changed duration of …". Rules live in `src/timeline/timelineEdit.cjs`.

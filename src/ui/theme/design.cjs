@@ -6,7 +6,7 @@ const colors={
  bg:'#161719',side:'#121315',panel:'#1e2023',panel2:'#282a2e',raised:'#32353a',
  border:'#34363b',border2:'#4b4e55',line:'#34363b',
  ink:'#f1f0ed',muted:'#a4a6ac',sub:'#c7c8cd',white:'#ffffff',
- purple:'#D97757',purpleDim:'rgba(217,119,87,0.16)',accent:'#D97757',accentBorder:'rgba(217,119,87,0.52)',green:'#8ccdaa',amber:'#eac07b',red:'#e795a0',cyan:'#91c8d8'
+ purple:'#FF6F61',purpleDim:'rgba(255,111,97,0.16)',accent:'#FF6F61',accentBorder:'rgba(255,111,97,0.52)',green:'#8ccdaa',amber:'#eac07b',red:'#e795a0',cyan:'#91c8d8'
 };
 const space={xs:4,sm:8,md:12,base:16,lg:24,xl:32};
 const radius={control:8,card:10,panel:12};

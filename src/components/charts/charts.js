@@ -41,10 +41,12 @@ export function BurnChart({ burn, height = 200 }) {
     if (g.n <= 1 || span <= 0) return setSel(0);
     setSel(clamp(Math.round(((px - g.padL) / span) * (g.n - 1)), 0, g.n - 1));
   };
+  const tapStart = useRef(null);
   const pan = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (e, g) => Math.abs(g.dx) > Math.abs(g.dy),
+      // Don't seize a vertical scroll on touch-down: claim only clear horizontal chart drags.
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (e, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
       onPanResponderTerminationRequest: () => true,
       onPanResponderGrant: (e) => pick(e.nativeEvent.locationX),
       onPanResponderMove: (e) => pick(e.nativeEvent.locationX),
@@ -55,7 +57,11 @@ export function BurnChart({ burn, height = 200 }) {
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ width: '100%', gap: 12 }}>
-      <View {...pan.panHandlers} style={[{ width: '100%', height }, WEB_TOUCH]}>
+      <View {...pan.panHandlers}
+        onTouchStart={e=>{const t=e.nativeEvent.touches?.[0];tapStart.current=t?{x:t.pageX,y:t.pageY}:null;}}
+        onTouchEnd={e=>{const t=e.nativeEvent.changedTouches?.[0],a=tapStart.current;tapStart.current=null;
+          if(t&&a&&Math.abs(t.pageX-a.x)<8&&Math.abs(t.pageY-a.y)<8&&Number.isFinite(e.nativeEvent.locationX))pick(e.nativeEvent.locationX);}}
+        style={[{ width: '100%', height }, WEB_TOUCH]}>
         <Svg width={width} height={height} pointerEvents="none">
           {ticks.map((tv) => (
             <Line key={'g' + tv} x1={padL} x2={width - padR} y1={y(tv)} y2={y(tv)} stroke={c.line} strokeWidth={1} />
@@ -97,8 +103,8 @@ export function BurnChart({ burn, height = 200 }) {
       <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: 12, borderRadius: 12, backgroundColor: c.surfaceAlt }}>
         <T size={13} weight="700">{burn.days[i]}</T>
         <T size={13} muted>Ideal <T size={13} weight="600">{ideal}</T></T>
-        <T size={13} muted>Recorded <T size={13} weight="600" color={c.accent}>{rec}</T></T>
-        <T size={13} weight="600" color={gap > 0 ? c.accent : c.ink}>
+        <T size={13} muted>Recorded <T size={13} weight="600" color={c.accentText}>{rec}</T></T>
+        <T size={13} weight="600" color={gap > 0 ? c.accentText : c.ink}>
           {gap > 0 ? `${gap} behind ideal` : gap < 0 ? `${-gap} ahead of ideal` : 'On the ideal line'}
         </T>
       </View>
@@ -116,12 +122,14 @@ function Legend({ color, label, dashed, on, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityLabel={`${on ? 'Hide' : 'Show'} ${label}`}
-      hitSlop={8}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 8, opacity: on ? 1 : 0.4 }}
+      accessibilityRole="checkbox"
+      accessibilityState={{checked:!!on}}
+      accessibilityLabel={`${label} series`}
+      hitSlop={12}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
     >
       <View style={{ width: 22, height: 0, borderTopWidth: dashed ? 2 : 3, borderStyle: dashed ? 'dashed' : 'solid', borderColor: color }} />
-      <T size={12} muted>{label}</T>
+      <T size={12} muted style={{textDecorationLine:on?'none':'line-through'}}>{label}</T>
     </Pressable>
   );
 }
