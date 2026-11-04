@@ -1,56 +1,67 @@
-# First Android APK build — GitHub Actions and Expo EAS (v0.5.59)
+# Niyarvo Projects v0.5.59 — direct GitHub ARM64 APK build
 
-This release adds a **workflow**, not a prebuilt APK. It is not connected to your Expo account yet; only you can authorize the build and provide signing credentials. It builds a signed **internal preview APK**, not a Play Store AAB, on Expo's Android builders and downloads it into a GitHub Actions artifact.
+**Build location:** GitHub-hosted Ubuntu runner. **No EAS cloud build**. GitHub installs Node/Java/Android tooling, runs `npm ci --legacy-peer-deps` and tests, generates `android/` using `npx expo prebuild`, then runs Gradle `:app:assembleRelease -PreactNativeArchitectures=arm64-v8a`. The uploaded artifact includes an installable signed APK and SHA-256 file.
 
-## One-time setup from Termux
+The existing Expo project is linked to `com.niyarvo.projects`; the signing key already exists on EAS. We only **export that existing key once** to GitHub secrets. Do not generate a second keystore: Android updates must use the same signing identity.
 
-1. Extract `NiyarvoProjects-v0.5.59-FULL.zip` over the repository root, run `npm test`, and commit and push the files to your `work` branch. The new GitHub workflow must reach the remote repository before it can run.
-2. In Termux, run `npx eas-cli@latest login`. Sign in to **your own Expo account** (not the RIVNA project).
-3. Run `npx eas-cli@latest init` inside `~/NiyarvoProjects`. Select or create a **separate Niyarvo Projects** Expo project. This populates `expo.extra.eas.projectId` in `app.json`; do not type a fake project ID. Commit and push that additional configuration.
-4. Run `npx eas-cli@latest credentials -p android`. Select the `preview` profile and let Expo generate/store the **Niyarvo Projects Android keystore**. This should be a different key from RIVNA. The GitHub workflow does not need a keystore secret when using EAS-managed credentials.
-5. On [Expo account settings](https://expo.dev/settings/access-tokens), create a personal access token with access to the newly linked project. In Termux, set it on your GitHub repository without committing it:
+## First-time setup in Termux
 
-   ```bash
-   cd ~/NiyarvoProjects
-   read -rs -p 'Expo token: ' EXPO_TOKEN; echo
-   printf '%s' "$EXPO_TOKEN" | gh secret set EXPO_TOKEN
-   unset EXPO_TOKEN
-   ```
+**A. Download existing credentials securely**
 
-   `gh` should already be authenticated to the correct **Niyarvo Projects** repository. Never paste the token into source files or a commit.
+1. While in `~/NiyarvoProjects`, run `npx --yes eas-cli@latest credentials -p android`.
+2. Select the `preview` profile, then `credentials.json` -> **Download credentials from EAS to credentials.json**. Follow the prompts to download the existing Android keystore and a credentials JSON containing `keystorePath`, `keystorePassword`, `keyAlias`, `keyPassword`. **Do not select Generate new keystore.**
+3. Move the credentials JSON and JKS file to a private folder *outside* the repository, for example `~/niyarvo-private/`. Preserve their relative paths (or update the JSON `keystorePath` accordingly). Keep the files only on your own device. The `.gitignore` now excludes `credentials.json`, `.jks`, `.keystore` and `.env*` from Git.
 
-6. Merge your tested `work` branch into `main`, then trigger the workflow:
+**B. Store the four signing secrets without exposing their contents**
 
-   ```bash
-   gh workflow run android-apk.yml --ref main
-   gh run list --workflow android-apk.yml --limit 3
-   gh run watch
-   ```
+Use this helper from the **work** branch after applying the patch (the path points to your own exported file):
 
-   Alternatively, use **GitHub → Actions → Niyarvo Projects · Android APK → Run workflow**.
+```bash
+cd ~/NiyarvoProjects
+git switch work
+node scripts/ci/upload-android-signing-secrets.cjs ~/niyarvo-private/credentials.json
+gh secret list -R zouhairelayni/NiyarvoProjects
+```
 
-7. When the run completes, download its `NiyarvoProjects-Android-APK-*` artifact on the Actions page, or through `gh run download <RUN_ID> -D ~/storage/downloads/np-apk`. The resulting `NiyarvoProjects-preview.apk` is directly installable on Android (allow installation from your file manager if prompted).
+It creates these secrets in the Niyarvo Projects repository:
 
-## Build and signing properties
+- `NIYARVO_ANDROID_KEYSTORE_BASE64` (the original keystore file, encoded)
+- `NIYARVO_ANDROID_KEYSTORE_PASSWORD`
+- `NIYARVO_ANDROID_KEY_ALIAS`
+- `NIYARVO_ANDROID_KEY_PASSWORD`
 
-- Profile: `preview` / `distribution: internal` / `android.buildType: apk`.
-- Package identifier: `com.niyarvo.projects`.
-- Uses Expo SDK 58 with Node.js 22 and `npm ci` from the committed lockfile.
-- The `.apk` is signed by EAS-managed credentials; do not delete or rotate the signing key casually because upgrades of the installed app require the same key.
-- App data remain local in this release. Firebase Authentication, Firestore, invitations and permissions are **not** activated.
-- The workflow requires `EXPO_TOKEN` and a linked `extra.eas.projectId`; it reports a clear failure if either is missing.
-- No GitHub repository, cloud build or APK has been created or triggered by this source ZIP on your behalf.
+**Never share** the JSON, JKS, passwords, token, or Base64 text in chat or Git. The helper only prints secret *names*. Base64 is an encoding, not encryption; GitHub secret storage protects it.
 
-## Logo and icon behavior
+**C. Commit, merge, and trigger**
 
-- The **six-window Board symbol** is the official launcher icon for PWA, Android and iOS, with Coral as the default accent.
-- Android uses an adaptive colored foreground and a monochrome drawable compatible with Android's system-themed launcher icons.
-- Every accent has a bundled 1024px candidate icon (`assets/app-icons/`) and a 64px browser-tab icon (`public/icons/colorways/`).
-- On Web, changing accents changes the browser-tab favicon. The PWA *installed launcher icon* stays Coral; browser/OS support for automatically replacing an installed PWA icon is unreliable.
-- On Android and iOS, changing the **in-app accent** does not yet change the *installed launcher icon*. Runtime switching requires a native alternate-icon implementation with predeclared icons and a new development/preview build. Expo Go cannot test that native behavior. **Do not claim dynamic native launcher icons are implemented in v0.5.59.**
+```bash
+cd ~/NiyarvoProjects
+git switch work
+npm test
+git add .github/workflows/android-apk.yml .gitignore README.md docs/changelog/CHANGELOG.md docs/instructions/android-apk-first-build.md scripts/ci/upload-android-signing-secrets.cjs tests/app/board-launcher-apk-059.test.cjs
+git rm scripts/ci/eas-apk-url.cjs
+git commit -m "fix(ci): build signed ARM64 APK directly on GitHub instead of EAS cloud"
+git push origin work
+git switch main
+git pull --ff-only origin main
+git merge --no-ff work -m "merge(hotfix): direct GitHub ARM64 APK build"
+git push origin main
+gh workflow run android-apk.yml --ref main -R zouhairelayni/NiyarvoProjects
+```
 
-## What to test before adopting Firebase
+**Note:** if `package.json` and `package-lock.json` are still modified after repairing six Metro/Babel dependencies, include those two files in the same `work` commit (run `git add package.json package-lock.json` before `git commit`), or GitHub will still use the old lockfile.
 
-Install the preview APK and verify cold-start morph, animation smoothness, navigation, Kanban drag, Gantt performance, Sprints, Settings, encrypted `.niyav` creation and restore, app restarts, screen rotation, deep links, and launcher artwork. Keep a known-good `.niyav` backup and your current app installation until the new preview build is accepted.
+## Expected result and validation
 
-Only after device acceptance should you configure **Niyarvo Projects' separate Firebase project** and design account/session roles and card-level invitation permissions. Never reuse RIVNA's Firebase identity, Firestore data or admin collections.
+From GitHub Actions -> `Niyarvo Projects · Android APK`, wait for successful jobs and download artifact `NiyarvoProjects-v0.5.59-arm64-<run number>`. It contains `NiyarvoProjects-v0.5.59-arm64.apk` and SHA-256 checksum.
+
+Checks enforced in CI:
+
+- Existing keystore must match the SHA-256 certificate `23:F8:19:EA:5C:EA:EE:57:D1:C2:27:40:99:38:6C:E2:FC:35:31:B0:5E:EA:FE:A6:CA:B5:EA:99:6E:DB:B0:F4`.
+- APK must contain **only** `arm64-v8a` shared native libraries.
+- Android's `apksigner` must verify the APK signature and matching certificate.
+- No Expo token, EAS `build --wait`, or Expo cloud build in the workflow.
+
+`eas.json` and the Expo project link remain intact for identification and credentials management, but are not used to build the APK. The existing `EXPO_TOKEN` GitHub secret is unnecessary for this workflow; it can be removed separately when no other jobs need it.
+
+**No Firebase integration in this release.** After installation test the cold-start Board morph, drawer logo replay, navigation, board drag, Gantt/timeline, encrypted backup restore, app restart, and device rotation.

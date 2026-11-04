@@ -1,3 +1,15 @@
+## v0.5.59 Android CI hotfix — direct GitHub native APK build (no version bump)
+
+- Replace EAS cloud build step with GitHub-hosted Expo prebuild + Gradle `assembleRelease`.
+- Restrict test APK to `arm64-v8a`; verify APK native libraries before upload.
+- Reuse the original Niyarvo Projects keystore downloaded once from EAS, upload securely as four GitHub Actions secrets, and verify SHA-256 signing fingerprint before and after building.
+- Match the Termux npm peer-dependency mode with `npm ci --legacy-peer-deps`; keep the user's already-repaired package and lock files.
+- Ship a local one-time helper to transfer EAS credentials into GitHub secrets without printing passwords.
+- Retain the EAS project registration and `eas.json` for recordkeeping; this workflow no longer uses Expo cloud builds or `EXPO_TOKEN`.
+- Tests updated for direct GitHub native compilation and credential handling. Native build still requires a real GitHub Actions run.
+
+---
+
 # CHG-NP v0.5.59 — Board Launcher and First Android APK Workflow
 
 **Baseline:** v0.5.58. **Version:** 0.5.59. No migration or business-logic change.
