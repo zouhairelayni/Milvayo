@@ -1,6 +1,10 @@
-# Niyarvo Projects — full source v0.5.58
+# Niyarvo Projects — full source v0.5.59
 
-Expo SDK 58 app for Android/iOS and Web, based on verified v0.5.57 UI Hotfix. **Application version is 0.5.58**; there is no workspace, backup, or `.niyav` format change.
+Expo SDK 58 app for Android/iOS and Web, based on the v0.5.58 release. **Application version is 0.5.59**; there is no workspace, backup, or `.niyav` format change.
+
+**v0.5.59 Android APK preparation:** The official three-column Projects Board symbol with six card cutouts is now the Coral default app/launcher icon on Android, iOS and PWA. Ten colorway icons ship as assets. The selected accent updates the Web tab favicon; installed launcher icons remain Coral until native alternate-icon support is implemented. Added `.github/workflows/android-apk.yml` for a signed EAS preview APK downloadable via GitHub Actions. First-time account/keystore setup is documented in `docs/instructions/android-apk-first-build.md`. The source ZIP does not include a built APK and has not triggered a cloud build. Firebase collaboration remains a separate future phase.
+
+
 
 **v0.5.58 brand motion:** The user-approved flicker-free N-to-Board logo morph is now a single cross-platform `react-native-svg` component. A logo-only splash plays at 1× on each cold JS launch, after saved theme preferences load, before the workspace mounts. The mobile drawer shows the animated Board mark at 1.5× on every opening; the desktop rail uses the finished static Board mark. The appearance toggle is immediately beside the drawer hamburger. Source animation data and math live in `src/components/brand/`. No WebView, new packages, masks or extra branding elements are used. Six Board windows open sequentially in 3–2–1 order. Reduced-motion users see the completed mark immediately.
 

@@ -6,9 +6,9 @@ test('RIVNA-inspired accent selector exposes ten unique named choices',()=>{
  assert.deepEqual(theme.ACCENTS.map(c=>c.id),['Aqua','Mint','Lime','Amber','Orange','Coral','Pink','Fuchsia','Violet','Indigo']);
  assert.equal(new Set(theme.ACCENTS.map(c=>c.hex)).size,10);
 });
-test('Claude Orange is default and invalid names use safe fallback',()=>{
- assert.equal(theme.DEFAULT_ACCENT,'Orange');assert.equal(theme.findAccent('Orange').hex,'#FF6F61');
- assert.equal(theme.findAccent('not-a-theme').id,'Orange');
+test('Coral is default and invalid names use safe fallback',()=>{
+ assert.equal(theme.DEFAULT_ACCENT,'Coral');assert.equal(theme.findAccent('Orange').hex,'#FF6F61');
+ assert.equal(theme.findAccent('not-a-theme').id,'Coral');
 });
 test('changing accent recomputes foreground, border, and selection surface without changing semantic colors',()=>{
  const semantic={green:design.colors.green,red:design.colors.red,amber:design.colors.amber};

@@ -1,12 +1,12 @@
 {
-  "name": "Niyarvo Projects \u2014 Engineering Workspace",
+  "name": "Niyarvo Projects — Engineering Workspace",
   "short_name": "Niyarvo Projects",
   "description": "Offline-first engineering planning, testing and release tracking",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#111217",
-  "theme_color": "#111217",
+  "background_color": "#071328",
+  "theme_color": "#071328",
   "orientation": "any",
   "icons": [
     {

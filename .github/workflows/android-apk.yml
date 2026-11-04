@@ -1,0 +1,65 @@
+name: Niyarvo Projects · Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niyarvo-android-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android-apk:
+    name: Build signed APK via Expo EAS
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Check Expo project connection
+        run: |
+          node -e 'const c=require("./app.json").expo; if(!c.extra?.eas?.projectId){console.error("Missing extra.eas.projectId: run npx eas-cli@latest init once in Termux, commit app.json, and try again.");process.exit(1)}'
+
+      - name: Configure Expo EAS
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies from lockfile
+        run: npm ci --no-audit --no-fund
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Build preview Android APK
+        run: eas build --platform android --profile preview --non-interactive --wait --json > eas-build.json
+
+      - name: Download and validate APK
+        shell: bash
+        run: |
+          APK_URL="$(node scripts/ci/eas-apk-url.cjs eas-build.json)"
+          curl --fail --location --silent --show-error --retry 3 "$APK_URL" --output NiyarvoProjects-preview.apk
+          test "$(head -c 2 NiyarvoProjects-preview.apk)" = 'PK'
+          unzip -tqq NiyarvoProjects-preview.apk
+          test "$(stat -c '%s' NiyarvoProjects-preview.apk)" -gt 1000000
+
+      - name: Upload installable APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NiyarvoProjects-Android-APK-${{ github.run_number }}
+          path: NiyarvoProjects-preview.apk
+          if-no-files-found: error
+          retention-days: 30

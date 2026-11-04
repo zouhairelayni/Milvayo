@@ -47,6 +47,18 @@ export function ThemeProvider({ children }) {
   useEffect(() => { let active=true; const fallback=setTimeout(()=>{if(active)setRestored(true);},1500); Promise.all([AsyncStorage.getItem('niyarvo-projects-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{}).finally(()=>{clearTimeout(fallback);if(active)setRestored(true);});return()=>{active=false;clearTimeout(fallback)}; }, []);
   const setPref = (value) => {changeMode(value);AsyncStorage.setItem('niyarvo-projects-appearance-v1',value).catch(()=>{});};
   const setAccent = (value) => {if(!ACCENTS.some(a=>a.id===value))return;changeAccent(value);AsyncStorage.setItem(STORAGE_KEY,value).catch(()=>{});};
+  // Web tab icon follows the selected accent; installed PWA launcher icons remain manifest-controlled.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/png';
+    link.href = `/icons/colorways/${accentPref.toLowerCase()}-64.png`;
+  }, [accentPref]);
   const mode = pref === 'system' ? (system === 'dark' ? 'dark' : 'light') : pref;
   const value = useMemo(
     () => {

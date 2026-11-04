@@ -1,3 +1,33 @@
+# CHG-NP v0.5.59 — Board Launcher and First Android APK Workflow
+
+**Baseline:** v0.5.58. **Version:** 0.5.59. No migration or business-logic change.
+
+## Added
+
+- Official *Projects Board* launcher assets (not the company ribbon N) for Android, iOS and PWA. Retains all six card openings and the three-column official gradient artwork.
+- Default Coral Board icon on a dark navy background, with 1024px iOS/legacy Android icon and 1024px adaptive Android foreground, monochrome foreground for Android system-themed icons, 192/512px PWA and maskable assets, and favicon / Apple Touch icons.
+- Full set of ten branded Board icons in `assets/app-icons/` and ten 64px web-tab icons in `public/icons/colorways/`.
+- Default selected *in-app* accent changes from Orange to Coral on new installations. Existing saved accent choice continues to take precedence.
+- Web tab favicon follows the selected theme accent. This does not alter the icon already installed on a device's home screen.
+- `eas.json` with signed internal Android APK preview profile.
+- `.github/workflows/android-apk.yml` with manual trigger, Expo EAS cloud build, APK retrieval and GitHub artifact upload.
+- APK URL validator and four regression tests for icon dimensions, colorways, workflow and artifact URL validation.
+- One-time Expo linkage, account token, and EAS keystore instructions in `docs/instructions/android-apk-first-build.md`.
+
+## Verification and limitations
+
+- Full Node test suite passed; no changes to encrypted-backup format, project schemas, Firebase rules, or collaboration behavior.
+- Native APK, EAS project initialization, Github Actions workflow run, installation and real-device test **have not been performed** by this release generation environment. The supplied ZIP is **build-ready after one-time Expo project / signing setup**, not a prebuilt binary.
+- This release does **not** implement automatic Android/iOS launcher icon switching when in-app accent changes. That requires native alternate icon declarations and implementation, a custom preview build and device verification. Installed PWA icon automatic refresh is not reliable across browsers.
+- Android's system-themed monochrome icon colors are controlled by the launcher wallpaper/theme, **not** the Niyarvo accent.
+- The test workflow builds only after `EXPO_TOKEN` is added as a repository secret and an actual Expo `extra.eas.projectId` is initialized.
+
+## Next planned phase (not yet implemented)
+
+After APK acceptance, separately design and enable Niyarvo Projects Firebase Authentication, Firestore documents and secure invitations/roles/card assignments with server-side authorization. Keep RIVNA and Niyarvo Control Center isolated.
+
+---
+
 # Niyarvo Projects — Complete release history
 
 **Historical coverage:** v0.1.0 through v0.5.58, with recovered source notes and verified subsequent release records.  

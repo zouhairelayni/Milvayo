@@ -33,3 +33,5 @@ Use Expo Go to open the Android app and the Metro Web URL to verify the browser.
 - `docs/qa/`: historical and current QA evidence
 - `docs/instructions/niyav-format.md`: backup encryption format
 - `docs/instructions/historical-*`: archived v0.3.12 handoff material, not current usage instructions
+
+- `android-apk-first-build.md` — Niyarvo Projects signed preview APK setup using GitHub Actions / EAS.
