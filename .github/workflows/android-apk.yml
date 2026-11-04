@@ -135,8 +135,9 @@ jobs:
           test -n "$signer"
           "$signer" verify --verbose --print-certs "$apk" > apk-signature.txt
           expected='23f819ea5ceaee57d1c2274099386ce2fc3531b05eeafea6cab5ea996edbb0f4'
-          if ! grep -iq "Signer #1 certificate SHA-256 digest: $expected" apk-signature.txt; then
-            echo 'APK signing certificate does not match the original Niyarvo Projects key.' >&2
+          actual="$(awk '/certificate SHA-256 digest:/ { print tolower($NF) }' apk-signature.txt | tr -d ':\r' | sort -u)"
+          if [[ "$actual" != "$expected" ]]; then
+            printf 'APK certificate SHA-256 mismatch or unrecognized output.\nExpected: %s\nFound: %s\n' "$expected" "${actual:-none}" >&2
             exit 1
           fi
           cp "$apk" NiyarvoProjects-v0.5.59-arm64.apk
