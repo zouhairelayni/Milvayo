@@ -40,21 +40,33 @@ test('All ten Board colorway resources exist and browser favicon follows selecte
   assert.match(theme,/icons\/colorways\/\$\{accentPref\.toLowerCase\(\)\}-64\.png/);
 });
 
-test('A manually-triggered GitHub Actions workflow builds signed EAS preview APK', () => {
+test('GitHub workflow builds signed ARM64 APK locally, without EAS cloud', () => {
   const workflow = read('.github/workflows/android-apk.yml').toString();
-  const eas = JSON.parse(read('eas.json'));
-  assert.equal(eas.build.preview.android.buildType,'apk');
-  assert.equal(eas.build.preview.distribution,'internal');
   assert.match(workflow,/workflow_dispatch/);
-  assert.match(workflow,/EXPO_TOKEN/);
-  assert.match(workflow,/eas build --platform android --profile preview --non-interactive --wait --json/);
+  assert.match(workflow,/npm ci --legacy-peer-deps/);
+  assert.match(workflow,/expo prebuild --platform android --clean --no-install/);
+  assert.match(workflow,/:app:assembleRelease -PreactNativeArchitectures=arm64-v8a/);
+  assert.match(workflow,/NIYARVO_ANDROID_KEYSTORE_BASE64/);
+  assert.match(workflow,/NIYARVO_ANDROID_KEYSTORE_PASSWORD/);
+  assert.match(workflow,/apksigner/);
   assert.match(workflow,/upload-artifact@v4/);
-  assert.doesNotMatch(workflow,/google-services\.json|firebase|keystore\.jks/);
+  assert.doesNotMatch(workflow,/eas build|EXPO_TOKEN|expo-github-action@/);
+  assert.match(read('.gitignore').toString(),/^credentials\.json$/m);
 });
 
-test('EAS artifact URL parser rejects non-HTTPS and unfinished builds', () => {
-  const { getUrl } = require('../../scripts/ci/eas-apk-url.cjs');
-  assert.equal(getUrl([{status:'FINISHED',artifacts:{buildUrl:'https://example.com/test.apk'}}]),'https://example.com/test.apk');
-  assert.throws(()=>getUrl([{status:'ERRORED',artifacts:{buildUrl:'https://example.com/test.apk'}}]),/not finished/);
-  assert.throws(()=>getUrl({status:'FINISHED',artifacts:{buildUrl:'http://example.com/test.apk'}}),/invalid/);
+test('One-time signing import validates local EAS credential file without uploading when required data is missing', () => {
+  const { loadSigningCredentials } = require('../../scripts/ci/upload-android-signing-secrets.cjs');
+  const os = require('node:os');
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'niyarvo-signing-'));
+  try {
+    const file = path.join(temp, 'credentials.json');
+    fs.writeFileSync(file, JSON.stringify({android:{keystore:{keystorePath:'release.jks',keystorePassword:'test-store-pass',keyAlias:'test-key',keyPassword:'test-key-pass'}}}));
+    assert.throws(() => loadSigningCredentials(file),/ENOENT/);
+    fs.writeFileSync(path.join(temp,'release.jks'),Buffer.alloc(1200,1));
+    const values = loadSigningCredentials(file);
+    assert.equal(values.NIYARVO_ANDROID_KEYSTORE_PASSWORD, 'test-store-pass');
+    assert.equal(values.NIYARVO_ANDROID_KEY_ALIAS, 'test-key');
+    assert.equal(Buffer.from(values.NIYARVO_ANDROID_KEYSTORE_BASE64,'base64').length,1200);
+    assert.equal(Object.keys(values).length,4);
+  } finally { fs.rmSync(temp, {recursive:true, force:true}); }
 });

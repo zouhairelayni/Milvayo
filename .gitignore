@@ -11,3 +11,9 @@ ios/
 *.p12
 *.json.backup
 project-exports/
+credentials.json
+keystore.properties
+
+# Private Android signing credentials
+/credentials.json
+/credentials/

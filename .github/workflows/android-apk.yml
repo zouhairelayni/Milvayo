@@ -15,9 +15,12 @@ concurrency:
 
 jobs:
   android-apk:
-    name: Build signed APK via Expo EAS
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    name: Build signed ARM64 APK on GitHub
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -28,38 +31,126 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Check Expo project connection
-        run: |
-          node -e 'const c=require("./app.json").expo; if(!c.extra?.eas?.projectId){console.error("Missing extra.eas.projectId: run npx eas-cli@latest init once in Termux, commit app.json, and try again.");process.exit(1)}'
-
-      - name: Configure Expo EAS
-        uses: expo/expo-github-action@v9
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle build inputs
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Install dependencies from lockfile
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Run regression tests
         run: npm test
 
-      - name: Build preview Android APK
-        run: eas build --platform android --profile preview --non-interactive --wait --json > eas-build.json
+      - name: Generate Android project locally
+        run: npx expo prebuild --platform android --clean --no-install
 
-      - name: Download and validate APK
+      - name: Restore existing Niyarvo signing key and check certificate
+        shell: bash
+        env:
+          NIYARVO_ANDROID_KEYSTORE_BASE64: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_BASE64 }}
+          NIYARVO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_PASSWORD }}
+          NIYARVO_ANDROID_KEY_ALIAS: ${{ secrets.NIYARVO_ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          : "${NIYARVO_ANDROID_KEYSTORE_BASE64:?Missing NIYARVO_ANDROID_KEYSTORE_BASE64 secret}"
+          : "${NIYARVO_ANDROID_KEYSTORE_PASSWORD:?Missing NIYARVO_ANDROID_KEYSTORE_PASSWORD secret}"
+          : "${NIYARVO_ANDROID_KEY_ALIAS:?Missing NIYARVO_ANDROID_KEY_ALIAS secret}"
+          umask 077
+          printf '%s' "$NIYARVO_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/niyarvo-upload.jks
+          test -s android/app/niyarvo-upload.jks
+          actual="$(keytool -list -v -keystore android/app/niyarvo-upload.jks -alias "$NIYARVO_ANDROID_KEY_ALIAS" -storepass "$NIYARVO_ANDROID_KEYSTORE_PASSWORD" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d '\r\n')"
+          expected='23:F8:19:EA:5C:EA:EE:57:D1:C2:27:40:99:38:6C:E2:FC:35:31:B0:5E:EA:FE:A6:CA:B5:EA:99:6E:DB:B0:F4'
+          if [[ "${actual^^}" != "$expected" ]]; then
+            echo 'Signing certificate does not match the original Niyarvo Projects EAS keystore.' >&2
+            exit 1
+          fi
+          echo 'Original Android signing certificate verified.'
+
+      - name: Configure Gradle release signing
         shell: bash
         run: |
-          APK_URL="$(node scripts/ci/eas-apk-url.cjs eas-build.json)"
-          curl --fail --location --silent --show-error --retry 3 "$APK_URL" --output NiyarvoProjects-preview.apk
-          test "$(head -c 2 NiyarvoProjects-preview.apk)" = 'PK'
-          unzip -tqq NiyarvoProjects-preview.apk
-          test "$(stat -c '%s' NiyarvoProjects-preview.apk)" -gt 1000000
+          set -euo pipefail
+          # Only property names are written to build.gradle; secret values stay in runner env.
+          cat >> android/app/build.gradle <<'GRADLE'
 
-      - name: Upload installable APK artifact
+          // Niyarvo Projects release signing (GitHub Actions, generated after Expo prebuild).
+          android {
+            signingConfigs {
+              niyarvoRelease {
+                storeFile file("niyarvo-upload.jks")
+                storePassword System.getenv("NIYARVO_ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("NIYARVO_ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("NIYARVO_ANDROID_KEY_PASSWORD")
+              }
+            }
+            buildTypes {
+              release {
+                signingConfig signingConfigs.niyarvoRelease
+              }
+            }
+          }
+          GRADLE
+
+      - name: Build signed ARM64-only release APK
+        working-directory: android
+        env:
+          NIYARVO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_PASSWORD }}
+          NIYARVO_ANDROID_KEY_ALIAS: ${{ secrets.NIYARVO_ANDROID_KEY_ALIAS }}
+          NIYARVO_ANDROID_KEY_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${NIYARVO_ANDROID_KEYSTORE_PASSWORD:?Missing NIYARVO_ANDROID_KEYSTORE_PASSWORD secret}"
+          : "${NIYARVO_ANDROID_KEY_ALIAS:?Missing NIYARVO_ANDROID_KEY_ALIAS secret}"
+          : "${NIYARVO_ANDROID_KEY_PASSWORD:?Missing NIYARVO_ANDROID_KEY_PASSWORD secret}"
+          chmod +x ./gradlew
+          ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --build-cache --no-daemon
+
+      - name: Validate APK architecture and signing certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$(find android/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$apk" && test -s "$apk"
+          unzip -tqq "$apk"
+          abi_list="$(unzip -Z1 "$apk" | sed -nE 's#^lib/([^/]+)/[^/]+\.so$#\1#p' | sort -u)"
+          if [[ "$abi_list" != 'arm64-v8a' ]]; then
+            printf 'Expected only arm64-v8a native libraries; found: %s\n' "$abi_list" >&2
+            exit 1
+          fi
+          signer="$(find "$ANDROID_HOME/build-tools" -mindepth 2 -maxdepth 2 -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$signer"
+          "$signer" verify --verbose --print-certs "$apk" > apk-signature.txt
+          expected='23f819ea5ceaee57d1c2274099386ce2fc3531b05eeafea6cab5ea996edbb0f4'
+          if ! grep -iq "Signer #1 certificate SHA-256 digest: $expected" apk-signature.txt; then
+            echo 'APK signing certificate does not match the original Niyarvo Projects key.' >&2
+            exit 1
+          fi
+          cp "$apk" NiyarvoProjects-v0.5.59-arm64.apk
+          sha256sum NiyarvoProjects-v0.5.59-arm64.apk > NiyarvoProjects-v0.5.59-arm64.apk.sha256
+          echo "ARM64 release APK verified: $(stat -c '%s' NiyarvoProjects-v0.5.59-arm64.apk) bytes"
+
+      - name: Upload signed Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: NiyarvoProjects-Android-APK-${{ github.run_number }}
-          path: NiyarvoProjects-preview.apk
+          name: NiyarvoProjects-v0.5.59-arm64-${{ github.run_number }}
+          path: |
+            NiyarvoProjects-v0.5.59-arm64.apk
+            NiyarvoProjects-v0.5.59-arm64.apk.sha256
           if-no-files-found: error
           retention-days: 30
+
+      - name: Remove temporary signing key
+        if: always()
+        shell: bash
+        run: rm -f android/app/niyarvo-upload.jks

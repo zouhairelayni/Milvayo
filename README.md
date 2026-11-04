@@ -2,7 +2,7 @@
 
 Expo SDK 58 app for Android/iOS and Web, based on the v0.5.58 release. **Application version is 0.5.59**; there is no workspace, backup, or `.niyav` format change.
 
-**v0.5.59 Android APK preparation:** The official three-column Projects Board symbol with six card cutouts is now the Coral default app/launcher icon on Android, iOS and PWA. Ten colorway icons ship as assets. The selected accent updates the Web tab favicon; installed launcher icons remain Coral until native alternate-icon support is implemented. Added `.github/workflows/android-apk.yml` for a signed EAS preview APK downloadable via GitHub Actions. First-time account/keystore setup is documented in `docs/instructions/android-apk-first-build.md`. The source ZIP does not include a built APK and has not triggered a cloud build. Firebase collaboration remains a separate future phase.
+**v0.5.59 Android APK preparation:** The official three-column Projects Board symbol with six card cutouts is now the Coral default app/launcher icon on Android, iOS and PWA. Ten colorway icons ship as assets. The selected accent updates the Web tab favicon; installed launcher icons remain Coral until native alternate-icon support is implemented. Added `.github/workflows/android-apk.yml` for an ARM64-only APK compiled and signed directly on the GitHub runner (Expo prebuild + Gradle; no EAS cloud queue). GitHub signing setup reuses the existing Niyarvo EAS keystore via encrypted repository secrets; see `docs/instructions/android-apk-first-build.md`. The source ZIP does not include a built APK and has not triggered a cloud build. Firebase collaboration remains a separate future phase.
 
 
 
