@@ -1,5 +1,5 @@
 // /src/screens/workspace/Workspace.js
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { Image, Pressable, ScrollView, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect} from 'react';
 import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, useWide, downloadText } from '../../ui/ui';
@@ -9,6 +9,7 @@ import { money, openHours } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
 import ProjectToolsSheet from '../more/ProjectToolsSheet';
+const iconPreview = require('../../ui/theme/iconPreview.cjs');
 const operations = require('../../domain/operations.cjs');
 import { localDay } from '../../utils/localDay.cjs';
 
@@ -238,7 +239,7 @@ export function Activity() {
 // ---- Settings (includes project, data and appearance) -----------------------
 
 export function Settings({go, backupRequest}) {
-  const { c, pref, setPref, accentPref, setAccent } = useTheme();
+  const { c, pref, mode, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false);
   const [toolsOpen,setToolsOpen]=useState(false);
   const [tab,setTab]=useState(backupRequest ? 'backup' : 'general');
@@ -255,6 +256,13 @@ export function Settings({go, backupRequest}) {
     <DiagnosticsPanel />
     <Card style={{gap:12}}>
       <SectionTitle>Appearance</SectionTitle>
+      <View style={{flexDirection:'row',alignItems:'center',gap:12}}>
+        <Image source={iconPreview(accentPref, mode)} resizeMode="contain" style={{width:54,height:54,borderRadius:14}} accessibilityLabel={`${accentPref} ${mode} app icon preview`}/>
+        <View style={{flex:1,gap:3}}>
+          <T weight="600">App icon · Follows theme</T>
+          <T muted size={12}>The launcher icon follows your accent and appearance. Native changes require an installed build, not Expo Go. Installed web shortcuts may require reinstalling.</T>
+        </View>
+      </View>
       <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}>
         <Chip label="System" active={pref==='system'} onPress={()=>setPref('system')}/>
         <Chip label="Daylight" active={pref==='light'} onPress={()=>setPref('light')}/>

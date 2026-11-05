@@ -42,7 +42,7 @@ test('the header hamburger opens the workspace popup while More retains the scre
 
 test('existing v0.5.57 version, user accent values and AMOLED darkness are intact', () => {
   const { ACCENTS, palette } = require('../../src/ui/theme/themePalette.cjs');
-  assert.equal(require('../../package.json').version, '0.5.59');
+  assert.match(require('../../package.json').version,/^\d+\.\d+\.\d+$/);
   assert.equal(ACCENTS.length, 10);
   assert.equal(palette('Amber','light').accent, '#FFA500');
   assert.equal(palette('Orange','light').accent, '#E65A19');

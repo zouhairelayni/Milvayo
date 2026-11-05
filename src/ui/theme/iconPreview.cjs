@@ -1,0 +1,36 @@
+// /src/ui/theme/iconPreview.cjs
+// Statically required images so Metro includes all 30 theme previews.
+const icons = {
+  'aqua-light': require('../../../assets/theme-icons/aqua-light-icon.png'),
+  'aqua-dark': require('../../../assets/theme-icons/aqua-dark-icon.png'),
+  'aqua-amoled': require('../../../assets/theme-icons/aqua-amoled-icon.png'),
+  'mint-light': require('../../../assets/theme-icons/mint-light-icon.png'),
+  'mint-dark': require('../../../assets/theme-icons/mint-dark-icon.png'),
+  'mint-amoled': require('../../../assets/theme-icons/mint-amoled-icon.png'),
+  'lime-light': require('../../../assets/theme-icons/lime-light-icon.png'),
+  'lime-dark': require('../../../assets/theme-icons/lime-dark-icon.png'),
+  'lime-amoled': require('../../../assets/theme-icons/lime-amoled-icon.png'),
+  'amber-light': require('../../../assets/theme-icons/amber-light-icon.png'),
+  'amber-dark': require('../../../assets/theme-icons/amber-dark-icon.png'),
+  'amber-amoled': require('../../../assets/theme-icons/amber-amoled-icon.png'),
+  'orange-light': require('../../../assets/theme-icons/orange-light-icon.png'),
+  'orange-dark': require('../../../assets/theme-icons/orange-dark-icon.png'),
+  'orange-amoled': require('../../../assets/theme-icons/orange-amoled-icon.png'),
+  'coral-light': require('../../../assets/theme-icons/coral-light-icon.png'),
+  'coral-dark': require('../../../assets/theme-icons/coral-dark-icon.png'),
+  'coral-amoled': require('../../../assets/theme-icons/coral-amoled-icon.png'),
+  'pink-light': require('../../../assets/theme-icons/pink-light-icon.png'),
+  'pink-dark': require('../../../assets/theme-icons/pink-dark-icon.png'),
+  'pink-amoled': require('../../../assets/theme-icons/pink-amoled-icon.png'),
+  'fuchsia-light': require('../../../assets/theme-icons/fuchsia-light-icon.png'),
+  'fuchsia-dark': require('../../../assets/theme-icons/fuchsia-dark-icon.png'),
+  'fuchsia-amoled': require('../../../assets/theme-icons/fuchsia-amoled-icon.png'),
+  'violet-light': require('../../../assets/theme-icons/violet-light-icon.png'),
+  'violet-dark': require('../../../assets/theme-icons/violet-dark-icon.png'),
+  'violet-amoled': require('../../../assets/theme-icons/violet-amoled-icon.png'),
+  'indigo-light': require('../../../assets/theme-icons/indigo-light-icon.png'),
+  'indigo-dark': require('../../../assets/theme-icons/indigo-dark-icon.png'),
+  'indigo-amoled': require('../../../assets/theme-icons/indigo-amoled-icon.png'),
+};
+const { iconChoice } = require('./iconName.cjs');
+module.exports = (accent, mode) => icons[iconChoice(accent, mode).slug];

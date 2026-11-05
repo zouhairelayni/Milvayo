@@ -54,9 +54,11 @@ test('Delete and Duplicate confirmations show only their selected primary action
  const s=source('src/screens/tasks/TaskSheet.js');
  const footer=s.slice(s.indexOf('const footer = t ?'),s.indexOf('const row =',s.indexOf('const footer = t ?')));
  assert.match(footer,/confirmDuplicate \? <>/);
- assert.match(footer,/Confirm duplicate/);
+ assert.match(footer,/Duplicate this task\?/);
+ assert.match(footer,/duplicateTask\(t\.id\)/);
  assert.match(footer,/confirmDelete \? <>/);
- assert.match(footer,/Confirm delete/);
+ assert.match(footer,/deleteTask\(t\.id\)/);
+ assert.equal((footer.match(/label="Cancel"/g)||[]).length,2);
  assert.match(footer,/Delete this task\? This cannot be undone/);
  assert.match(footer,/label="Done"/);
 });

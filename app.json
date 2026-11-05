@@ -2,7 +2,7 @@
   "expo": {
     "name": "Milvayo",
     "slug": "milvayo",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#071328",
@@ -23,12 +23,12 @@
         "backgroundColor": "#071328",
         "monochromeImage": "./assets/adaptive-monochrome.png"
       },
-      "versionCode": 60
+      "versionCode": 61
     },
     "ios": {
       "bundleIdentifier": "com.milvayo.projects",
       "icon": "./assets/icon.png",
-      "buildNumber": "60"
+      "buildNumber": "61"
     },
     "icon": "./assets/icon.png",
     "extra": {
@@ -38,7 +38,244 @@
     },
     "owner": "zouhairelayni",
     "plugins": [
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "AquaLight",
+            "ios": "./assets/theme-icons/aqua-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/aqua-light-foreground.png",
+              "backgroundColor": "#ECF1F5"
+            }
+          },
+          {
+            "name": "AquaDark",
+            "ios": "./assets/theme-icons/aqua-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/aqua-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "AquaAmoled",
+            "ios": "./assets/theme-icons/aqua-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/aqua-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "MintLight",
+            "ios": "./assets/theme-icons/mint-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/mint-light-foreground.png",
+              "backgroundColor": "#EAF3EF"
+            }
+          },
+          {
+            "name": "MintDark",
+            "ios": "./assets/theme-icons/mint-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/mint-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "MintAmoled",
+            "ios": "./assets/theme-icons/mint-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/mint-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "LimeLight",
+            "ios": "./assets/theme-icons/lime-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/lime-light-foreground.png",
+              "backgroundColor": "#EEF2EA"
+            }
+          },
+          {
+            "name": "LimeDark",
+            "ios": "./assets/theme-icons/lime-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/lime-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "LimeAmoled",
+            "ios": "./assets/theme-icons/lime-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/lime-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "AmberLight",
+            "ios": "./assets/theme-icons/amber-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/amber-light-foreground.png",
+              "backgroundColor": "#F3F0EA"
+            }
+          },
+          {
+            "name": "AmberDark",
+            "ios": "./assets/theme-icons/amber-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/amber-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "AmberAmoled",
+            "ios": "./assets/theme-icons/amber-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/amber-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "OrangeLight",
+            "ios": "./assets/theme-icons/orange-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/orange-light-foreground.png",
+              "backgroundColor": "#F5F0EA"
+            }
+          },
+          {
+            "name": "OrangeDark",
+            "ios": "./assets/theme-icons/orange-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/orange-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "OrangeAmoled",
+            "ios": "./assets/theme-icons/orange-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/orange-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "CoralLight",
+            "ios": "./assets/theme-icons/coral-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/coral-light-foreground.png",
+              "backgroundColor": "#F5EDED"
+            }
+          },
+          {
+            "name": "CoralAmoled",
+            "ios": "./assets/theme-icons/coral-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/coral-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "PinkLight",
+            "ios": "./assets/theme-icons/pink-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/pink-light-foreground.png",
+              "backgroundColor": "#F5EEF0"
+            }
+          },
+          {
+            "name": "PinkDark",
+            "ios": "./assets/theme-icons/pink-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/pink-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "PinkAmoled",
+            "ios": "./assets/theme-icons/pink-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/pink-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "FuchsiaLight",
+            "ios": "./assets/theme-icons/fuchsia-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/fuchsia-light-foreground.png",
+              "backgroundColor": "#F3EEF4"
+            }
+          },
+          {
+            "name": "FuchsiaDark",
+            "ios": "./assets/theme-icons/fuchsia-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/fuchsia-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "FuchsiaAmoled",
+            "ios": "./assets/theme-icons/fuchsia-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/fuchsia-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "VioletLight",
+            "ios": "./assets/theme-icons/violet-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/violet-light-foreground.png",
+              "backgroundColor": "#F0EEF6"
+            }
+          },
+          {
+            "name": "VioletDark",
+            "ios": "./assets/theme-icons/violet-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/violet-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "VioletAmoled",
+            "ios": "./assets/theme-icons/violet-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/violet-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          },
+          {
+            "name": "IndigoLight",
+            "ios": "./assets/theme-icons/indigo-light-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/indigo-light-foreground.png",
+              "backgroundColor": "#EEEFF5"
+            }
+          },
+          {
+            "name": "IndigoDark",
+            "ios": "./assets/theme-icons/indigo-dark-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/indigo-dark-foreground.png",
+              "backgroundColor": "#071328"
+            }
+          },
+          {
+            "name": "IndigoAmoled",
+            "ios": "./assets/theme-icons/indigo-amoled-icon.png",
+            "android": {
+              "foregroundImage": "./assets/theme-icons/indigo-amoled-foreground.png",
+              "backgroundColor": "#000000"
+            }
+          }
+        ]
+      ]
     ]
   }
 }

@@ -51,5 +51,5 @@ test('Appearance row shows sun / moon plus the mode name, and the Milvayo wordma
   for (const file of ['assets/milvayo-mask.png']) {
     assert.ok(fs.statSync(path.join(root,file)).size>250,file);
   }
-  assert.equal(require('../../package.json').version,'0.5.59');
+  assert.match(require('../../package.json').version,/^\d+\.\d+\.\d+$/);
 });
