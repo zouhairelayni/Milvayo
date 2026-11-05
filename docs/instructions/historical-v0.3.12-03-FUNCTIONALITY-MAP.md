@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.12 — complete functionality map
+# Milvayo v0.3.12 — complete functionality map
 
 **Legend:** **S** = implemented in audited v0.3.12 source, covered to some degree by Node tests. **F** = source implemented and *directly evidenced* in user screenshots or a targeted successful user report (not full regression). **Q** = source implemented but current version requires Android/Web interaction QA. **P** = partial/limited local capability. **N** = not implemented. **Future** refers to roadmap, not a promised delivery.
 

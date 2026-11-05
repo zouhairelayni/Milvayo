@@ -1,11 +1,11 @@
-# Using Niyarvo Projects
+# Using Milvayo
 
-This application is an independent, local-first project-management app. The commands below assume Android Termux and a checkout at `~/NiyarvoProjects`.
+This application is an independent, local-first project-management app. The commands below assume Android Termux and a checkout at `~/Milvayo`.
 
 ## Development
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 npm ci
 npx expo start --clear
 ```
@@ -34,4 +34,4 @@ Use Expo Go to open the Android app and the Metro Web URL to verify the browser.
 - `docs/instructions/niyav-format.md`: backup encryption format
 - `docs/instructions/historical-*`: archived v0.3.12 handoff material, not current usage instructions
 
-- `android-apk-first-build.md` — Niyarvo Projects signed preview APK setup using GitHub Actions / EAS.
+- `android-apk-first-build.md` — Milvayo signed preview APK setup using GitHub Actions / EAS.

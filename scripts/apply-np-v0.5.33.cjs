@@ -1,6 +1,6 @@
 // /scripts/apply-np-v0.5.33.cjs
 'use strict';
-/** Niyarvo Projects 0.5.33 selective merge. Applied to installed 0.5.31 Desktop HF2 only. */
+/** Milvayo 0.5.33 selective merge. Applied to installed 0.5.31 Desktop HF2 only. */
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
@@ -147,7 +147,7 @@ function apply({ dryRun = false } = {}) {
     for (const k of changes) { try { fs.unlinkSync(path.join(root, files[k]) + '.np533tmp'); } catch { /* absent */ } }
     throw e;
   }
-  console.log(`Niyarvo Projects 0.5.33 selective merge applied: ${changes.length} changed source files.`);
+  console.log(`Milvayo 0.5.33 selective merge applied: ${changes.length} changed source files.`);
   console.log('Desktop layout, portrait mode, theme, persistence, gesture engines and native breakpoints preserved.');
   return changes;
 }

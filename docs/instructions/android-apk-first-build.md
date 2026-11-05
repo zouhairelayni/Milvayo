@@ -1,14 +1,14 @@
-# Niyarvo Projects v0.5.59 — direct GitHub ARM64 APK build
+# Milvayo v0.5.59 — direct GitHub ARM64 APK build
 
 **Build location:** GitHub-hosted Ubuntu runner. **No EAS cloud build**. GitHub installs Node/Java/Android tooling, runs `npm ci --legacy-peer-deps` and tests, generates `android/` using `npx expo prebuild`, then runs Gradle `:app:assembleRelease -PreactNativeArchitectures=arm64-v8a`. The uploaded artifact includes an installable signed APK and SHA-256 file.
 
-The existing Expo project is linked to `com.niyarvo.projects`; the signing key already exists on EAS. We only **export that existing key once** to GitHub secrets. Do not generate a second keystore: Android updates must use the same signing identity.
+The existing Expo project is linked to `com.milvayo.projects`; the signing key already exists on EAS. We only **export that existing key once** to GitHub secrets. Do not generate a second keystore: Android updates must use the same signing identity.
 
 ## First-time setup in Termux
 
 **A. Download existing credentials securely**
 
-1. While in `~/NiyarvoProjects`, run `npx --yes eas-cli@latest credentials -p android`.
+1. While in `~/Milvayo`, run `npx --yes eas-cli@latest credentials -p android`.
 2. Select the `preview` profile, then `credentials.json` -> **Download credentials from EAS to credentials.json**. Follow the prompts to download the existing Android keystore and a credentials JSON containing `keystorePath`, `keystorePassword`, `keyAlias`, `keyPassword`. **Do not select Generate new keystore.**
 3. Move the credentials JSON and JKS file to a private folder *outside* the repository, for example `~/niyarvo-private/`. Preserve their relative paths (or update the JSON `keystorePath` accordingly). Keep the files only on your own device. The `.gitignore` now excludes `credentials.json`, `.jks`, `.keystore` and `.env*` from Git.
 
@@ -17,13 +17,13 @@ The existing Expo project is linked to `com.niyarvo.projects`; the signing key a
 Use this helper from the **work** branch after applying the patch (the path points to your own exported file):
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 node scripts/ci/upload-android-signing-secrets.cjs ~/niyarvo-private/credentials.json
-gh secret list -R zouhairelayni/NiyarvoProjects
+gh secret list -R zouhairelayni/Milvayo
 ```
 
-It creates these secrets in the Niyarvo Projects repository:
+It creates these secrets in the Milvayo repository:
 
 - `NIYARVO_ANDROID_KEYSTORE_BASE64` (the original keystore file, encoded)
 - `NIYARVO_ANDROID_KEYSTORE_PASSWORD`
@@ -35,7 +35,7 @@ It creates these secrets in the Niyarvo Projects repository:
 **C. Commit, merge, and trigger**
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 npm test
 git add .github/workflows/android-apk.yml .gitignore README.md docs/changelog/CHANGELOG.md docs/instructions/android-apk-first-build.md scripts/ci/upload-android-signing-secrets.cjs tests/app/board-launcher-apk-059.test.cjs
@@ -46,14 +46,14 @@ git switch main
 git pull --ff-only origin main
 git merge --no-ff work -m "merge(hotfix): direct GitHub ARM64 APK build"
 git push origin main
-gh workflow run android-apk.yml --ref main -R zouhairelayni/NiyarvoProjects
+gh workflow run android-apk.yml --ref main -R zouhairelayni/Milvayo
 ```
 
 **Note:** if `package.json` and `package-lock.json` are still modified after repairing six Metro/Babel dependencies, include those two files in the same `work` commit (run `git add package.json package-lock.json` before `git commit`), or GitHub will still use the old lockfile.
 
 ## Expected result and validation
 
-From GitHub Actions -> `Niyarvo Projects · Android APK`, wait for successful jobs and download artifact `NiyarvoProjects-v0.5.59-arm64-<run number>`. It contains `NiyarvoProjects-v0.5.59-arm64.apk` and SHA-256 checksum.
+From GitHub Actions -> `Milvayo · Android APK`, wait for successful jobs and download artifact `Milvayo-v0.5.59-arm64-<run number>`. It contains `Milvayo-v0.5.59-arm64.apk` and SHA-256 checksum.
 
 Checks enforced in CI:
 

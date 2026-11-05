@@ -2,7 +2,7 @@
 
 Method: MemoryRelay `select_skills` returned Ponytail and Ponytail Audit; both followed.
 
-What this repo does: Niyarvo Projects is a local-first project manager (Expo React Native) that keeps one saved workspace in AsyncStorage. Load assumed: one person on one phone, up to ~30 projects and a few MB of data.
+What this repo does: Milvayo is a local-first project manager (Expo React Native) that keeps one saved workspace in AsyncStorage. Load assumed: one person on one phone, up to ~30 projects and a few MB of data.
 
 Scope read: `src/store/` (store, workspaces, latestWriter, backupBudget, importFiles), `Backup.js`, `Menus.js`, `ModernApp.js`, test runner. Not read: Timeline, Board gestures, domain modules beyond what the store calls, `niyav*.js` internals.
 

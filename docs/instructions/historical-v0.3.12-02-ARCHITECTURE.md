@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.12 — architecture and data maps
+# Milvayo v0.3.12 — architecture and data maps
 
 ## 1. Product and deployment architecture (as delivered)
 
@@ -12,8 +12,8 @@ flowchart LR
  UI --> M[src/model.cjs authoritative project and workspace model]
  UI --> V[Feature view models / pure CJS libraries]
  V --> M
- M --> A[AsyncStorage: niyarvo-projects-v1]
- UI --> T[AsyncStorage: niyarvo-projects-accent-v1]
+ M --> A[AsyncStorage: milvayo-v1]
+ UI --> T[AsyncStorage: milvayo-accent-v1]
  UI --> F[JSON import/export, CSV export, native share and file picker]
  UI --> PUB[Public GitHub API, on-demand read-only previews]
  subgraph Future_NOT_Connected [Future cloud boundary — NOT CONNECTED]
@@ -117,8 +117,8 @@ flowchart TD
 
 ### Key persisted values (actual source)
 
-- **Workspace storage:** `AsyncStorage['niyarvo-projects-v1']` serialized JSON; writes queued in `saveQueue` to preserve order. `normalizeWorkspace()` reads it on start. On read failure, the app enters a **non-destructive recovery screen**, not a blank reset.
-- **Theme storage:** `AsyncStorage['niyarvo-projects-accent-v1']`, default orange `#D97757`; name choices Aqua, Mint, Lime, Amber, Orange, Coral, Pink, Fuchsia, Violet, Indigo.
+- **Workspace storage:** `AsyncStorage['milvayo-v1']` serialized JSON; writes queued in `saveQueue` to preserve order. `normalizeWorkspace()` reads it on start. On read failure, the app enters a **non-destructive recovery screen**, not a blank reset.
+- **Theme storage:** `AsyncStorage['milvayo-accent-v1']`, default orange `#D97757`; name choices Aqua, Mint, Lime, Amber, Orange, Coral, Pink, Fuchsia, Violet, Indigo.
 - **Single project import/export:** root `format: 'niyarvo.project.v1'`; normalization via `importProject` and `makeProject` before inclusion in workspace. `version` is user-defined project metadata, not necessarily the running application version.
 - **Workspace snapshot:** covers project collections and activity/backup data as handled by `workspaceSnapshot` and `restoreSnapshot`; destructive operations may save a restore point. In-app snapshots are still stored in the local browser/app environment; **export actual JSON files to a safe external location**.
 - **Validation caps visible in source:** max 30 projects, 10,000 tasks/project, 16 boards/project, 200 sprints/project, 50 saved task views, 50 portfolios/workspace, task `dependsOn` up to 100, labels up to 30, tests/checks up to 250; import max 5 MiB in `src/importFiles.cjs`. These are implementation constraints, not proven efficient performance targets.
@@ -156,9 +156,9 @@ The JSON Schema file `schemas/niyarvo.project.v1.schema.json` is **not fully syn
 
 ## 7. Git, branching and environments
 
-- GitHub repository known from handoff context: `zouhairelayni/NiyarvoProjects` (verify actual remote in Termux with `git remote -v`). User uses `work` for testing and `main` for user-accepted checkpoints, not automatically updated by assistant.
+- GitHub repository known from handoff context: `zouhairelayni/Milvayo` (verify actual remote in Termux with `git remote -v`). User uses `work` for testing and `main` for user-accepted checkpoints, not automatically updated by assistant.
 - No claim of which SHA contains v0.3.12. The provided archive contains no `.git` history, and no production deploy is evidenced.
 - Android and Web are developed via Metro/Fast Refresh with `npx expo start` on Termux; don't switch the daily workflow to static Python hosting.
 - Existing Hosting config sets SPA rewrite and basic headers, but **hosting config is not an active backend or proof of Web deployment**.
 - Project data is local to the installation/browser origin; Expo Go and Web localhost do not inherently share databases or backups.
-- Keep Niyarvo Projects backend and account boundaries isolated from RIVNA and Niyarvo Control Center.
+- Keep Milvayo backend and account boundaries isolated from RIVNA and Niyarvo Control Center.

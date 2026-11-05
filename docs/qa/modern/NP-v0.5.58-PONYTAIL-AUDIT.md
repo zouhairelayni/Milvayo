@@ -1,6 +1,6 @@
-# Ponytail audit — Niyarvo Projects v0.5.58
+# Ponytail audit — Milvayo v0.5.58
 
-**What this repo does:** Niyarvo Projects is a local-first project management application for Android, iOS and Web built with Expo and React Native. It manages projects, tasks, boards, timelines, sprints and encrypted local backups. **Expected load:** one person actively using one app instance with several projects and dozens to hundreds of tasks; no live multi-user service.
+**What this repo does:** Milvayo is a local-first project management application for Android, iOS and Web built with Expo and React Native. It manages projects, tasks, boards, timelines, sprints and encrypted local backups. **Expected load:** one person actively using one app instance with several projects and dozens to hundreds of tasks; no live multi-user service.
 
 **Audit focus:** the new cold-start and drawer N→Board morph, menu layout, theme readiness, cross-platform SVG behavior, build/version consistency, storage integrity and release tests. Read the README, Expo manifests, deployment script, Firestore/Storage rules, app entry, navigation shell, brand and theme sources, backup job and ready-file code, and targeted test harness. Previous 0.5.x release history was considered. This is a risk-ranked audit, not a file-by-file review of every historic feature.
 
@@ -28,7 +28,7 @@
 
 4. **Launcher and native splash still show the company N** (`app.json`, `assets/icon.png`, `assets/adaptive-icon.png`, `assets/splash-icon.png`, `public/icons`).
    - **What this is:** The in-app branding now uses the Projects Board mark, but the installed/PWA launcher assets still contain the old N design.
-   - **Problem:** After cold opening Niyarvo Projects, users can see the parent company mark on the home screen and then a different product mark inside the app.
+   - **Problem:** After cold opening Milvayo, users can see the parent company mark on the home screen and then a different product mark inside the app.
    - **Fix:** Export approved Board Kit icons for Android adaptive icon, iOS launcher and Web favicon/manifest, and rebuild the native binary. Keep the company N for Control Center only.
    - **If we skip it:** The product identity remains inconsistent outside the running app. **Not changed in this code-only motion release** to avoid silently replacing approved native assets.
 

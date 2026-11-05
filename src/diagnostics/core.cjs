@@ -50,7 +50,7 @@ const addSlow = (state, type, name, ms, at = Date.now()) => {
 };
 const fmtTime = t => t ? new Date(t).toISOString() : 'unknown';
 const reportCrash = (s) => [
-  '=== NIYARVO PROJECTS CRASH REPORT ===',
+  '=== MILVAYO CRASH REPORT ===',
   `app version: ${s.version} | platform: ${s.platform} | OS: ${s.os} | run: ${s.runId}`,
   `run started: ${fmtTime(s.startedAt)} | last recorded activity: ${fmtTime(s.updatedAt)}`,
   `screen: ${s.screen} | recorded JS exceptions: ${s.crashes.length}`,
@@ -66,7 +66,7 @@ const reportCrash = (s) => [
   '', 'LIMITS: JS error boundaries do not capture native process terminations, OOM or ANR. A missing clean exit is not proof of a crash.',
 ].join('\n');
 const reportPerf = (s, now = Date.now()) => [
-  '=== NIYARVO PROJECTS PERFORMANCE REPORT ===',
+  '=== MILVAYO PERFORMANCE REPORT ===',
   `app version: ${s.version} | platform: ${s.platform} | OS: ${s.os} | run: ${s.runId}`,
   `run started: ${fmtTime(s.startedAt)} | uptime: ${Math.max(0, Math.round((now - s.startedAt)/1000))}s`,
   `current screen: ${s.screen} | longest observed JS timer delay: ${s.freezeMs}ms`,

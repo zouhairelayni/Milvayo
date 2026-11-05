@@ -17,7 +17,7 @@ export function Brand({ narrow = false, symbolOnly = false, compact = false, ani
   const { c } = useTheme();
   const mark = <BoardMorph size={symbolOnly?34:compact?25:42} speed={1.5} active={animated && active} />;
   if(symbolOnly)return mark;
-  return <View accessible accessibilityLabel="Niyarvo Projects" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:compact?92:narrow?172:220}}>
+  return <View accessible accessibilityLabel="Milvayo" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:compact?92:narrow?172:220}}>
     {mark}
     <View style={{width:compact?60:narrow?119:158,gap:1,alignItems:'flex-end'}}>
       <Image source={require('../../../assets/niyarvo-word-mask.png')} resizeMode="stretch"
@@ -292,7 +292,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
           style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: compact ? 'center' : 'flex-start', gap: 10 }}>
           <Feather name="smartphone" size={17} color={c.muted} />
           {!compact ? <T size={12} muted>Automatic layout</T> : null}
-        </Pressable> : !compact ? <T size={11} muted>Niyarvo Projects</T> : <Feather name="command" size={16} color={c.faint} />}
+        </Pressable> : !compact ? <T size={11} muted>Milvayo</T> : <Feather name="command" size={16} color={c.faint} />}
       </View>
       <Modal visible={drawer || spaces} transparent animationType="fade" onRequestClose={() => { setDrawer(false); setSpaces(false); }}>
         <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>

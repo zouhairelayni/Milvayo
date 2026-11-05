@@ -5,7 +5,7 @@
 
 ## Required cases (record Pass/Fail and screenshot/video if failed)
 
-1. **Workspace backup**: Backups → Export workspace JSON before replacing code; preserve the existing `niyarvo-projects-v1` storage key. After patch, restart and confirm workspace/projects/tasks/dependencies remain.
+1. **Workspace backup**: Backups → Export workspace JSON before replacing code; preserve the existing `milvayo-v1` storage key. After patch, restart and confirm workspace/projects/tasks/dependencies remain.
 2. **Pinch inward/outward in chart**: Width changes smoothly without an unexpected scroll jump; the date beneath pinch midpoint remains approximately stationary. Verify 6 px/day floor and 96 px/day ceiling. The task rail does not resize; task names stay legible.
 3. **Fallback zoom**: `−`, `+`, `Fit`, and Days/Weeks/Months function. At maximum zoom-out, tasks render as small schedule indicators; open them via the left rail. Zoom back in to edit bars.
 4. **Vertical scroll in Gantt**: Scroll from top status to last task, while fixed task names remain synchronized vertically with the date grid. Scroll left/right without affecting left rail. No blank/overlapping calendar layers.

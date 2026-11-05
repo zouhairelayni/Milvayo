@@ -1,7 +1,7 @@
 // /src/domain/operations.cjs
 'use strict';
 const {localDay}=require('../utils/localDay.cjs');
-// Niyarvo Projects original, local-first domain services; no vendor source copied.
+// Milvayo original, local-first domain services; no vendor source copied.
 const date=s=>typeof s==='string'&&/^\d{4}-\d\d-\d\d$/.test(s)&&!Number.isNaN(Date.parse(s+'T00:00:00Z'))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
 const txt=(s,n=240)=>typeof s==='string'?s.trim().slice(0,n):'';
 const list=(a,n=5000)=>Array.isArray(a)?a.slice(0,n):[];

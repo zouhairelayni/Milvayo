@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.12 — detailed user and operator guide
+# Milvayo v0.3.12 — detailed user and operator guide
 
 This guide matches the v0.3.12 source and the workflows shown in previous user screenshots. Some commands are labeled slightly differently on narrow Android, browser, or a contextual dialog; when in doubt use the sidebar screen name and the exact function described below. **All data is local to each app/browser installation unless deliberately exported and transferred.**
 
@@ -7,7 +7,7 @@ This guide matches the v0.3.12 source and the workflows shown in previous user s
 **Run on Android/Termux:**
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
 npm install                # after first extraction/dependency changes

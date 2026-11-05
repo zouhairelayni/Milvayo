@@ -20,7 +20,7 @@ test('service worker cache name gets the app.json version at build time', () => 
   const version = JSON.parse(read('app.json')).expo.version;
   assert.equal(stamp(dir), version);
   const out = fs.readFileSync(path.join(dir, 'service-worker.js'), 'utf8');
-  assert.match(out, new RegExp(`niyarvo-projects-assets-${version.replace(/\./g, '\\.')}'`));
+  assert.match(out, new RegExp(`milvayo-assets-${version.replace(/\./g, '\\.')}'`));
   assert.doesNotMatch(out, /__APP_VERSION__/);
   assert.throws(() => stamp(dir), /placeholder/); // stamping twice is refused, not silently wrong
   assert.match(read('package.json'), /expo export[^"]*&& node scripts\/stamp-sw\.cjs dist/);

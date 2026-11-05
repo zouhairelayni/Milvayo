@@ -41,8 +41,8 @@ test('shell files import only paths that exist', () => {
       assert.ok(ok, `${f} imports missing ${m[1]}`);
     }
   }
-  assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-white.png')));
-  assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/niyarvo-projects-dark.png')));
+  assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/milvayo-white.png')));
+  assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets/milvayo-dark.png')));
   assert.match(read('src/components/shell/Menus.js'), /BoardMorph/);
 });
 

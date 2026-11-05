@@ -1,5 +1,5 @@
 // /src/store/data.js
-// Seed data for the Niyarvo Projects prototype. Every date is relative to TODAY.
+// Seed data for the Milvayo prototype. Every date is relative to TODAY.
 
 const pad = (n) => String(n).padStart(2, '0');
 const parseISO = (iso) => {

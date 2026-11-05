@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.49 — Frontend design / Apple interaction audit
+# Milvayo v0.5.49 — Frontend design / Apple interaction audit
 
 **Basis:** Actual v0.5.48 complete source ZIP. Design criteria from Anthropic Frontend Design and Emil Kowalski's Apple Design / design engineering skill; implementation is original source code for this Expo React Native + Web project. No third-party code, fonts or new packages copied into the app.
 

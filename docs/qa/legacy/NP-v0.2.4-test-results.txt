@@ -1,4 +1,4 @@
-Niyarvo Projects v0.2.4 local source verification — 2026-10-30
+Milvayo v0.2.4 local source verification — 2026-10-30
 
 Node test result: 58 / 58 passed, zero failures.
 Original 47 model tests + 7 curved-geometry tests + 4 UI-source contract checks.
@@ -16,7 +16,7 @@ Firebase deployment: NOT RUN.
 Full npm test output:
 ---------------------
 
-> niyarvo-projects@0.2.4 test
+> milvayo@0.2.4 test
 > node --test tests/*.test.cjs
 
 TAP version 13

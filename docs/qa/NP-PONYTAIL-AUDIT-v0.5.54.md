@@ -1,6 +1,6 @@
 # NP Ponytail Audit — v0.5.54: encryption, package exports and persistent backup jobs
 
-**What this repo does:** Niyarvo Projects is a local-first, Expo React Native project manager. It holds a workspace in AsyncStorage and lets a single user export or restore projects. The encrypted `.niyav` format is a gzip-compressed JSON snapshot protected using PBKDF2-HMAC-SHA256 and AES-256-GCM.
+**What this repo does:** Milvayo is a local-first, Expo React Native project manager. It holds a workspace in AsyncStorage and lets a single user export or restore projects. The encrypted `.niyav` format is a gzip-compressed JSON snapshot protected using PBKDF2-HMAC-SHA256 and AES-256-GCM.
 
 **Expected load:** one user, one running app process, project/workspace backups no larger than 5 MB of uncompressed JSON; Android Expo Go and Web during development, iOS later. **Audit scope:** package/dependency manifest, app entry, Backup screen, backup codec/KDF/AES bridge, file export, job lifecycle, and relevant store guard/test files. Also reviewed relevant UI-kit buttons. Not a full audit of every task/planning engine file.
 

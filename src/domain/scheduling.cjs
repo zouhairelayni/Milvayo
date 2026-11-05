@@ -1,7 +1,7 @@
 // /src/domain/scheduling.cjs
 'use strict';
 /**
- * Niyarvo Projects scheduling core (NP-SCHED1).
+ * Milvayo scheduling core (NP-SCHED1).
  * Pure CommonJS: no React Native, Expo, Node-specific crypto, network or storage.
  * All date arithmetic uses UTC date-only values; no local timezone conversions.
  * Does not modify the v1 project schema. Typed links are explicit overlays on

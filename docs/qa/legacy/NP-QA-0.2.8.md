@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.2.8 — Android / Web QA
+# Milvayo v0.2.8 — Android / Web QA
 
 **Precondition:** Export current workspace JSON and keep `main` at previously accepted v0.1.0. Check `git status` on `work` before extracting the ZIP. Use `npx expo start` in Termux.
 

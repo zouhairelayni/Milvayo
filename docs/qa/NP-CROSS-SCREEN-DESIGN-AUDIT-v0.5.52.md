@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.52 — Cross-screen UI/UX audit
+# Milvayo v0.5.52 — Cross-screen UI/UX audit
 
 **Audit scope:** All 20 registered `SCREENS` destinations (including the internal Task Configuration route), primary Android tab bar, desktop/phone navigation, cross-screen sheets, drawers, dialogs, chart interactions, inline notices and form controls. Baseline: verified v0.5.51 source archive. This is a **source and automated regression audit**, not a device or screenshot walk-through.
 
@@ -70,7 +70,7 @@
 - iOS Safari/Expo: sheet scrolling and keyboard focus; verify date row and chart height under safe areas.
 - VoiceOver/TalkBack: task picker names, modal announcements and notice priorities.
 - Large project (100+ tasks / 20+ sprints): dropdown performance, horizontal chart and dashboard responsiveness.
-- Check documentation and version information after extracting into `~/NiyarvoProjects` and removing obsolete local files if needed.
+- Check documentation and version information after extracting into `~/Milvayo` and removing obsolete local files if needed.
 
 No claim of real-device, visual snapshot or accessibility acceptance is implied by source checks.
 

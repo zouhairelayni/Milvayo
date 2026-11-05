@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.4.2 — acceptance / release gate
+# Milvayo v0.4.2 — acceptance / release gate
 
 **Status: Source-level QA candidate; device/browser acceptance PENDING.**
 

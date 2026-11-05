@@ -1,6 +1,6 @@
-# Niyarvo Projects 0.5.3 — Device QA
+# Milvayo 0.5.3 — Device QA
 
-1. Install: `cd ~/NiyarvoProjects && unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.3-PROJECTS-PROGRAMS-UX.zip -d . && npx expo install expo-document-picker && npx expo-doctor && npx expo start --clear`.
+1. Install: `cd ~/Milvayo && unzip -o ~/storage/downloads/Milvayo-v0.5.3-PROJECTS-PROGRAMS-UX.zip -d . && npx expo install expo-document-picker && npx expo-doctor && npx expo start --clear`.
 2. Hamburger: Projects, Programs, Portfolios in that order. Task configuration is in Operate, not Plan. Main 5 tabs unaffected.
 3. Projects: create a temporary project; edit name/code/description; switch projects; duplicate template. Confirm archive hides project, and recovery from Backup restores it. Verify Delete requires second confirmation and leaves at least one accessible project. Export workspace before testing deletion.
 4. Programs: create program, select multiple projects, save and reopen app. Edit status and membership. Delete a project (test data) and confirm program membership updates. Deleting the program must not delete projects.

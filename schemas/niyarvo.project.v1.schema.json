@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Niyarvo Projects single-file project import v1",
+  "title": "Milvayo single-file project import v1",
   "type": "object",
   "required": [
     "format",

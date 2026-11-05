@@ -25,7 +25,7 @@ function userReadableImportError(error) {
   if (error && error.code === 'NP_IMPORT_ACCESS') return error.message;
   const message = String(error && error.message || error || 'Unknown error');
   if (/\bREAD\b.*permission|permission.*\bREAD\b|permission denied|EACCES|SecurityException|access denied|isn.t readable|FileSystemFile\.text|ExponentFileSystem\.readAsStringAsync/i.test(message)) {
-    return 'Android could not read the selected document. Try selecting the JSON from the Downloads folder using the system picker, or import it from Niyarvo Projects Web. The current workspace has not changed.';
+    return 'Android could not read the selected document. Try selecting the JSON from the Downloads folder using the system picker, or import it from Milvayo Web. The current workspace has not changed.';
   }
   return message;
 }

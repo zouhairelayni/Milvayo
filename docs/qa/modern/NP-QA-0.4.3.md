@@ -1,11 +1,11 @@
-# Niyarvo Projects v0.4.3 — Android/iOS and web acceptance
+# Milvayo v0.4.3 — Android/iOS and web acceptance
 
 **Status:** Source QA only. Expo Go runtime has not been tested in the build environment.
 
 ## Before beginning
 
 1. Export a full workspace backup from the previous working release; create a Git checkpoint.
-2. In `~/NiyarvoProjects`, extract `NiyarvoProjects-v0.4.3-NATIVE-MOTION-QA.zip` over the project root.
+2. In `~/Milvayo`, extract `Milvayo-v0.4.3-NATIVE-MOTION-QA.zip` over the project root.
 3. Run `npm install`, `npx expo install --check`, `npm test`, then `npx expo start --clear`.
 4. Keep `MockDesign.zip` open as the spacing, typography, proportions and rhythm reference.
 

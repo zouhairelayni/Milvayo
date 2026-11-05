@@ -44,8 +44,8 @@ export function ThemeProvider({ children }) {
   const [pref, changeMode] = useState('system');
   const [accentPref, changeAccent] = useState(DEFAULT_ACCENT);
   const [restored, setRestored] = useState(false);
-  useEffect(() => { let active=true; const fallback=setTimeout(()=>{if(active)setRestored(true);},1500); Promise.all([AsyncStorage.getItem('niyarvo-projects-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{}).finally(()=>{clearTimeout(fallback);if(active)setRestored(true);});return()=>{active=false;clearTimeout(fallback)}; }, []);
-  const setPref = (value) => {changeMode(value);AsyncStorage.setItem('niyarvo-projects-appearance-v1',value).catch(()=>{});};
+  useEffect(() => { let active=true; const fallback=setTimeout(()=>{if(active)setRestored(true);},1500); Promise.all([AsyncStorage.getItem('milvayo-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{}).finally(()=>{clearTimeout(fallback);if(active)setRestored(true);});return()=>{active=false;clearTimeout(fallback)}; }, []);
+  const setPref = (value) => {changeMode(value);AsyncStorage.setItem('milvayo-appearance-v1',value).catch(()=>{});};
   const setAccent = (value) => {if(!ACCENTS.some(a=>a.id===value))return;changeAccent(value);AsyncStorage.setItem(STORAGE_KEY,value).catch(()=>{});};
   // Web tab icon follows the selected accent; installed PWA launcher icons remain manifest-controlled.
   useEffect(() => {

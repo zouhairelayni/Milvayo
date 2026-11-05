@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.9 — Device acceptance
+# Milvayo v0.5.9 — Device acceptance
 
 Status: **Not run** on device. Keep v0.5.8 checkpoint until accepted.
 

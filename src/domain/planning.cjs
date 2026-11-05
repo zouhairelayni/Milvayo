@@ -1,6 +1,6 @@
 // /src/domain/planning.cjs
 'use strict';
-// Niyarvo Projects implementation: independent task progress and saved queries.
+// Milvayo implementation: independent task progress and saved queries.
 // Calculations are deterministic and side-effect free; no external service code.
 const STATUS = new Set(['All','Backlog','In progress','Validation','Done']);
 const PRIORITY = new Set(['All','Low','Medium','High','Critical']);

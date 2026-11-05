@@ -2,7 +2,7 @@
 
 - Replace EAS cloud build step with GitHub-hosted Expo prebuild + Gradle `assembleRelease`.
 - Restrict test APK to `arm64-v8a`; verify APK native libraries before upload.
-- Reuse the original Niyarvo Projects keystore downloaded once from EAS, upload securely as four GitHub Actions secrets, and verify SHA-256 signing fingerprint before and after building.
+- Reuse the original Milvayo keystore downloaded once from EAS, upload securely as four GitHub Actions secrets, and verify SHA-256 signing fingerprint before and after building.
 - Match the Termux npm peer-dependency mode with `npm ci --legacy-peer-deps`; keep the user's already-repaired package and lock files.
 - Ship a local one-time helper to transfer EAS credentials into GitHub secrets without printing passwords.
 - Retain the EAS project registration and `eas.json` for recordkeeping; this workflow no longer uses Expo cloud builds or `EXPO_TOKEN`.
@@ -36,15 +36,15 @@
 
 ## Next planned phase (not yet implemented)
 
-After APK acceptance, separately design and enable Niyarvo Projects Firebase Authentication, Firestore documents and secure invitations/roles/card assignments with server-side authorization. Keep RIVNA and Niyarvo Control Center isolated.
+After APK acceptance, separately design and enable Milvayo Firebase Authentication, Firestore documents and secure invitations/roles/card assignments with server-side authorization. Keep RIVNA and Niyarvo Control Center isolated.
 
 ---
 
-# Niyarvo Projects — Complete release history
+# Milvayo — Complete release history
 
-**Historical coverage:** v0.1.0 through v0.5.58, with recovered source notes and verified subsequent release records.  
-**Source preservation:** Original historical changelog text recovered from the supplied pre-v0.5.34 archives; later releases recovered from their verified changelogs. Original hotfix records are included under their parent version.  
-**Important:** These are release and development records, not evidence that every historical QA candidate was deployed, committed, or device-tested. Historical commands and URLs may be obsolete.  
+**Historical coverage:** v0.1.0 through v0.5.58, with recovered source notes and verified subsequent release records.
+**Source preservation:** Original historical changelog text recovered from the supplied pre-v0.5.34 archives; later releases recovered from their verified changelogs. Original hotfix records are included under their parent version.
+**Important:** These are release and development records, not evidence that every historical QA candidate was deployed, committed, or device-tested. Historical commands and URLs may be obsolete.
 
 ## Index
 
@@ -60,11 +60,11 @@ After APK acceptance, separately design and enable Niyarvo Projects Firebase Aut
 
 
 
-# CHG-NP-0.1.0 — Niyarvo Projects foundation
+# CHG-NP-0.1.0 — Milvayo foundation
 
 | Field | Observed state |
 |---|---|
-| Product | Niyarvo Projects — independent project management product |
+| Product | Milvayo — independent project management product |
 | Scope | React Native + Expo Web PWA starter with desktop/mobile layout |
 | Project integration | No connections to RIVNA or Niyarvo Control Center |
 | Firebase integration | Not configured. `firebase.json` provides **Hosting only** |
@@ -111,12 +111,12 @@ After APK acceptance, separately design and enable Niyarvo Projects Firebase Aut
 
 # CHG-NP-0.2.0 — Local-first Kanban & Roadmap QA Candidate
 
-**Date:** 2026-10-30  
-**Product:** Niyarvo Projects (independent app — NOT RIVNA/Control Center)  
-**From:** v0.1.0 source archive  
-**To:** v0.2.0 local QA candidate (NOT user-accepted or deployed)  
-**Suggested branch:** `feat/np-v0.2-boards-roadmap` (not created in user's Git repo)  
-**Git SHA / merge:** Not available / not performed  
+**Date:** 2026-10-30
+**Product:** Milvayo (independent app — NOT RIVNA/Control Center)
+**From:** v0.1.0 source archive
+**To:** v0.2.0 local QA candidate (NOT user-accepted or deployed)
+**Suggested branch:** `feat/np-v0.2-boards-roadmap` (not created in user's Git repo)
+**Git SHA / merge:** Not available / not performed
 **Firebase deployment:** Not performed (new standalone project required)
 
 ## READ FIRST — 60-second handoff
@@ -125,7 +125,7 @@ After APK acceptance, separately design and enable Niyarvo Projects Firebase Aut
 - User develops on **Android + Termux** with `npx expo start` and Fast Refresh. Prefer Expo Go and Web testing first. Do not use Python/static servers as the everyday dev flow.
 - **The app was NOT executed in Expo Go, a full browser, or iOS in this environment.** Model tests + JSX syntax passed; platform workflow acceptance is pending.
 - **Do not import real engineering roadmaps or production-sensitive data yet.** Keep the fictional Northstar fixture.
-- Export/backup the user's v0.1.0 workspace before overwriting files; while data is intended to migrate via the same AsyncStorage key `niyarvo-projects-v1`, runtime migration is unverified.
+- Export/backup the user's v0.1.0 workspace before overwriting files; while data is intended to migrate via the same AsyncStorage key `milvayo-v1`, runtime migration is unverified.
 - No connections to RIVNA / Niyarvo Control Center. Firebase settings are deny-all scaffolding only.
 
 ## Scope completed in source
@@ -190,7 +190,7 @@ After APK acceptance, separately design and enable Niyarvo Projects Firebase Aut
 ## Separate Firebase deployment gate
 
 - Create NEW Firebase project (distinct Google account/project from any other products); choose Hosting domain.
-- User confirms project ID; set `NIYARVO_PROJECTS_FIREBASE_PROJECT_ID` in Termux, then `npm run deploy:hosting`.
+- User confirms project ID; set `MILVAYO_FIREBASE_PROJECT_ID` in Termux, then `npm run deploy:hosting`.
 - Script builds Web and deploys **Hosting only**, never silently Firestore/Storage; explicit ID and prohibited-name guard.
 - Firestore and Storage rules are **deny-all placeholders**, not a configured sync backend.
 - No Firebase deployment before local Web + Android acceptance, no sensitive roadmap imports until app acceptance.
@@ -213,15 +213,15 @@ After APK acceptance, separately design and enable Niyarvo Projects Firebase Aut
 
 # CHG-NP-0.2.1 — Project navigation, Kanban auto-scroll and Gantt interactions
 
-**Application:** Niyarvo Projects (independent).  
-**Source base:** `NiyarvoProjects-v0.2.0-LOCAL-QA.zip` (not the user's unshared subsequent Termux changes).  
-**Patch classification:** Local QA candidate, **not** a stable release.  
-**Target Git branch:** `work`. Do not commit or merge into `main` before runtime acceptance.  
+**Application:** Milvayo (independent).
+**Source base:** `Milvayo-v0.2.0-LOCAL-QA.zip` (not the user's unshared subsequent Termux changes).
+**Patch classification:** Local QA candidate, **not** a stable release.
+**Target Git branch:** `work`. Do not commit or merge into `main` before runtime acceptance.
 **Date:** 2026-10-30.
 
 ## 0. Read first
 
-This patch preserves the existing Expo SDK 58 + React Native architecture and the local AsyncStorage key `niyarvo-projects-v1`. No project data was imported, no unrelated repositories/credentials were used, and no Firebase account/project was connected. It is intended to be extracted into the already-existing `~/NiyarvoProjects` working directory while on `work`.
+This patch preserves the existing Expo SDK 58 + React Native architecture and the local AsyncStorage key `milvayo-v1`. No project data was imported, no unrelated repositories/credentials were used, and no Firebase account/project was connected. It is intended to be extracted into the already-existing `~/Milvayo` working directory while on `work`.
 
 **Important evidence distinction:** 25 pure Node/model tests pass and App.js parses as JSX with TypeScript's parser. Web browser gesture behavior, Android touch interactions, portrait/landscape UI, and iOS have **not** been executed in this container. Source-level validation must not be called end-to-end testing.
 
@@ -283,11 +283,11 @@ Reviewed the user-provided `openproject-17.9.6.zip`, including its `LICENSE`, re
 ## 7. Checkpoint protocol
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
 # Export your workspace backup before replacing files
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.2.1-LOCAL-QA.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.2.1-LOCAL-QA.zip -d .
 npm install
 npm test
 npx expo install --check
@@ -304,12 +304,12 @@ After the user has manually accepted the patch on Web and Android, commit to `wo
 
 # CHG-NP-0.2.2 — Full-card Kanban drag and independent Gantt planner
 
-**Project:** Niyarvo Projects only (not Niyarvo Control Center, not RIVNA)
-**Base:** User-provided `NiyarvoProjects-v0.2.1-LOCAL-QA.zip`
+**Project:** Milvayo only (not Niyarvo Control Center, not RIVNA)
+**Base:** User-provided `Milvayo-v0.2.1-LOCAL-QA.zip`
 **Target branch:** `work`
 **Status:** Source patch / **local QA candidate**, NOT device-verified and NOT a production release
 **Date:** 2026-10-30
-**Persistence:** `niyarvo-projects-v1` AsyncStorage key unchanged
+**Persistence:** `milvayo-v1` AsyncStorage key unchanged
 **Architecture:** React Native + Expo SDK 58 + Expo Metro (`npx expo start`)
 
 ## 0. Read first
@@ -395,17 +395,17 @@ This release responds to the 2026-10-30 user screenshots and testing: v0.2.1 boa
 ## 6. Git checkpoint when verified
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 # Export a workspace JSON backup first
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.2.2-LOCAL-QA.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.2.2-LOCAL-QA.zip -d .
 npm install
 npm test
 npx expo install --check
 npx expo start
 # After Web + Android QA passes, create a checkpoint:
 git add .
-git commit -m "Niyarvo Projects v0.2.2: full-card drag and Gantt planning"
+git commit -m "Milvayo v0.2.2: full-card drag and Gantt planning"
 git push origin work
 # Main merge only after explicit acceptance.
 ```
@@ -422,7 +422,7 @@ git push origin work
 
 | Item | Observed state |
 |---|---|
-| Project | Niyarvo Projects (standalone; unrelated to RIVNA or Control Center) |
+| Project | Milvayo (standalone; unrelated to RIVNA or Control Center) |
 | Parent | v0.2.2 LOCAL-QA source ZIP, as supplied in the conversation |
 | Current patch | v0.2.3, local QA candidate |
 | Git | No Git commands, commits or merges executed in user repository |
@@ -479,7 +479,7 @@ Working calendars and dependency types (FS/SS/FF/SF + lag), explicit milestone c
 
 | Field | Observed / planned value |
 |---|---|
-| Project | Niyarvo Projects (independent from RIVNA / Niyarvo Control Center) |
+| Project | Milvayo (independent from RIVNA / Niyarvo Control Center) |
 | Source base | v0.2.3 local-QA source ZIP |
 | Patch | v0.2.4-LOCAL-QA |
 | Git destination | Existing `work` branch; **no commit/push/merge performed here** |
@@ -549,7 +549,7 @@ The screenshot-based nine-pass redline is in `docs/UNSLOP-NP-0.2.4.md`. Notable 
 ## 5. Installation on the existing `work` branch
 
 1. Export workspace JSON from the running app. Confirm `git status --short` and stash/commit any unsaved edits safely.
-2. `git switch work` from `~/NiyarvoProjects`, then unzip the v0.2.4 project-root ZIP over the repo (`unzip -o ... -d .`). Do not overwrite `.git` (ZIP contains none).
+2. `git switch work` from `~/Milvayo`, then unzip the v0.2.4 project-root ZIP over the repo (`unzip -o ... -d .`). Do not overwrite `.git` (ZIP contains none).
 3. Run `npm install` (new SVG package), `npm test`, `npx expo install --check`, and `npx expo start`.
 4. Run `docs/NP-QA-0.2.4.md` on Android and Web.
 5. Only after verified QA, commit on `work` and merge to `main` using your usual review/checkpoint process.
@@ -581,13 +581,13 @@ The screenshot-based nine-pass redline is in `docs/UNSLOP-NP-0.2.4.md`. Notable 
 
 | Field | Value |
 |---|---|
-| Project | Niyarvo Projects (independent from RIVNA and Niyarvo Control Center) |
+| Project | Milvayo (independent from RIVNA and Niyarvo Control Center) |
 | Batch | NP v0.2.5 — Gantt viewport and shared Unslop UI |
 | Baseline | v0.2.4-LOCAL-QA.zip |
 | Delivery | Complete project-root ZIP, standalone changelog, standalone results |
 | Status | **QA candidate — runtime unverified** |
 | Work branch | `work`, to be used by user; no Git action executed here |
-| Storage | AsyncStorage key `niyarvo-projects-v1` unchanged; no migration |
+| Storage | AsyncStorage key `milvayo-v1` unchanged; no migration |
 | Firebase | Not connected or deployed |
 | Git main | Unmodified |
 
@@ -629,11 +629,11 @@ The screenshot-based nine-pass redline is in `docs/UNSLOP-NP-0.2.4.md`. Notable 
 ## 5. User Termux QA commands
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
 # Export workspace JSON backup first; preserve existing uncommitted work.
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.2.5-LOCAL-QA.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.2.5-LOCAL-QA.zip -d .
 npm test
 npx expo install --check
 npx expo start
@@ -668,7 +668,7 @@ Only after Android and Web interaction QA passes: checkpoint on `work`, review d
 
 # CHG-NP-0.2.7 — Scheduling integration release candidate
 
-**Project:** Niyarvo Projects (independent of RIVNA and Niyarvo Control Center)
+**Project:** Milvayo (independent of RIVNA and Niyarvo Control Center)
 **Branch:** `work` (expected on developer's Termux device; not changed here)
 **Base:** complete source `v0.2.5` + engine patch `NP-SCHED1` (user designates it `v0.2.6`)
 **Delivered:** `v0.2.7` complete source ZIP, not yet accepted
@@ -681,7 +681,7 @@ Only after Android and Web interaction QA passes: checkpoint on `work`, review d
 - This batch wires the engine into **Timeline → Scheduling** and adds durable per-project calendar + typed link metadata, with JSON import/export and snapshot preservation.
 - All changes are local. *User must export a workspace JSON before extraction.*
 - **No existing project dates are changed during migration or import.** All old dependencies become FS/0 unless a typed link is stored.
-- The project's v1 JSON format remains `niyarvo.project.v1` with an optional `scheduling` extension; backup/storage key remains `niyarvo-projects-v1`.
+- The project's v1 JSON format remains `niyarvo.project.v1` with an optional `scheduling` extension; backup/storage key remains `milvayo-v1`.
 - `App.js` and `src/GanttView.js` changed to integrate the UI. Any downstream UI integrator should diff them instead of blindly replacing their redesign.
 
 ## 1. Changes by surface
@@ -750,12 +750,12 @@ On Termux, ensure a safe checkpoint of v0.2.6, then extract this complete archiv
 
 | Field | Observed fact |
 |---|---|
-| Product | Niyarvo Projects — **independent** Expo SDK 58 project management app |
+| Product | Milvayo — **independent** Expo SDK 58 project management app |
 | Baseline | Complete v0.2.7 source (with v0.2.6 scheduling engine) |
 | Release | v0.2.8 **local-QA candidate**, not production-accepted |
 | Git | No branch creation, commit, push or merge performed |
-| Firebase | User reports creating Firebase project `niyarvoprojects`; Android ID is `com.niyarvo.projects`. No connection/deploy/config credentials added. Confirm actual project ID in Firebase Console before backend setup. |
-| Existing app storage | `niyarvo-projects-v1` in AsyncStorage; unchanged |
+| Firebase | User reports creating Firebase project `milvayo`; Android ID is `com.milvayo.projects`. No connection/deploy/config credentials added. Confirm actual project ID in Firebase Console before backend setup. |
+| Existing app storage | `milvayo-v1` in AsyncStorage; unchanged |
 | Existing import format | `niyarvo.project.v1`; **unchanged**; optional task `parentId` added |
 | Runtime QA | **Not run** on Web, Expo Go or iOS |
 
@@ -767,7 +767,7 @@ On Termux, ensure a safe checkpoint of v0.2.6, then extract this complete archiv
 4. `App.js` Task editor: change/remove parent, find parent, inspect children, create subtask. Supports multiple nesting levels; candidate list is capped to 30 matches.
 5. `App.js` Board: initially renders a maximum of 60 cards per lane. **Show more** loads another 60 without modifying saved tasks or the existing drag mechanics.
 6. `schemas/niyarvo.project.v1.schema.json`: documents optional `parentId` for portable exports.
-7. `package.json` and `app.json`: version 0.2.8; Android package stays `com.niyarvo.projects`; no dependency changes.
+7. `package.json` and `app.json`: version 0.2.8; Android package stays `com.milvayo.projects`; no dependency changes.
 
 ## 2. Design and architecture basis
 
@@ -811,18 +811,18 @@ Primary files changed: `App.js`, `src/model.cjs`, `src/taskWorkflows.cjs`, JSON 
 
 
 
-# Niyarvo Projects — CHG-NP-0.2.9
+# Milvayo — CHG-NP-0.2.9
 
 ## 0. READ FIRST — technical handoff
 
 | Field | Observed status |
 |---|---|
-| Project | Niyarvo Projects (independent application) |
+| Project | Milvayo (independent application) |
 | Version | v0.2.9 — OpenProject architecture survey + planning foundation |
 | Previous baseline | v0.2.8 source archive provided in project |
 | Git branch | User's `work` branch recommended; no Git operations performed here |
 | Target framework | React Native + Expo SDK 58, Metro via `npx expo start` |
-| Auth/cloud | Local only. Firebase `niyarvoprojects`, Android `com.niyarvo.projects` not connected/deployed |
+| Auth/cloud | Local only. Firebase `milvayo`, Android `com.milvayo.projects` not connected/deployed |
 | Automated tests | 163/163 passing (133 existing, 30 new) |
 | JSX parse | `App.js`, `GanttView.js`, `SchedulingPanel.js`: clean using TypeScript JSX parser |
 | Actual Android/Web runtime | Not run in this environment; must verify via Metro and Expo Go |
@@ -904,13 +904,13 @@ Primary files changed: `App.js`, `src/model.cjs`, `src/taskWorkflows.cjs`, JSON 
 
 | Field | Value |
 |---|---|
-| Application | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
-| Base | `NiyarvoProjects-v0.2.9-LOCAL-QA.zip` |
+| Application | Milvayo (independent of RIVNA / Niyarvo Control Center) |
+| Base | `Milvayo-v0.2.9-LOCAL-QA.zip` |
 | Candidate | `0.3.0` — **LOCAL QA, NOT ACCEPTED** |
 | Git branch | User's `work` branch — no remote changes made |
-| Firebase | No connection or deployment; dedicated project `niyarvoprojects` reserved for future work |
+| Firebase | No connection or deployment; dedicated project `milvayo` reserved for future work |
 | React Native | Existing Expo SDK 58 / Metro retained |
-| Native package ID | `com.niyarvo.projects` |
+| Native package ID | `com.milvayo.projects` |
 | Source tests | 175/175 passing (163 baseline + 12 new) |
 | UI syntax | `App.js`, `GanttView.js`, `SchedulingPanel.js`, `TaskConfigurationPanel.js` parse correctly |
 | Web/Android/iOS interactions | **Not run / not verified** |
@@ -952,7 +952,7 @@ JSX parse: TypeScript compiler parser (`ScriptKind.JSX`) reported zero syntax di
 ## 5. Installation / QA
 
 1. Export a JSON workspace backup before changing versions.
-2. Confirm `work` branch and preserve any uncommitted files. Extract the full ZIP at `~/NiyarvoProjects` root, not inside a nested folder.
+2. Confirm `work` branch and preserve any uncommitted files. Extract the full ZIP at `~/Milvayo` root, not inside a nested folder.
 3. Run `npm install`, `npm test`, `npx expo install --check`, then `npx expo start`.
 4. Test margins on Android portrait/landscape, dropdowns and every modal above the status/gesture bar. Test keyboard-open forms.
 5. Create a project-specific type, add a numeric and select field, edit task metadata, export/reimport JSON, archive/restore, verify release invalidation.
@@ -973,12 +973,12 @@ No Git commit, merge, push, Firebase deploy, or app-store package was created.
 
 | Field | Observed result |
 |---|---|
-| Project | Niyarvo Projects; independent of RIVNA / Niyarvo Control Center |
-| Source baseline | `NiyarvoProjects-v0.3.0-LOCAL-QA.zip` |
+| Project | Milvayo; independent of RIVNA / Niyarvo Control Center |
+| Source baseline | `Milvayo-v0.3.0-LOCAL-QA.zip` |
 | Candidate | `v0.3.1` — LOCAL QA; NOT ACCEPTED |
 | Branch | User-managed `work`; no Git operations performed |
-| Firebase | `niyarvoprojects` left unconnected, no deploy |
-| Android ID | `com.niyarvo.projects` unchanged |
+| Firebase | `milvayo` left unconnected, no deploy |
+| Android ID | `com.milvayo.projects` unchanged |
 | Platform | Expo SDK 58, React Native, Metro; no dependency additions |
 | Tests | 184/184 Node tests passed (175 previous + 9 added) |
 | UI parse | `App.js`, `GanttView.js`, `BrandMark.js`, `SchedulingPanel.js`, `TaskConfigurationPanel.js` passed TypeScript JSX parsing |
@@ -988,7 +988,7 @@ No Git commit, merge, push, Firebase deploy, or app-store package was created.
 
 - Added `src/theme.cjs` with 10 named accent choices, the same names as RIVNA: Aqua, Mint, Lime, Amber, Orange, Coral, Pink, Fuchsia, Violet, Indigo. The **default is orange `#D97757`** (Claude/Anthropic clay). The names align; other color values were chosen for Niyarvo rather than claiming exact Rivna palette equivalence without its source.
 - Added `src/design.cjs` theme update function. Existing `purple` and `purpleDim` tokens remain backward-compatible aliases for the **selected accent**; their current values are not permanently violet. Existing semantic warning/success colors are unchanged.
-- Added a complete **Settings → Accent color** swatch selector with selection state, a tintable Niyarvo mark preview and accessible color labels. Selection is stored under `niyarvo-projects-accent-v1` in AsyncStorage, separately from user project JSON. Invalid saved values fall back to orange without changing workspace contents.
+- Added a complete **Settings → Accent color** swatch selector with selection state, a tintable Niyarvo mark preview and accessible color labels. Selection is stored under `milvayo-accent-v1` in AsyncStorage, separately from user project JSON. Invalid saved values fall back to orange without changing workspace contents.
 - Added `src/BrandMark.js`, faithfully using the original monochrome Niyarvo symbol paths supplied by the user; the mark changes color at runtime across platforms. The desktop sidebar now uses this component. Web browser favicon updates to the accent color.
 - Regenerated `assets/icon.png`, `assets/adaptive-icon.png`, `assets/splash-icon.png`, `assets/brand-symbol.png`, and `public/icons/*` from the user's centered monochrome symbol with a dark background and **orange default**. These **static installed launcher/PWA icons do not change** when preferences change; native alternate icon capabilities are not implemented.
 - Added independent hierarchical Gantt logic in `src/gantt.cjs` with stable ordering, nested rows, collapse/expand and calculated parent schedule range/progress. UI has **Tree** mode with expandable rows and parent summary bars, retaining existing Status/Stage modes.
@@ -1037,8 +1037,8 @@ No commits, pushes, merges, Firebase operations or deployment were performed.
 
 | Field | Value |
 |---|---|
-| Application | Niyarvo Projects (independent Expo/React Native app) |
-| Base source | `NiyarvoProjects-v0.3.2-LOCAL-QA.zip` |
+| Application | Milvayo (independent Expo/React Native app) |
+| Base source | `Milvayo-v0.3.2-LOCAL-QA.zip` |
 | Patch ID | `NP-0.3.2-HOTFIX1` (app package remains 0.3.2) |
 | Git branch intended | `work` (not committed or pushed) |
 | Status | Source/test validated; Android Expo Go runtime **Not run** |
@@ -1102,13 +1102,13 @@ The v0.3.2 `App.js` native importer requested `copyToCacheDirectory:true`, then 
 
 | Field | Evidence |
 |---|---|
-| Project | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Project | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Release | 0.3.2-HOTFIX2, built on 0.3.2-HOTFIX1 |
 | Git branch | `work` is intended; no Git operations performed here |
 | Firebase | Not connected/deployed |
 | Root cause | On Android Expo Go the `expo-document-picker` cache URI `file:///data/user/0/host.exp.exponent/cache/DocumentPicker/...json` was reported unreadable by both `File.text()` and legacy `readAsStringAsync()`. The cached-file fallback did not resolve this provider/Expo Go behavior. |
 | Fix | Android **now uses `File.pickFileAsync` from Expo SDK 58** and reads the picker-granted native `File` directly, bypassing the DocumentPicker cache. iOS retains the previous `expo-document-picker` path, and Web retains HTML file input. |
-| Compatibility | Existing model/schema and `niyarvo-projects-v1` AsyncStorage key unchanged. No new packages, broad storage permissions, or user-data migrations. |
+| Compatibility | Existing model/schema and `milvayo-v1` AsyncStorage key unchanged. No new packages, broad storage permissions, or user-data migrations. |
 | Automated validation | 216/216 Node tests passed, including 9 new tests for the SDK58 picker; JSX parse of App, Gantt, Sprint passed. Mock Atlas JSON imported through model: 73 tasks, 3 sprints. |
 | Not verified | Android Expo Go system picker on user's device; iOS/Web runtime; Android APK build; Firebase deployment |
 
@@ -1131,7 +1131,7 @@ The v0.3.2 `App.js` native importer requested `copyToCacheDirectory:true`, then 
 ## Test / merge policy
 
 1. On `work` export a workspace JSON backup, ensure a safe checkpoint, then extract the changes-only patch.
-2. Run `npm test` and `npx expo start` (Metro). Re-import `NiyarvoProjects-Atlas-Mock-v0.3.2.project.json` from Downloads using **Backups → Import JSON**.
+2. Run `npm test` and `npx expo start` (Metro). Re-import `Milvayo-Atlas-Mock-v0.3.2.project.json` from Downloads using **Backups → Import JSON**.
 3. Check preview says 73 tasks and that 3 sprints are present, including burndown. Test cancel (no mutation) and a non-JSON text file (error without mutation).
 4. Record Android result. Do not merge into `main` until runtime QA passes.
 
@@ -1143,11 +1143,11 @@ The v0.3.2 `App.js` native importer requested `copyToCacheDirectory:true`, then 
 
 | Field | Value |
 |---|---|
-| Project | Niyarvo Projects (independent of RIVNA and Niyarvo Control Center) |
-| Baseline | `NiyarvoProjects-v0.3.2-HOTFIX2-LOCAL-QA.zip` |
+| Project | Milvayo (independent of RIVNA and Niyarvo Control Center) |
+| Baseline | `Milvayo-v0.3.2-HOTFIX2-LOCAL-QA.zip` |
 | Patch | `v0.3.2-HOTFIX3` — **local-QA candidate only** |
 | Git branch | `work` (no commit, push or merge performed) |
-| Firebase | Not connected; project remains `niyarvoprojects` and Android app ID `com.niyarvo.projects` |
+| Firebase | Not connected; project remains `milvayo` and Android app ID `com.milvayo.projects` |
 | User observation | Atlas mock import now succeeds. Android is slow and Timeline can terminate Expo Go; Web works. No Metro error. |
 | Hypothesis | Gantt mounts a full-width/full-height SVG plus every task row and day column. Native drawing/memory pressure is a plausible cause, **not yet confirmed from Android crash logs**. |
 | Data migration | None; project and workspace formats unchanged |
@@ -1215,13 +1215,13 @@ Do not declare Android crash fixed until the user confirms device QA. If it pers
 
 | Field | Observed state |
 |---|---|
-| Project | Niyarvo Projects — independent of RIVNA and Niyarvo Control Center |
-| Starting archive | `NiyarvoProjects-v0.3.1-LOCAL-QA.zip` |
+| Project | Milvayo — independent of RIVNA and Niyarvo Control Center |
+| Starting archive | `Milvayo-v0.3.1-LOCAL-QA.zip` |
 | Result | `v0.3.2` local QA candidate, **NOT USER ACCEPTED** |
 | Git branch | Intended for user-managed `work`; no Git commands performed |
 | Platform | Expo SDK 58, React Native 0.88.1, Web/Android/iOS source, Metro |
-| App identifiers | `com.niyarvo.projects` preserved for Android/iOS |
-| Firebase | Dedicated `niyarvoprojects` project not connected or deployed |
+| App identifiers | `com.milvayo.projects` preserved for Android/iOS |
+| Firebase | Dedicated `milvayo` project not connected or deployed |
 | Automated checks | **196/196 passed**: 184 pre-existing + 12 added sprint tests |
 | Syntax | 6 JSX files parsed successfully by TypeScript; package/app/PWA manifest JSON parsed |
 | Web / Android / iOS runtime | **Not run** |
@@ -1235,7 +1235,7 @@ Do not declare Android crash fixed until the user confirms device QA. If it pers
 3. **Sprints screen:** sidebar and mobile bottom-tab entry, sprint selector, creation form, task assignment and unassignment, task details navigation, bounded/searchable backlog, active sprint progress and explicit completion confirmation.
 4. **Recorded burndown:** progress events capture current total and incomplete task counts upon sprint start, assignment changes and subsequent status edits. Plot shows observed remaining-work counts and a separately labeled ideal line; **does not synthesize earlier work history**. Burndown uses calendar days and task counts, not story points or weighted work.
 5. **Completing a sprint:** final scope and progress are retained, all task sprint assignments cleared so unfinished work returns to the unassigned backlog. Actual task status, estimate, dates, verification and dependencies are left unchanged. A recovery workspace snapshot is taken before completion and planned-sprint deletion.
-6. **Data compatibility:** optional `sprints` array on each project and `sprintId` on each task. Existing `niyarvo.project.v1` format and AsyncStorage key `niyarvo-projects-v1` unchanged; projects without these properties load with empty sprint lists. Project/workspace JSON, snapshots and restore include new fields.
+6. **Data compatibility:** optional `sprints` array on each project and `sprintId` on each task. Existing `niyarvo.project.v1` format and AsyncStorage key `milvayo-v1` unchanged; projects without these properties load with empty sprint lists. Project/workspace JSON, snapshots and restore include new fields.
 7. **Existing functions preserved:** Gantt geometry and gestures, Kanban drag, custom workflow rules, task types, safe area, selected accent, color-tintable Niyarvo mark and local backups are not replaced.
 
 ## 2. Architectural derivation (OpenProject as reference, no code copied)
@@ -1295,13 +1295,13 @@ Read `docs/NP-QA-0.3.2.md`. Export workspace JSON first. Install on user `work` 
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.3` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1348,13 +1348,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.4` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1401,13 +1401,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.5` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1454,13 +1454,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.6` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1507,13 +1507,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.7` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1560,13 +1560,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.8` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1613,13 +1613,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.9` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1666,13 +1666,13 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA / Niyarvo Control Center) |
+| Product | Milvayo (independent of RIVNA / Niyarvo Control Center) |
 | Batch | `v0.3.10` |
 | Base | `v0.3.2-HOTFIX3` cumulative development line |
 | Delivery | Included in final `v0.3.10` full source ZIP |
 | Status | **Implemented, source-tested within cumulative release; native/Web runtime QA not verified** |
 | Git | Target `work`; no GitHub commit, push, tag, or merge performed here |
-| Firebase | Not connected or deployed; project `niyarvoprojects`, Android `com.niyarvo.projects` |
+| Firebase | Not connected or deployed; project `milvayo`, Android `com.milvayo.projects` |
 | Persistence | Same `niyarvo.project.v1` import format and local AsyncStorage workspace; optional backward-compatible fields |
 
 ## 1. Implemented scope
@@ -1720,7 +1720,7 @@ The final source includes this change together with the other v0.3.3–v0.3.10 b
 
 | Field | Observed value |
 |---|---|
-| Application | Niyarvo Projects — independent local-first Expo/React Native app |
+| Application | Milvayo — independent local-first Expo/React Native app |
 | Release ID | v0.3.11-HOTFIX1 |
 | Base | Full v0.3.11 local-QA source archive |
 | Scope | **Navigation-only hotfix** for an unscrollable sidebar, inaccessible navigation below Resources, and persistent-looking dark backdrop on Android and Web |
@@ -1784,13 +1784,13 @@ The independent Kanban redesign inspired by the uploaded Kan reference has **not
 
 ### CHG-NP-0.3.11-HOTFIX2.md
 
-# CHG-NP-0.3.11-HOTFIX2 — Niyarvo Projects
+# CHG-NP-0.3.11-HOTFIX2 — Milvayo
 
 ## 0. Read first — release and handoff
 
 | Field | Observation |
 |---|---|
-| Product | Niyarvo Projects (independent project-management application) |
+| Product | Milvayo (independent project-management application) |
 | Baseline | v0.3.11-HOTFIX1 complete source ZIP |
 | Batch | v0.3.11-HOTFIX2 |
 | Status | **Source-level QA passed; Web and Android runtime acceptance not run** |
@@ -1839,7 +1839,7 @@ The independent Kanban redesign inspired by the uploaded Kan reference has **not
 
 ## 5. Install and acceptance
 
-1. Preserve uncommitted work; optionally export the workspace JSON. In Termux: `cd ~/NiyarvoProjects && git switch work && git status --short`.
+1. Preserve uncommitted work; optionally export the workspace JSON. In Termux: `cd ~/Milvayo && git switch work && git status --short`.
 2. Extract the HOTFIX2 **changes-only** ZIP at the project root; or use complete HOTFIX2 source ZIP if no user edits must be preserved.
 3. Run `npm test` and `npx expo start -c` to clear Metro's previous Web resolution cache.
 4. Open Web: verify the Niyarvo sidebar mark draws, sidebar links scroll beyond Resources, backdrop tap/Escape dismiss correctly, and Settings accent changes recolor the mark.
@@ -1858,7 +1858,7 @@ Use this full ZIP as baseline for any further Kan-based Kanban redesign. Do not 
 
 | Field | Observed value |
 |---|---|
-| Product | Niyarvo Projects (independent of RIVNA/Control Center) |
+| Product | Milvayo (independent of RIVNA/Control Center) |
 | Release | v0.3.11 — local QA candidate |
 | Base | v0.3.10 cumulative release source |
 | Scope | Trello-informed Kanban improvements and original, built-in Power-Up system |
@@ -1936,13 +1936,13 @@ Restore the previous `work` checkpoint and previously exported JSON workspace if
 
 | Field | Observed value |
 |---|---|
-| Product | Niyarvo Projects (independent Expo + React Native local-first project-management app) |
+| Product | Milvayo (independent Expo + React Native local-first project-management app) |
 | Release | `v0.3.12` |
-| Based on | `NiyarvoProjects-v0.3.11-HOTFIX2-LOCAL-QA.zip` |
+| Based on | `Milvayo-v0.3.11-HOTFIX2-LOCAL-QA.zip` |
 | Code baseline | v0.3.11-HOTFIX2, including scrollable in-tree sidebar and Web-native brand mark |
 | Source reference | Uploaded `kanban.zip` (Kan monorepo; 738 ZIP entries; extracted source read) |
 | Code reuse | **None**. Independently implemented behavior and visuals in Niyarvo React Native; no copied Kan components/styles/assets |
-| Storage | Existing local AsyncStorage `niyarvo-projects-v1`; JSON `niyarvo.project.v1` |
+| Storage | Existing local AsyncStorage `milvayo-v1`; JSON `niyarvo.project.v1` |
 | Migration | Optional project-level `kanbanViews` object. Legacy projects default to `{}`; new preference is stored per board |
 | Firebase / remote | Not introduced. Existing local GitHub Power-Up references unchanged |
 | Tests | `npm test` **297 passed, 0 failed** (286 prior + 11 focused new tests) |
@@ -2048,8 +2048,8 @@ This is a complete source release based on v0.3.11-HOTFIX2. Return to that teste
 
 # CHG-NP-0.4.2 — MockDesign migration and model handoff
 
-> Product: **Niyarvo Projects** (standalone project-management app; NOT RIVNA or the Control Center).
-> Date: **2026-10-31**. Input source: `NiyarvoProjects-v0.4.1-FINAL.zip`; UI reference: `MockDesign.zip`.
+> Product: **Milvayo** (standalone project-management app; NOT RIVNA or the Control Center).
+> Date: **2026-10-31**. Input source: `Milvayo-v0.4.1-FINAL.zip`; UI reference: `MockDesign.zip`.
 > Delivery: **v0.4.2 source QA candidate**, not a production release or a claim of device acceptance.
 
 ## 0. READ FIRST — handoff
@@ -2058,7 +2058,7 @@ This is a complete source release based on v0.3.11-HOTFIX2. Return to that teste
 |---|---|
 | Baseline | v0.4.1 FINAL; preserved as `ClassicApp.js` |
 | New entry point | `App.js` → `ModernApp.js` (default); Settings → Advanced workspace opens original UI |
-| Storage | Same AsyncStorage key **`niyarvo-projects-v1`**; no remote sync or new DB |
+| Storage | Same AsyncStorage key **`milvayo-v1`**; no remote sync or new DB |
 | Project export | Original `niyarvo.project.v1` format; original workspace wrapper export supported |
 | User data migration | **In-place, non-destructive**. The first read normalizes existing workspace; no mock data injected into existing installs. All edits write canonical original schema. |
 | UI features | Redesigned workspace, new Kanban boards/lists, card and list drag/reorder, task sheet, timeline bar move/resize, dependency linking, and overview/secondary screens |
@@ -2132,7 +2132,7 @@ Note: The original v0.4.1 browser/device evidence does **not** carry over to v0.
 **Before modifying your working folder:** In v0.4.1 export a full **workspace JSON backup**. Keep a copy outside the app folder; copy the existing source directory as a rollback point.
 
 ```bash
-# From the existing ~/NiyarvoProjects directory, after making a copy/backup:
+# From the existing ~/Milvayo directory, after making a copy/backup:
 # Extract the v0.4.2 ZIP CONTENTS directly into the project root.
 # Do not remove .git or Android local storage.
 npm install
@@ -2161,11 +2161,11 @@ Use Expo Go on Android and the Expo Web entry point. Test board creation, card d
 
 # CHG-NP-0.4.3 — Mock design fidelity, native motion, and timeline hardening
 
-**Product:** Niyarvo Projects (independent application)  
-**Baseline:** `NiyarvoProjects-v0.4.2-MOCK-DESIGN-INTEGRATED.zip`  
-**Target:** `v0.4.3` QA candidate (not runtime-accepted)  
-**Date:** 2026-10-31  
-**Scope:** Android/iOS gestures, visual fidelity, compact task sheet, timeline resource safety.  
+**Product:** Milvayo (independent application)
+**Baseline:** `Milvayo-v0.4.2-MOCK-DESIGN-INTEGRATED.zip`
+**Target:** `v0.4.3` QA candidate (not runtime-accepted)
+**Date:** 2026-10-31
+**Scope:** Android/iOS gestures, visual fidelity, compact task sheet, timeline resource safety.
 **Persistence:** Existing v0.4.1/v0.4.2 workspace format, no migration or automatic deletion.
 
 ## 0. Read first
@@ -2221,8 +2221,8 @@ Unchanged: the original business/domain modules (`model`, operations, boards, sc
 Back up your existing workspace and Git checkpoint before extraction. Because this ZIP is a root-overlay package, old files that are no longer in the new ZIP may remain in an existing directory.
 
 ```bash
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.3-NATIVE-MOTION-QA.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.4.3-NATIVE-MOTION-QA.zip -d .
 npm install
 npx expo install --check
 npm test
@@ -2258,12 +2258,12 @@ npx expo start --clear
 
 | Field | Value |
 |---|---|
-| Application | Niyarvo Projects (independent local-first PM app) |
+| Application | Milvayo (independent local-first PM app) |
 | Previous source baseline | v0.4.3-NATIVE-MOTION-QA |
 | New candidate | v0.4.4-ANDROID-GESTURE-HOTFIX |
 | Release status | **QA candidate — Android and iOS runtime not yet verified** |
 | Date | 2026-10-31 |
-| Source delivery | `NiyarvoProjects-v0.4.4-ANDROID-GESTURE-HOTFIX.zip` (project contents at ZIP root) |
+| Source delivery | `Milvayo-v0.4.4-ANDROID-GESTURE-HOTFIX.zip` (project contents at ZIP root) |
 | Checks | 339/339 Node source/domain tests passed |
 | Expo Go Android | **Not run**; user must validate on device |
 | Expo Go iOS | **Not run** |
@@ -2316,8 +2316,8 @@ npx expo start --clear
 Back up any uncommitted local source changes and the current workspace data before extraction.
 
 ```bash
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.4-ANDROID-GESTURE-HOTFIX.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.4.4-ANDROID-GESTURE-HOTFIX.zip -d .
 rm -f package-lock.json
 npm install
 npx expo install --check
@@ -2343,7 +2343,7 @@ Follow `NP-QA-0.4.4.md`. Validate Android Expo Go: Kanban loads, tap opens task,
 
 | Field | Observed status |
 |---|---|
-| Application | Niyarvo Projects; independent local-first PM app |
+| Application | Milvayo; independent local-first PM app |
 | Previous source baseline | v0.4.4-ANDROID-GESTURE-HOTFIX |
 | New release candidate | v0.4.5-MOCK-BOARD-DRAG-RESTORED |
 | Release status | QA candidate, **not accepted on Android** |
@@ -2388,9 +2388,9 @@ No Firestore configuration, Firebase integration, storage key, import/export for
 ### Termux
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 # On the work branch with a clean/recoverable source checkpoint:
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.5-MOCK-BOARD-DRAG-RESTORED.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.4.5-MOCK-BOARD-DRAG-RESTORED.zip -d .
 # No new packages are required if v0.4.4 dependencies already installed.
 npm install
 npm test
@@ -2423,7 +2423,7 @@ npx expo start --clear
 
 | Field | Observed status |
 |---|---|
-| Application | Niyarvo Projects (independent project-management app) |
+| Application | Milvayo (independent project-management app) |
 | Baseline | Full v0.4.5-MOCK-BOARD-DRAG-RESTORED source |
 | Candidate | v0.4.6-MOCK-KANBAN-INTERACTIONS |
 | Status | **QA candidate; not accepted on device** |
@@ -2478,8 +2478,8 @@ npx expo start --clear
 Before replacing v0.4.5, export a project/workspace backup and keep the previous source checkpoint on the `work` branch. The ZIP is a **full project-root archive**, no outer folder and no `node_modules`/`package-lock.json`.
 
 ```bash
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.6-MOCK-KANBAN-INTERACTIONS.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.4.6-MOCK-KANBAN-INTERACTIONS.zip -d .
 # Existing v0.4.5 dependencies are enough; install only if missing.
 npm install
 npm test
@@ -2493,7 +2493,7 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 - Treat v0.4.6 as the source candidate, not a confirmed Android runtime fix.
 - Do not replace the original mock margins/card structure or change Timeline while testing Board interactions.
 - Diagnose any remaining tap/snap/scroll issue with the actual Android error; avoid speculative animation or dependency rewrites.
-- Preserve Niyarvo Projects separate from RIVNA and Niyarvo Control Center. Preserve canonical model, project imports and task identity/history.
+- Preserve Milvayo separate from RIVNA and Niyarvo Control Center. Preserve canonical model, project imports and task identity/history.
 
 ---
 
@@ -2507,11 +2507,11 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 
 | Field | Value |
 |---|---|
-| Application | Niyarvo Projects — independent PM app |
-| Baseline | `NiyarvoProjects-v0.4.6-MOCK-KANBAN-INTERACTIONS.zip` |
-| Candidate | `NiyarvoProjects-v0.4.7-SPRINT-KANBAN-NAV-QA.zip` |
+| Application | Milvayo — independent PM app |
+| Baseline | `Milvayo-v0.4.6-MOCK-KANBAN-INTERACTIONS.zip` |
+| Candidate | `Milvayo-v0.4.7-SPRINT-KANBAN-NAV-QA.zip` |
 | Status | QA candidate; Android Expo Go, iOS and browser runtime tests **not performed** |
-| Workspace / schema | Existing `niyarvo-projects-v1` AsyncStorage workspace and canonical v0.4.1 model **unchanged** |
+| Workspace / schema | Existing `milvayo-v1` AsyncStorage workspace and canonical v0.4.1 model **unchanged** |
 | Tests | 353/353 source tests passed, including 4 new tests; 0 source syntax diagnostics (see verification) |
 | Dependencies | No added packages; Expo SDK 58 / existing Reanimated and Gesture Handler retained |
 | Timeline | No changes to `src/screens/Timeline.js` or its gesture logic; previously reported to render successfully |
@@ -2550,13 +2550,13 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 ## 5. Termux install and acceptance
 
 1. Export a complete workspace backup from the last working release; commit the current `work` checkpoint and keep v0.4.6 ZIP.
-2. Extract the delivered ZIP at `~/NiyarvoProjects` (not inside a nested folder).
+2. Extract the delivered ZIP at `~/Milvayo` (not inside a nested folder).
 3. Run `npm install` only if dependencies are absent or outdated, then `npm test` and `npx expo start --clear`.
 4. Verify horizontal and vertical swipes from on top of task cards first. Then stationary long-press card and list dragging, task sheet taps and title double taps, edge auto-scroll, persistence after relaunch and previously working Timeline.
 5. Create/edit/start/finish/delete planned sprints with real task assignments, including a completion after halfway progress and project reload.
 6. Compare Sprint goal typography with the user's screenshot and test repeated tab switching for both latency and memory.
 
-**Do not merge to `main` until real-device acceptance passes.** Preserve canonical project imports, task IDs, schema, activity history and independent Niyarvo Projects separation from RIVNA / Control Center.
+**Do not merge to `main` until real-device acceptance passes.** Preserve canonical project imports, task IDs, schema, activity history and independent Milvayo separation from RIVNA / Control Center.
 
 ---
 
@@ -2566,10 +2566,10 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 
 # CHG-NP-0.4.8 — Timeline Controls, Sprint Crash, Screen Diagnostics
 
-**Date:** 2026-10-31  
-**Status:** SOURCE QA CANDIDATE — Android/Expo Go runtime acceptance NOT VERIFIED  
-**Baseline:** Niyarvo Projects v0.4.7 Sprint/Kanban/Nav QA  
-**Deliverable:** NiyarvoProjects-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip  
+**Date:** 2026-10-31
+**Status:** SOURCE QA CANDIDATE — Android/Expo Go runtime acceptance NOT VERIFIED
+**Baseline:** Milvayo v0.4.7 Sprint/Kanban/Nav QA
+**Deliverable:** Milvayo-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip
 **Commit:** Not committed; no Git branch merge or deployment performed.
 
 ## Read first (handoff)
@@ -2639,7 +2639,7 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 
 | Field | Value |
 |---|---|
-| Product | Niyarvo Projects (independent from RIVNA) |
+| Product | Milvayo (independent from RIVNA) |
 | Baseline | v0.4.8-TIMELINE-DIAGNOSTICS-QA |
 | Candidate | v0.4.9-TIMELINE-VIEWPORT-HOTFIX |
 | Status | SOURCE QA candidate; NOT Android/iOS runtime-verified |
@@ -2652,7 +2652,7 @@ Do not merge to `main` until the attached `NP-QA-0.4.6.md` checks pass on Expo G
 
 ## 1. Device evidence received
 
-- Android Expo Go, Niyarvo Projects v0.4.8, OS 35.
+- Android Expo Go, Milvayo v0.4.8, OS 35.
 - Screen **Timeline** opened at `19:45:44.680Z`, followed by new run at `19:45:57.914Z`; Timeline opened again at `19:47:15.908Z`, followed by new run at `19:47:27.720Z`.
 - **Zero captured JavaScript exceptions**; diagnostics explicitly cannot prove native OOM, ANR, or process crash from an unclean exit alone.
 - Timeline initial React render measured `436 ms` and later `301 ms`; Board rendering `831 ms`, a JS stall `670 ms`, and Board navigation `2083 ms` in one run. Board performance is documented but **not fixed in this batch**.
@@ -2717,7 +2717,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 
 
-# Niyarvo Projects — v0.5.0 Timeline SVG & Touch QA
+# Milvayo — v0.5.0 Timeline SVG & Touch QA
 
 ## Read first
 
@@ -2767,14 +2767,14 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 ## Install / rollback
 
 1. Preserve a copy of your v0.4.9 source and your own local `package.json` / lockfile.
-2. Extract the archive into `~/NiyarvoProjects` with `unzip -o`.
+2. Extract the archive into `~/Milvayo` with `unzip -o`.
 3. Run `npm test`, `npx expo-doctor`, and `npx expo start --clear` in Termux.
 4. Verify on Android: Today marker, bar rendering, links including long links, horizontal/vertical scroll, normal tapping, resizing, long-press movement, and repeated tab opening without touch warnings.
 5. If tests fail, restore the v0.4.9 files. No data/schema migration is required.
 
 ## Packaging
 
-`NiyarvoProjects-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip` is project-root layout (no enclosing directory). It **does not include** `package.json`, `package-lock.json` or `node_modules`, by user request.
+`Milvayo-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip` is project-root layout (no enclosing directory). It **does not include** `package.json`, `package-lock.json` or `node_modules`, by user request.
 
 ---
 
@@ -2784,18 +2784,18 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 # CHG-NP-0.5.1 — One modern app, legacy business-domain parity
 
-**Project:** Niyarvo Projects (not RIVNA, not Niyarvo Control Center)  
-**Baseline:** `NiyarvoProjects-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip`; legacy reference `v0.4.1-FINAL`  
-**Release type:** Source-level QA candidate, *not Android/iOS runtime accepted*  
-**Date:** 2026-10-31  
-**Package:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`  
+**Project:** Milvayo (not RIVNA, not Niyarvo Control Center)
+**Baseline:** `Milvayo-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip`; legacy reference `v0.4.1-FINAL`
+**Release type:** Source-level QA candidate, *not Android/iOS runtime accepted*
+**Date:** 2026-10-31
+**Package:** `Milvayo-v0.5.1-SINGLE-APP-MIGRATION.zip`
 **Git commit/deploy:** Not performed
 
 ## Read first
 
 - The single entry `App.js` now mounts `ModernApp` only. `ClassicApp.js`, the Settings → Advanced workspace route, and unused legacy UI panels are absent. Original domain modules remain intentionally active as business-rule authority.
 - Previously legacy-only workflows now have modern access via the normal drawer, compact expandable settings, and task-sheet inline editors. The five mobile primary tabs remain Overview, Board, Timeline, Tasks and Sprints.
-- One workspace / one AsyncStorage key: `niyarvo-projects-v1`; no incompatible project-JSON migration.
+- One workspace / one AsyncStorage key: `milvayo-v1`; no incompatible project-JSON migration.
 - `package.json`, `package-lock.json`, and `node_modules` are **deliberately omitted** (user preserved locally fixed `expo-font`). Extraction into a clean folder retaining those three items is supported; this is not a from-scratch dependency install package.
 - Historical changelogs are under `docs/changelogs/legacy-code/`, modern merge history under `docs/changelogs/modern-code/`; duplicate root changelogs and redundant older QA file copies are gone.
 
@@ -2842,7 +2842,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 ## Device acceptance gate
 
 1. Back up the entire workspace in the current build, retain source ZIP and local dependency files.
-2. Extract v0.5.1 at `~/NiyarvoProjects` and confirm `package.json` and lockfile hashes are unchanged.
+2. Extract v0.5.1 at `~/Milvayo` and confirm `package.json` and lockfile hashes are unchanged.
 3. Run `npm test`, `npx expo-doctor`, `npx expo start --clear`. Check all five tabs and every drawer screen.
 4. In Android Expo Go, verify Timeline task bars/dependency curves persist after 1 second, scroll all scheduled tasks, edit dates and dependencies. Test Board horizontal/vertical scroll, tap/double-tap/long press/drag and 30-second stability.
 5. Verify project and full-workspace backup→import/restore round trips, Sprint finish/delete snapshots, release gate checks, task progress validation, time/cost results, and saved automation triggers.
@@ -2858,17 +2858,17 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 # CHG-NP-0.5.2 — Task completion, automation and premium UI refinement
 
-**Project:** Niyarvo Projects — single modern application  
-**Base:** `NiyarvoProjects-v0.5.1-SINGLE-APP-MIGRATION.zip`  
-**Version:** `0.5.2` · **Date:** 2026-10-31  
-**Status:** Source-level QA candidate; Android/iOS runtime not tested by the assistant  
+**Project:** Milvayo — single modern application
+**Base:** `Milvayo-v0.5.1-SINGLE-APP-MIGRATION.zip`
+**Version:** `0.5.2` · **Date:** 2026-10-31
+**Status:** Source-level QA candidate; Android/iOS runtime not tested by the assistant
 **Git commit, merge, deployment:** Not performed
 
 ## Read first
 
 - **Keep your existing `package.json`, `package-lock.json` and `node_modules`** in Termux; none is in this ZIP. The locally repaired `expo-font` installation is not overwritten.
-- Extract directly into `~/NiyarvoProjects`. No enclosing parent directory and no second application UI.
-- The existing `niyarvo-projects-v1` local workspace storage key and v0.4.1 domain authority are unchanged.
+- Extract directly into `~/Milvayo`. No enclosing parent directory and no second application UI.
+- The existing `milvayo-v1` local workspace storage key and v0.4.1 domain authority are unchanged.
 - No changelogs are stored in the project root. The sole new changelog is this file under `docs/changelogs/modern-code/`.
 
 ## Implemented
@@ -2918,7 +2918,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 ## READ FIRST
 - **Baseline:** v0.5.2 source; release type: QA candidate, not device-accepted.
-- **Single-app architecture:** `ModernApp.js` remains the only application shell. Existing domain model and AsyncStorage key `niyarvo-projects-v1` are preserved.
+- **Single-app architecture:** `ModernApp.js` remains the only application shell. Existing domain model and AsyncStorage key `milvayo-v1` are preserved.
 - **Package manifests:** `package.json`, `package-lock.json` and `node_modules` EXCLUDED intentionally. Keep local dependency updates, especially `expo-font`.
 - **New Expo dependency:** `expo-document-picker` is required for the native JSON import picker. Install from Termux with `npx expo install expo-document-picker`; `expo-file-system` and `expo-sharing` are used by existing import/export logic.
 
@@ -2927,7 +2927,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 2. Project create, edit, duplicate, archive and confirmed delete are in Projects. Last-accessible-project guard and pre-delete workspace snapshot remain in place. Deleted project IDs are removed from Portfolio and Program memberships.
 3. Programs are workspace-level, project-referencing groups with name, description, status and membership (no duplicate task storage). Legacy workspaces normalize to `programs: []`. Both JSON full-workspace backups and recovery snapshots include programs.
 4. Settings no longer offers duplicate project administration or recovery operations. Backup owns project/workspace `.json` import/export, recovery snapshots and archived project recovery. Full-workspace restore always requires explicit confirmation and creates a safety snapshot.
-5. Mobile header now displays the active screen title; duplicate oversized mobile page titles are suppressed. Drawer uses Niyarvo Projects combined SVG/PNG lockup with small embedded PROJECTS lettering. Bottom bar retains five top-level destinations. Native notification motion uses bounded spring animation and appears inside the app safe area.
+5. Mobile header now displays the active screen title; duplicate oversized mobile page titles are suppressed. Drawer uses Milvayo combined SVG/PNG lockup with small embedded PROJECTS lettering. Bottom bar retains five top-level destinations. Native notification motion uses bounded spring animation and appears inside the app safe area.
 6. Timeline Items control sits on the left above its associated chart/hidden item area. Heavy Timeline initial mount is delayed by two animation frames on native to reduce first-tap mount pressure; continuous scrolling and SVG data were not otherwise altered.
 7. Orange is the default accent and the nine alternate accents remain optional.
 
@@ -2957,7 +2957,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 ## READ FIRST
 
-- Baseline: Niyarvo Projects v0.5.3 modern single-app release.
+- Baseline: Milvayo v0.5.3 modern single-app release.
 - Delivery: source ZIP at the project root, **excluding** `package.json`, `package-lock.json` and `node_modules`.
 - Status: source-level QA passed; Android/iOS runtime not executed in the packaging environment.
 - The original AsyncStorage workspace key and project/portfolio/program schemas are unchanged. Keep a full backup before installing.
@@ -3000,9 +3000,9 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 # CHG-NP-0.5.5 — Entreprise PM hierarchy and responsive header and notification positioning hotfix
 
 ## Baseline and status
-- Baseline: Niyarvo Projects `v0.5.4-MANAGEMENT-SPLIT-HOTFIX.zip`.
+- Baseline: Milvayo `v0.5.4-MANAGEMENT-SPLIT-HOTFIX.zip`.
 - Release: `0.5.5`, source-verified QA candidate; no device launch claimed.
-- Canonical storage: `niyarvo-projects-v1` (unchanged); no data reset and no duplicate application.
+- Canonical storage: `milvayo-v1` (unchanged); no data reset and no duplicate application.
 - `package.json`, `package-lock.json`, `node_modules` excluded from ZIP by user preference.
 
 ## Implemented
@@ -3038,7 +3038,7 @@ The task list itself has **not** been paginated. Only mounted native drawing sur
 
 ## 0. Baseline / status
 
-- Baseline: `NiyarvoProjects-v0.5.5-ENTREPRISE-PM-SAFE-NOTICES.zip`.
+- Baseline: `Milvayo-v0.5.5-ENTREPRISE-PM-SAFE-NOTICES.zip`.
 - Release: **0.5.6**, **source-verified QA candidate**; Android, iOS and browser visual runtime tests **not run**.
 - This is a **cross-platform in-app notification** visual system. It does not integrate with, recreate, or access Apple's system Dynamic Island or Live Activities.
 - Existing task data, local workspace key and persistence/authorization modules unchanged.
@@ -3097,7 +3097,7 @@ No source code or binaries from those projects were included. Using their origin
 
 | Field | Value |
 |---|---|
-| Source baseline | `NiyarvoProjects-v0.5.6-DYNAMIC-ISLAND.zip` |
+| Source baseline | `Milvayo-v0.5.6-DYNAMIC-ISLAND.zip` |
 | Release | `0.5.7` — Android/iOS/Web QA candidate |
 | Goal | Move existing animated in-app notification near the top of the app without overlapping OS status icons or cutouts |
 | Runtime acceptance | **Not run** — Expo Go Android/iOS and mobile/desktop web should be checked by the user |
@@ -3145,7 +3145,7 @@ See `docs/qa/modern-code/NP-QA-0.5.7.md`. Check low-height status-bar devices an
 
 | Field | Value |
 |---|---|
-| Baseline | `NiyarvoProjects-v0.5.7-ISLAND-TOP-SAFEAREA.zip` |
+| Baseline | `Milvayo-v0.5.7-ISLAND-TOP-SAFEAREA.zip` |
 | Release | `0.5.8` — web performance/gesture QA hotfix |
 | Reported issue | Web `ScrollView doesn't take rejection well - scrolls anyway`; 126 console error calls, 850 Board renders, 410 Timeline renders within one run |
 | Confirmed JS exceptions | 0 in supplied report |
@@ -3187,7 +3187,7 @@ See `docs/qa/modern-code/NP-QA-0.5.8.md` for browser/mobile acceptance. Keep on 
 # CHG-NP-0.5.9 — Governance migration, source handoff
 
 ## Baseline and scope
-- Based on Niyarvo Projects **v0.5.8** source, preserving working Web scrolling / navigation, task and Timeline business logic.
+- Based on Milvayo **v0.5.8** source, preserving working Web scrolling / navigation, task and Timeline business logic.
 - Current deliverable: **v0.5.9 source-level QA candidate**. **Expo Go (Android/iOS), Expo Web runtime: Not run** in the build environment.
 - `package.json`, `package-lock.json`, `node_modules`: **intentionally excluded** (preserve user's Termux dependencies, including fixed `expo-font`).
 
@@ -3227,7 +3227,7 @@ See `docs/qa/modern-code/NP-QA-0.5.8.md` for browser/mobile acceptance. Keep on 
 # CHG-NP-0.5.10 — Performance and stability audit
 
 ## Handoff
-- Baseline: supplied NiyarvoProjects-v0.5.9-GOVERNANCE.zip plus separately supplied package.json and package-lock.json.
+- Baseline: supplied Milvayo-v0.5.9-GOVERNANCE.zip plus separately supplied package.json and package-lock.json.
 - Release: 0.5.10; branch: work. No commit, push, merge, deployment, APK or IPA produced.
 - Status: 427 tests pass; Android/iOS/web JavaScript exports pass; browser smoke checks pass. Physical Android/iOS acceptance remains **Not run**.
 - Source ZIP contains project-root files, excluding package.json, package-lock.json and node_modules to preserve the user's local setup. The supplied package version remains 0.4.8; app.json reports 0.5.10.
@@ -3456,7 +3456,7 @@ Review direction: no visual change. Unslop standard by Damir Sokolovsky, CC BY 4
 
 | Field | Value |
 |---|---|
-| Baseline | `NiyarvoProjects-v0.5.15-ROOT-CAUSE-FIX.zip` |
+| Baseline | `Milvayo-v0.5.15-ROOT-CAUSE-FIX.zip` |
 | Release | 0.5.15 patch. `app.json` and `package.json` were not touched, so the version still reads 0.5.15 |
 | Scope | Timeline (Gantt) screen only: task bars, resize zones, dependency link handle, chart auto-scroll |
 | Dependencies | No new packages |
@@ -3589,7 +3589,7 @@ A source-level test is not runtime acceptance. The real app was never started in
 - Risk: on Android every day-step now re-renders the Timeline (as resize already did). If it feels slow with very many tasks, report the number of tasks.
 - Risk: the 1.5 s heartbeat watchdog could clear a preview if the JavaScript thread is blocked for longer than that. The drop itself still commits.
 - Rollback of batch 3 only: restore `src/screens/Timeline.js` and `tests/native-worklets-hotfix.test.cjs` from the batch 2 zip; delete `src/timelineEdit.cjs`; remove the "Timeline rules" section from `AGENTS.md` and the batch 3 tests.
-- Full rollback: restore `src/gesture.web.js`, `src/gesture.native.js`, `src/gestureSurface.native.js`, `src/screens/Timeline.js` and `tests/native-worklets-hotfix.test.cjs` from `NiyarvoProjects-v0.5.15-ROOT-CAUSE-FIX.zip`; delete `src/dragFollow.cjs`, `src/timelineEdit.cjs` and `tests/timeline-drag-scroll-0515.test.cjs`.
+- Full rollback: restore `src/gesture.web.js`, `src/gesture.native.js`, `src/gestureSurface.native.js`, `src/screens/Timeline.js` and `tests/native-worklets-hotfix.test.cjs` from `Milvayo-v0.5.15-ROOT-CAUSE-FIX.zip`; delete `src/dragFollow.cjs`, `src/timelineEdit.cjs` and `tests/timeline-drag-scroll-0515.test.cjs`.
 
 ### CHG-NP-0.5.15.md
 
@@ -4012,7 +4012,7 @@ Replace the touched files with the ones from the previous zip. No data or storag
 
 | Field | Value |
 |---|---|
-| Baseline | NiyarvoProjects_v0_5_23.zip |
+| Baseline | Milvayo_v0_5_23.zip |
 | Scope | Backup screen, export/import helpers, `.niyav` format. Versions not bumped (project rule) |
 | Dependencies | **Four new packages**, see section 5. `package.json` and `package-lock.json` are not in the ZIP |
 | Source status | `npm test`: 507 pass, 0 fail, 1 skipped (needs `node_modules`). JSX syntax clean |
@@ -4060,7 +4060,7 @@ npx expo install expo-crypto
 ```
 Without them Metro cannot bundle the Backup screen. The versions are pinned to the APIs the code was written against. If Metro reports an unresolved import, send the message.
 
-USER AFTER TESTING: 
+USER AFTER TESTING:
 added by me the user/developper because the above packages werent enough and the app couldnt bundle:
 
 ```
@@ -4092,7 +4092,7 @@ Restore `src/screens/workspace/Backup.js`, `src/store/importFiles.cjs`, `src/sto
 
 | Field | Value |
 |---|---|
-| Baseline | NiyarvoProjects_v0_5_24.zip |
+| Baseline | Milvayo_v0_5_24.zip |
 | Release | 0.5.25. `app.json` version bumped; `package.json` and `package-lock.json` not included (bump `package.json` to 0.5.25 yourself) |
 | Dependencies | None added. `@noble/hashes/hmac` ships in the already installed `@noble/hashes`; `pbkdf2Async` is no longer used |
 | Source status | 524 tests: 523 pass, 1 skipped (needs `node_modules`), 0 fail. JSX syntax clean (TypeScript parser) |
@@ -4138,7 +4138,7 @@ Restore `src/screens/workspace/Backup.js`, `src/store/importFiles.cjs`, `src/sto
 5. Specifications: add a playbook, edit it, delete it; delete a phase that tasks use.
 
 ## 8. Rollback
-Restore the changed files from NiyarvoProjects_v0_5_24.zip and delete `src/store/pbkdf2Chunked.cjs`, `src/domain/specifications.cjs` and the three new test files.
+Restore the changed files from Milvayo_v0_5_24.zip and delete `src/store/pbkdf2Chunked.cjs`, `src/domain/specifications.cjs` and the three new test files.
 
 ---
 
@@ -4150,7 +4150,7 @@ Restore the changed files from NiyarvoProjects_v0_5_24.zip and delete `src/store
 # CHG-NP-0.5.26 — Trello-inspired Standard/Advanced task sheet
 
 ## Release checkpoint
-- Baseline: user-provided `NiyarvoProjects v0.5.25.zip`, Expo and package version 0.5.25.
+- Baseline: user-provided `Milvayo v0.5.25.zip`, Expo and package version 0.5.25.
 - Release: 0.5.26. Full source, project-root ZIP. No Git operations, deployment, APK or IPA.
 - Scope: task editor presentation, safe project-level label colors, simple Markdown read mode, compact Kanban task cards. **No task ID migration or refactoring of task relationships.**
 - User references: two Trello screenshots showing task detail, colored labels and Kanban cards.
@@ -4192,7 +4192,7 @@ Restore the changed files from NiyarvoProjects_v0_5_24.zip and delete `src/store
 
 | Field | Value |
 |---|---|
-| Baseline | 0.5.25 (NiyarvoProjects_v0_5_25.zip applied) |
+| Baseline | 0.5.25 (Milvayo_v0_5_25.zip applied) |
 | Release | 0.5.26. `app.json` version bumped; `package.json` and `package-lock.json` not included (bump `package.json` to 0.5.26 yourself) |
 | Dependencies | None added |
 | Source status | 532 tests: 531 pass, 1 skipped (needs `node_modules`), 0 fail. JSX syntax clean (TypeScript parser) |
@@ -4257,8 +4257,8 @@ Restore the eight changed source files and three updated tests from 0.5.25 and d
 # CHG-NP-0.5.27 — Task Sheet merged into the wire-engines release
 
 ## Baseline
-- Primary: `NiyarvoProjects_v0_5_26.zip` (incremental: 13 files = 0.5.25 + "wire engines"; no package.json, no full tree).
-- Merged: `NiyarvoProjects-v0.5.26-TASK-SHEET-UX.zip` (full tree = 0.5.25 + Task Sheet).
+- Primary: `Milvayo_v0_5_26.zip` (incremental: 13 files = 0.5.25 + "wire engines"; no package.json, no full tree).
+- Merged: `Milvayo-v0.5.26-TASK-SHEET-UX.zip` (full tree = 0.5.25 + Task Sheet).
 - Full tree rebuilt from the Task Sheet tree, then the primary baseline's changes applied on top. Both archives call themselves 0.5.26; this merge is 0.5.27.
 - Commit status: Not committed. No APK, no deploy.
 
@@ -4353,7 +4353,7 @@ Restore the eight changed source files and three updated tests from 0.5.25 and d
 - Names: trimmed, 1–60 characters, unique ignoring case. Limit 20 workspaces.
 
 ## Storage and migration
-- The first workspace ("Main workspace") keeps the original key `niyarvo-projects-v1`. Existing data is not copied, moved or rewritten, so migration cannot lose or duplicate records and cannot be interrupted. Project/task IDs are untouched.
+- The first workspace ("Main workspace") keeps the original key `milvayo-v1`. Existing data is not copied, moved or rewritten, so migration cannot lose or duplicate records and cannot be interrupted. Project/task IDs are untouched.
 - New list key `niyarvo-workspaces-v1` (names and active id only). Extra workspaces use `niyarvo-workspace-v1:<id>`.
 - Interrupted runs: create writes data first, then the list; delete removes data first, then the list. On start, saved data that is not listed comes back as "Recovered workspace"; a listed workspace whose data is gone is dropped. A damaged list falls back to the main workspace; data under the keys is never touched.
 
@@ -4468,7 +4468,7 @@ Based on the supplied v0.5.30 source. No data model, store, persistence, import 
 - New pure rules in `src/ui/theme/layout.cjs`: breakpoints (phone < 720, tablet < 1100, desktop), sidebar state, grid basis, Kanban column width.
 
 ## Shell
-- Desktop and tablet: persistent sidebar (248) that collapses to a 64 px icon rail; choice remembered (`niyarvo-projects-sidebar-v1`). Tablets start collapsed.
+- Desktop and tablet: persistent sidebar (248) that collapses to a 64 px icon rail; choice remembered (`milvayo-sidebar-v1`). Tablets start collapsed.
 - Toolbar: sidebar button, workspace / project / screen path with project and workspace switchers, search, theme, New task.
 - Phones: app bar (screen and project name), bottom navigation (5 tabs, accent bar), side menu for the rest.
 - Page content grows up to 1680 px with a gutter per breakpoint; `ContentWidthProvider` gives screens the width left beside the sidebar.
@@ -4507,7 +4507,7 @@ Based on the supplied v0.5.30 source. No data model, store, persistence, import 
 - The new `Input` border (transparent until focused) adds 2 px to inline editors; look at card title editing on the Board.
 
 ## Install (reversible)
-Keep a copy of `~/NiyarvoProjects`, unzip over it (`unzip -o`), keep your own `package.json`. No files were moved or deleted, so `clean.py` is not needed. Roll back by restoring the copy.
+Keep a copy of `~/Milvayo`, unzip over it (`unzip -o`), keep your own `package.json`. No files were moved or deleted, so `clean.py` is not needed. Roll back by restoring the copy.
 
 ### CHG-NP-0.5.31.md
 
@@ -4515,7 +4515,7 @@ Keep a copy of `~/NiyarvoProjects`, unzip over it (`unzip -o`), keep your own `p
 
 ## Baseline and intent
 
-- **Input:** `NiyarvoProjects_v0_5_30.zip`, source-only snapshot. **Output:** 0.5.31 source update on top of that snapshot.
+- **Input:** `Milvayo_v0_5_30.zip`, source-only snapshot. **Output:** 0.5.31 source update on top of that snapshot.
 - **Commit status:** not committed; user tests locally on Git `work` before merging. **No APK built.** No deploy.
 - **No schema or data migration.** Task/workspace normalization, AsyncStorage keys, import/export, encryption, scheduling, automation, sprint lifecycle, entitlements and domain behavior are unchanged.
 - **Packaging:** project-root paths at ZIP root; deliberately exclude `app.json`, `package.json`, `package-lock.json`, `node_modules`, `.expo`. The source ZIP is an **overlay for the existing Termux installation**, not a standalone dependency installation.
@@ -4571,7 +4571,7 @@ See `docs/qa/modern-code/NP-QA-0.5.31.md`. Important device checks: first-open T
 ## Installation / rollback
 
 1. In Termux, ensure your current v0.5.30 checkout has a clean, backed-up **`work`** branch and your existing `app.json`, `package.json`, `package-lock.json` are retained.
-2. Extract this ZIP into `~/NiyarvoProjects` **at the root**. Do not delete application storage or recreate the project.
+2. Extract this ZIP into `~/Milvayo` **at the root**. Do not delete application storage or recreate the project.
 3. Set app, package and lock versions to `0.5.31` using your existing local manifests. Do not adopt the test-only manifest. Run `npm test` and `npx expo start --clear`; verify the QA checklist and collect a performance report.
 4. If you detect a regression, revert the overlay with your v0.5.30 checkpoint / Git working branch. No persisted data migration needs undoing.
 
@@ -4594,11 +4594,11 @@ See `docs/qa/modern-code/NP-QA-0.5.31.md`. Important device checks: first-open T
 
 ### CHG-NP-0.5.33-TEST-RECONCILIATION.md
 
-# Niyarvo Projects v0.5.33 — regression-suite reconciliation
+# Milvayo v0.5.33 — regression-suite reconciliation
 
 ## Why the full suite failed after the successful 5/5 merge checks
 
-Niyarvo Projects v0.5.31 Desktop HF1 and Sonnet's independently produced v0.5.32 redesign both used 0.5.31-style file and test names, but they implemented **different, incompatible UI contracts**. Extracting the HF1 ZIP with `unzip -o` replaces common paths but **does not remove files created only by Sonnet's ZIP**. The recursive `tests/run-all.cjs` therefore runs Sonnet-only assertions against HF2/v0.5.33 source:
+Milvayo v0.5.31 Desktop HF1 and Sonnet's independently produced v0.5.32 redesign both used 0.5.31-style file and test names, but they implemented **different, incompatible UI contracts**. Extracting the HF1 ZIP with `unzip -o` replaces common paths but **does not remove files created only by Sonnet's ZIP**. The recursive `tests/run-all.cjs` therefore runs Sonnet-only assertions against HF2/v0.5.33 source:
 
 - `tests/app/shell-redesign-0531.test.cjs` expects Sonnet's sidebar, `layout.boardColumnWidth`, `visibleMonths.map`, Sonnet accent token names and additional UI features deliberately *not* transferred into v0.5.33.
 - `tests/ui/layout-0531.test.cjs` expects Sonnet's theme `accentTokens`, `LIGHT/DARK` export and its separate breakpoint module, not our retained theme.
@@ -4622,7 +4622,7 @@ These are **mixed-baseline test failures**, not evidence that the five targeted 
 ## Install (inside the existing working checkout)
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 # Your prior backup patch remains in ~/storage/downloads/NP-before-0533-recovery.patch
 unzip -o ~/storage/downloads/NP-0533-TEST-RECONCILIATION.zip
 node scripts/reconcile-np-0533-tests.cjs --dry-run
@@ -4646,7 +4646,7 @@ Simulated the reported mixed checkout by adding the two original Sonnet v0.5.32 
 
 ### CHG-NP-0.5.33-WEB-MOBILE-LINK-COLORS.md
 
-# Niyarvo Projects v0.5.33 — Mobile Web layout and Gantt link color hotfix
+# Milvayo v0.5.33 — Mobile Web layout and Gantt link color hotfix
 
 ## Baseline
 Use only after v0.5.31 DESKTOP HF1 + portrait HF2 + v0.5.33 selective merge and test reconciliation. The user's checkout reported 588 passed and three failures in the full Node suite; two came from HF2 script path/import scanner and one from the superseded breakpoint test. A desktop-at-320 Web rule also made mobile Safari/Brave screens collapse into vertical letters. This is a corrective **overlay**, not a standalone source release.
@@ -4666,7 +4666,7 @@ Use only after v0.5.31 DESKTOP HF1 + portrait HF2 + v0.5.33 selective merge and 
 
 ## Termux
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 unzip -o ~/storage/downloads/NP-0533-WEB-MOBILE-DEPENDENCY-COLORS-HF4.zip
 node scripts/apply-np-mobile-web-and-dependency-colors.cjs --dry-run
 node scripts/apply-np-mobile-web-and-dependency-colors.cjs
@@ -4693,11 +4693,11 @@ No attempt to rewrite desktop screens for a manually forced 320px CSS viewport. 
 
 # CHG-NP-0.5.33 — Selective compact-design merge, desktop preserved
 
-Date: 2026-11-03. Product: **Niyarvo Projects** (not RIVNA or Niyarvo Control Center).
+Date: 2026-11-03. Product: **Milvayo** (not RIVNA or Niyarvo Control Center).
 
 ## Read first / release type
 
-This is a **guarded source overlay** for an already installed **Niyarvo Projects v0.5.31 Desktop HF2** checkout, not a stand-alone full-source ZIP. The exact 0.5.31/HF1 application archive was available only as Library metadata/docs, not as readable source bytes in the execution environment. Replacing the customer's installed files with 0.5.30 or Sonnet 0.5.32 would undo unknown v0.5.31 improvements. Instead, this update transforms four existing UI files **in place** after checking the retained desktop implementation.
+This is a **guarded source overlay** for an already installed **Milvayo v0.5.31 Desktop HF2** checkout, not a stand-alone full-source ZIP. The exact 0.5.31/HF1 application archive was available only as Library metadata/docs, not as readable source bytes in the execution environment. Replacing the customer's installed files with 0.5.30 or Sonnet 0.5.32 would undo unknown v0.5.31 improvements. Instead, this update transforms four existing UI files **in place** after checking the retained desktop implementation.
 
 The patch makes no assumptions about the user's local `package.json`, `package-lock.json` or `app.json`: the accompanying version script safely sets all three to 0.5.33 (including `package-lock.json` `packages[''].version`). No npm install or dependency change is needed.
 
@@ -4740,10 +4740,10 @@ The patch makes no assumptions about the user's local `package.json`, `package-l
 ## Installation in Termux
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.33-MERGE-OVERLAY.zip
+unzip -o ~/storage/downloads/Milvayo-v0.5.33-MERGE-OVERLAY.zip
 node scripts/apply-np-v0.5.33.cjs --dry-run
 node scripts/apply-np-v0.5.33.cjs
 node scripts/set-np-version-0533.cjs
@@ -4773,9 +4773,9 @@ No user repository changes, commits, pushes, deployments, package installs, APK 
 
 
 
-# Niyarvo Projects v0.5.34 — Consolidated RIVNA themes and UI controls
+# Milvayo v0.5.34 — Consolidated RIVNA themes and UI controls
 
-**Source baseline:** User-supplied `NiyarvoProjects v0.5.32.zip` (internally v0.5.33; HF4 mobile-browser detection, desktop override and colored dependency lines already present). This is a complete source release, **not a patch installer**. All source files are at ZIP root.
+**Source baseline:** User-supplied `Milvayo v0.5.32.zip` (internally v0.5.33; HF4 mobile-browser detection, desktop override and colored dependency lines already present). This is a complete source release, **not a patch installer**. All source files are at ZIP root.
 
 ## Delivered changes
 
@@ -4805,7 +4805,7 @@ No user repository changes, commits, pushes, deployments, package installs, APK 
 
 ## Installation
 
-Extract ZIP contents directly into `~/NiyarvoProjects` (no top folder) using `unzip -o`. Since unzip does not remove previously extracted files, the old `docs/CHG-NP-0.5.33-WEB-MOBILE-LINK-COLORS.md` may remain and must be removed **only after confirming its copy exists at** `docs/qa/release-notes/CHG-NP-0.5.33-WEB-MOBILE-LINK-COLORS.md`. Then run `npm test` and `npx expo start --clear`.
+Extract ZIP contents directly into `~/Milvayo` (no top folder) using `unzip -o`. Since unzip does not remove previously extracted files, the old `docs/CHG-NP-0.5.33-WEB-MOBILE-LINK-COLORS.md` may remain and must be removed **only after confirming its copy exists at** `docs/qa/release-notes/CHG-NP-0.5.33-WEB-MOBILE-LINK-COLORS.md`. Then run `npm test` and `npx expo start --clear`.
 
 
 ---

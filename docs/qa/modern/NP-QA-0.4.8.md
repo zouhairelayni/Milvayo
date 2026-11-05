@@ -1,12 +1,12 @@
-# Niyarvo Projects v0.4.8 — Android / iOS / Web QA
+# Milvayo v0.4.8 — Android / iOS / Web QA
 
 **Status:** Pending device acceptance. Source-level tests only: 359/359 passed.
 
 ## Install (Termux)
 
 ```bash
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.4.8-TIMELINE-DIAGNOSTICS-QA.zip -d .
 npm install
 npx expo install --check
 npm test

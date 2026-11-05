@@ -10,7 +10,7 @@ const programs=require('../domain/programs.cjs');
 const projectRelations=require('../domain/projectRelations.cjs');
 const backupBudget=require('./backupBudget.cjs');
 const {parseBackupJson}=require('./importFiles.cjs');
-const workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'niyarvo-projects-v1', so nothing is migrated
+const workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'milvayo-v1', so nothing is migrated
 const StoreContext=createContext(null);
 const ActionsContext=createContext(null); // stable actions only, so memoised children skip store-value changes
 const ActiveContext=createContext(true); // false while a retained tab is hidden; deferred work (progressive mounting) waits
@@ -138,7 +138,7 @@ export function StoreProvider({children}){
     if(value.format===model.FORMAT)items=[value];
     else if(value.schemaVersion===1&&Array.isArray(value.projects))items=value.projects;
     else if(value.format==='niyarvo.workspace.v1'&&value.workspace?.schemaVersion===1)items=value.workspace.projects;
-    else throw Error('Expected a compatible Niyarvo Projects project or workspace backup');
+    else throw Error('Expected a compatible Milvayo project or workspace backup');
     if(!items.length||items.length>30)throw Error('Invalid project count');
     const created=items.map(raw=>model.importProject(raw));
     const names=[];

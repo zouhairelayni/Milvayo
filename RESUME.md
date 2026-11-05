@@ -1,6 +1,6 @@
-# RESUME — Niyarvo Projects after 0.5.31
+# RESUME — Milvayo after 0.5.31
 
-Baseline `NiyarvoProjects_v0_5_30.zip`; 0.5.31 source overlay adds responsive shell, design-token refinements, Kanban/Timeline polish and shared modal notices. Full details: `docs/changelogs/modern-code/CHG-NP-0.5.31.md`.
+Baseline `Milvayo_v0_5_30.zip`; 0.5.31 source overlay adds responsive shell, design-token refinements, Kanban/Timeline polish and shared modal notices. Full details: `docs/changelogs/modern-code/CHG-NP-0.5.31.md`.
 
 **Source QA:** 577 tests (576 pass / 1 skip / 0 fail with temporary test manifest); JSX parse 0 errors. No browser/phone execution or APK; real Expo manifests are excluded. Test on Termux before a checkpoint.
 

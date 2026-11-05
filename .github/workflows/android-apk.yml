@@ -1,4 +1,4 @@
-name: Niyarvo Projects · Android APK
+name: Milvayo · Android APK
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: niyarvo-android-apk-${{ github.ref }}
+  group: milvayo-android-apk-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -57,24 +57,24 @@ jobs:
         with:
           cache-provider: basic
 
-      - name: Restore existing Niyarvo signing key and check certificate
+      - name: Restore existing Milvayo signing key and check certificate
         shell: bash
         env:
-          NIYARVO_ANDROID_KEYSTORE_BASE64: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_BASE64 }}
-          NIYARVO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_PASSWORD }}
-          NIYARVO_ANDROID_KEY_ALIAS: ${{ secrets.NIYARVO_ANDROID_KEY_ALIAS }}
+          MILVAYO_ANDROID_KEYSTORE_BASE64: ${{ secrets.MILVAYO_ANDROID_KEYSTORE_BASE64 }}
+          MILVAYO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.MILVAYO_ANDROID_KEYSTORE_PASSWORD }}
+          MILVAYO_ANDROID_KEY_ALIAS: ${{ secrets.MILVAYO_ANDROID_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          : "${NIYARVO_ANDROID_KEYSTORE_BASE64:?Missing NIYARVO_ANDROID_KEYSTORE_BASE64 secret}"
-          : "${NIYARVO_ANDROID_KEYSTORE_PASSWORD:?Missing NIYARVO_ANDROID_KEYSTORE_PASSWORD secret}"
-          : "${NIYARVO_ANDROID_KEY_ALIAS:?Missing NIYARVO_ANDROID_KEY_ALIAS secret}"
+          : "${MILVAYO_ANDROID_KEYSTORE_BASE64:?Missing MILVAYO_ANDROID_KEYSTORE_BASE64 secret}"
+          : "${MILVAYO_ANDROID_KEYSTORE_PASSWORD:?Missing MILVAYO_ANDROID_KEYSTORE_PASSWORD secret}"
+          : "${MILVAYO_ANDROID_KEY_ALIAS:?Missing MILVAYO_ANDROID_KEY_ALIAS secret}"
           umask 077
-          printf '%s' "$NIYARVO_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/niyarvo-upload.jks
-          test -s android/app/niyarvo-upload.jks
-          actual="$(keytool -list -v -keystore android/app/niyarvo-upload.jks -alias "$NIYARVO_ANDROID_KEY_ALIAS" -storepass "$NIYARVO_ANDROID_KEYSTORE_PASSWORD" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d '\r\n')"
+          printf '%s' "$MILVAYO_ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/milvayo-upload.jks
+          test -s android/app/milvayo-upload.jks
+          actual="$(keytool -list -v -keystore android/app/milvayo-upload.jks -alias "$MILVAYO_ANDROID_KEY_ALIAS" -storepass "$MILVAYO_ANDROID_KEYSTORE_PASSWORD" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d '\r\n')"
           expected='23:F8:19:EA:5C:EA:EE:57:D1:C2:27:40:99:38:6C:E2:FC:35:31:B0:5E:EA:FE:A6:CA:B5:EA:99:6E:DB:B0:F4'
           if [[ "${actual^^}" != "$expected" ]]; then
-            echo 'Signing certificate does not match the original Niyarvo Projects EAS keystore.' >&2
+            echo 'Signing certificate does not match the original Milvayo EAS keystore.' >&2
             exit 1
           fi
           echo 'Original Android signing certificate verified.'
@@ -86,19 +86,19 @@ jobs:
           # Only property names are written to build.gradle; secret values stay in runner env.
           cat >> android/app/build.gradle <<'GRADLE'
 
-          // Niyarvo Projects release signing (GitHub Actions, generated after Expo prebuild).
+          // Milvayo release signing (GitHub Actions, generated after Expo prebuild).
           android {
             signingConfigs {
-              niyarvoRelease {
-                storeFile file("niyarvo-upload.jks")
-                storePassword System.getenv("NIYARVO_ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("NIYARVO_ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("NIYARVO_ANDROID_KEY_PASSWORD")
+              milvayoRelease {
+                storeFile file("milvayo-upload.jks")
+                storePassword System.getenv("MILVAYO_ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("MILVAYO_ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("MILVAYO_ANDROID_KEY_PASSWORD")
               }
             }
             buildTypes {
               release {
-                signingConfig signingConfigs.niyarvoRelease
+                signingConfig signingConfigs.milvayoRelease
               }
             }
           }
@@ -107,15 +107,15 @@ jobs:
       - name: Build signed ARM64-only release APK
         working-directory: android
         env:
-          NIYARVO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEYSTORE_PASSWORD }}
-          NIYARVO_ANDROID_KEY_ALIAS: ${{ secrets.NIYARVO_ANDROID_KEY_ALIAS }}
-          NIYARVO_ANDROID_KEY_PASSWORD: ${{ secrets.NIYARVO_ANDROID_KEY_PASSWORD }}
+          MILVAYO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.MILVAYO_ANDROID_KEYSTORE_PASSWORD }}
+          MILVAYO_ANDROID_KEY_ALIAS: ${{ secrets.MILVAYO_ANDROID_KEY_ALIAS }}
+          MILVAYO_ANDROID_KEY_PASSWORD: ${{ secrets.MILVAYO_ANDROID_KEY_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
-          : "${NIYARVO_ANDROID_KEYSTORE_PASSWORD:?Missing NIYARVO_ANDROID_KEYSTORE_PASSWORD secret}"
-          : "${NIYARVO_ANDROID_KEY_ALIAS:?Missing NIYARVO_ANDROID_KEY_ALIAS secret}"
-          : "${NIYARVO_ANDROID_KEY_PASSWORD:?Missing NIYARVO_ANDROID_KEY_PASSWORD secret}"
+          : "${MILVAYO_ANDROID_KEYSTORE_PASSWORD:?Missing MILVAYO_ANDROID_KEYSTORE_PASSWORD secret}"
+          : "${MILVAYO_ANDROID_KEY_ALIAS:?Missing MILVAYO_ANDROID_KEY_ALIAS secret}"
+          : "${MILVAYO_ANDROID_KEY_PASSWORD:?Missing MILVAYO_ANDROID_KEY_PASSWORD secret}"
           chmod +x ./gradlew
           ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --build-cache --no-daemon
 
@@ -140,21 +140,21 @@ jobs:
             printf 'APK certificate SHA-256 mismatch or unrecognized output.\nExpected: %s\nFound: %s\n' "$expected" "${actual:-none}" >&2
             exit 1
           fi
-          cp "$apk" NiyarvoProjects-v0.5.59-arm64.apk
-          sha256sum NiyarvoProjects-v0.5.59-arm64.apk > NiyarvoProjects-v0.5.59-arm64.apk.sha256
-          echo "ARM64 release APK verified: $(stat -c '%s' NiyarvoProjects-v0.5.59-arm64.apk) bytes"
+          cp "$apk" Milvayo-v0.5.59-arm64.apk
+          sha256sum Milvayo-v0.5.59-arm64.apk > Milvayo-v0.5.59-arm64.apk.sha256
+          echo "ARM64 release APK verified: $(stat -c '%s' Milvayo-v0.5.59-arm64.apk) bytes"
 
       - name: Upload signed Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: NiyarvoProjects-v0.5.59-arm64-${{ github.run_number }}
+          name: Milvayo-v0.5.59-arm64-${{ github.run_number }}
           path: |
-            NiyarvoProjects-v0.5.59-arm64.apk
-            NiyarvoProjects-v0.5.59-arm64.apk.sha256
+            Milvayo-v0.5.59-arm64.apk
+            Milvayo-v0.5.59-arm64.apk.sha256
           if-no-files-found: error
           retention-days: 30
 
       - name: Remove temporary signing key
         if: always()
         shell: bash
-        run: rm -f android/app/niyarvo-upload.jks
+        run: rm -f android/app/milvayo-upload.jks

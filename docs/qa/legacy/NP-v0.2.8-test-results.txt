@@ -1,5 +1,5 @@
 
-> niyarvo-projects@0.2.8 test
+> milvayo@0.2.8 test
 > node --test tests/*.test.cjs
 
 TAP version 13

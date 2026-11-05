@@ -1,6 +1,6 @@
 # .niyav backup format, version 1
 
-`.niyav` is the compressed backup file of Niyarvo Projects. It holds exactly the same JSON as a `.json` backup.
+`.niyav` is the compressed backup file of Milvayo. It holds exactly the same JSON as a `.json` backup.
 Two variants share the extension; the first bytes tell them apart.
 
 ## Plain `.niyav`

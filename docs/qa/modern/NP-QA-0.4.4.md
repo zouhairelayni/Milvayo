@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.4.4 — Expo Go acceptance checklist
+# Milvayo v0.4.4 — Expo Go acceptance checklist
 
 **Candidate:** `v0.4.4-ANDROID-GESTURE-HOTFIX`  
 **Status:** Not run on device. All checks below are pending.
@@ -6,7 +6,7 @@
 ## Preflight
 
 - [ ] Save/commit local modifications; export the current workspace backup before extraction.
-- [ ] Extract to `~/NiyarvoProjects`, remove the **old** package lock, run `npm install`.
+- [ ] Extract to `~/Milvayo`, remove the **old** package lock, run `npm install`.
 - [ ] Check `npm ls react-native-reanimated react-native-worklets react-native-gesture-handler` and `npx expo install --check`.
 - [ ] Run `npm test` (release source baseline: 339/339 passed).
 - [ ] Launch `npx expo start --clear` and open Expo Go on Android.

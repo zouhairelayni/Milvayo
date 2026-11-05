@@ -1,12 +1,12 @@
 // /public/service-worker.js
 /* Caches only same-origin static assets. Never cache API responses, private Firebase data, or other origins. */
 // __APP_VERSION__ is replaced with the app.json version by scripts/stamp-sw.cjs during build:web, so each release gets a new cache name.
-const CACHE = 'niyarvo-projects-assets-__APP_VERSION__';
+const CACHE = 'milvayo-assets-__APP_VERSION__';
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/','/manifest.json','/icons/icon-192.png','/icons/icon-512.png','/icons/icon-maskable-512.png'])).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('niyarvo-projects-assets-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('milvayo-assets-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', event => {
   const req = event.request;

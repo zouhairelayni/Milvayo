@@ -1,6 +1,6 @@
 // /src/ui/theme/design.cjs
 'use strict';
-// Niyarvo Projects | shared visual system, Unslop review 2026-10-30
+// Milvayo | shared visual system, Unslop review 2026-10-30
 // Quiet graphite chrome. Violet marks interactive focus; task statuses own content color.
 const colors={
  bg:'#161719',side:'#121315',panel:'#1e2023',panel2:'#282a2e',raised:'#32353a',

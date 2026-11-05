@@ -1,4 +1,4 @@
-# Niyarvo Projects — full-surface frontend design audit (v0.5.50)
+# Milvayo — full-surface frontend design audit (v0.5.50)
 
 **Baseline:** Full v0.5.49 source ZIP. **Platform:** React Native / Expo, Android, iOS, mobile Web and desktop Web. **Review method:** Walked the entire `SCREENS` registry and `NAV` map, audited 72 JSX-bearing source modules, inspected all `Pressable` and `Sheet` uses, drawer and modal flows, notification components, chart controls, shared typography and theme contrast. Changes were made to actual source, not a mock or installer.
 

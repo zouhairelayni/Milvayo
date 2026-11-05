@@ -24,10 +24,10 @@ function loadSigningCredentials(filename) {
   const bytes = fs.readFileSync(keystorePath);
   if (bytes.length < 1000) throw new Error('Keystore is missing or unexpectedly small.');
   return {
-    NIYARVO_ANDROID_KEYSTORE_BASE64: bytes.toString('base64'),
-    NIYARVO_ANDROID_KEYSTORE_PASSWORD: k.keystorePassword,
-    NIYARVO_ANDROID_KEY_ALIAS: k.keyAlias,
-    NIYARVO_ANDROID_KEY_PASSWORD: k.keyPassword,
+    MILVAYO_ANDROID_KEYSTORE_BASE64: bytes.toString('base64'),
+    MILVAYO_ANDROID_KEYSTORE_PASSWORD: k.keystorePassword,
+    MILVAYO_ANDROID_KEY_ALIAS: k.keyAlias,
+    MILVAYO_ANDROID_KEY_PASSWORD: k.keyPassword,
   };
 }
 
@@ -36,7 +36,7 @@ function main() {
   if (!filename) {
     throw new Error('Usage: node scripts/ci/upload-android-signing-secrets.cjs /path/to/credentials.json');
   }
-  const repo = 'zouhairelayni/NiyarvoProjects';
+  const repo = 'zouhairelayni/Milvayo';
   const secrets = loadSigningCredentials(filename);
   for (const [name, value] of Object.entries(secrets)) {
     const result = spawnSync('gh', ['secret', 'set', name, '--repo', repo], {

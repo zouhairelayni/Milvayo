@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.53 — Android Gantt, Sprints, New task QA
+# Milvayo v0.5.53 — Android Gantt, Sprints, New task QA
 
 ## Regressions reported
 
@@ -31,4 +31,4 @@
 
 ## Fresh archive confirmation
 
-`NiyarvoProjects-v0.5.53-FULL.zip` extracted into a clean directory: **655 tests total, 654 passed, 0 failed, 1 skipped**. Zip file CRC check passed and all source files are rooted directly in the archive (no enclosing folder).
+`Milvayo-v0.5.53-FULL.zip` extracted into a clean directory: **655 tests total, 654 passed, 0 failed, 1 skipped**. Zip file CRC check passed and all source files are rooted directly in the archive (no enclosing folder).

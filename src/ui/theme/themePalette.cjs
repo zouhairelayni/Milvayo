@@ -1,8 +1,8 @@
 // /src/ui/theme/themePalette.cjs
 'use strict';
-// Niyarvo Projects preference IDs are unchanged; visual values mirror the supplied RIVNA palette.
+// Milvayo preference IDs are unchanged; visual values mirror the supplied RIVNA palette.
 const DEFAULT_ACCENT = 'Coral';
-const STORAGE_KEY = 'niyarvo-projects-accent-v1';
+const STORAGE_KEY = 'milvayo-accent-v1';
 const ACCENTS = Object.freeze([
   ['Aqua', '#5B9CF8', '#2563EB', '#5B9CF8', '#2563EB', '#0F1316', '#181D21', '#ECF1F5'],
   ['Mint', '#5FB8B1', '#008080', '#5FB8B1', '#008080', '#101614', '#18201E', '#EAF3EF'],

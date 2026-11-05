@@ -18,7 +18,7 @@ export async function downloadText(name, text, mime = 'text/plain') {
       file.create();
       await file.write(text);
       if (!await Sharing.isAvailableAsync()) throw new Error('System file sharing unavailable');
-      await Sharing.shareAsync(file.uri, {mimeType:mime, dialogTitle:'Export Niyarvo Projects file'});
+      await Sharing.shareAsync(file.uri, {mimeType:mime, dialogTitle:'Export Milvayo file'});
     }
     return true;
   } catch (error) {
@@ -42,7 +42,7 @@ export async function downloadBytes(name, bytes, mime = 'application/octet-strea
       file.create();
       await file.write(bytes);
       if (!await Sharing.isAvailableAsync()) throw new Error('System file sharing unavailable');
-      await Sharing.shareAsync(file.uri, {mimeType:mime, dialogTitle:'Export Niyarvo Projects file', UTI:'public.data'});
+      await Sharing.shareAsync(file.uri, {mimeType:mime, dialogTitle:'Export Milvayo file', UTI:'public.data'});
     }
     return true;
   } catch (error) {

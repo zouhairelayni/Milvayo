@@ -4,7 +4,7 @@ import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import core from './core.cjs';
 import app from '../../app.json';
-const KEY = '@niyarvo-projects/diagnostics/v1';
+const KEY = '@milvayo/diagnostics/v1';
 const VERSION = app.expo.version; // one place to bump per release
 let state = core.fresh(`${Date.now().toString(36)}`, Date.now(), {platform: Platform.OS, os: String(Platform.Version), version: VERSION});
 let booted = false;

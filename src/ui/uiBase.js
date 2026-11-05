@@ -6,7 +6,7 @@ import { font, radius, serif, useTheme } from './theme/theme';
 
 // Browser layout preference is purely visual; no workspace or task data is touched.
 const LayoutContext = createContext({ preference: 'auto', setPreference: () => {} });
-const STORAGE_KEY = 'niyarvo-projects:web-layout';
+const STORAGE_KEY = 'milvayo:web-layout';
 
 export function LayoutProvider({ children }) {
   const [preference, setValue] = useState(() => {

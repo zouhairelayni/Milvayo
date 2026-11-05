@@ -1,4 +1,4 @@
-# Niyarvo Projects — engineering instructions
+# Milvayo — engineering instructions
 
 **Product:** Independent project-management app, React Native + Expo SDK 58 for Web/PWA, Android and iOS. It is not RIVNA and is not Niyarvo Control Center.
 
@@ -16,7 +16,7 @@
 ## Architecture / safety
 
 - Local-first data currently uses AsyncStorage. Do not weaken normalization, backup recovery, dependency-cycle checks, release verification or audit trail.
-- Niyarvo Projects will later use **its own separate Firebase project** for Auth, Firestore sync, file uploads and Hosting. No credentials, Firebase IDs, schemas, repos or data from RIVNA/Control Center.
+- Milvayo will later use **its own separate Firebase project** for Auth, Firestore sync, file uploads and Hosting. No credentials, Firebase IDs, schemas, repos or data from RIVNA/Control Center.
 - No automatic import of existing engineering roadmaps; only explicitly user-invoked imports.
 - Do not claim real-world GitHub merges, payments or releases from local SHA/status records.
 - Phone-only user develops in Android Termux using Metro/Fast Refresh; never require a desktop-only build workflow.
@@ -30,7 +30,7 @@
 - **Moments:** the Gantt diagram, Kanban task movement and verified progress are the content-rich moments.
 - **Signature:** one user-selected accent (default Claude clay orange) and meaningful dependency/status colors.
 
-Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Niyarvo Projects Board mark. The company ribbon N belongs to the parent brand and Control Center. Do not add glow, gradient text, badges or decorative animation.
+Keep dark neutral chrome, readable task content, consistent spacing, touch targets and the Milvayo Board mark. The company ribbon N belongs to the parent brand and Control Center. Do not add glow, gradient text, badges or decorative animation.
 
 ## Sprint lifecycle rule
 Keep sprint lifecycle and historical burndown semantics inside `src/domain/agile.cjs`, with no remote/security claims. Preserve the frozen history on completion, and do not infer pre-start daily statuses from current task data. UI work follows the bundled Unslop reference and the bundled `.opencode/skills/unslop/SKILL.md`.

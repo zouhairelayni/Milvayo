@@ -14,7 +14,7 @@ const two = () => W.addItem(W.defaultIndex('t0'), 'Client work', 'ws-a', 't1');
 test('first workspace keeps the original storage key, so existing data needs no migration', () => {
   const index = W.defaultIndex();
   assert.equal(index.items.length, 1);
-  assert.equal(W.keyFor(index.activeId), 'niyarvo-projects-v1');
+  assert.equal(W.keyFor(index.activeId), 'milvayo-v1');
   assert.equal(W.keyFor('ws-a'), W.KEY_PREFIX + 'ws-a');
 });
 
@@ -65,15 +65,15 @@ test('unreadable or damaged saved lists fall back safely', () => {
 
 test('interrupted create: data without a list entry is recovered, not lost', () => {
   const index = W.defaultIndex();
-  const fixed = W.reconcileIndex(index, ['niyarvo-projects-v1', W.KEY_PREFIX + 'ws-orphan', 'unrelated-key']);
+  const fixed = W.reconcileIndex(index, ['milvayo-v1', W.KEY_PREFIX + 'ws-orphan', 'unrelated-key']);
   assert.deepEqual(fixed.items.map((x) => x.id), ['main', 'ws-orphan']);
   assert.match(fixed.items[1].name, /Recovered workspace/);
-  assert.equal(W.reconcileIndex(fixed, ['niyarvo-projects-v1', W.KEY_PREFIX + 'ws-orphan']), fixed); // second run changes nothing
+  assert.equal(W.reconcileIndex(fixed, ['milvayo-v1', W.KEY_PREFIX + 'ws-orphan']), fixed); // second run changes nothing
 });
 
 test('interrupted delete: a listed workspace whose data is gone is dropped; one odd read never empties the list', () => {
   const index = two();
-  const fixed = W.reconcileIndex(index, ['niyarvo-projects-v1']);
+  const fixed = W.reconcileIndex(index, ['milvayo-v1']);
   assert.deepEqual(fixed.items.map((x) => x.id), ['main']);
   assert.equal(fixed.activeId, 'main');
   assert.equal(W.reconcileIndex(W.defaultIndex(), []).items.length, 1); // fresh install: no data yet

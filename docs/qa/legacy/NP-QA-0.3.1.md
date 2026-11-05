@@ -1,13 +1,13 @@
-# Niyarvo Projects 0.3.1 — local QA checklist
+# Milvayo 0.3.1 — local QA checklist
 
 ## Tests in Termux
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
 # Back up or commit any earlier changes before replacing files.
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.3.1-LOCAL-QA.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.3.1-LOCAL-QA.zip -d .
 npm test
 npx expo install --check
 npx expo start

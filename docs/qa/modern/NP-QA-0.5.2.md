@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.2 — Device acceptance
+# Milvayo v0.5.2 — Device acceptance
 
 Source tests: **376/376 passed**. JSX parse: **passed**. Expo Go / iOS hardware: **Not run**.
 

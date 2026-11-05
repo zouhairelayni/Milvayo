@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.11-HOTFIX1 — Android/Web navigation QA
+# Milvayo v0.3.11-HOTFIX1 — Android/Web navigation QA
 
 This hotfix fixes **navigation only**. Keep the imported Atlas project and stored workspace intact. Before extraction, checkpoint changes and export a JSON workspace if valuable.
 

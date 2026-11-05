@@ -5,10 +5,10 @@
 ## 1. Installation and compilation
 
 ```bash
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
 git status --short
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.3.2-LOCAL-QA.zip -d .
+unzip -o ~/storage/downloads/Milvayo-v0.3.2-LOCAL-QA.zip -d .
 npm test
 npx expo install --check
 npx expo start

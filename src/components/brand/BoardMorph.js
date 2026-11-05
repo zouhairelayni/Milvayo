@@ -34,7 +34,7 @@ export default function BoardMorph({ size = 42, speed = 1, active = false, onFin
     return () => { cancelled = true; if (frame !== null) cancelAnimationFrame(frame); };
   }, [active, speed]);
   const shapes = useMemo(() => [0,1,2].map(i => ribbonPath(i,progress)), [progress]);
-  return <Svg width={size} height={size} viewBox="0 0 256 256" accessible accessibilityLabel="Niyarvo Projects Board logo">
+  return <Svg width={size} height={size} viewBox="0 0 256 256" accessible accessibilityLabel="Milvayo Board logo">
     <Defs>
       {ramps.map(([light, dark], i) => <LinearGradient key={'g'+i} id={`${id}-gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
         <Stop offset="0" stopColor={light}/><Stop offset="1" stopColor={dark}/>

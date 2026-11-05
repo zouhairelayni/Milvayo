@@ -1,6 +1,6 @@
-# Niyarvo Projects 0.5.33 — HF5 installer compatibility v2
+# Milvayo 0.5.33 — HF5 installer compatibility v2
 
-This ZIP replaces **only** `scripts/apply-np-0533-hf5.cjs` in the user's existing Niyarvo Projects checkout. It requires the previously extracted HF5 Compatibility ZIP (including `src/ui/theme/rivnaPalette.cjs` and `docs/qa/np533-hf5-hunks.json`). It does not include or replace app files.
+This ZIP replaces **only** `scripts/apply-np-0533-hf5.cjs` in the user's existing Milvayo checkout. It requires the previously extracted HF5 Compatibility ZIP (including `src/ui/theme/rivnaPalette.cjs` and `docs/qa/np533-hf5-hunks.json`). It does not include or replace app files.
 
 ## Cause addressed
 
@@ -13,7 +13,7 @@ The source changes are still applied atomically only after all hunks pass. App d
 ## Commands
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 unzip -o ~/storage/downloads/NP-0.5.33-HF5-COMPAT-V2.zip
 node scripts/apply-np-0533-hf5.cjs --dry-run
 node scripts/apply-np-0533-hf5.cjs

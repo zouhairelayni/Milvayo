@@ -1,7 +1,7 @@
 // /src/domain/taskWorkflows.cjs
 'use strict';
 const {localDay}=require('../utils/localDay.cjs');
-// Original Niyarvo Projects task hierarchy, query and bulk-command engine.
+// Original Milvayo task hierarchy, query and bulk-command engine.
 // No React, network calls, or third-party application code.
 const scheduling=require('./scheduleProject.cjs');
 const STATUSES=['Backlog','In progress','Validation','Done'];

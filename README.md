@@ -1,4 +1,4 @@
-# Niyarvo Projects — full source v0.5.59
+# Milvayo — full source v0.5.59
 
 Expo SDK 58 app for Android/iOS and Web, based on the v0.5.58 release. **Application version is 0.5.59**; there is no workspace, backup, or `.niyav` format change.
 
@@ -16,23 +16,23 @@ Expo SDK 58 app for Android/iOS and Web, based on the v0.5.58 release. **Applica
 
 **Background limitations:** Navigating within the app does not cancel jobs. On Web, completed encrypted backups are memory-only and are lost after a page reload; download before refreshing. Android/iOS may pause ordinary Expo Go JavaScript after switching apps, and process termination interrupts unfinished jobs. Completed encrypted files are retained for later download; encrypted material only is persisted. A completion event received while backgrounded is shown when the app returns to the foreground. This is an in-app notification, not an operating-system push.
 
-**Termux update:** Keep existing `.git`, dependencies and app data. Extract this full ZIP into `~/NiyarvoProjects`, run `npm test`, then `npx expo start --clear`. This version adds no dependencies; `npm install` is not required if v0.5.54 is already installed. Confirm a newly exported encrypted file and an older `.niyav` open on your Android before committing. The archive has no enclosing top-level folder.
+**Termux update:** Keep existing `.git`, dependencies and app data. Extract this full ZIP into `~/Milvayo`, run `npm test`, then `npx expo start --clear`. This version adds no dependencies; `npm install` is not required if v0.5.54 is already installed. Confirm a newly exported encrypted file and an older `.niyav` open on your Android before committing. The archive has no enclosing top-level folder.
 
 Current release notes and QA: `docs/changelog/CHANGELOG.md` and `docs/qa/modern/NP-v0.5.58-PONYTAIL-AUDIT.md`.
 
 ## Historical release documentation (older setup instructions below are archival)
 
-# Niyarvo Projects v0.5.9 — Governance migration
+# Milvayo v0.5.9 — Governance migration
 
-Niyarvo Projects is a local-first, cross-platform project management application using Expo and React Native. All screens now run inside the modern Niyarvo interface; the original v0.4.1 domain modules continue to validate the project data behind it.
+Milvayo is a local-first, cross-platform project management application using Expo and React Native. All screens now run inside the modern Niyarvo interface; the original v0.4.1 domain modules continue to validate the project data behind it.
 
 ## Installing on an existing Termux checkout
 
 This full source ZIP deliberately **does not include `package.json`, `package-lock.json` or `node_modules`**. Preserve those three files/folders from your working installation (including the locally corrected `expo-font` dependency), then extract the ZIP at the project root:
 
 ```sh
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.9-GOVERNANCE.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.5.9-GOVERNANCE.zip -d .
 npx expo install expo-document-picker
 npm test
 npx expo-doctor
@@ -51,7 +51,7 @@ The application is local-only: it does **not** provide remote multi-user sync, p
 
 ## Storage and safety
 
-The existing AsyncStorage key remains `niyarvo-projects-v1`. Never clear app data or reinstall without first exporting a complete workspace backup from Backup. Destructive operations require explicit confirmation and/or create local recovery snapshots.
+The existing AsyncStorage key remains `milvayo-v1`. Never clear app data or reinstall without first exporting a complete workspace backup from Backup. Destructive operations require explicit confirmation and/or create local recovery snapshots.
 
 ## Verification
 
@@ -69,7 +69,7 @@ Native inline notices use Reanimated motion and are anchored below the phone hea
 - **Programs** are distinct workspace-level coordination groups. They contain references to existing projects (no project/task copies), have Planned / Active / Completed states and survive full-workspace import/export and snapshots. Older workspaces receive an empty Programs list.
 - Task configuration is now under **Operate**. Settings is for appearance and diagnostics; Backup manages JSON file transfer, snapshots and archived project recovery.
 - Android/iOS `.json` import uses `expo-document-picker` with a cache copy read by `expo-file-system`, and export uses the existing `expo-sharing` flow. Install `expo-document-picker` in the user's retained manifest using Expo's installer; package manifests are intentionally absent from this release ZIP.
-- Mobile screen titles are compact and placed in the header; the Niyarvo Projects SVG lockup is used in the drawer. Notices are presented within the safe area. Timeline retains one continuous task list and its Items control is aligned left.
+- Mobile screen titles are compact and placed in the header; the Milvayo SVG lockup is used in the drawer. Notices are presented within the safe area. Timeline retains one continuous task list and its Items control is aligned left.
 
 ## v0.5.4 — Drawer key and embedded logo lettering hotfix
 

@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.57 — Corrected build handoff
+# Milvayo v0.5.57 — Corrected build handoff
 
 **Baseline:** the original v0.5.57 FULL source ZIP. Application version remains **0.5.57**.
 

@@ -3,7 +3,7 @@
 // The list of workspaces. Each workspace is one whole saved workspace object under its own storage key.
 // The first workspace keeps the original key, so existing data is never copied or moved (nothing to migrate or interrupt).
 const INDEX_KEY = 'niyarvo-workspaces-v1';
-const MAIN_KEY = 'niyarvo-projects-v1';
+const MAIN_KEY = 'milvayo-v1';
 const KEY_PREFIX = 'niyarvo-workspace-v1:';
 const MAX = 20;
 const NAME_MAX = 60;

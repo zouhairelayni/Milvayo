@@ -1,4 +1,4 @@
-# Niyarvo Projects — v0.5.51 Governance form / Timeline interaction audit
+# Milvayo — v0.5.51 Governance form / Timeline interaction audit
 
 **Source:** v0.5.50 verified full ZIP, edited directly to v0.5.51. **Method:** Inspected supplied Android screenshot against React Native `Input`, `Sheet`, Governance screens and outer/nested Timeline `ScrollView`. Cross-checked Frontend Design, dickwu/apple-design-skill and Ponytail principles. This is a source/automated test audit, not a physical-device visual verification.
 

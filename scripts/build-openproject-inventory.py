@@ -80,11 +80,11 @@ C=[
 missing=[(x[1],x[3]) for x in C if x[3] not in paths and not any(p.startswith(x[3]) for p in paths)]
 print('Evidence missing:',missing)
 if missing: raise SystemExit('Fix paths before generating')
-heading='''# Niyarvo Projects — OpenProject Capability and Business-Logic Map
+heading='''# Milvayo — OpenProject Capability and Business-Logic Map
 
-**Reference:** user-supplied `openproject-17.9.6.zip` source archive (fixed version).  
-**Target:** Niyarvo Projects v0.2.8 baseline; first expansion implemented in v0.2.9.  
-**Method:** path-level inventory of backend models, services, modules and relevant frontend/server components, cross-referenced against Niyarvo project code. **No OpenProject implementation code was copied.**  
+**Reference:** user-supplied `openproject-17.9.6.zip` source archive (fixed version).
+**Target:** Milvayo v0.2.8 baseline; first expansion implemented in v0.2.9.
+**Method:** path-level inventory of backend models, services, modules and relevant frontend/server components, cross-referenced against Niyarvo project code. **No OpenProject implementation code was copied.**
 **Coverage:** broad capability map, not a line-by-line proof of every feature, configuration, enterprise entitlement, or runtime behavior. Code presence confirms an implementation area exists; availability can depend on configuration, edition, integrations or deployment environment.
 
 ## Architecture observations from the supplied source
@@ -135,7 +135,7 @@ heading+='''
 | v0.3.6 | Budgets, rate cards and reporting | Time and cost lineage |
 | v0.3.7 | Comments, immutable local event history, notifications, reminder models, document metadata | Permission-aware future sync schema |
 | v0.3.8 | CSV/PDF exports, project templates, import tools, shareable reports | Formula-injection protections, compatibility |
-| Firebase phase | Dedicated `niyarvoprojects` auth + Firestore + Storage sync, ACL rules, transactions, offline conflicts, audit, upload processing | Stable local domain, emulator tests, separate cloud credentials |
+| Firebase phase | Dedicated `milvayo` auth + Firestore + Storage sync, ACL rules, transactions, offline conflicts, audit, upload processing | Stable local domain, emulator tests, separate cloud credentials |
 | Later | Multiuser boards, external integrations, APIs, GitHub/GitLab/webhooks, optional OIDC/enterprise features | Server authorization, monitoring, rate limits |
 
 ## Acceptance gates (for every batch)

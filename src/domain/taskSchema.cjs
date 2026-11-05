@@ -1,6 +1,6 @@
 // /src/domain/taskSchema.cjs
 'use strict';
-// Niyarvo Projects: independently authored, local-first task metadata and workflow rules.
+// Milvayo: independently authored, local-first task metadata and workflow rules.
 const STATUSES=['Backlog','In progress','Validation','Done'];
 const TYPES=['text','number','date','boolean','select'];
 const BASE_TYPES=[{id:'task',name:'Task',description:'General work item'}];

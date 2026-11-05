@@ -1,4 +1,4 @@
-# Niyarvo Projects 0.4.9 — device acceptance
+# Milvayo 0.4.9 — device acceptance
 
 Candidate only. Mark each item on actual Android Expo Go as PASS / FAIL and copy the Settings diagnostic reports if it fails.
 

@@ -1,9 +1,9 @@
-# Niyarvo Projects — cumulative v0.3.10 QA
+# Milvayo — cumulative v0.3.10 QA
 
 ## Install safely
 
 1. From v0.3.2-HOTFIX3, export **workspace JSON**. Commit or stash any uncommitted changes on `work`.
-2. Inspect the full ZIP root and extract into `~/NiyarvoProjects` while on `work`.
+2. Inspect the full ZIP root and extract into `~/Milvayo` while on `work`.
 3. `npm test` → `npx expo install --check` → `npx expo start` (Metro/Fast Refresh).
 4. Do not merge to `main` until the Android and Web passes are complete.
 

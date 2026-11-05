@@ -1,8 +1,8 @@
-# Niyarvo Projects v0.5.33 — HF5 compatibility installer
+# Milvayo v0.5.33 — HF5 compatibility installer
 
 This archive replaces **only the HF5 installer**, supplies its existing patch payload and targeted test, and adds an RIVNA theme palette module used without deleting any additional exports from the existing theme.cjs.
 
-## Install (from NiyarvoProjects project root on Termux)
+## Install (from Milvayo project root on Termux)
 
 ```
 unzip -o ~/storage/downloads/NP-0.5.33-HF5-COMPAT-FIX.zip

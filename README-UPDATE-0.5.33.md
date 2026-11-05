@@ -1,11 +1,11 @@
-# Niyarvo Projects v0.5.33 — installation
+# Milvayo v0.5.33 — installation
 
-**Overlay, not a complete source replacement.** Apply ONLY on top of v0.5.31 DESKTOP HF2 already installed in `~/NiyarvoProjects`.
+**Overlay, not a complete source replacement.** Apply ONLY on top of v0.5.31 DESKTOP HF2 already installed in `~/Milvayo`.
 
 ```sh
-cd ~/NiyarvoProjects
+cd ~/Milvayo
 git switch work
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.33-MERGE-OVERLAY.zip
+unzip -o ~/storage/downloads/Milvayo-v0.5.33-MERGE-OVERLAY.zip
 node scripts/apply-np-v0.5.33.cjs --dry-run
 node scripts/apply-np-v0.5.33.cjs
 node scripts/set-np-version-0533.cjs

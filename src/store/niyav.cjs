@@ -86,7 +86,7 @@ function buildHeader(iterations, salt, nonce) {
 
 function parseHeader(bytes) {
   if (bytes.length < HEADER_BYTES + TAG_BYTES) throw new NiyavError('NIYAV_CORRUPT', 'This backup file is incomplete.');
-  if (bytes[4] !== VERSION) throw new NiyavError('NIYAV_UNSUPPORTED', 'This backup was made by a newer version of Niyarvo Projects. Update the app to open it.');
+  if (bytes[4] !== VERSION) throw new NiyavError('NIYAV_UNSUPPORTED', 'This backup was made by a newer version of Milvayo. Update the app to open it.');
   if (bytes[5] !== KDF_PBKDF2_SHA256 || bytes[6] !== CIPHER_AES256GCM || bytes[7] !== COMPRESSION_GZIP) {
     throw new NiyavError('NIYAV_UNSUPPORTED', 'This backup uses an encryption method this version does not support.');
   }

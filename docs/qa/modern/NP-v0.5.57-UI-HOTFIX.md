@@ -1,6 +1,6 @@
-# Niyarvo Projects v0.5.57 — UI hotfix (same version)
+# Milvayo v0.5.57 — UI hotfix (same version)
 
-Baseline: `NiyarvoProjects-v0.5.57-CORRECTED-FULL.zip`. Changes are limited to button foregrounds, the mobile drawer toggle, the PROJECTS mark scale/color, existing source-contract tests, and documentation.
+Baseline: `Milvayo-v0.5.57-CORRECTED-FULL.zip`. Changes are limited to button foregrounds, the mobile drawer toggle, the PROJECTS mark scale/color, existing source-contract tests, and documentation.
 
 ## Observed Android problems
 

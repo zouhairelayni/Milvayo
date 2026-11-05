@@ -19,8 +19,8 @@
 ## Termux
 
 ```sh
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.5.0-TIMELINE-SVG-TOUCH-QA.zip -d .
 npm test
 npx expo-doctor
 npx expo start --clear

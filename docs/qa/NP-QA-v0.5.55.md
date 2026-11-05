@@ -2,7 +2,7 @@
 
 ## Scope and source behavior
 
-- Product: independent local-first Niyarvo Projects, single-user Expo SDK 58 Web/Android/iOS. This is a focused hotfix of notifications, Backup UX, and appearance. All planning data models, workspace keys, and `.niyav` backup bytes remain unchanged.
+- Product: independent local-first Milvayo, single-user Expo SDK 58 Web/Android/iOS. This is a focused hotfix of notifications, Backup UX, and appearance. All planning data models, workspace keys, and `.niyav` backup bytes remain unchanged.
 - Backup controller publishes a nonsecret, routeable `event` on protected encryption/decryption success, error, or cancellation. The global shell subscribes outside the Backup component, defers notifications received while OS AppState is backgrounded, and routes taps to the Backup tab in Settings. The completed ciphertext remains on disk only after successful encryption.
 - Island takes its background from the active accent, follows button ink for contrast, and handles swiping sideways, pulling downward for longer text, and collapsing. Actionable backup notices remain until dismissed/opened; ordinary notices retain short timed dismissal and errors require dismissal.
 - Wrong-password UX retains the selected encrypted file *in Backup screen memory* for quick retry after an incorrect password; the entered password is cleared at job start. Leaving the Backup screen while a password attempt is running still lets the job finish; if it fails after navigation, reselecting the file is required because encrypted picked-file bytes are not stored permanently. Wrong-password detection cannot be instantaneous for legacy PBKDF2 backups without weakening password guessing cost.

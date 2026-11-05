@@ -46,8 +46,8 @@ test('GitHub workflow builds signed ARM64 APK locally, without EAS cloud', () =>
   assert.match(workflow,/npm ci --legacy-peer-deps/);
   assert.match(workflow,/expo prebuild --platform android --clean --no-install/);
   assert.match(workflow,/:app:assembleRelease -PreactNativeArchitectures=arm64-v8a/);
-  assert.match(workflow,/NIYARVO_ANDROID_KEYSTORE_BASE64/);
-  assert.match(workflow,/NIYARVO_ANDROID_KEYSTORE_PASSWORD/);
+  assert.match(workflow,/MILVAYO_ANDROID_KEYSTORE_BASE64/);
+  assert.match(workflow,/MILVAYO_ANDROID_KEYSTORE_PASSWORD/);
   assert.match(workflow,/apksigner/);
   assert.match(workflow,/upload-artifact@v4/);
   assert.doesNotMatch(workflow,/eas build|EXPO_TOKEN|expo-github-action@/);
@@ -64,9 +64,9 @@ test('One-time signing import validates local EAS credential file without upload
     assert.throws(() => loadSigningCredentials(file),/ENOENT/);
     fs.writeFileSync(path.join(temp,'release.jks'),Buffer.alloc(1200,1));
     const values = loadSigningCredentials(file);
-    assert.equal(values.NIYARVO_ANDROID_KEYSTORE_PASSWORD, 'test-store-pass');
-    assert.equal(values.NIYARVO_ANDROID_KEY_ALIAS, 'test-key');
-    assert.equal(Buffer.from(values.NIYARVO_ANDROID_KEYSTORE_BASE64,'base64').length,1200);
+    assert.equal(values.MILVAYO_ANDROID_KEYSTORE_PASSWORD, 'test-store-pass');
+    assert.equal(values.MILVAYO_ANDROID_KEY_ALIAS, 'test-key');
+    assert.equal(Buffer.from(values.MILVAYO_ANDROID_KEYSTORE_BASE64,'base64').length,1200);
     assert.equal(Object.keys(values).length,4);
   } finally { fs.rmSync(temp, {recursive:true, force:true}); }
 });

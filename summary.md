@@ -1,4 +1,4 @@
-# Niyarvo Projects — summary.md
+# Milvayo — summary.md
 
 **Release candidate:** 0.5.31 responsive workspace redesign. Baseline: user-supplied 0.5.30 source ZIP. Source-only overlay, not committed or deployed.
 

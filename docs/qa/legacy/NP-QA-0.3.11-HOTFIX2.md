@@ -1,4 +1,4 @@
-# Niyarvo Projects — v0.3.11-HOTFIX2 runtime QA
+# Milvayo — v0.3.11-HOTFIX2 runtime QA
 
 **Scope:** Expo Web `BrandMark` crash and immediate navigation regression checks.
 

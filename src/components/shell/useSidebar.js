@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const layout = require('../../ui/theme/layout.cjs');
 
-export const SIDEBAR_KEY = 'niyarvo-projects-sidebar-v1';
+export const SIDEBAR_KEY = 'milvayo-sidebar-v1';
 
 // Sidebar open/collapsed. Automatic until the user presses the sidebar button; the choice is remembered on the device.
 export function useSidebar(bp) {

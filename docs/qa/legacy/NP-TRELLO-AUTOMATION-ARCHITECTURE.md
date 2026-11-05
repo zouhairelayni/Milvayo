@@ -1,4 +1,4 @@
-# Niyarvo Projects — Independent Kanban automation architecture (v0.3.10)
+# Milvayo — Independent Kanban automation architecture (v0.3.10)
 
 **Reference:** https://trello.com/guide/automate-anything and Atlassian support "Automation overview" / "Create and manage automations". Only interaction and business-rule concepts were studied; **no Trello implementation code, UI, wording, or assets were copied**.
 

@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.12 — Android and Web QA
+# Milvayo v0.3.12 — Android and Web QA
 
 **Status: Not run on a physical device or browser in this environment.** The test suite covers domain invariants, not actual touch rendering.
 

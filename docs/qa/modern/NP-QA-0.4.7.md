@@ -34,8 +34,8 @@ Status: **Manual verification not performed by the assistant.** Source tests onl
 ## Commands
 
 ```bash
-cd ~/NiyarvoProjects
-unzip -o ~/storage/downloads/NiyarvoProjects-v0.4.7-SPRINT-KANBAN-NAV-QA.zip -d .
+cd ~/Milvayo
+unzip -o ~/storage/downloads/Milvayo-v0.4.7-SPRINT-KANBAN-NAV-QA.zip -d .
 npm install
 npm test
 npx expo start --clear

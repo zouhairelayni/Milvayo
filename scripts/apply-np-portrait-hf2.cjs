@@ -1,6 +1,6 @@
 // /scripts/apply-np-portrait-hf2.cjs
 'use strict';
-// Niyarvo Projects v0.5.31-DESKTOP-HF1: narrow Web viewports should use the desktop shell.
+// Milvayo v0.5.31-DESKTOP-HF1: narrow Web viewports should use the desktop shell.
 // This deliberately patches the installed sources in place, rather than replacing newer versions.
 const fs = require('node:fs');
 const path = require('node:path');
@@ -10,7 +10,7 @@ const storePath = path.join(root, 'src/store/store.js');
 
 try {
   if (!fs.existsSync(layoutPath) || !fs.existsSync(storePath)) {
-    throw Error('Requires Niyarvo Projects v0.5.31-DESKTOP-HF1 with src/ui/layoutMode.cjs and src/store/store.js. No files changed.');
+    throw Error('Requires Milvayo v0.5.31-DESKTOP-HF1 with src/ui/layoutMode.cjs and src/store/store.js. No files changed.');
   }
   const previousLayout = fs.readFileSync(layoutPath, 'utf8');
   const previousStore = fs.readFileSync(storePath, 'utf8');

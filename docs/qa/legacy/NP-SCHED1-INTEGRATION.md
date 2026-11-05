@@ -1,6 +1,6 @@
 # NP-SCHED1 — Scheduling engine contract and safe UI integration
 
-**Baseline:** Niyarvo Projects `v0.2.5`, independently developed, React Native + Expo SDK 58. **Batch:** NP-SCHED1 (engine-only, not a new app version). **Branch:** `work`. **Owner of current UI:** parallel Sonnet redesign; do **not** overwrite its App.js, GanttView.js, design tokens, or Metro setup.
+**Baseline:** Milvayo `v0.2.5`, independently developed, React Native + Expo SDK 58. **Batch:** NP-SCHED1 (engine-only, not a new app version). **Branch:** `work`. **Owner of current UI:** parallel Sonnet redesign; do **not** overwrite its App.js, GanttView.js, design tokens, or Metro setup.
 
 ## Delivered functionality
 

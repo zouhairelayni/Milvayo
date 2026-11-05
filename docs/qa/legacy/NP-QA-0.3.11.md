@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.3.11 — Mobile/Web acceptance
+# Milvayo v0.3.11 — Mobile/Web acceptance
 
 **Target:** user Termux Expo Go and Web runtime, independently.
 

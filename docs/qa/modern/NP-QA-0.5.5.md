@@ -1,4 +1,4 @@
-# Niyarvo Projects v0.5.5 — Device acceptance checklist
+# Milvayo v0.5.5 — Device acceptance checklist
 
 These cases were **not executed on a device** in the source environment.
 
