@@ -46,5 +46,5 @@ test('all scheduled tasks remain in date range and have a reachable row', () => 
 });
 test('Expo splash config uses supported schema and preserves local dependency manifest', () => {
   assert.equal(Object.hasOwn(app.expo, 'splash'), false);
-  assert.match(app.expo.version,/^0\.5\.\d+$/);
+  assert.match(app.expo.version,/^\d+\.\d+\.\d+$/);
 });

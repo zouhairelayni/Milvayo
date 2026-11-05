@@ -61,7 +61,7 @@ test('large-surface components and secondary list interactions use the same layo
 
 test('version and cumulative changelog remain synchronized',()=>{
  const pkg=require('../../package.json'), app=require('../../app.json'),lock=require('../../package-lock.json');
- assert.match(pkg.version,/^0\.5\./);
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  assert.equal(app.expo.version,pkg.version);
  assert.equal(lock.version,pkg.version);
  assert.equal(lock.packages[''].version,pkg.version);

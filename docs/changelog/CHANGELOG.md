@@ -1,3 +1,23 @@
+## v0.6.1 — Dynamic Theme Icons (2026-11-05)
+
+- Implemented native Android and iOS alternate launcher icons.
+- Synchronized launcher icons with all ten accent colors and Daylight, Dark and AMOLED appearances.
+- Added theme-aware web favicons and PWA installation manifests.
+- Corrected launcher icon backgrounds, sizing and adaptive masking.
+- Added regression tests for native icon configuration and theme synchronization.
+- Updated release metadata and Android/iOS build numbers.
+
+---
+
+## v0.6.0 — Milvayo workspace redesign (2026-11-05)
+
+- Promoted the redesigned application source from v0.5.59 to v0.6.0.
+- Refreshed navigation, task and board experiences, timeline, project and governance surfaces.
+- Preserved project data formats, local persistence, build credentials and GitHub workflow configuration.
+- Reworked historical version assertions into version-independent metadata checks; retained behavioral regression tests.
+
+---
+
 ## Timeline pinch zoom (0.5.59)
 
 - Added focal two-finger date-axis zoom to Timeline. Calendar, chart, Today marker, bars and dependency paths share the same horizontal preview; final row/text/handle sizes stay unchanged. Native previews use existing RNGH 3/Reanimated UI-thread transforms; React receives gesture boundaries rather than frame updates. Web supports touch pinch and trackpad/Ctrl+wheel while retaining ordinary scrolling.

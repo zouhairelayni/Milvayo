@@ -91,7 +91,7 @@ test('charts and gesture-heavy task surfaces have accessible actions without cha
 
 test('historical release remains cumulative, with one current QA record and synchronized metadata',()=>{
   const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
-  assert.equal(pkg.version,'0.5.59'); assert.equal(app.expo.version,pkg.version);
+  assert.match(pkg.version,/^\d+\.\d+\.\d+$/); assert.equal(app.expo.version,pkg.version);
   assert.equal(lock.version,pkg.version); assert.equal(lock.packages[''].version,pkg.version);
   const log=read('docs/changelog/CHANGELOG.md');
   assert.equal((log.match(/^## v0\.5\.50 /gm)||[]).length,1);

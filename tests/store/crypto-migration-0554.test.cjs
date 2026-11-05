@@ -107,7 +107,7 @@ test('PBKDF2 HMAC-SHA256 remains byte-identical and cancellable',async()=>{
 
 test('No Noble direct or transitive dependency, and Expo Go supported AES remains the sole cipher',()=>{
  const pkg=require('../../package.json'),lock=require('../../package-lock.json');
- assert.equal(pkg.version,'0.5.59');
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  assert.equal(pkg.dependencies['js-sha256'],'1.0.0');
  assert.ok(pkg.dependencies['expo-crypto'].includes('58.0.7'));
  assert.equal(lock.packages['node_modules/js-sha256'].version,'1.0.0');

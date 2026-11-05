@@ -28,7 +28,7 @@ test('Standard task sheet is focused, Advanced retains original editors, and ID 
  assert.match(sheet,/\{tools\.advancedTasks\?<View/);
  assert.match(sheet,/row\('schedule', 'Schedule'/);
  for(const id of ['subtasks','custom','integrations','time','stage','type','progress','parent','release','sprint','dependencies','verification','checks','attachments']) assert.match(sheet,new RegExp(`row\\('${id}'`));
- assert.match(sheet, /Confirm duplicate/);assert.match(sheet,/Confirm delete/);assert.match(sheet, /Activity · \{t.comments.length\} comments/, 'comments are always visible in Standard mode');
+ assert.match(sheet, /Duplicate this task\?/);assert.match(sheet,/Delete this task\?/);assert.match(sheet, /Activity · \{t.comments.length\} comments/, 'comments are always visible in Standard mode');
  assert.doesNotMatch(sheet,/title=\{t \? `Task \$\{t\.id/);
  assert.match(sheet,/<T size=\{11\} muted>Task \{t\.id\}/);
  const board=read('src/screens/board/Board.js');assert.doesNotMatch(board,/<T size=\{11\} muted>\{t\.id\.toUpperCase\(\)\}/);assert.match(board,/<TaskLabels labels=\{t\.labels\}/);

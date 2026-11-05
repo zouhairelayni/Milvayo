@@ -30,14 +30,14 @@ test('Coral Board with six actual card windows is the launcher default across pl
   assert.equal(require('../../src/ui/theme/themePalette.cjs').DEFAULT_ACCENT,'Coral');
 });
 
-test('All ten Board colorway resources exist and browser favicon follows selected accent', () => {
+test('All ten Board colorways exist and launcher follows accent and appearance', () => {
   for (const name of colors) {
     assert.deepEqual(dimensions(`assets/app-icons/${name}.png`),[1024,1024]);
     assert.deepEqual(dimensions(`public/icons/colorways/${name}-64.png`),[64,64]);
   }
   const theme = read('src/ui/theme/theme.js').toString();
-  assert.match(theme,/\[accentPref\]/);
-  assert.match(theme,/icons\/colorways\/\$\{accentPref\.toLowerCase\(\)\}-64\.png/);
+  assert.match(theme,/syncLauncherIcon\(accentPref, mode\)/);
+  assert.match(theme,/\[accentPref, mode, restored\]/);
 });
 
 test('GitHub workflow builds signed ARM64 APK locally, without EAS cloud', () => {
