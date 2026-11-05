@@ -1,3 +1,101 @@
+## Timeline pinch zoom (0.5.59)
+
+- Added focal two-finger date-axis zoom to Timeline. Calendar, chart, Today marker, bars and dependency paths share the same horizontal preview; final row/text/handle sizes stay unchanged. Native previews use existing RNGH 3/Reanimated UI-thread transforms; React receives gesture boundaries rather than frame updates. Web supports touch pinch and trackpad/Ctrl+wheel while retaining ordinary scrolling.
+- Date density commits at completion, applying the focal offset through the existing chart scroll authority and native-driven calendar. Days/Weeks/Months reset custom density/preview state. Extra-finger changes rebase, cancellation releases scroll locks, and task callbacks suppress accidental pinch/residual tap/drop edits. Ordinary native task dragging retains its scrolling behavior.
+- Bounded temporary overscan supports zoom-out previews; the existing 8192px canvas cap remains, including long schedules that can still zoom out. Tick density adapts to custom zoom. Inclusive resize/move rules, live line attachment, complete dependency SVG styling, all existing actions, task data, persistence/import formats and security remain unchanged. No migration, stored zoom, new package/configuration or version bump.
+- **Validation:** 747/747 tests pass, including five new gesture/handler/screen integration checks and existing SVG styling hashes. All 153 app code files parse; native worklet compilation, Expo dependency compatibility, metadata synchronization (0.5.59) and whitespace checks pass.
+- **Not run:** browser/Expo Go/device/Fast Refresh acceptance and hardware performance. No Android/Web bundles per user instruction. Direct local edits on `work`; no ZIP, commit, push, merge or deployment. QA/Termux acceptance/rollback: `docs/qa/NP-QA-timeline-pinch.md`; usage: `docs/instructions/ui-followup.md`.
+
+---
+
+## WBS pinch zoom, compact summaries and header follow-up (0.5.59)
+
+- Added focal-point pinch zoom (25–400%) and bounded panning to WBS Tree in both directions, Fishbone and Mind map. Shared pure zoom math constrains scale/translation; native gestures transform on the UI thread, Web transforms the SVG container with scoped touch/mouse/wheel handlers. SVG children are memoized; no node layout or branch/dependency styling change. Finger-count changes, cancellation and leftover-finger handling prevent view jumps. Presets, resize/direction changes and exports remain available; Fit accounts for both viewer dimensions. No stored zoom, WBS/model/security/import-format change or new dependency.
+- Direction and Fit/100%/150% now occupy one horizontally scrollable toolbar row. Every preset press resets the view, including repeated presses. The four summary cards are equal 88px tiles with 12px padding, retaining derived counts/hours and responsive two/four-column layouts.
+- Removed project-name text from phone/wide Work and Projects headers, including their section views. Hamburger project/workspace popup, search/actions and project record names remain; the previous Home suppression remains.
+- **Validation:** 742/742 tests pass; all 150 app code files parse; native worklet transformation, Expo dependency compatibility, version synchronization (0.5.59) and whitespace checks pass. Gesture handlers and controls are tested with deterministic mocks, not hardware.
+- **Not run:** Web/browser, Expo Go/device, Fast Refresh and hardware gesture acceptance. No Web/Android bundles per user instruction. Direct edits on `work`; no ZIP, commit, push, deployment or merge. QA/Termux acceptance/rollback: `docs/qa/NP-QA-wbs-pinch-zoom.md`; usage: `docs/instructions/ui-followup.md`.
+
+---
+
+## List Due soon, vertical Add list and screen chrome (0.5.59)
+
+- Moved Board Upcoming dates to the List view as **Due soon**, including its per-board calendar switches in List → Tools. Existing `powerUps[boardId]` calendar settings are reused with no rewrite or migration. Enabled, non-archived boards contribute open tasks due in the next 30 days; the combined preview is sorted and capped at 30, initially showing one task with See more/less and the existing task-open callback. Board no longer renders the dates panel or its calendar switch.
+- Moved/renamed the UI file to `src/screens/tasks/DueSoon.js`; added a pure display selector at `src/screens/tasks/dueSoon.cjs` that delegates to the unchanged existing date selector. Calendar catalog copy now matches Due soon. No saved task, backup-format or business/security change.
+- Home's phone and wide top headers retain the hamburger without project-name text. The project popup still provides project context and switching; other project headers keep their name.
+- Board Add list stays at the right end, now vertical and compact (44px wide, at least 112px tall). Existing zero-origin column windowing, measured drag geometry, list creation and ordering rules are preserved.
+- Removed standalone visible page titles from Today, delivery screens and phone More/subpage headers. Back navigation, search/zoom, header actions, content section headings, record names and popup titles remain. Page metadata is retained without rendering redundant headings.
+- **Validation:** 734/734 tests pass, including six focused display/handler checks and import/no-mutation coverage. JSX: 146 app source files pass; changed UI scope, version synchronization and whitespace checks pass. `npx expo install --check`: Pass. No package/dependency change; metadata stays 0.5.59.
+- **Not run:** browser/Expo Go/device/Fast Refresh acceptance. Web/Android bundles omitted at the user's request. Direct local edits on `work`; no ZIP, commit, push, deployment or merge. QA/rollback: `docs/qa/NP-QA-list-due-soon-screen-chrome.md`; current usage: `docs/instructions/ui-followup.md`.
+
+---
+
+## UI follow-up — Workspace popup, Board, sprint charts and task controls (0.5.59)
+
+- Replaced the top project-dropdown trigger with a 44px hamburger in phone and wide headers. It opens a compact task-sheet-style Workspace menu with Projects and Workspaces tabs, retaining project selection/creation and workspace switch/create/rename/confirmed deletion. Reuses existing drawer content inside the shared Sheet, with one scroll authority, inline errors and existing dismissal/busy states. Compact sheets are content-sized up to 76% height; wide popups are 420px with a 90% width limit. Ordinary task sheets keep their existing layout.
+- Board Upcoming dates shows one task by default; See more/See less discloses the existing list without changing the 30-day/30-item selector. Expansion resets on board changes. Add list moves to the right end as a smaller horizontal control with at least a 44px touch height. Column viewport calculations now start at zero; measured drag geometry, insertion rules and list creation remain unchanged.
+- Sprint burndown retains its line graph and adds the mock's neutral bars, selected accent and ideal ticks. Two accessible SVG icon buttons above the chart choose Line graph/Bar graph. Both modes use the same history/selection/series visibility, with zero/single-day/empty-history handling. No sprint-domain, history cutoff, completion or pre-start inference change.
+- Added the per-project **Advanced tasks** switch to Project tools. It replaces the Standard/Advanced selector inside task sheets and controls the existing advanced editors. This is a non-screen setting: tasks and every core route remain available. Disabling it changes no task fields.
+- **Additive setting:** `tools.advancedTasks`; existing projects/missing keys default on to retain editor access, new lean projects default off. Existing normalization/save/export/import handles the boolean; no startup rewrite or backup-format change. Older releases ignore the extra key. Round-trip and no-data-loss tests cover switching off/on.
+- Removed the bottom bar's top outline and selected-tab surface. Selected icons grow from 19px to 24px inside a fixed 28px box; labels, Create, swipe and stale-press guards remain.
+- **Validation:** 730/730 tests pass, including 12 new presentation/handler checks. JSX parsing: 145 app source files pass; changed UI identifier check and `git diff --check` pass. Expo dependency check passes; package/lock/Expo metadata stay synchronized at 0.5.59. No new dependencies, commit, push, deployment or merge.
+- **Not run:** further Web/Android bundle checks, stopped at the user's request; browser visual/keyboard, Expo Go/device, hardware motion and Fast Refresh acceptance. Earlier cold bundle requests timed out while Metro compiled. Full QA/rollback: `docs/qa/NP-QA-header-workspace-popup.md`; usage: `docs/instructions/ui-followup.md`.
+- Today now keeps Project overview as the main always-visible content; Needs attention and Next due are count-bearing buttons opening compact task sheets. Weighted-progress acceptance text wraps within its card. Existing metrics, task links, empty states, pagination and tool gating remain.
+- Delivery is direct source changes in `/mnt/milvayo-rebrand`; no new ZIP per the user's latest instruction.
+- Future redesign batches remain in their established order; this follow-up does not claim completion of the remaining dense screens.
+
+---
+
+## Redesign batch 03 — Timeline ribbons, Today and delivery screens (0.5.59, no version bump)
+
+- Compared against `MilvayoRedesignPreview`, retaining Milvayo's actual model, selectable palette and shared controls. Used MemoryRelay design guidance and the bundled Unslop review standard by Damir Sokolovsky (CC BY 4.0); restored the missing skill from the original local checkout with attribution intact.
+- Timeline: quieter action ribbon, pinned two-row weekday/date calendar, month context at boundaries, daily ticks at normal Days zoom, softer 32px task bars with 8px corners and status edge. View selectors use 14px outer/9px inner corners with a 4px inset and press feedback. Dependency colors and complete SVG styling remain byte-for-byte unchanged; the bar/link centre stays at 27px. Move/resize/link callbacks, live dependency previews, grids, weekends, today marker, critical path and all ribbon/sheet controls are retained.
+- Home: Today, attention rows and next-due work lead; empty/sample starters open existing task creation, explicit Settings/Backup import and Projects. All previous statistics, stage distribution and tool-aware shortcuts remain in Project overview. Daily display selection is pure and read-only; it does not change a task's state.
+- Releases: gate summary and progress before detailed verification; every stage, metadata field and confirmed-delete control retained. Testing: compact four-status summary and grouped check rows; result sheet and pagination retained. Sprints: metrics alongside existing interactive burndown, Manage sprint disclosure, and initially expanded assigned tasks; lifecycle rules and frozen history remain in `src/domain/agile.cjs` unchanged.
+- Motion: retained immediate chart/drag feedback, added view-selector press surfaces, and refined existing 185ms native disclosure rotation with the shared Unslop ease-out and system reduced motion. No new animation package.
+- Tests: ten new presentation/control/handler checks across five screens, including failure handling, empty/sample/disabled-tool states, import round trip, dependency-style preservation and calendar density. Full suite: **718/718 pass**. JSX: **144 app source files pass**. `npx expo install --check`: **Pass**. Current Web and Android development bundles: **HTTP 200** from Metro.
+- Packaging repairs: restored the missing Android workflow from the original local checkout; excluded the separate app mock and skill resources from application path-header scans. Project-root ZIP includes synchronized package/lock/Expo metadata, one cumulative changelog, QA and reversible Termux installation guide; excludes old patch installer scripts and nested mock archives.
+- **Not run:** browser visual/keyboard acceptance, Expo Go touch interaction, hardware animation profiling, Fast Refresh and iOS runtime. Metro's host DevTools auto-install warning does not prevent successful bundling. See `docs/qa/NP-QA-redesign-batch03.md` and `docs/instructions/redesign-batch03.md`.
+- **Migration:** none in this batch. No dependency, data/schema, backup-format, remote/security, commit, push, deploy or merge changes. Existing batch 02 tools migration remains documented below.
+- **Next:** Resources/Costs/Reports; Automations; Scheduling/Collaboration/Specifications; Settings/Backup; Projects/Portfolios/Programs, each with its own control-preservation test.
+
+---
+
+## Redesign batch 2 — Project tools switches, pill order (on top of v0.5.59, no version bump)
+
+- **Work pill order:** Board, Timeline, List, Sprints (swipe follows the same order).
+- **Project tools switches:** each project can switch these tools on or off: Sprints, Releases, Testing, Activity, Resources, Collaboration, Costs, Automations, Reports, Specifications. Off hides the screen and its shortcuts (pill, More, wide sidebar, Overview shortcuts, the Release row in the Create sheet). The data is never read, changed or deleted by a switch. Switch it back on and everything is there.
+- **Where to switch:** More, Project tools, Manage tools (and Settings, General, Choose tools, which also serves the wide layout).
+- **Always on:** Overview, Board, Timeline, List (Tasks), Scheduling, Projects, Portfolios, Programs, Settings.
+- **Migration (additive, no rewrite):** a project saved before this batch has no `tools` field and loads with every tool on. Nothing is written on load; the field is saved with the project's next ordinary edit. Damaged or unknown values fall back to on and never stop a workspace from loading. Backups and project files without the field import with every tool on; the schema documents the new optional `tools` object.
+- **New projects start lean:** Sprints, Releases, Testing and Activity on; Resources, Collaboration, Costs, Automations, Reports and Specifications off. The first-run sample project and every existing project keep everything on.
+- **If a tool is switched off while its screen is open,** the app returns to Board (Work tools) or More. More always keeps its Project tools group so a tool can be switched back on.
+- **New files:** `src/domain/projectTools.cjs`, `src/store/useProjectTools.js`, `src/screens/more/ProjectToolsSheet.js`, `tests/domain/project-tools-060.test.cjs`.
+- **Changed:** `model.cjs` (normalizes `tools`), `store.js` (`setProjectTool`, lean new projects), `sections.cjs`, `More.js` (groups: Project tools, Plan, App), `Overview.js`, `Workspace.js` (Settings card), `CreateMore.js`, `ModernApp.js`, project schema JSON.
+- **Tests:** 8 new tests (migration, lean defaults, data untouched, round trip, navigation, "all 19 reachable and any tool restorable"). Parity tests updated for the new order and More layout.
+- **Not run:** Expo Go, Web build, device behaviour.
+- **Unchanged on purpose:** `Timeline.js` (date ribbon, weekend shading, grid lines and dashed today line stay as they were).
+
+---
+
+## Redesign batch 1 — phone shell (on top of v0.5.59, no version bump)
+
+Relocates and discloses; removes nothing. All 19 menu entries, all 20 screens and every `go()` route are kept. Business logic, store, board drag, timeline gestures and dependency lines, island notices and the wide/desktop layout are untouched.
+
+- **Bottom bar:** Home, Work, a centre Create button, Projects, More. Swipe on the bar moves between the four sections. The bar button returns to the last view used in that section.
+- **View pill under the header:** Work = Board, List (Tasks), Timeline, Sprints. Projects = Projects, Portfolios, Programs. Swipe on the pill steps between views. Reuses the shared Segmented control.
+- **Header (phone):** project switcher, search icon (closing it clears the filter), and the screen's own controls as icons: Tools (Board, List), New sprint, New release, Timeline zoom (one tap cycles Days, Weeks, Months). Replaces the hamburger and the "New task" text button.
+- **Create sheet:** the + button opens the existing New task sheet; "Create something else" adds Project (existing Create project sheet) and Release (opens the new-release form).
+- **More screen:** replaces the side drawer. Lists every entry that is not in the bar or a pill (Scheduling, Releases, Testing, Resources, Collaboration, Costs, Automations, Reports, Activity, Specifications, Settings), plus workspace switcher, Appearance (light, dark, AMOLED) and Desktop layout (web). Sub-screens show a back arrow to More.
+- **Brand:** the in-app wordmark is the new tintable `assets/milvayo-mask.png`; old Niyarvo/Projects masks stay in `assets/` but are no longer used.
+- **Web only:** `touch-action: manipulation` on buttons, tabs and radios for faster taps.
+- **Removed (replaced, not functionality):** `SideMenu`, `MenuToggle` (animated hamburger, one JS animation less). Icon detail: the Appearance row shows sun or moon and the mode name; the separate filled-moon glyph for AMOLED is dropped.
+- **New files:** `src/app/navigation/sections.cjs` (single navigation map and swipe rule), `src/screens/more/More.js`, `src/components/shell/CreateMore.js`.
+- **Tests:** new `tests/app/phone-shell-parity-060.test.cjs` (12 tests: every old menu entry has one home, swipe rules, header controls, Create sheet, reused gesture and notice code). About 30 older source-pattern tests were retargeted from the old drawer/hamburger/Niyarvo masks to the new shell; none was deleted without an equivalent assertion.
+- **Not run:** Expo Go, Web build, device behaviour, `npx expo install --check` (no network or node_modules in the build environment).
+
+---
+
 ## v0.5.59 Android CI hotfix — direct GitHub native APK build (no version bump)
 
 - Replace EAS cloud build step with GitHub-hosted Expo prebuild + Gradle `assembleRelease`.

@@ -8,6 +8,7 @@ const {localDay}=require('../utils/localDay.cjs');
 const bridge=require('../domain/modernBridge.cjs');
 const programs=require('../domain/programs.cjs');
 const projectRelations=require('../domain/projectRelations.cjs');
+const projectTools=require('../domain/projectTools.cjs');
 const backupBudget=require('./backupBudget.cjs');
 const {parseBackupJson}=require('./importFiles.cjs');
 const workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'milvayo-v1', so nothing is migrated
@@ -127,9 +128,11 @@ export function StoreProvider({children}){
   createProject:input=>{const details=input&&typeof input==='object'?input:{name:input};
     const clean=String(details.name||'').trim();if(!clean){setFault('Project name required');return null;}
     const code=String(details.code||clean.replace(/[^a-z0-9]/gi,'').slice(0,7).toUpperCase()||'NEW').trim();
-    const p=model.makeProject({id:model.id('project'),name:clean,code,description:details.description||'',
+    const p=model.makeProject({id:model.id('project'),name:clean,code,description:details.description||'',tools:projectTools.LEAN, // new projects start lean; existing ones keep every tool on
       governance:{info:{manager:details.manager||'',sponsor:details.sponsor||'',objective:details.objective||''}}});
     if(!trans(w=>({...w,selectedId:p.id,projects:[...w.projects,p]}),`Created project ${p.name}`))return null;return p.id;},
+  // Hides or shows one optional tool of the open project. Only the switch changes; the tool's data is untouched.
+  setProjectTool:(toolId,on)=>trans(w=>({...w,projects:w.projects.map(p=>p.id===w.selectedId?model.makeProject({...p,tools:projectTools.setTool(p.tools,toolId,on)}):p)}),`${on?'Switched on':'Switched off'} the ${toolId} tool`),
   archiveProject:id=>{const w=currentRef.current;if((w?.projects||[]).filter(p=>!p.archived).length<2)return 'last';return trans(w=>model.archiveProject(w,id,true),`Archived project ${id}`)},
   recoverProject:id=>trans(w=>model.archiveProject(w,id,false),`Recovered project ${id}`),
   importProject:(text,expectWorkspaceId)=>{try{

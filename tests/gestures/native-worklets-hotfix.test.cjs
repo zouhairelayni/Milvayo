@@ -16,7 +16,8 @@ test('Timeline imports Platform used by TaskBar; no mock geometry changed', () =
   assert.doesNotMatch(src, /animate=\{Platform\.OS !== 'web'\}/);
   assert.match(src, /L\.onPreview\(L\.t\.id, p\.start, p\.due\);/);
   assert.match(src, /const ROW = 54;/);
-  assert.match(src, /const BAR_H = 26;/);
+  assert.match(src, /const BAR_H = 32;/);
+  assert.match(src, /const BAR_TOP = 11;/); // 11 + 32/2 retains the original 27px dependency centre
 });
 
 test('native animated styles close over shared values, never a gesture controller', () => {

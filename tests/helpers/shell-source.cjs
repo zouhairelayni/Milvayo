@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 module.exports = function shellSource() {
   const root = path.join(__dirname, '..', '..');
-  const parts = [path.join(root, 'src/app/ModernApp.js')];
+  const parts = [path.join(root, 'src/app/ModernApp.js'), path.join(root, 'src/app/navigation/sections.cjs'), path.join(root, 'src/screens/more/More.js')];
   const dir = path.join(root, 'src', 'components', 'shell');
   for (const f of ['Bars.js', 'Menus.js', 'ScreenErrorBoundary.js']) parts.push(path.join(dir, f));
   return parts.map((p) => fs.readFileSync(p, 'utf8')).join('\n');

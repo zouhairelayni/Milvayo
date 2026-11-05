@@ -34,29 +34,21 @@ test('All accent-filled buttons use white labels and matching icons in every mod
   const ui=read('src/ui/uiControls.js');
   assert.match(ui,/const fg = primary \? '#FFFFFF'/);
   assert.match(ui,/<Feather name=\{icon\} size=\{13\} color=\{fg\}/);
-  for (const file of ['src/components/shell/Bars.js','src/app/ModernApp.js']) {
-    assert.match(read(file),/<Button label="New task" icon="plus" small /);
-  }
+  assert.match(read('src/components/shell/Bars.js'),/<Button label="New task" icon="plus" small /); // wide toolbar
+  assert.match(read('src/components/shell/Bars.js'),/<Feather name="plus" size=\{22\} color="#FFFFFF" \/>/); // phone Create button
 });
 
-test('Animated hamburger switches 3 horizontal bars to 3 vertical bars at 120% glyph size', () => {
-  const menu=read('src/components/shell/MenuToggle.js');
-  assert.match(menu,/width: 18, height: 2/);
-  assert.match(menu,/outputRange: \['0deg', '90deg'\]/);
-  assert.match(menu,/useNativeDriver: true/);
-  assert.match(menu,/accessibilityState=\{\{ expanded: !!open \}\}/);
-  assert.match(read('src/app/ModernApp.js'),/menu \? <View style=\{\{ width: 40, height: 40 \}\} \/> : <MenuToggle open=\{false\}/);
-  assert.match(read('src/components/shell/Menus.js'),/<MenuToggle open=\{visible\} animateBeforeClose/);
+test('The animated hamburger is retired with the phone side menu; nothing imports it', () => {
+  assert.equal(fs.existsSync(path.join(root,'src/components/shell/MenuToggle.js')),false);
+  for (const file of ['src/app/ModernApp.js','src/components/shell/Menus.js','src/components/shell/Bars.js']) assert.doesNotMatch(read(file),/MenuToggle/);
 });
 
-test('Appearance uses sun / outline moon / filled moon, custom PROJECTS wordmark', () => {
-  const menu=read('src/components/shell/Menus.js');
-  assert.match(menu,/mode === 'light' \? <Feather name="sun"/);
-  assert.match(menu,/mode === 'amoled' \? <FontAwesome5 name="moon" solid/);
-  assert.match(menu,/: <Feather name="moon"/);
-  assert.match(menu,/projects-word-mask\.png/);
-  assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
-  for (const file of ['assets/projects-word-mask.png','assets/projects-word-mask.svg']) {
+test('Appearance row shows sun / moon plus the mode name, and the Milvayo wordmark mask is present', () => {
+  const menu=read('src/components/shell/Menus.js'), more=read('src/screens/more/More.js');
+  assert.match(more,/mode === 'light' \? 'sun' : 'moon'/);
+  assert.match(more,/MODE_LABEL = \{ light: 'Light', dark: 'Dark', amoled: 'AMOLED' \}/);
+  assert.match(menu,/milvayo-mask\.png/);
+  for (const file of ['assets/milvayo-mask.png']) {
     assert.ok(fs.statSync(path.join(root,file)).size>250,file);
   }
   assert.equal(require('../../package.json').version,'0.5.59');

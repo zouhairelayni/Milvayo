@@ -7,7 +7,7 @@ import { Card, T, useWide } from './uiBase';
 import InlineNotice from '../components/notice/InlineNotice';
 
 // Bottom sheet on phones, right-hand drawer on wide screens.
-export function Sheet({ visible, onClose, title, children, footer, showNotice = true }) {
+export function Sheet({ visible, onClose, title, children, footer, showNotice = true, compact = false }) {
   const { c, mode } = useTheme();
   const wide = useWide();
   const touch = useRef(null);
@@ -25,16 +25,20 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} onShow={() => { scrollY.current=0; bodyRef.current?.scrollTo({y:0,animated:false}); }}>
       <SafeAreaProvider style={{ flex: 1 }}>
       <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
-      <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: 'flex-end', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
-        <Pressable accessibilityRole="button" accessibilityLabel={`Dismiss ${title || 'sheet'}`} onPress={onClose} style={{ flex: 1 }} />
+      <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: compact && wide ? 'center' : 'flex-end', alignItems: compact && wide ? 'center' : undefined, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Dismiss ${title || 'sheet'}`} onPress={onClose} style={compact ? { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } : { flex: 1 }} />
         <View onTouchStart={startSwipe} onTouchEnd={finishSwipe} accessibilityViewIsModal onAccessibilityEscape={onClose}
           style={{
-            width: wide ? 560 : '100%',
-            maxHeight: wide ? undefined : '92%',
-            flex: wide ? 1 : undefined,
+            width: compact && wide ? 420 : wide ? 560 : '100%',
+            maxWidth: compact && wide ? '90%' : undefined,
+            maxHeight: compact ? '76%' : wide ? undefined : '92%',
+            flex: wide && !compact ? 1 : undefined,
             backgroundColor: c.bg,
             borderTopLeftRadius: radius.lg,
-            borderTopRightRadius: wide ? 0 : radius.lg,
+            borderTopRightRadius: wide && !compact ? 0 : radius.lg,
+            borderBottomLeftRadius: compact && wide ? radius.lg : 0,
+            borderBottomRightRadius: compact && wide ? radius.lg : 0,
+            borderWidth: compact && wide ? 1 : 0,
             borderLeftWidth: wide ? 1 : 0,
             borderColor: c.line,
             overflow: 'hidden',
@@ -45,7 +49,7 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
             <T size={20} weight="600" accessibilityRole="header">{title}</T>
           </View>
           {showNotice ? <View style={{ paddingHorizontal: 20, paddingTop: 8 }}><InlineNotice /></View> : null}
-          <ScrollView ref={bodyRef} keyboardShouldPersistTaps="handled" scrollEventThrottle={16} onScroll={e=>{scrollY.current=e.nativeEvent.contentOffset.y;}} contentContainerStyle={{ padding: 24, paddingTop: 12, gap: 18, paddingBottom: 48 }}>{children}</ScrollView>
+          <ScrollView ref={bodyRef} style={compact ? { flexGrow: 0, flexShrink: 1 } : undefined} keyboardShouldPersistTaps="handled" scrollEventThrottle={16} onScroll={e=>{scrollY.current=e.nativeEvent.contentOffset.y;}} contentContainerStyle={{ padding: 24, paddingTop: 12, gap: 18, paddingBottom: 48 }}>{children}</ScrollView>
           {footer ? (
             <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: c.line, flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>{footer}</View>
           ) : null}

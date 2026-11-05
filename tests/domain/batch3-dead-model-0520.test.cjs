@@ -35,7 +35,7 @@ test('portfolio health the screens show comes from operations.health (replaces p
  const h=model.operations.health(p);assert.equal(h.total,2);assert.equal(h.done,1);assert.equal(h.progress,50);
 });
 test('Board card age uses powerUps.ageInDays, same result as the old inline maths',()=>{
- assert.match(read('src/screens/board/Board.js'),/\{dueSoon, ageInDays\} = require\('\.\.\/\.\.\/domain\/powerUps\.cjs'\)/);
+ assert.match(read('src/screens/board/Board.js'),/\{ageInDays\} = require\('\.\.\/\.\.\/domain\/powerUps\.cjs'\)/);
  assert.match(read('src/screens/board/Board.js'),/Updated \{ageInDays\(t\)\}d ago/);
  const pu=model.powerUps,now=new Date('2026-11-10T12:00:00Z');
  assert.equal(pu.ageInDays({updatedAt:'2026-11-07T12:00:00Z'},now),3);assert.equal(pu.ageInDays({createdAt:'2026-11-09T00:00:00Z'},now),1);

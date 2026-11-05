@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { Button, Card, Cell, Grid, Input, Segmented, SectionTitle, Stat, T, downloadText } from '../../../ui/ui';
+import { Button, Card, Input, Segmented, SectionTitle, T, downloadText, useWide } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import {
@@ -14,6 +14,7 @@ import { BRANCH, Scene, sceneFor, sceneToSvg } from '../../../governance/wbsview
 import { DocHeader } from './PmDocs';
 import { Field, NumInput, OwnerPick } from './pmui';
 import MarkdownField from '../../../components/inline/MarkdownField';
+import DiagramViewport from '../../../gestures/DiagramViewport';
 
 const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
 
@@ -79,6 +80,7 @@ function OutlineRow({ n, open, onOpen, nodes, save, select }) {
 
 export default function PmWbs() {
   const { c } = useTheme();
+  const wide = useWide();
   const { s, setPm } = useStore();
   const nodes = s.pm.wbs;
   const tree = useMemo(() => buildTree(nodes, s.project.name), [nodes, s.project.name]);
@@ -86,7 +88,7 @@ export default function PmWbs() {
   const [view, setView] = useState('outline');
   const [dir, setDir] = useState('down');
   const [zoom, setZoom] = useState('1');
-  const [fitW, setFitW] = useState(320);
+  const [zoomRequest, setZoomRequest] = useState(0);
   const [sel, setSel] = useState(null);
 
   const save = (next) => setPm('wbs', next);
@@ -100,18 +102,22 @@ export default function PmWbs() {
   };
 
   const scene = useMemo(() => (view === 'outline' ? null : sceneFor(view, tree, dir)), [view, tree, dir]);
-  const scale = scene ? (zoom === 'fit' ? Math.max(0.25, Math.min(1.6, (fitW - 4) / scene.width)) : Number(zoom)) : 1;
+  const diagram = useMemo(() => scene ? <Scene scene={scene} /> : null, [scene]);
+  const scale = zoom === 'fit' ? 'fit' : Number(zoom);
+  const chooseZoom = value => { setZoom(value); setZoomRequest(n => n + 1); };
 
   return (
     <View style={{ gap: 14 }}>
       <DocHeader docKey="wbs" />
 
-      <Grid>
-        <Cell wide="23%" mobile="48%"><Stat label="Elements" value={rows.length - 1} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Work packages" value={leaves} hint="Lowest level" /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Levels" value={depth} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Estimated hours" value={tree.hours} /></Cell>
-      </Grid>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {[['Elements', rows.length - 1], ['Work packages', leaves], ['Levels', depth], ['Estimated hours', tree.hours]].map(([label, value]) => (
+          <Card key={label} pad={12} accessibilityLabel={`${label}, ${value}`} style={{ flexBasis: wide ? '23%' : '47%', flexGrow: 1, minWidth: 0, height: 88, gap: 4, justifyContent: 'space-between' }}>
+            <T size={12} muted numberOfLines={2} style={{ lineHeight: 16 }}>{label}</T>
+            <T size={24} weight="600" numberOfLines={1} style={{ lineHeight: 28, fontVariant: ['tabular-nums'] }}>{value}</T>
+          </Card>
+        ))}
+      </View>
 
       <Segmented fill options={[{ value: 'outline', label: 'Outline' }, { value: 'tree', label: 'Tree' }, { value: 'fishbone', label: 'Fishbone' }, { value: 'mind', label: 'Mind map' }]} value={view} onChange={setView} />
 
@@ -137,16 +143,16 @@ export default function PmWbs() {
 
       {scene && !empty ? (
         <Card style={{ gap: 12 }} pad={14}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
-            {view === 'tree' ? <Segmented options={[{ value: 'down', label: 'Top-down' }, { value: 'right', label: 'Left to right' }]} value={dir} onChange={setDir} /> : <View />}
-            <Segmented options={[{ value: 'fit', label: 'Fit' }, { value: '1', label: '100%' }, { value: '1.5', label: '150%' }]} value={zoom} onChange={setZoom} />
+          <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            {view === 'tree' ? <View style={{ flexShrink: 0 }}><Segmented options={[{ value: 'down', label: 'Top-down' }, { value: 'right', label: 'Left to right' }]} value={dir} onChange={setDir} /></View> : null}
+            <View style={{ flexShrink: 0 }}><Segmented options={[{ value: 'fit', label: 'Fit' }, { value: '1', label: '100%' }, { value: '1.5', label: '150%' }]} value={zoom} onChange={chooseZoom} /></View>
+          </ScrollView>
+          <View style={{ width: '100%' }}>
+            <DiagramViewport scene={scene} scale={scale} resetKey={`${view}:${dir}:${zoomRequest}`} onZoom={value => setZoom(String(value))}>
+              {diagram}
+            </DiagramViewport>
           </View>
-          <View onLayout={(e) => setFitW(e.nativeEvent.layout.width)} style={{ width: '100%' }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator nestedScrollEnabled>
-              <Scene scene={scene} scale={scale} />
-            </ScrollView>
-          </View>
-          <T size={12} muted>Read only. Change the structure in the Outline view and the diagram follows.</T>
+          <T size={12} muted>Pinch to zoom, drag to pan. Read only. Edit the structure in Outline.</T>
         </Card>
       ) : null}
 

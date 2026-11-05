@@ -7,10 +7,11 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const source = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-test('PROJECTS is about 20 percent smaller and matches themed Board logo in all layouts', () => {
+test('the Milvayo wordmark is one tinted mask beside the themed Board logo in all layouts', () => {
   const menu = source('src/components/shell/Menus.js');
-  assert.match(menu, /projects-word-mask\.png/);
-  assert.match(menu, /width:compact\?38:narrow\?75:102,height:compact\?7:narrow\?11:14,tintColor:c\.accent,alignSelf:'flex-end'/);
+  assert.match(menu, /milvayo-mask\.png/);
+  assert.match(menu, /const width = compact \? 60 : narrow \? 119 : 158;/);
+  assert.match(menu, /height:Math\.round\(width\*45\/316\),tintColor:c\.ink/);
   assert.match(menu, /<BoardMorph size=/);
   assert.doesNotMatch(menu, /tintColor:c\.accentText/);
 });
@@ -26,16 +27,17 @@ test('accent-filled action text and icons are consistently white', () => {
   assert.match(source('src/screens/delivery/Delivery.js'), /<Button label="Finish sprint" icon="flag"/);
 });
 
-test('mobile menu replaces the header toggle with one top-left drawer toggle', () => {
+test('the header hamburger opens the workspace popup while More retains the screen navigation', () => {
   const app = source('src/app/ModernApp.js');
-  const menu = source('src/components/shell/Menus.js');
-  const mobileDrawer = menu.slice(menu.indexOf('export function SideMenu('));
-  assert.match(app, /menu \? <View style=\{\{ width: 40, height: 40 \}\} \/> : <MenuToggle open=\{false\}/);
-  assert.equal((mobileDrawer.match(/<MenuToggle /g) || []).length, 1);
-  const toggle = mobileDrawer.indexOf('<MenuToggle open={visible} animateBeforeClose');
-  const brand = mobileDrawer.indexOf('<Brand narrow animated active={visible} />');
-  assert.ok(toggle >= 0 && brand > toggle, 'drawer toggle must be above logo at top-left');
-  assert.match(mobileDrawer, /<Pressable accessibilityRole="button" accessibilityLabel="Dismiss menu" onPress=\{onClose\} style=\{\{ flex: 1 \}\} \/>/);
+  const bars = source('src/components/shell/Bars.js');
+  assert.doesNotMatch(app, /MenuToggle|SideMenu/);
+  assert.equal(fs.existsSync(path.join(root, 'src/components/shell/MenuToggle.js')), false);
+  assert.match(bars, /<ProjectSwitcher onPickProject=\{onPickProject\} compact showProjectName=\{showProjectName\} \/>/);
+  const menu = source('src/components/shell/Menus.js').split('export function ProjectSwitcher')[1].split('export function WorkspaceSwitcher')[0];
+  assert.match(menu, /accessibilityLabel="Open workspace menu"/);
+  assert.match(menu, /<Sheet visible=\{visible\} compact/);
+  assert.doesNotMatch(menu, /<Modal|<NavGroups/);
+  assert.match(app, /go\('more', 'back to More'\)/);
 });
 
 test('existing v0.5.57 version, user accent values and AMOLED darkness are intact', () => {

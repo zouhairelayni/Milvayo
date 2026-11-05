@@ -784,6 +784,7 @@
         "On hold"
       ]
     },
+    "tools": {"type": "object", "description": "Per-project switches for optional tools (sprints, releases, testing, activity, resources, collaboration, costs, automations, reports, specifications, advancedTasks). A missing key or a missing object means on. Advanced tasks controls task-sheet detail rather than a screen. Hiding a tool never removes its data.", "additionalProperties": {"type": "boolean"}},
     "powerUps": {
       "type": "object",
       "description": "Enabled built-in Power-Up IDs, independently configured per board. Empty or omitted for legacy projects.",

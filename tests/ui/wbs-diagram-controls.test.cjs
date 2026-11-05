@@ -1,0 +1,93 @@
+// /tests/ui/wbs-diagram-controls.test.cjs
+'use strict';
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { load } = require('../helpers/diagram-harness.cjs');
+const { screenHarness, nodes, control, text } = require('../helpers/screen-harness.cjs');
+const model = require('../../src/domain/model.cjs');
+const pm = load('src/governance/pm.js', { './data': { labourCosts: () => [], money: String } });
+const scenes = load('src/governance/wbsviews.js', { 'react-native-svg': { __esModule: true, default: 'Svg', Path: 'Path', Rect: 'Rect', Text: 'SvgText' }, '../ui/theme/theme': { font: 'System', useTheme: () => ({ c: {} }) } });
+const fixture = () => [{ id: 'w0', parent: null, name: '', hours: 0 }, { id: 'w1', parent: 'w0', name: 'Design', hours: 12 }, { id: 'w2', parent: 'w0', name: 'Build', hours: 20 }];
+
+function setup(wide = false, initial = fixture()) {
+  const calls = [], downloads = [], s = { project: { name: 'Studio & team' }, pm: { wbs: initial } };
+  const store = { s, setPm(key, value) { calls.push([key, value]); s.pm[key] = value; } };
+  const h = screenHarness('src/screens/governance/pm/PmWbs.js', {}, { wide, mocks: {
+    '../../../governance/store': { useStore: () => store }, '../../../governance/pm': pm,
+    '../../../governance/wbsviews': scenes, './PmDocs': { DocHeader: 'DocHeader' },
+    './pmui': { Field: 'Field', NumInput: 'NumInput', OwnerPick: 'OwnerPick' }, '../../../gestures/DiagramViewport': { __esModule: true, default: 'DiagramViewport' },
+    '../../../ui/ui': new Proxy({ useWide: () => wide, downloadText: (...args) => downloads.push(args) }, { get: (o, k) => o[k] || k }),
+  } });
+  return { h, calls, downloads, s };
+}
+const selector = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(o => o.value === 'outline'));
+const viewport = tree => nodes(tree).find(n => n.type === 'DiagramViewport');
+const zoomControl = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(o => o.value === 'fit'));
+
+test('WBS: four compact summary cards share dimensions on phone and wide layouts and retain derived values', () => {
+  for (const wide of [false, true]) {
+    const { h } = setup(wide), tree = h.render();
+    const cards = nodes(tree).filter(n => n.type === 'Card' && n.props.style.height === 88);
+    assert.equal(cards.length, 4);
+    assert.deepEqual(cards.map(n => n.props.accessibilityLabel), ['Elements, 2', 'Work packages, 2', 'Levels, 1', 'Estimated hours, 32']);
+    for (const card of cards) { assert.equal(card.props.pad, 12); assert.equal(card.props.style.flexBasis, wide ? '23%' : '47%'); assert.equal(card.props.style.minWidth, 0); }
+  }
+});
+
+test('WBS diagram inventory: Tree/directions, Fishbone, Mind map, Fit/100%/150%, pinch feedback, SVG/CSV export; gestures change no saved WBS', () => {
+  const { h, calls, downloads, s } = setup(); const before = JSON.stringify(s.pm.wbs);
+  for (const kind of ['tree', 'fishbone', 'mind']) {
+    let tree = h.render(); selector(tree).props.onChange(kind); tree = h.render();
+    let v = viewport(tree); assert.ok(v);
+    assert.equal(v.props.children.type, scenes.Scene); assert.equal(v.props.children.props.scale, undefined);
+    const key = v.props.resetKey;
+    v.props.onZoom(2.25); tree = h.render(); v = viewport(tree);
+    assert.equal(v.props.scale, 2.25); assert.equal(v.props.resetKey, key);
+    zoomControl(tree).props.onChange('1.5'); tree = h.render(); v = viewport(tree);
+    assert.equal(v.props.scale, 1.5); assert.notEqual(v.props.resetKey, key);
+    const reset = v.props.resetKey;
+    zoomControl(tree).props.onChange('1.5'); tree = h.render(); assert.notEqual(viewport(tree).props.resetKey, reset);
+    zoomControl(tree).props.onChange('1'); tree = h.render(); assert.equal(viewport(tree).props.scale, 1);
+    zoomControl(tree).props.onChange('fit'); tree = h.render();
+    assert.equal(viewport(tree).props.scale, 'fit');
+    const toolbar = nodes(tree).find(n => n.type === 'ScrollView');
+    assert.equal(toolbar.props.horizontal, true); assert.equal(toolbar.props.contentContainerStyle.flexWrap, undefined);
+    const toolbarControls = nodes(toolbar).filter(n => n.type === 'Segmented');
+    assert.equal(toolbarControls.length, kind === 'tree' ? 2 : 1);
+    if (kind === 'tree') {
+      assert.deepEqual(Array.from(toolbarControls[0].props.options, o => o.label), ['Top-down', 'Left to right']);
+      toolbarControls[0].props.onChange('right'); tree = h.render(); assert.match(viewport(tree).props.resetKey, /tree:right:/);
+    }
+    control(tree, 'Export diagram (SVG)').props.onPress();
+    const svg = downloads.at(-1); assert.equal(svg[2], 'image/svg+xml');
+    assert.ok(svg[1].includes(`width="${viewport(tree).props.scene.width}"`)); assert.ok(svg[1].includes('Studio &amp; team'));
+    control(tree, 'Export WBS (CSV)').props.onPress(); assert.equal(downloads.at(-1)[2], 'text/csv'); assert.ok(downloads.at(-1)[1].includes('Design'));
+  }
+  assert.deepEqual(calls, []); assert.equal(JSON.stringify(s.pm.wbs), before);
+  const p = model.makeProject({ name: 'Studio', governance: { wbs: s.pm.wbs } });
+  assert.deepEqual(model.importProject(JSON.parse(JSON.stringify(p))).governance.wbs, p.governance.wbs);
+});
+
+test('WBS viewport fits the measured width and bounded height, and preserves its scene child during resize', () => {
+  const h = screenHarness('src/gestures/DiagramViewport.js', {}, { mocks: { './DiagramGesture': { __esModule: true, default: 'DiagramGesture' }, './diagramZoom.cjs': require('../../src/gestures/diagramZoom.cjs') } });
+  const child = { scene: true }, props = { scene: { width: 600, height: 1200 }, scale: 'fit', resetKey: 'tree:1', children: child };
+  let tree = h.render('default', props); assert.equal(tree.props.children, null);
+  tree.props.onLayout({ nativeEvent: { layout: { width: 320 } } }); tree = h.render('default', props);
+  let g = nodes(tree).find(n => n.type === 'DiagramGesture');
+  assert.equal(g.props.initialScale, 440 / 1200); assert.equal(g.props.children, child); assert.equal(tree.props.style.height, 440);
+  tree.props.onLayout({ nativeEvent: { layout: { width: 160 } } }); tree = h.render('default', props); g = nodes(tree).find(n => n.type === 'DiagramGesture');
+  assert.equal(g.props.initialScale, 156 / 600); assert.equal(g.props.children, child);
+});
+
+test('WBS Outline control inventory and empty starters remain available; empty diagrams do not mount gesture controls', () => {
+  const { h } = setup(); let tree = h.render(); assert.equal(viewport(tree), undefined);
+  const row = nodes(tree).find(n => typeof n.type === 'function' && n.type.name === 'OutlineRow' && n.props.n.id === 'w1');
+  const detail = h.render(row.type, { ...row.props, open: true });
+  for (const label of ['Add below', 'Add next', 'Up', 'Down', 'Indent', 'Outdent', 'Delete']) assert.ok(control(detail, label), label);
+  for (const label of ['Name', 'Owner', 'Estimated hours', 'Description (WBS dictionary)']) assert.ok(nodes(detail).some(n => n.props.label === label), label);
+  const empty = setup(false, [fixture()[0]]); tree = empty.h.render();
+  for (const label of ['Deliverable-based', 'Phase-based (PMI process groups)', 'Add first element']) assert.ok(control(tree, label), label);
+  selector(tree).props.onChange('mind'); tree = empty.h.render(); assert.equal(viewport(tree), undefined); assert.equal(control(tree, 'Export diagram (SVG)'), undefined);
+  control(tree, 'Add first element').props.onPress(); assert.equal(empty.s.pm.wbs.length, 2);
+  assert.ok(text(empty.h.render()).includes('Pinch to zoom'));
+});

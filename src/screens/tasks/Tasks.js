@@ -10,6 +10,9 @@ import TaskLabels from '../../components/inline/TaskLabels';
 import { TaskConfiguration } from '../management/Management';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, STATUS, fmt } from '../../store/data';
+import DueSoon from './DueSoon';
+import { dueSoonForList } from './dueSoon.cjs';
+import { localDay } from '../../utils/localDay.cjs';
 
 const planning = require('../../domain/planning.cjs');
 const workflows = require('../../domain/taskWorkflows.cjs');
@@ -24,8 +27,10 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
   const wide = useWide();
   // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
   const roomForColumns = useWindowDimensions().width >= 1080;
-  const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView } = useStore();
+  const { s, moveTask, bulkStatus, bulkSet, addTask, workspace, saveTaskView, deleteTaskView, togglePowerUp } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
+  const today = localDay();
+  const { boards: dateBoards, tasks: upcoming } = useMemo(() => dueSoonForList(project, today), [project, today]);
   const [viewName,setViewName]=useState('');
   const [toolsOpen,setToolsOpen]=useState(false);
   const screenActive = useScreenActive();
@@ -84,6 +89,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
     >
+      {dateBoards.length ? <DueSoon key={project.id} tasks={upcoming} onOpenTask={openTask} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
           <Input lazy value={q} onChangeText={setQ} placeholder="Search title or owner" />
@@ -124,6 +130,13 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
         <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,priority:prioFilter,owner:ownerFilter,text:q,label:labelFilter},sort:SORTS[sort].sort,descending:SORTS[sort].descending}))setViewName('')}}/>
         {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
       </Fold>
+      <View style={{ gap: 8 }}>
+        <T size={14} weight="600">Due soon</T>
+        <T size={12} muted>Choose the boards whose upcoming dates appear in List.</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {s.boards.filter(b => !b.archived).map(b => <Chip key={b.id} label={b.name} active={(project.powerUps?.[b.id] || []).includes('calendar')} onPress={() => togglePowerUp(b.id, 'calendar')} />)}
+        </View>
+      </View>
       <TaskConfiguration embedded />
       </Sheet>
       {picked.length > 0 ? (

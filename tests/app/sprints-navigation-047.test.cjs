@@ -24,7 +24,7 @@ test('modern sprint management uses original agile lifecycle; sprint goals are p
 });
 test('only the active primary screen retains a workspace subscription',()=>{
  const app=src('src/app/ModernApp.js');
- assert.match(app,/const CACHED_TABS = TABS\.map/);
+ assert.match(app,/const CACHED_TABS = \['overview', 'board', 'timeline', 'tasks', 'sprints'\];/);
  assert.match(app,/setVisitedState\(v => addVisited\(v, projectIdRef\.current, fromScreen, k, CACHED_TABS\)\)/); // 0.5.14: project-aware retained set
  assert.match(app,/display: active \? 'flex' : 'none'/);
  assert.match(app,/retainHiddenTab\(id\) \|\| id === screen/);

@@ -8,6 +8,7 @@ import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/
 import { money, openHours } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
+import ProjectToolsSheet from '../more/ProjectToolsSheet';
 const operations = require('../../domain/operations.cjs');
 import { localDay } from '../../utils/localDay.cjs';
 
@@ -239,11 +240,18 @@ export function Activity() {
 export function Settings({go, backupRequest}) {
   const { c, pref, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false);
+  const [toolsOpen,setToolsOpen]=useState(false);
   const [tab,setTab]=useState(backupRequest ? 'backup' : 'general');
   useEffect(() => { if (backupRequest) setTab('backup'); }, [backupRequest]);
   return <Page title="Settings" subtitle={tab==='backup'?'Import, export and recover project data. Files stay on this device.':'Appearance and diagnostics stay on this device.'}>
     <Segmented options={[{value:'general',label:'General'},{value:'backup',label:'Backup'}]} value={tab} onChange={setTab}/>
     {tab==='backup'?<Backup/>:<>
+    <Card style={{gap:12}}>
+      <SectionTitle>Project tools</SectionTitle>
+      <T size={13} muted>Switch the optional tools of this project on or off. Your data stays.</T>
+      <Button label="Choose tools" icon="sliders" small variant="secondary" onPress={()=>setToolsOpen(true)}/>
+    </Card>
+    <ProjectToolsSheet visible={toolsOpen} onClose={()=>setToolsOpen(false)}/>
     <DiagnosticsPanel />
     <Card style={{gap:12}}>
       <SectionTitle>Appearance</SectionTitle>

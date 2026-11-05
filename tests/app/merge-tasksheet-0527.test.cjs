@@ -21,7 +21,8 @@ test('Task Sheet uses setLabels (trim, dedupe, clear verified) and the descendan
  assert.match(s,/setLabels\(t\.id, \[\.\.\.t\.labels, value\]\)/);
  assert.match(s,/setLabelColor\(value, labelColorDraft\)/);
  assert.doesNotMatch(s,/set\(\{ ?labels:/,'every label edit goes through setLabels');
- assert.match(s,/options=\{\['Standard','Advanced'\]\}/);
+ assert.match(s,/\{tools\.advancedTasks\?<View/);
+ assert.doesNotMatch(s,/options=\{\['Standard','Advanced'\]\}/);
 });
 test('Store exposes both action sets and Timeline keeps critical path',()=>{
  const st=read('src/store/store.js');

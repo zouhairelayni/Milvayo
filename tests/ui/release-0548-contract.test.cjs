@@ -7,12 +7,14 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'../..');
 const source=f=>fs.readFileSync(path.join(root,f),'utf8');
 
-test('v0.5.48 uses shared header actions and text New task on mobile and desktop',()=>{
+test('v0.5.48 uses shared header actions; New task is a text button on desktop and the Create button on phones',()=>{
  const app=source('src/app/ModernApp.js'),bars=source('src/components/shell/Bars.js');
  assert.match(app, /HeaderActionsContext.Provider/);
- assert.match(app, /<HeaderControls controls=\{controls\} \/>/);
+ assert.match(app, /controls=\{controls\} onPickProject/);
  assert.match(bars, /<HeaderControls controls=\{controls\} \/>/);
- assert.match(app, /label="New task" icon="plus"/);
+ assert.match(bars, /<HeaderIcons controls=\{controls\} \/>/);
+ assert.match(app, /onCreate=\{newTask\}/);
+ assert.match(bars, /accessibilityLabel="Create"/);
  assert.match(bars, /label="New task" icon="plus"/);
  assert.match(bars,/horizontal showsHorizontalScrollIndicator=\{false\}/);
  for(const name of ['Days','Weeks','Months']) assert.ok(bars.includes(name),name);
@@ -59,13 +61,11 @@ test('Delete and Duplicate confirmations show only their selected primary action
  assert.match(footer,/label="Done"/);
 });
 
-test('Menu cycles three modes, logo is regular accent text, and Settings offers four modes',()=>{
- const app=source('src/app/ModernApp.js'), menu=source('src/components/shell/Menus.js'),settings=source('src/screens/workspace/Workspace.js');
- assert.match(app,/mode === 'light' \? 'dark' : mode === 'dark' \? 'amoled' : 'light'/);
- assert.match(menu,/projects-word-mask\.png/);
- assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
- assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
- assert.match(menu,/width: 240/);
+test('More cycles three modes, the logo is the tinted Milvayo wordmark, and Settings offers four modes',()=>{
+ const more=source('src/screens/more/More.js'), menu=source('src/components/shell/Menus.js'),settings=source('src/screens/workspace/Workspace.js');
+ assert.match(more,/NEXT_MODE = \{ light: 'dark', dark: 'amoled', amoled: 'light' \}/);
+ assert.match(menu,/milvayo-mask\.png/);
+ assert.match(menu,/tintColor:c\.ink/);
  for(const label of ['System','Daylight','Dark','AMOLED']) assert.ok(settings.includes(`label="${label}"`),label);
  const {palette}=require('../../src/ui/theme/themePalette.cjs');
  assert.equal(palette('Amber','light').accent,'#FFA500');

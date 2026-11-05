@@ -6,19 +6,19 @@ import { font, radius, useTheme } from './theme/theme';
 import { T, useWide } from './uiBase';
 const { createCommitBuffer } = require('./commitBuffer.cjs');
 
-export function Chip({ label, active, onPress, color }) {
+export function Chip({ label, active, onPress, color, quiet = false }) {
   const { c } = useTheme();
   const style = (pressed = false) => ({
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: radius.sm,
         minHeight: 40, justifyContent: 'center',
         borderWidth: 1,
-        borderColor: active ? c.ink : c.line,
-        backgroundColor: active ? c.ink : 'transparent',
+        borderColor: quiet ? 'transparent' : active ? c.ink : c.line,
+        backgroundColor: active ? (quiet ? c.surfaceAlt : c.ink) : 'transparent',
         opacity: pressed ? 0.7 : 1,
   });
-  const content = <T size={12} weight="600" color={active ? c.bg : color || c.ink}>{label}</T>;
+  const content = <T size={12} weight={quiet ? '500' : '600'} color={active && !quiet ? c.bg : color || (quiet && !active ? c.muted : c.ink)}>{label}</T>;
   if (!onPress) return <View style={style()}>{content}</View>;
   return (
     <Pressable onPress={onPress} hitSlop={2} accessibilityRole="button" accessibilityLabel={String(label)}
@@ -32,7 +32,7 @@ export function Segmented({ options, value, onChange, fill }) {
   const { c } = useTheme();
   const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: c.surfaceAlt, borderRadius: radius.sm, padding: 3, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
+    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: c.surface, borderRadius: radius.md, padding: 4, gap: 4, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
       {opts.map((o) => {
         const on = o.value === value;
         return (
@@ -43,9 +43,9 @@ export function Segmented({ options, value, onChange, fill }) {
             accessibilityRole="radio"
             accessibilityLabel={String(o.label)}
             accessibilityState={{checked:on}}
-            style={{ flex: fill ? 1 : undefined, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 7, minHeight: 40, justifyContent: 'center', backgroundColor: on ? c.surface : 'transparent' }}
+            style={({ pressed }) => ({ flex: fill ? 1 : undefined, minWidth: 0, alignItems: 'center', paddingHorizontal: 8, paddingVertical: 8, borderRadius: radius.sm, minHeight: 40, justifyContent: 'center', backgroundColor: on || pressed ? c.surfaceAlt : 'transparent', opacity: pressed ? 0.75 : 1 })}
           >
-            <T size={12} weight="600" color={on ? c.ink : c.muted}>{o.label}</T>
+            <T size={13} weight={on ? '500' : '400'} color={on ? c.ink : c.muted}>{o.label}</T>
           </Pressable>
         );
       })}

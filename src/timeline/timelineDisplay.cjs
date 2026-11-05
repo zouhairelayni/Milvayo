@@ -34,7 +34,7 @@ function paintedRange(count, chartY, windowHeight, rowHeight, buffer = OVERSCAN_
 }
 
 function ticks(span, zoom, width) {
-  const minGap = zoom === 'Days' ? 45 : zoom === 'Weeks' ? 70 : 78;
+  const minGap = zoom === 'Days' ? 28 : zoom === 'Weeks' ? 70 : 78;
   const nominal = zoom === 'Days' ? 1 : zoom === 'Weeks' ? 7 : 14;
   const step = Math.max(nominal, Math.ceil(minGap / Math.max(0.1, width)));
   const result = [];

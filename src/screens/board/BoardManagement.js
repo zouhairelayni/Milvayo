@@ -34,7 +34,7 @@ export function NewListSheet({ visible, onClose, boardId }) {
       visible={visible}
       onClose={onClose}
       title="New list"
-      footer={<Button label="Add list to the left" icon="plus" disabled={!name.trim()} onPress={submit} />}
+      footer={<Button label="Add list" icon="plus" disabled={!name.trim()} onPress={submit} />}
     >
       <View style={{ gap: 8 }}>
         <T size={12} weight="500" muted>List name</T>

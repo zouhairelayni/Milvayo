@@ -41,7 +41,7 @@ test('shared Store/UI cycle remains broken and source does not include Sonnet la
 test('weekend shading is viewport bounded, pointer transparent and opt-in by zoom', () => {
   const s = source('src/screens/timeline/Timeline.js');
   if (!s.includes('NP533_WEEKENDS')) return;
-  assert.match(s, /zoom === 'Days'/);
+  assert.match(s, /zoomMode === 'Days'/);
   assert.match(s, /Math\.floor\(paintLeft \/ w\)/);
   assert.match(s, /Math\.ceil\(\(paintLeft \+ paintWidth\) \/ w\)/);
   assert.match(s, /key=\{'we' \+ i\} pointerEvents="none"/);

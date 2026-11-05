@@ -1,30 +1,26 @@
 // /src/components/shell/Menus.js
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Image, Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import DrawerMotion from './DrawerMotion';
-import MenuToggle from './MenuToggle';
 import BoardMorph from '../brand/BoardMorph';
 import { radius, useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
-import { Button, IconBtn, Input, T } from '../../ui/ui';
+import { Button, IconBtn, Input, Segmented, Sheet, T } from '../../ui/ui';
 import { DangerConfirm } from '../inline/CompactTools';
 import InlineNotice from '../notice/InlineNotice';
 import CreateProjectSheet from '../../screens/governance/CreateProjectSheet';
 
-// Side navigation shared by the wide layout (Sidebar) and the phone layout (SideMenu).
+// Wide-layout sidebar plus the project and workspace switchers the phone header and More screen reuse.
 export function Brand({ narrow = false, symbolOnly = false, compact = false, animated = false, active = false }) {
   const { c } = useTheme();
   const mark = <BoardMorph size={symbolOnly?34:compact?25:42} speed={1.5} active={animated && active} />;
   if(symbolOnly)return mark;
-  return <View accessible accessibilityLabel="Milvayo" style={{flexDirection:'row',alignItems:'center',gap:6,maxWidth:compact?92:narrow?172:220}}>
+  const width = compact ? 60 : narrow ? 119 : 158;
+  return <View accessible accessibilityLabel="Milvayo" style={{flexDirection:'row',alignItems:'center',gap:8,maxWidth:compact?92:narrow?172:220}}>
     {mark}
-    <View style={{width:compact?60:narrow?119:158,gap:1,alignItems:'flex-end'}}>
-      <Image source={require('../../../assets/niyarvo-word-mask.png')} resizeMode="stretch"
-        style={{width:compact?60:narrow?119:158,height:compact?17:narrow?30:39,tintColor:c.ink}} />
-      <Image source={require('../../../assets/projects-word-mask.png')} resizeMode="stretch"
-        style={{width:compact?38:narrow?75:102,height:compact?7:narrow?11:14,tintColor:c.accent,alignSelf:'flex-end'}} />
-    </View>
+    <Image source={require('../../../assets/milvayo-mask.png')} resizeMode="contain"
+      style={{width,height:Math.round(width*45/316),tintColor:c.ink}} />
   </View>;
 }
 
@@ -72,25 +68,27 @@ function NavGroups({ nav, current, go, collapsed = false, dense = false }) {
 }
 
 // Project switcher: slides in over the menu, lists the open projects and ends with a + Create new row.
-function ProjectDrawer({ onClose, onPick, inModal }) {
+function ProjectDrawer({ onClose, onPick, inModal, embedded = false }) {
   const { c } = useTheme();
   const { projects, createProject } = useStore();
   const [naming, setNaming] = useState(false);
   const create = id => {setNaming(false);onPick(id,true);};
+  const Frame = embedded ? View : DrawerMotion;
+  const Body = embedded ? View : ScrollView;
 
   return (
-    <DrawerMotion
-      style={{
+    <Frame
+      style={embedded ? { gap: 8 } : {
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20, backgroundColor: c.surface,
         paddingTop: Platform.OS === 'ios' ? 64 : 52, paddingHorizontal: 14, paddingBottom: 24,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
+      {!embedded ? <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
         <T serifFace size={20} weight="600">Projects</T>
         <IconBtn icon="x" label="Close projects" onPress={onClose} />
-      </View>
+      </View> : null}
       {inModal ? <InlineNotice /> : null}
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+      <Body {...(embedded ? { style: { gap: 8 } } : { showsVerticalScrollIndicator: false, contentContainerStyle: { gap: 6 } })}>
         {projects.filter((p) => !p.archived).map((p) => (
           <Pressable
             key={p.id}
@@ -127,13 +125,13 @@ function ProjectDrawer({ onClose, onPick, inModal }) {
             <T weight="600">Create new</T>
           </Pressable>
         )}
-      </ScrollView>
-    </DrawerMotion>
+      </Body>
+    </Frame>
   );
 }
 
 // Workspace switcher: same slide-over as the project drawer. Tap a row to open it; the pencil opens rename and delete.
-function WorkspaceDrawer({ onClose, inModal }) {
+function WorkspaceDrawer({ onClose, inModal, embedded = false }) {
   const { c } = useTheme();
   const { workspaceList, workspace, switchWorkspace, createWorkspace, renameWorkspace, deleteWorkspace } = useStore();
   const [naming, setNaming] = useState(false);
@@ -148,20 +146,22 @@ function WorkspaceDrawer({ onClose, inModal }) {
   const save = () => run(async () => { if (await renameWorkspace(editId, rename)) setEditId(''); });
   const remove = (id) => run(async () => { if (await deleteWorkspace(id)) setEditId(''); });
   const when = (iso) => (iso ? `Created ${iso.slice(0, 10)}` : 'Recovered from saved data');
+  const Frame = embedded ? View : DrawerMotion;
+  const Body = embedded ? View : ScrollView;
 
   return (
-    <DrawerMotion
-      style={{
+    <Frame
+      style={embedded ? { gap: 8 } : {
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20, backgroundColor: c.surface,
         paddingTop: Platform.OS === 'ios' ? 64 : 52, paddingHorizontal: 14, paddingBottom: 24,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
+      {!embedded ? <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
         <T serifFace size={20} weight="600">Workspaces</T>
         <IconBtn icon="x" label="Close workspaces" onPress={onClose} />
-      </View>
+      </View> : null}
       {inModal ? <InlineNotice /> : null}
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 6 }}>
+      <Body {...(embedded ? { style: { gap: 8 } } : { showsVerticalScrollIndicator: false, keyboardShouldPersistTaps: 'handled', contentContainerStyle: { gap: 6 } })}>
         {workspaceList.items.map((w) => {
           const on = w.id === workspaceList.activeId;
           return (
@@ -216,8 +216,8 @@ function WorkspaceDrawer({ onClose, inModal }) {
             <T weight="600">Create new</T>
           </Pressable>
         )}
-      </ScrollView>
-    </DrawerMotion>
+      </Body>
+    </Frame>
   );
 }
 
@@ -307,79 +307,45 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
   );
 }
 
-// The same project selection flow is available from the desktop toolbar.
-export function ProjectSwitcher({ onPickProject, compact = false }) {
-  const { c, mode } = useTheme();
-  const { s } = useStore();
+// Both headers use a compact workspace menu; existing drawers supply its controls.
+export function ProjectSwitcher({ onPickProject, compact = false, showProjectName = true }) {
+  const { c } = useTheme();
+  const { s, workspaceList } = useStore();
   const [visible, setVisible] = useState(false);
+  const [view, setView] = useState('Projects');
+  const workspaceName = workspaceList.items.find(w => w.id === workspaceList.activeId)?.name || 'Workspace';
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Switch project" onPress={() => setVisible(true)}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: compact ? 190 : 250, flexShrink: 1, minWidth: 0, minHeight: 44,
-        paddingHorizontal: 12, backgroundColor: pressed ? c.surfaceAlt : c.surface, borderRadius: radius.sm, borderWidth: 1, borderColor: c.line })}>
-      <Feather name="folder" size={16} color={c.muted} />
-      <T weight="600" size={13} numberOfLines={1} style={{ flexShrink: 1 }}>{s.project.name}</T>
-      <Feather name="chevron-down" size={14} color={c.muted} />
-    </Pressable>
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
-        <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
-          <ProjectDrawer inModal onClose={() => setVisible(false)} onPick={(id, isNew) => { setVisible(false); onPickProject(id, isNew); }} />
-        </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close projects" onPress={() => setVisible(false)} style={{ flex: 1 }} />
-      </View>
-    </Modal>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: compact ? 230 : 280, flexShrink: 1, minWidth: 0 }}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Open workspace menu" accessibilityState={{ expanded: visible }} onPress={() => { setView('Projects'); setVisible(true); }}
+        style={({ pressed }) => ({ width: 44, height: 44, justifyContent: 'center', alignItems: 'center', borderRadius: radius.sm, backgroundColor: pressed ? c.surfaceAlt : 'transparent' })}>
+        <Feather name="menu" size={22} color={c.ink} />
+      </Pressable>
+      {showProjectName ? <T weight="500" size={compact ? 14 : 16} numberOfLines={1} style={{ flexShrink: 1 }}>{s.project.name}</T> : null}
+    </View>
+    <Sheet visible={visible} compact title="Workspace menu" onClose={() => setVisible(false)}
+      footer={<Button label="Done" variant="secondary" onPress={() => setVisible(false)} />}>
+      <T size={13} muted>{workspaceName}</T>
+      <Segmented fill options={['Projects', 'Workspaces']} value={view} onChange={setView} />
+      {visible ? view === 'Projects'
+        ? <ProjectDrawer key={`projects:${workspaceList.activeId}`} embedded onClose={() => setVisible(false)} onPick={(id, isNew) => { setVisible(false); onPickProject(id, isNew); }} />
+        : <WorkspaceDrawer embedded onClose={() => setView('Projects')} /> : null}
+    </Sheet>
   </>;
 }
 
-// Phone side menu: slides in from the left, opened by the menu button in the header.
-export function SideMenu({ nav, visible, current, go, onClose, onPickProject, onDesktopLayout, onToggleMode }) {
+// Workspace row plus its slide-over, used by the More screen on phones.
+export function WorkspaceSwitcher() {
   const { c, mode } = useTheme();
-  const [drawer, setDrawer] = useState(false);
-  const [spaces, setSpaces] = useState(false);
-  useEffect(() => {
-    if (!visible) { setDrawer(false); setSpaces(false); }
-  }, [visible]);
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
-        <View
-          style={{
-            width: 240,
-            maxWidth: '80%',
-            backgroundColor: c.surface,
-            borderRightWidth: 1,
-            borderColor: c.line,
-            paddingTop: Platform.OS === 'ios' ? 52 : 12,
-            paddingHorizontal: 12,
-            paddingBottom: 24,
-            overflow: 'hidden',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <MenuToggle open={visible} animateBeforeClose onPress={onClose} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Cycle light, dark and AMOLED appearance"
-              onPress={onToggleMode} hitSlop={4} style={({ pressed }) => ({ width: 40, height: 40, borderRadius: radius.sm,
-                alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceAlt, opacity: pressed ? .7 : 1 })}>
-              {mode === 'light' ? <Feather name="sun" size={17} color={c.ink} />
-                : mode === 'amoled' ? <FontAwesome5 name="moon" solid size={17} color={c.ink} />
-                : <Feather name="moon" size={17} color={c.ink} />}
-            </Pressable>
-          </View>
-          <View style={{ marginBottom: 16 }}><Brand narrow animated active={visible} /></View>
-          <WorkspaceRow onPress={() => setSpaces(true)} />
-          <ProjectCard onPress={() => setDrawer(true)} />
-          <NavGroups nav={nav} current={current} go={go} />
-          {Platform.OS === 'web' && onDesktopLayout ? <Pressable accessibilityRole="button" accessibilityLabel="Use desktop layout"
-            onPress={onDesktopLayout} style={{ minHeight: 48, borderTopWidth: 1, borderTopColor: c.line, paddingHorizontal: 12,
-              flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Feather name="monitor" size={18} color={c.muted} />
-            <T size={13} weight="500">Desktop layout</T>
-          </Pressable> : null}
-          {spaces ? <WorkspaceDrawer inModal onClose={() => setSpaces(false)} /> : null}
-          {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
+  const [visible, setVisible] = useState(false);
+  return <>
+    <WorkspaceRow onPress={() => setVisible(true)} />
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
+      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
+        <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
+          <WorkspaceDrawer inModal onClose={() => setVisible(false)} />
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Dismiss menu" onPress={onClose} style={{ flex: 1 }} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Close workspaces" onPress={() => setVisible(false)} style={{ flex: 1 }} />
       </View>
     </Modal>
-  );
+  </>;
 }

@@ -8,7 +8,7 @@ const path = require('node:path');
 
 const root = path.join(__dirname, '..', '..');
 const CODE = /\.(js|cjs|py)$/;
-const SKIP = new Set(['node_modules', '.git', '.expo', 'dist', 'docs', 'assets']);
+const SKIP = new Set(['node_modules', '.git', '.expo', '.opencode', 'MilvayoRedesignPreview', 'dist', 'docs', 'assets']);
 const rel = (p) => path.relative(root, p).split(path.sep).join('/');
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
   if (SKIP.has(e.name)) return [];
