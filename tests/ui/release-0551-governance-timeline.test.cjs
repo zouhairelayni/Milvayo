@@ -71,7 +71,7 @@ test('Other long-form planning editors reuse the same Markdown source/preview pa
 test('Timeline ribbon, calendar and zoom remain visible while the Gantt rows scroll vertically',()=>{
   const timeline=read('src/screens/timeline/Timeline.js');
   const bars=read('src/components/shell/Bars.js');
-  assert.match(timeline,/const zoomHeader = useMemo\(\(\) => \(\{kind:'zoom', value:zoom, onChange:setZoom\}\)/);
+  assert.match(timeline,/const zoomHeader = useMemo\(\(\) => \(\{kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom\}\)/);
   assert.doesNotMatch(timeline,/scrolledDown|hideChrome|scrollChromeRef/);
   assert.match(timeline,/<TimelineGestureHost>\s*<View style=\{\{ flex: 1 \}\}>/);
   const ribbon=timeline.indexOf('<Chip label={showItems'), calendar=timeline.indexOf('<Animated.View pointerEvents="none"');

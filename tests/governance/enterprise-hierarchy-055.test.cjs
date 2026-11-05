@@ -55,7 +55,7 @@ test('portfolio memberships and program membership survive snapshot and restore'
  assert.equal(r.portfolios[0].projectIds[0],r.projects[0].id);
 });
 test('Governance group exposes independent screens with one shared relationship connector',()=>{
- const app=read('src/app/ModernApp.js');const nav=app.split('const NAV = [')[1].split('const SCREENS =')[0];
+ const app=read('src/app/navigation/sections.cjs');const nav=app.split('const NAV = [')[1].split('const SECTIONS =')[0];
  assert.match(nav,/group: 'Governance'/);
  const block=nav.split("group: 'Governance'")[1].split("group: 'Operate'")[0];
  assert.ok(block.indexOf("['projects'")<block.indexOf("['portfolios'"));

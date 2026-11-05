@@ -46,7 +46,8 @@ test('native drag and timeline reuse original card and grid spacing', () => {
   assert.match(board, /from '\.\.\/\.\.\/board\/boardGesture'/);
   assert.doesNotMatch(board, /DragMotion|GestureArea|gestureSurface/);
   assert.match(time, /const ROW = 54/);
-  assert.match(time, /const BAR_H = 26/);
+  assert.match(time, /const BAR_H = 32/);
+  assert.match(time, /const BAR_TOP = 11/); // same row centre after the bar redesign
   assert.match(time, /const SPAN = display\.BASE_DAYS/);
   assert.match(time, /display\.paintedRange/);
   assert.match(time, /paintedRows\.map/);

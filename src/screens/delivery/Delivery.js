@@ -1,9 +1,9 @@
 // /src/screens/delivery/Delivery.js
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {EditRow,Labeled,DangerConfirm,Fold} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Bar, Button, Card, Cell, Chip, Empty, Input, Sheet, Grid, Page, Pill, SectionTitle, Segmented, Stat, T, useWide } from '../../ui/ui';
+import { Bar, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -19,7 +19,7 @@ const sprintDraft = (s) => ({ name: s?.name || '', goal: s?.goal || '', start: s
 function SprintField({ label, value, onChange, multiline = false, placeholder }) {
   return <View style={{ gap: 5 }}>
     <T muted size={12}>{label}</T>
-    <Input value={value} onChangeText={onChange} multiline={multiline} placeholder={placeholder} />
+    <Input accessibilityLabel={label} value={value} onChangeText={onChange} multiline={multiline} placeholder={placeholder} />
   </View>;
 }
 
@@ -92,7 +92,7 @@ export function Sprints({ openTask }) {
       <Card style={{ gap: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
           <View style={{ flex: 1, gap: 5 }}>
-            <T size={17} weight="600">{selected.name}</T>
+            <T serifFace size={22} weight="500">{selected.name}</T>
             <T size={12} muted>{fmt(selected.start)} – {fmt(selected.end)} · {selected.state}</T>
           </View>
           <Pill label={selected.state} color={selected.state === 'completed' ? STATUS_COLOR.Done : selected.state === 'active' ? c.accent : c.muted} />
@@ -103,6 +103,7 @@ export function Sprints({ openTask }) {
         </View> : <T size={13} muted>No goal specified for this sprint.</T>}
         <Bar value={selectedCount ? historyDone / selectedCount : 0} height={6} />
         <T size={12} muted>{historyDone} of {selectedCount} completed · {Math.max(0, selectedCount - historyDone)} unfinished</T>
+        <EditRow title="Manage sprint" summary={canManage ? 'Start, edit or delete this planned sprint' : selected.state === 'active' ? 'Complete this sprint and freeze its history' : 'Completed sprint history is read-only'}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {canManage ? <>
             <Button label="Start sprint" icon="play" small onPress={() => startSprint(selected.id)} disabled={!!active} />
@@ -119,17 +120,18 @@ export function Sprints({ openTask }) {
             <Button label="Cancel" small variant="ghost" onPress={() => setConfirm('')} />
           </View>
         </View> : null}
+        </EditRow>
       </Card>
-      <Grid>
-        <Cell wide="48%" mobile="48%"><Stat label="Completion" value={`${selectedCount ? Math.round(100 * historyDone / selectedCount) : 0}%`} hint={`${historyDone} of ${selectedCount} tasks`} /></Cell>
-        <Cell wide="48%" mobile="48%"><Stat label="Velocity" value={historyDone} hint={completed.length ? `Previous: ${completed.map(x => x.velocity || 0).join(', ')}` : 'No previous sprint'} /></Cell>
-      </Grid>
       <Card style={{ gap: 12 }}>
         <SectionTitle>Burndown</SectionTitle>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
+          <View style={{ gap: 4 }}><T size={12} muted>Completion</T><T size={24} weight="500" style={{ fontVariant: ['tabular-nums'] }}>{selectedCount ? Math.round(100 * historyDone / selectedCount) : 0}%</T></View>
+          <View style={{ flex: 1, gap: 4 }}><T size={12} muted>Velocity</T><T size={24} weight="500" style={{ fontVariant: ['tabular-nums'] }}>{historyDone}</T><T size={12} muted>{completed.length ? `Previous: ${completed.map(x => x.velocity || 0).join(', ')}` : 'No previous sprint'}</T></View>
+        </View>
         {burn ? <BurnChart burn={burn} height={wide ? 240 : 200} /> : <T size={13} muted>Burndown appears after the sprint starts and progress is recorded.</T>}
       </Card>
       {selected.state !== 'completed' ? <>
-        <Fold title={`Assigned tasks · ${assigned.length}`} subtitle="Review sprint assignments">
+        <Fold title={`Assigned tasks · ${assigned.length}`} subtitle="Review sprint assignments" initial>
           {assigned.length === 0 ? <T size={13} muted>No tasks assigned yet.</T> : null}
           {assigned.slice(0, 60).map(t => <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line }}>
             <Pressable accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} style={{ flex: 1, gap: 3, minHeight: 44, justifyContent: 'center' }} onPress={() => openTask?.(t.id)}>
@@ -180,7 +182,7 @@ export function Sprints({ openTask }) {
 
 // ---- Releases ---------------------------------------------------------------
 
-export function Releases() {
+export function Releases({ releaseRequest = false, onReleaseRequestHandled }) {
   const { c } = useTheme();
   const {s,setStage,createRelease,editRelease,deleteRelease}=useStore();
   const [name,setName]=useState(''),[version,setVersion]=useState(''),[repo,setRepo]=useState(''),[notes,setNotes]=useState(''),[editing,setEditing]=useState('');
@@ -189,6 +191,8 @@ export function Releases() {
   const edit=r=>{reset(r);setFormOpen(true)};
   const save=()=>{const data={name,version,repo,notes};const ok=editing?editRelease(editing,data):createRelease(data);if(ok){reset(null);setFormOpen(false)}};
   const activeScreen = useScreenActive();
+  // The Create sheet asks for a new release form; consume the request so a later visit does not reopen it.
+  useEffect(() => { if (releaseRequest) { reset(null); setFormOpen(true); onReleaseRequestHandled?.(); } }, [releaseRequest]);
   const releaseHeader = useMemo(() => ({actions:[{label:'New release',icon:'plus',onPress:()=>{reset(null);setFormOpen(true);}}]}), []);
   useHeaderActions('releases', releaseHeader, activeScreen);
   return (
@@ -208,13 +212,18 @@ export function Releases() {
           <Card key={r.id} style={{ gap: 14 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <View style={{ gap: 4, flexShrink: 1 }}>
-                <T serifFace size={22}>Release {r.name}</T>
+                <T serifFace size={22} weight="500">Release {r.name}</T>
                 <T size={12} muted>{r.version} · {r.repo} · {r.tasks.length} linked tasks</T>
               </View>
               <Pill label={r.stage} color={ready ? STATUS_COLOR.Done : c.accent} />
             </View>
 
-            <View style={{ gap: 10 }}>
+            <View style={{ gap: 8 }}>
+              <T size={13} muted>{gates.filter(g => g.ok).length} of {gates.length} gates passed</T>
+              <Bar value={gates.length ? gates.filter(g => g.ok).length / gates.length : 0} height={6} />
+            </View>
+            <EditRow title="Verification gates" summary={ready ? 'Every gate has passed' : 'Review the remaining release gates'}>
+            <View style={{ gap: 12 }}>
               {gates.map((g) => (
                 <View key={g.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Feather name={g.ok ? 'check-circle' : 'x-circle'} size={16} color={g.ok ? STATUS_COLOR.Done : PRIORITY_COLOR.Critical} />
@@ -222,6 +231,7 @@ export function Releases() {
                 </View>
               ))}
             </View>
+            </EditRow>
 
             <Segmented options={['Planned','Testing','Ready','Released']} value={r.stage} onChange={v=>setStage(r.id,v)}/>
             <EditRow title="Manage release" summary="Edit metadata or remove a release record">
@@ -253,22 +263,24 @@ export function Testing() {
 
   return (
     <Page title="Testing" subtitle="Acceptance checks with evidence. Results are entered by people, not run automatically.">
-      <Grid>
+      <Card style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
         {CHECK_STATES.map((st) => (
-          <Cell key={st} wide="23%" mobile="48%">
-            <Stat label={st[0].toUpperCase() + st.slice(1)} value={counts[st] || 0} accent={st === 'passed' ? STATUS_COLOR.Done : st === 'failed' || st === 'blocked' ? PRIORITY_COLOR.Critical : c.faint} />
-          </Cell>
+          <View key={st} style={{ flex: 1, minWidth: 56, gap: 4 }}>
+            <T size={12} muted>{st[0].toUpperCase() + st.slice(1)}</T>
+            <T size={24} weight="500" color={st === 'passed' ? STATUS_COLOR.Done : st === 'failed' || st === 'blocked' ? PRIORITY_COLOR.Critical : c.ink} style={{ fontVariant: ['tabular-nums'] }}>{counts[st] || 0}</T>
+          </View>
         ))}
-      </Grid>
+      </Card>
 
-      {s.checks.slice(0, limit).map((k) => {
+      <Card pad={0} style={{ overflow: 'hidden' }}>
+      {s.checks.slice(0, limit).map((k, i) => {
         const taskTitle = titles.get(k.taskId);
         return (
-          <Card key={k.id} onPress={() => setSelectedCheckId(k.id)} accessibilityLabel={`Edit acceptance check ${k.title}`}
-            style={{ gap: 10 }}>
+          <Pressable key={k.id} accessibilityRole="button" onPress={() => setSelectedCheckId(k.id)} accessibilityLabel={`Edit acceptance check ${k.title}`}
+            style={({ pressed }) => ({ minHeight: 64, padding: 16, gap: 8, borderTopWidth: i ? 1 : 0, borderColor: c.line, backgroundColor: pressed ? c.surfaceAlt : 'transparent' })}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
-                <T size={14} weight="600">{k.title}</T>
+                <T size={14} weight="500">{k.title}</T>
                 <T size={12} muted numberOfLines={2}>
                   {taskTitle !== undefined ? `On ${taskTitle}` : 'No task'}{k.evidence ? ' · evidence required' : ''}
                 </T>
@@ -276,11 +288,12 @@ export function Testing() {
               <Pill label={k.status} color={k.status === 'passed' ? STATUS_COLOR.Done : k.status === 'pending' ? STATUS_COLOR.Backlog : PRIORITY_COLOR.Critical} />
               <Feather name="chevron-right" size={16} color={c.muted} />
             </View>
-          </Card>
+          </Pressable>
         );
       })}
       {s.checks.length > limit ? <Button label={`Show more (${s.checks.length - limit} left)`} small variant="ghost" onPress={() => setLimit((n) => n + CHECK_PAGE)} /> : null}
       {s.checks.length === 0 ? <Empty>No acceptance checks yet.</Empty> : null}
+      </Card>
       <Sheet visible={!!selectedCheck} title="Acceptance check" onClose={()=>setSelectedCheckId(null)}
         footer={<Button label="Done" small onPress={()=>setSelectedCheckId(null)}/>}>
         {selectedCheck ? <>

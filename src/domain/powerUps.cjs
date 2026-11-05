@@ -5,7 +5,7 @@ const {localDay}=require('../utils/localDay.cjs');
 const boards=require('./boards.cjs');
 const CATALOG=Object.freeze([
  Object.freeze({id:'github',name:'GitHub',description:'Link issues, pull requests, commits and branches to cards'}),
- Object.freeze({id:'calendar',name:'Due date calendar',description:'See the next dated tasks on this board'}),
+ Object.freeze({id:'calendar',name:'Due soon',description:'Show this board’s upcoming tasks in List'}),
  Object.freeze({id:'aging',name:'Card aging',description:'Show days since each unfinished card was last updated'}),
  Object.freeze({id:'checklist',name:'Checklist progress',description:'Show acceptance check progress on cards'})
 ]);

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Milvayo",
     "slug": "milvayo",
-    "version": "0.5.59",
+    "version": "0.6.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#071328",
@@ -23,12 +23,12 @@
         "backgroundColor": "#071328",
         "monochromeImage": "./assets/adaptive-monochrome.png"
       },
-      "versionCode": 59
+      "versionCode": 60
     },
     "ios": {
       "bundleIdentifier": "com.milvayo.projects",
       "icon": "./assets/icon.png",
-      "buildNumber": "59"
+      "buildNumber": "60"
     },
     "icon": "./assets/icon.png",
     "extra": {
@@ -36,6 +36,9 @@
         "projectId": "e2fd4ed4-e704-4109-829c-241aad2d990e"
       }
     },
-    "owner": "zouhairelayni"
+    "owner": "zouhairelayni",
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }

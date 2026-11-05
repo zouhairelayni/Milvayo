@@ -8,6 +8,7 @@ import TaskLabels from '../../components/inline/TaskLabels';
 import { COLORS, textColor } from '../../ui/labelPalette.cjs';
 import { Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
 import { useStore } from '../../store/store';
+import { useProjectTools } from '../../store/useProjectTools';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR, serif } from '../../ui/theme/theme';
 import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';
 import InlineNotice from '../../components/notice/InlineNotice';
@@ -17,7 +18,7 @@ import { descendants } from '../../domain/taskWorkflows.cjs';
 const NONE = new Set();
 
 // A new task is only created on explicit Save. Dismissing this sheet discards its draft.
-export function NewTaskSheet({ onClose, onSave }) {
+export function NewTaskSheet({ onClose, onSave, extra }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Backlog');
@@ -33,15 +34,16 @@ export function NewTaskSheet({ onClose, onSave }) {
     <MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/>
     <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>
     <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>
+    {extra}
   </Sheet>;
 }
 
 export default function TaskSheet({ taskId, onClose }) {
   const { c } = useTheme();
+  const tools = useProjectTools();
   const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
   const t = s.tasks.find((x) => x.id === taskId);
   const [open, setOpen] = useState(null);
-  const [mode, setMode] = useState('Standard');
   const [descriptionEditing, setDescriptionEditing] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [labelColorDraft, setLabelColorDraft] = useState(COLORS[0]);
@@ -57,11 +59,12 @@ export default function TaskSheet({ taskId, onClose }) {
   const [attachmentUrl, setAttachmentUrl] = useState('');
 
   useEffect(() => {
-    setOpen(null); setMode('Standard'); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
+    setOpen(null); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
     setConfirmDelete(false); setConfirmDuplicate(false); setGithubUrl(''); setSubTitle(''); setLogHours('1');
     setComment(''); setDepDraft(''); setParentDraft(''); setLabelDraft('');
     setCheckDraft(''); setAttachmentName(''); setAttachmentUrl('');
   }, [taskId]);
+  useEffect(() => { setOpen(null); }, [tools.advancedTasks]);
 
   const active = s.sprints.find((x) => x.state === 'active');
   const set = (patch, label) => t && updateTask(t.id, patch, label);
@@ -105,11 +108,11 @@ export default function TaskSheet({ taskId, onClose }) {
       <InlineNotice />
       {confirmDuplicate ? <>
         <T size={12} muted>Duplicate this task?</T>
-        <Button label="Confirm duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/>
+        <Button label="Duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/>
         <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDuplicate(false)}/>
       </> : confirmDelete ? <>
         <T size={12} muted>Delete this task? This cannot be undone.</T>
-        <Button label="Confirm delete" small onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/>
+        <Button label="Delete" small onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/>
         <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDelete(false)}/>
       </> : <>
         <Button label="Duplicate" icon="copy" small variant="secondary" onPress={()=>setConfirmDuplicate(true)}/>
@@ -135,7 +138,6 @@ export default function TaskSheet({ taskId, onClose }) {
             {isOverdue(t)?<Pill label="Overdue" color={PRIORITY_COLOR.Critical}/>:null}
             {blocked?<Pill label="Blocked" color={PRIORITY_COLOR.High}/>:null}
           </View>
-          <Segmented fill options={['Standard','Advanced']} value={mode} onChange={v=>{setMode(v);setOpen(null);}} />
           <View style={{gap:10}}>
             <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
               <T size={15} weight="700">Labels</T>
@@ -245,9 +247,9 @@ export default function TaskSheet({ taskId, onClose }) {
                 <Button label="Post comment" small disabled={!comment.trim()} onPress={() => { addComment(t.id, comment); setComment(''); }} />
             </View>
           </View>
-          {mode==='Advanced'?<View style={{gap:4}}>
+          {tools.advancedTasks?<View style={{gap:4}}>
             <T size={16} weight="700">Advanced planning & delivery</T>
-            <T size={12} muted>Detailed fields remain available without crowding standard tasks.</T>
+            <T size={12} muted>Detailed planning and delivery fields for this project.</T>
             {row('subtasks', 'Subtasks', `${s.tasks.filter(x=>x.parentId===t.id).length} child tasks`,
               <View style={{gap:10}}><Input value={subTitle} onChangeText={setSubTitle} placeholder="New subtask title"/><Button label="Add subtask" small onPress={()=>{if(subTitle.trim()&&addSubtask(t.id,subTitle.trim()))setSubTitle('')}}/>
                {s.tasks.filter(x=>x.parentId===t.id).map(x=><T key={x.id} size={13}>{x.title} · {x.status}</T>)}

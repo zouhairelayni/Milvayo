@@ -35,10 +35,10 @@ test('Board tools owns search, priority filter, advanced filters and options wit
   assert.match(s, /Clear filters/);
   assert.doesNotMatch(s, /<Pressable accessibilityRole="switch"[^>]*>[\s\S]*?<Switch/);
 });
-test('Timeline has one task ribbon, Show Items/Hide Items and two task sheets',()=>{
+test('Timeline has one task ribbon, Show items/Hide items and two task sheets',()=>{
   const s=read('src/screens/timeline/Timeline.js');
-  assert.match(s,/showItems \? 'Hide Items' : 'Show Items'/);
-  for(const label of ['First Task','Today','Critical Path','Parent Tasks','To Schedule'])assert.ok(s.includes(label),label);
+  assert.match(s,/showItems \? 'Hide items' : 'Show items'/);
+  for(const label of ['First task','Today','Critical path','Parent tasks','To schedule'])assert.ok(s.includes(label),label);
   assert.match(s, /<ScrollView horizontal showsHorizontalScrollIndicator=\{false\}/);
   assert.match(s, /taskPanel === 'parents' \? <Sheet visible/);
   assert.match(s, /taskPanel === 'schedule' \? <Sheet visible/);

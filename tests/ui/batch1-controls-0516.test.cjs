@@ -12,8 +12,10 @@ test('saved view keeps and defaults the tag filter',()=>{
  const again=model.normalizeWorkspace(JSON.parse(JSON.stringify({...model.createWorkspace(),projects:[p],selectedId:p.id})));
  assert.equal(again.projects[0].savedViews[0].filters.label,'bug');
 });
-test('Tasks saves and restores the tag filter; Board renders the calendar Power-Up; Costs has no dead state',()=>{
+test('Tasks saves/restores the tag filter and renders the moved calendar preview; Costs has no dead state',()=>{
  const t=read('src/screens/tasks/Tasks.js');assert.ok(t.includes('label:labelFilter')&&t.includes("setLabelFilter(v.filters.label||'All')"));
- const b=read('src/screens/board/Board.js');assert.ok(b.includes("includes('calendar')")&&b.includes('dueSoon(project, board.id)'));
+ assert.match(t,/<DueSoon key=\{project.id\} tasks=\{upcoming\}/);
+ const dates=read('src/screens/tasks/dueSoon.cjs');assert.ok(dates.includes("includes('calendar')")&&dates.includes('dueSoon(project, b.id, today)'));
+ assert.doesNotMatch(read('src/screens/board/Board.js'),/<DueSoon|<UpcomingDates/);
  assert.ok(!read('src/screens/workspace/Workspace.js').includes('editingBudget'));
 });

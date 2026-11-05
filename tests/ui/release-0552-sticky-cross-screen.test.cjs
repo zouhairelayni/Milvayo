@@ -9,7 +9,7 @@ const read = f => fs.readFileSync(path.join(root,f),'utf8');
 
 test('Timeline pins the ribbon and calendar before the scrollable page',()=>{
   const s=read('src/screens/timeline/Timeline.js');
-  const ribbon=s.indexOf("<Chip label={showItems ? 'Hide Items' : 'Show Items'}");
+  const ribbon=s.indexOf("<Chip label={showItems ? 'Hide items' : 'Show items'}");
   const date=s.indexOf('<Animated.View pointerEvents="none"');
   const page=s.indexOf('    <Page\n');
   const body=s.indexOf('ref={chartRef}',page);
@@ -57,8 +57,9 @@ test('Scheduling previews render safe, readable tasks, dates and errors instead 
 });
 
 test('Overview shows real due dates, an empty state, and accessible metric touch areas',()=>{
-  const s=read('src/screens/overview/Overview.js');
-  assert.match(s,/t\.status !== 'Done' &&/);
+  const s=read('src/screens/overview/Overview.js')+read('src/screens/overview/today.cjs');
+  assert.match(s,/tasks\.filter\(t => t\.status !== 'Done'\)/);
+  assert.match(s,/open\.filter\(t => dated\(t\) && t\.due >= today\)/);
   assert.match(s,/No upcoming dated tasks/);
   assert.match(s,/minHeight: 44/);
 });

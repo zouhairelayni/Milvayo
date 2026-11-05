@@ -15,5 +15,5 @@ test('one cumulative changelog under docs/changelog and QA/instructions in their
   for(const v of ['0.1.0','0.2.0','0.3.12','0.4.2','0.5.31','0.5.34','0.5.47'])assert.ok(log.includes('## v'+v),v);
 });
 
-test('five mobile primary tabs, all other screens through one drawer',()=>{const app=read('src/app/ModernApp.js');const block=app.slice(app.indexOf('const TABS = ['),app.indexOf('];',app.indexOf('const TABS = ['))+2);assert.equal((block.match(/\['/g)||[]).length,5);for(const name of ['Scheduling','TaskConfiguration','Collaboration','Specifications'])assert.ok(app.includes(name));});
+test('four phone sections plus Create, all other screens through More',()=>{const app=read('src/app/ModernApp.js');const {SECTIONS}=require('../../src/app/navigation/sections.cjs');assert.deepEqual(SECTIONS.map(x=>x.id),['home','work','projects','more']);assert.match(app,/const TABS = SECTIONS\.map/);for(const name of ['Scheduling','TaskConfiguration','Collaboration','Specifications'])assert.ok(app.includes(name));});
 test('unique encrypted backup format reference lives only in docs/instructions',()=>{const file='docs/instructions/niyav-format.md';assert.ok(fs.existsSync(path.join(root,file)));assert.equal(fs.existsSync(path.join(root,'reference/niyav-format.md')),false);assert.ok(read(file).length>300);});

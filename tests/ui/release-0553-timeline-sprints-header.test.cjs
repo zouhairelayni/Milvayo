@@ -38,11 +38,12 @@ test('Calendar stays pinned and is translated directly from chart native scroll,
   assert.match(t, /onCommit=\{bar\.onCommit\}/);
 });
 
-test('Global New task header action is compact but remains accessible', () => {
+test('Global create action is compact but remains accessible', () => {
   const mobile = read('src/app/ModernApp.js');
   const desktop = read('src/components/shell/Bars.js');
   const controls = read('src/ui/uiControls.js');
-  assert.match(mobile, /label="New task" icon="plus" small/);
+  assert.match(mobile, /onCreate=\{newTask\}/);
+  assert.match(desktop, /accessibilityLabel="Create"/);
   assert.match(desktop, /label="New task" icon="plus" small/);
   assert.match(controls, /minHeight: 40/);
   assert.match(controls, /hitSlop=\{4\}/);

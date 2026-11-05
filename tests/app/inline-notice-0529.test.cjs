@@ -15,15 +15,19 @@ test('4: only a new error notice is shown inline', () => {
   assert.equal(inlineErrorText(null, undefined), '');
 });
 
-test('4: the Task Sheet and the phone side menu are native Modals and show errors inline', () => {
+test('4: the Task Sheet and the project and workspace switchers are native Modals and show errors inline', () => {
   // Evidence: both surfaces are native Modals, while the island is mounted in the app shell outside them.
   assert.match(read('src/ui/uiLayout.js'), /<Modal visible=\{visible\}/);
   assert.match(read('src/screens/tasks/TaskSheet.js'), /<Sheet visible=/);
   const menus = read('src/components/shell/Menus.js');
-  const sideMenu = menus.slice(menus.indexOf('export function SideMenu'));
-  assert.match(sideMenu, /<Modal visible=\{visible\}/);
-  assert.match(sideMenu, /<WorkspaceDrawer inModal /);
-  assert.match(sideMenu, /<ProjectDrawer inModal /);
+  const projectSwitcher = menus.slice(menus.indexOf('export function ProjectSwitcher'), menus.indexOf('export function WorkspaceSwitcher'));
+  const workspaceSwitcher = menus.slice(menus.indexOf('export function WorkspaceSwitcher'));
+  assert.match(projectSwitcher, /<Sheet visible=\{visible\} compact/);
+  assert.match(projectSwitcher, /<ProjectDrawer[^>]*embedded /);
+  assert.match(projectSwitcher, /<WorkspaceDrawer embedded /);
+  assert.match(read('src/ui/uiLayout.js'), /showNotice \? <View[^>]*><InlineNotice \/>/);
+  assert.match(workspaceSwitcher, /<Modal visible=\{visible\}/);
+  assert.match(workspaceSwitcher, /<WorkspaceDrawer inModal /);
   assert.equal((menus.match(/\{inModal \? <InlineNotice \/> : null\}/g) || []).length, 2);
   // The Task Sheet shows it in the footer, which stays visible while the sheet body scrolls.
   assert.match(read('src/screens/tasks/TaskSheet.js'), /const footer = t \? \(\n\s+<>\n\s+<InlineNotice \/>/);

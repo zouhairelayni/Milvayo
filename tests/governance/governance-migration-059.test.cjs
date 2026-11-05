@@ -11,15 +11,15 @@ const summary=require('../../src/domain/governanceSummary.cjs');
 const {normalizeGovernance}=require('../../src/domain/governanceCore.cjs');
 const code=p=>fs.readFileSync(path.join(root,p),'utf8');
 
-test('Timeline navigation marks rotate horizontally in drawer and bottom tab, not the actual chart',()=>{
+test('Timeline navigation mark rotates horizontally in the sidebar, not the actual chart',()=>{
  const s=require('../helpers/shell-source.cjs')();
  assert.match(s,/k === 'timeline' \? \{ transform: \[\{ rotate: '90deg' \}\] \}/);
- assert.equal((s.match(/k === 'timeline' \? \{ transform: \[\{ rotate: '90deg' \}\] \}/g)||[]).length,2);
+ assert.equal((s.match(/k === 'timeline' \? \{ transform: \[\{ rotate: '90deg' \}\] \}/g)||[]).length,1); // the phone has no Timeline icon: it is a text view in the Work pill
  assert.match(s,/\['timeline', 'Timeline', 'bar-chart-2'\]/);
  assert.doesNotMatch(code('src/screens/timeline/Timeline.js'),/rotate: '90deg'/);
 });
 test('Governance navigation has one independent entry per screen, in required order',()=>{
- const s=code('src/app/ModernApp.js');const nav=s.split("group: 'Governance'")[1].split("group: 'Operate'")[0];
+ const s=code('src/app/navigation/sections.cjs');const nav=s.split("group: 'Governance'")[1].split("group: 'Operate'")[0];
  assert.ok(nav.indexOf("['projects'")<nav.indexOf("['portfolios'"));
  assert.ok(nav.indexOf("['portfolios'")<nav.indexOf("['programs'"));
  assert.doesNotMatch(nav,/enterprise|Entreprise PM/);

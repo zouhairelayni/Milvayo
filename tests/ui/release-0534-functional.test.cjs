@@ -31,9 +31,11 @@ test('Board has a single tools entry and all old filters live inside its sheet',
   assert.match(board, /useHeaderActions\('board', headerControls, active\)/);
   assert.match(board, /label: 'Tools'/);
   assert.match(board, /<Sheet visible=\{boardToolsOpen\}/);
-  for (const label of ['Search board cards', 'High and above', 'Clear filters', 'Descriptions on cards', 'Upcoming dates', 'Card age']) {
+  for (const label of ['Search board cards', 'High and above', 'Clear filters', 'Descriptions on cards', 'Card age']) {
     assert.ok(board.includes(label), label);
   }
+  assert.match(source('src/screens/tasks/Tasks.js'), /togglePowerUp\(b.id, 'calendar'\)/);
+  assert.match(source('src/screens/tasks/DueSoon.js'), />Due soon</);
   assert.doesNotMatch(board, /<Fold title="Filters"/);
   assert.doesNotMatch(board, /<Fold title="Board tools"/);
   assert.match(board, /dropBefore\(s\.tasks, cards, listId, slotIndex, movingId\)/);
@@ -42,7 +44,7 @@ test('Board has a single tools entry and all old filters live inside its sheet',
 test('Timeline has a single task ribbon and preserved dependency colors/drag geometry', () => {
   const timeline = source('src/screens/timeline/Timeline.js');
   assert.match(timeline, /<ScrollView horizontal showsHorizontalScrollIndicator=\{false\}/);
-  for (const label of ['Hide Items', 'Show Items', 'First Task', 'Today', 'Critical Path', 'Parent Tasks', 'To Schedule']) {
+  for (const label of ['Hide items', 'Show items', 'First task', 'Today', 'Critical path', 'Parent tasks', 'To schedule']) {
     assert.ok(timeline.includes(label), label);
   }
   assert.match(timeline, /taskPanel === 'parents' \? <Sheet visible/);

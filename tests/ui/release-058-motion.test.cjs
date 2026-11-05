@@ -50,16 +50,12 @@ test('the startup screen is logo-only, 1x, before workspace mount, and respects 
  assert.doesNotMatch(brand,/WebView|<Mask|opacity=\{progress\}/);
 });
 
-test('mobile drawer plays the logo at 1.5x every open and appearance toggle sits alongside menu',()=>{
+test('the Brand logo can still play at 1.5x; the More screen shows it still and keeps the appearance toggle',()=>{
  const menu=read('src/components/shell/Menus.js');
- const mobile=menu.slice(menu.indexOf('export function SideMenu('));
- const header=mobile.slice(mobile.indexOf('<View style={{ flexDirection:'),mobile.indexOf('<View style={{ marginBottom: 16 }}><Brand'));
+ const more=read('src/screens/more/More.js');
  assert.match(menu,/speed=\{1\.5\} active=\{animated && active\}/);
- assert.match(mobile,/<Brand narrow animated active=\{visible\} \/>/);
- assert.match(header,/<MenuToggle open=\{visible\}/);
- assert.match(header,/Cycle light, dark and AMOLED appearance/);
- assert.equal((mobile.match(/<MenuToggle /g)||[]).length,1);
- assert.ok(header.indexOf('MenuToggle')<header.indexOf('Cycle light'));
+ assert.doesNotMatch(more,/<Brand narrow animated/); // no JS animation when More opens
+ assert.match(more,/label="Appearance"/);
 });
 
 test('0.5.58 manifests match and no legacy logo dependency is necessary',()=>{

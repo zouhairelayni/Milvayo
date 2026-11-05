@@ -1,7 +1,7 @@
 // /src/components/charts/charts.js
 import { useRef, useState } from 'react';
 import { PanResponder, Platform, Pressable, View } from 'react-native';
-import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 import { T } from '../../ui/ui';
 import { useTheme } from '../../ui/theme/theme';
 
@@ -9,20 +9,23 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 // Vertical swipes still scroll the page; horizontal drags belong to the chart (web).
 const WEB_TOUCH = Platform.OS === 'web' ? { touchAction: 'pan-y' } : {};
 
-// Burndown as two lines: dashed ideal and solid recorded.
+// Both views use the same history: ideal/recorded lines or recorded bars with ideal ticks.
 // Touch or drag across the chart to read any day; tap a legend item to hide or show that line.
 export function BurnChart({ burn, height = 200 }) {
   const { c } = useTheme();
   const [width, setWidth] = useState(320);
   const [sel, setSel] = useState(null); // selected day index; null means the latest day
   const [show, setShow] = useState({ ideal: true, recorded: true });
+  const [chartType, setChartType] = useState('line');
   const padL = 36;
   const padR = 16;
   const padT = 16;
   const padB = 30;
   const n = burn.days.length;
   const max = Math.max(...burn.ideal, ...burn.recorded, 1);
-  const x = (i) => padL + (n === 1 ? 0 : (i * (width - padL - padR)) / (n - 1));
+  const slotWidth = Math.max(1, width - padL - padR) / n;
+  const barWidth = Math.max(1, Math.min(32, slotWidth - 4));
+  const x = (i) => chartType === 'bar' ? padL + (i + 0.5) * slotWidth : padL + (n === 1 ? 0 : (i * (width - padL - padR)) / (n - 1));
   const y = (v) => padT + (1 - v / max) * (height - padT - padB);
   const line = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join(' ');
   const ticks = [...new Set([0, Math.round(max / 2), max])]; // max=1 rounds the midpoint to 1, which would repeat a key
@@ -34,12 +37,13 @@ export function BurnChart({ burn, height = 200 }) {
 
   // The pan responder is made once, so it reads the width and day count through a ref.
   const geo = useRef({});
-  geo.current = { width, padL, padR, n };
+  geo.current = { width, padL, padR, n, chartType };
   const pick = (px) => {
     const g = geo.current;
     const span = g.width - g.padL - g.padR;
     if (g.n <= 1 || span <= 0) return setSel(0);
-    setSel(clamp(Math.round(((px - g.padL) / span) * (g.n - 1)), 0, g.n - 1));
+    const day = g.chartType === 'bar' ? Math.floor(((px - g.padL) / span) * g.n) : Math.round(((px - g.padL) / span) * (g.n - 1));
+    setSel(clamp(day, 0, g.n - 1));
   };
   const tapStart = useRef(null);
   const pan = useRef(
@@ -53,10 +57,20 @@ export function BurnChart({ burn, height = 200 }) {
     })
   ).current;
 
+  if (!n) return <T muted>No recorded sprint history yet.</T>;
   const toggle = (key) => setShow((p) => (p[key] && !(key === 'ideal' ? p.recorded : p.ideal) ? p : { ...p, [key]: !p[key] }));
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ width: '100%', gap: 12 }}>
+      <View accessibilityLabel="Burndown chart view" style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 4 }}>
+        {['line', 'bar'].map(type => <Pressable key={type} accessibilityRole="button" accessibilityLabel={type === 'line' ? 'Line graph' : 'Bar graph'} accessibilityState={{ selected: chartType === type }} onPress={() => setChartType(type)}
+          style={({ pressed }) => ({ width: 44, height: 44, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: chartType === type || pressed ? c.surfaceAlt : 'transparent' })}>
+          <Svg width={20} height={20} viewBox="0 0 20 20" pointerEvents="none">
+            {type === 'line' ? <Path d="M3 3v14h14 M5 12l4-5 4 3 4-6" stroke={chartType === type ? c.ink : c.muted} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              : <><Rect x={4} y={5} width={3} height={12} rx={1} fill={chartType === type ? c.ink : c.muted} /><Rect x={9} y={9} width={3} height={8} rx={1} fill={chartType === type ? c.ink : c.muted} /><Rect x={14} y={12} width={3} height={5} rx={1} fill={chartType === type ? c.ink : c.muted} /></>}
+          </Svg>
+        </Pressable>)}
+      </View>
       <View {...pan.panHandlers}
         onTouchStart={e=>{const t=e.nativeEvent.touches?.[0];tapStart.current=t?{x:t.pageX,y:t.pageY}:null;}}
         onTouchEnd={e=>{const t=e.nativeEvent.changedTouches?.[0],a=tapStart.current;tapStart.current=null;
@@ -71,7 +85,7 @@ export function BurnChart({ burn, height = 200 }) {
               {tv}
             </SvgText>
           ))}
-          {burn.days.map((d, di) => (
+          {burn.days.map((d, di) => chartType === 'line' || di === 0 || di === n - 1 ? (
             <SvgText
               key={d}
               x={x(di)}
@@ -83,11 +97,15 @@ export function BurnChart({ burn, height = 200 }) {
             >
               {d}
             </SvgText>
-          ))}
+          ) : null)}
 
           {/* Guide for the selected day */}
           <Line x1={x(i)} x2={x(i)} y1={padT} y2={height - padB} stroke={c.faint} strokeWidth={1.5} />
 
+          {chartType === 'bar' ? <>
+            {show.recorded ? burn.recorded.map((v, di) => <Rect key={'bar' + di} x={x(di) - barWidth / 2} y={Math.min(y(v), height - padB - 2)} width={barWidth} height={Math.max(2, height - padB - y(v))} rx={Math.min(4, barWidth / 2)} fill={di === i ? c.accent : c.muted} fillOpacity={di === i ? 1 : 0.4} />) : null}
+            {show.ideal ? burn.ideal.map((v, di) => <Line key={'ideal' + di} x1={x(di) - barWidth / 2} x2={x(di) + barWidth / 2} y1={y(v)} y2={y(v)} stroke={c.ink} strokeOpacity={0.55} strokeWidth={2} />) : null}
+          </> : <>
           {show.ideal ? <Path d={line(burn.ideal)} stroke={c.muted} strokeWidth={2} strokeDasharray="6,5" fill="none" /> : null}
           {show.recorded ? <Path d={line(burn.recorded)} stroke={c.accent} strokeWidth={3} fill="none" strokeLinejoin="round" /> : null}
           {show.recorded
@@ -96,6 +114,7 @@ export function BurnChart({ burn, height = 200 }) {
               ))
             : null}
           {show.ideal ? <Circle cx={x(i)} cy={y(ideal)} r={5.5} fill={c.surface} stroke={c.muted} strokeWidth={2.5} /> : null}
+          </>}
         </Svg>
       </View>
 

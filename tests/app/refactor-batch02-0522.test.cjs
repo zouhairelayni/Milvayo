@@ -8,12 +8,13 @@ const read = (p) => fs.readFileSync(path.join(__dirname, '..', '..', p), 'utf8')
 
 test('ModernApp.js keeps the screen tables and passes them to the shell parts', () => {
   const app = read('src/app/ModernApp.js');
-  assert.match(app, /const NAV = \[/);
-  assert.match(app, /const TABS = \[/);
+  assert.doesNotMatch(app, /const NAV = \[/); // the menu entries live in navigation/sections.cjs
+  assert.match(app, /const TABS = SECTIONS\.map/);
   assert.match(app, /const SCREENS = \{/);
-  assert.match(app, /<Sidebar nav=\{NAV\} current=\{screen\}/);
-  assert.match(app, /<SideMenu nav=\{NAV\} visible=\{menu\}/);
-  assert.match(app, /<TabBar tabs=\{TABS\} current=\{screen\}/);
+  assert.match(app, /<Sidebar nav=\{navFor\(tools\)\} current=\{screen\}/);
+  assert.match(app, /<PhoneHeader kind=/);
+  assert.match(app, /<ViewPill views=\{views\}/);
+  assert.match(app, /<TabBar tabs=\{TABS\} current=\{section\.id\}/);
   assert.match(app, /import ScreenErrorBoundary from '\.\.\/components\/shell\/ScreenErrorBoundary'/);
 });
 
@@ -23,12 +24,14 @@ test('shell parts are defined once, outside ModernApp.js', () => {
   assert.doesNotMatch(app, /class ScreenErrorBoundary/);
   const menus = read('src/components/shell/Menus.js');
   assert.match(menus, /export function Sidebar\(\{ nav,/);
-  assert.match(menus, /export function SideMenu\(\{ nav,/);
-  assert.equal((menus.match(/<NavGroups /g) || []).length, 2); // sidebar and side menu share one group list
+  assert.doesNotMatch(menus, /SideMenu/); // the phone drawer is replaced by the More screen
+  assert.equal((menus.match(/<NavGroups /g) || []).length, 1); // only the wide sidebar renders NAV groups
   assert.equal((menus.match(/nav\.map\(/g) || []).length, 1);
   const bars = read('src/components/shell/Bars.js');
   assert.match(bars, /export function TabBar\(\{ tabs,/);
-  assert.match(bars, /tabs\.map\(/);
+  assert.match(bars, /items\.map\(/);
+  assert.match(bars, /export function ViewPill\(\{ views,/);
+  assert.match(bars, /export function PhoneHeader\(\{ kind,/);
   assert.match(read('src/components/shell/ScreenErrorBoundary.js'), /export default class ScreenErrorBoundary extends Component/);
 });
 

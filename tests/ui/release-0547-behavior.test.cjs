@@ -57,7 +57,7 @@ test('Board Tools, mobile swiping, task configuration and governance editor are 
   assert.match(read('src/screens/governance/CreateProjectSheet.js'),/<Sheet visible=\{visible\}/);
 });
 
-test('Theme keeps four appearance modes, Claude Orange, and original Niyarvo mark with accent PROJECTS', () => {
+test('Theme keeps four appearance modes, Claude Orange, and the Board mark with the Milvayo wordmark', () => {
   const theme = require('../../src/ui/theme/theme.cjs');
   assert.equal(theme.findAccent('Orange').hex, '#FF6F61');
   assert.equal(theme.ACCENTS.length,10);
@@ -65,10 +65,9 @@ test('Theme keeps four appearance modes, Claude Orange, and original Niyarvo mar
   assert.match(settings,/label="System"/);
   assert.match(settings,/label="AMOLED"/);
   const menu=read('src/components/shell/Menus.js');
-  assert.match(menu,/onToggleMode/);
-  assert.match(menu,/tintColor:c.accent/);
-  assert.match(menu,/tintColor:c.accent,alignSelf:'flex-end'/);
-  assert.match(menu,/projects-word-mask\.png/);
+  assert.match(read('src/screens/more/More.js'),/setPref\(NEXT_MODE\[mode\]/);
+  assert.match(menu,/tintColor:c\.ink/);
+  assert.match(menu,/milvayo-mask\.png/);
 });
 
 test('single cumulative changelog and organized QA/instructions are present without duplication', () => {

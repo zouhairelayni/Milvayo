@@ -17,7 +17,7 @@ import { committedName } from '../../board/boardInteractions.cjs';
 const {visibleColumns} = require('../../board/boardColumns.cjs');
 const {filterCards, dropBefore} = require('../../board/kanbanUX.cjs');
 const DUE_FILTERS = [['all', 'Any date'], ['overdue', 'Overdue'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'Next 7 days'], ['month', 'Next 30 days'], ['none', 'No date']];
-const {dueSoon, ageInDays} = require('../../domain/powerUps.cjs');
+const {ageInDays} = require('../../domain/powerUps.cjs');
 const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs');
 // Native only: first cards per column appear immediately, the rest follow in small chunks.
 const EMPTY_FEATURES = Object.freeze([]);
@@ -211,19 +211,6 @@ export default function Board({ openTask }) {
         <IconBtn icon={creating ? 'x' : 'plus'} label={creating ? 'Cancel new board' : 'New board'} onPress={() => setCreating(!creating)} />
       </View>
 
-      {(project.powerUps?.[board.id]||[]).includes('calendar') ? (() => {
-        const upcoming = dueSoon(project, board.id);
-        return <Card style={{ gap: 8 }}>
-          <T weight="600" size={14}>Upcoming dates</T>
-          <T muted size={12}>Open tasks on this board due in the next 30 days.</T>
-          {upcoming.length ? upcoming.map((t) => (
-            <Pressable key={t.id} onPress={() => openTask(t.id)} accessibilityRole="button" accessibilityLabel={`Open task ${t.title}`} style={({ pressed }) => ({ flexDirection: 'row', gap: 10, alignItems: 'center', minHeight: 44, opacity: pressed ? 0.6 : 1 })}>
-              <T size={12} muted style={{ width: 84 }}>{t.due}</T>
-              <T size={13} numberOfLines={2} style={{ flex: 1 }}>{t.title}</T>
-            </Pressable>
-          )) : <T muted size={12}>No upcoming due dates on this board. Set a task due date to see it here.</T>}
-        </Card>;
-      })() : null}
       {creating ? (
         <Card style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           <View style={{ flex: 1, minWidth: 200 }}>
@@ -248,20 +235,7 @@ export default function Board({ openTask }) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: GAP, paddingBottom: locked ? 320 : 8, alignItems: 'flex-start' }} // extra room below while dragging, so a card isn't clipped by the strip
         >
-          <Pressable
-            onPress={() => setAddingList(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Add list to the left"
-            style={({ pressed }) => ({
-              width: 64, minHeight: 240, borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line,
-              alignItems: 'center', justifyContent: 'center', gap: 10, opacity: pressed ? 0.6 : 1,
-            })}
-          >
-            <Feather name="plus" size={20} color={c.muted} />
-            <T size={11} weight="600" muted style={{ transform: [{ rotate: '-90deg' }], width: 80, textAlign: 'center' }}>Add list</T>
-          </Pressable>
-
-          {lists.length === 0 ? <Empty>No lists. Use the + on the left to add one.</Empty> : null}
+          {lists.length === 0 ? <Empty>No lists. Use Add list to create one.</Empty> : null}
           {lists.map((l, i) => (
             Platform.OS !== 'web' && i >= 2 && !mountedColumns[`${board.id}:${l.id}`] ?
             <View key={l.id} style={{width: colW, minHeight: 240}} /> :
@@ -285,6 +259,18 @@ export default function Board({ openTask }) {
               k={k}
             />
           ))}
+          <Pressable
+            onPress={() => setAddingList(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Add list"
+            style={({ pressed }) => ({
+              width: 44, minHeight: 112, paddingVertical: 8, borderRadius: 9, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line,
+              alignItems: 'center', justifyContent: 'center', gap: 8, opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Feather name="plus" size={16} color={c.muted} />
+            <View style={{ width: 20, height: 72, alignItems: 'center', justifyContent: 'center' }}><T size={12} weight="500" muted style={{ width: 72, textAlign: 'center', transform: [{ rotate: '-90deg' }] }}>Add list</T></View>
+          </Pressable>
         </ScrollView>
       </View>
 
@@ -314,7 +300,7 @@ export default function Board({ openTask }) {
             <Chip label="Bottom of list" active={project.kanbanViews?.[board.id]?.newTaskAtTop!==true} onPress={()=>setBoardView(board.id,{newTaskAtTop:false})}/>
           </View>
           <T size={12} muted>Power-Ups for this board</T>
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{[['github','GitHub references'],['calendar','Upcoming dates'],['aging','Card age'],['checklist','Acceptance progress']].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>)}</View>
+          <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{[['github','GitHub references'],['aging','Card age'],['checklist','Acceptance progress']].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>)}</View>
           {(project.automationCommands||[]).filter(c=>c.trigger==='boardButton'&&(!c.boardId||c.boardId===board.id)&&c.enabled).map(c=><Button key={c.id} small variant="secondary" label={`Run: ${c.name}`} onPress={()=>runCommand(c.id,'',board.id)}/>) }
         </View>
       </Sheet>

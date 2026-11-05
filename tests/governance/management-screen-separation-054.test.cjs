@@ -17,7 +17,7 @@ test('Projects, Programs and Portfolios have independent screens and one connect
   assert.match(source,/projectRelations\.cjs/);
  }
  assert.equal(fs.existsSync(path.join(root,'src/screens/ProjectsPrograms.js')),false);
- assert.match(app,/group: 'Governance'/);
+ assert.match(read('src/app/navigation/sections.cjs'),/group: 'Governance'/);
  assert.doesNotMatch(read('src/screens/workspace/Workspace.js'),/export function Portfolios\(/);
 });
 

@@ -35,9 +35,11 @@ test('wide shell shows sidebar and toolbar, phone shell retains bottom tabs; ove
   assert.match(app, /\{wide \? <Sidebar/);
   assert.match(app, /\{wide \? <TopBar/);
   assert.match(app, /!wide \? <TabBar/);
-  assert.match(menu, /accessibilityLabel="Use desktop layout"/);
+  assert.match(app, /onDesktopLayout|onAutoLayout/);
   assert.match(menu, /accessibilityLabel="Return to automatic layout"/);
-  assert.match(app, /onDesktopLayout=\{\(\) => \{ setMenu\(false\); setPreference\('desktop'\); \}\}/);
+  const more = read('src/screens/more/More.js'); // the phone's way to the desktop layout
+  assert.match(more, /label="Desktop layout"/);
+  assert.match(more, /setPreference\('desktop'\)/);
   assert.match(bars, /const compact = width < 1120/);
   assert.match(bars, /<ProjectSwitcher onPickProject=\{onPickProject\} compact=\{compact\}/);
 });
