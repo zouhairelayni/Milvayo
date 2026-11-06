@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { radius, useTheme } from '../../ui/theme/theme';
-import { T, useLayoutPreference } from '../../ui/ui';
+import { ScreenIntro, T, useLayoutPreference } from '../../ui/ui';
 import { Brand, WorkspaceSwitcher } from '../../components/shell/Menus';
 import { moreGroups } from '../../app/navigation/sections.cjs';
 import { useProjectTools } from '../../store/useProjectTools';
@@ -41,6 +41,7 @@ export default function More({ go }) {
   const [managing, setManaging] = useState(false);
   const web = Platform.OS === 'web';
   return <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 96, gap: 20 }} showsVerticalScrollIndicator={false}>
+    <ScreenIntro title="Workspace tools" description="Manage delivery, governance and the way Milvayo works for you."/>
     <Brand narrow />
     <WorkspaceSwitcher />
     {moreGroups(tools).map(g => {

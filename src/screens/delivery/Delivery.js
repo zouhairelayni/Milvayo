@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {EditRow,Labeled,DangerConfirm,Fold} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Bar, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
+import { Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -80,6 +80,7 @@ export function Sprints({ openTask }) {
     title="Sprints"
     subtitle={active ? `${active.name} · ${fmt(active.start)} to ${fmt(active.end)}` : 'Plan iterations, track delivery and manage the backlog'}
   >
+    <ScreenIntro title="Sprint planning" description={active ? `${active.name} · ${fmt(active.start)} to ${fmt(active.end)}` : 'Plan iterations, then track delivery against the frozen sprint history.'}/>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
       {s.sprints.map(sp => <Chip key={sp.id} label={`${sp.name} · ${sp.state}`} active={sp.id === selected?.id}
         onPress={() => { setSelectedId(sp.id); setConfirm(''); setBacklogLimit(25); }} />)}

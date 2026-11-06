@@ -14,7 +14,12 @@ test('Timeline control inventory: Items, First task, Today, Critical path, Paren
   for (const label of ['Hide items', 'Show items', 'First task', 'Today', 'Critical path', 'Parent tasks', 'To schedule', 'Remove', 'Keep', 'Move after predecessors', 'Schedule the sample tasks']) assert.ok(s.includes(label), label);
   for (const callback of ['goFirst', 'goToday(true)', 'setShowItems(!showItems)', "setTaskPanel('parents')", "setTaskPanel('schedule')", 'setShowCritical(v=>!v)', 'onCommit={bar.onCommit}', 'onPreview={bar.onPreview}', 'onLink={bar.onLink}', 'onClose={()=>setTaskPanel(null)}', 'onAccessibilityTap={() => onOpen(t.id)}']) assert.ok(s.includes(callback), callback);
   assert.match(s, /kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom/);
-  assert.match(s, /const chooseZoom = value => \{ pendingZoom.current = null; pinch.reset\(\); setZoom\(value\); setZoomFactor\(1\); \}/);
+  const preset = s.slice(s.indexOf('  function chooseZoom(value)'), s.indexOf('  const zoomHeader'));
+  assert.match(preset, /timelineZoom.rebaseZoom/);
+  assert.match(preset, /pendingZoom.current = \{ scroll, canvasWidth: width \* span \}/);
+  assert.match(preset, /horizontalOffset.setValue\(scroll\)/);
+  assert.match(preset, /setScrollXPaint\(scroll\)/);
+  assert.match(preset, /setZoom\(value\); setZoomFactor\(1\)/);
   assert.match(s, /L\.onPreview\(L\.t\.id, p\.start, p\.due\)/);
   assert.match(s, /Animated\.multiply\(horizontalOffset, -1\)/);
   const top = Number(s.match(/const BAR_TOP = (\d+)/)[1]); const height = Number(s.match(/const BAR_H = (\d+)/)[1]);
@@ -40,7 +45,8 @@ test('Calendar has daily weekday/date cells at Days zoom, with sparse readable t
     assert.ok(ticks.every((t, i) => t >= 0 && t < 1000 && (!i || (t - ticks[i - 1]) * w >= (zoom === 'Days' ? 28 : zoom === 'Weeks' ? 70 : 78))));
   }
   const s = read('src/screens/timeline/Timeline.js');
-  assert.match(s, /getUTCDay\(\)/); assert.match(s, /getUTCDate\(\)/);
+  assert.match(s, /display\.calendarLabels\(START, dayTicks\)/);
+  assert.deepEqual(display.calendarLabels('2026-11-06', [0])[0], { index: 0, day: 6, weekday: 'F', month: 'Nov', iso: '2026-11-06' });
   assert.match(s, /today \? c\.accentText : c\.muted/);
 });
 

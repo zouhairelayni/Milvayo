@@ -49,17 +49,15 @@ export function ThemeProvider({ children }) {
   const setPref = (value) => {changeMode(value);AsyncStorage.setItem('milvayo-appearance-v1',value).catch(()=>{});};
   const setAccent = (value) => {if(!ACCENTS.some(a=>a.id===value))return;changeAccent(value);AsyncStorage.setItem(STORAGE_KEY,value).catch(()=>{});};
   const mode = pref === 'system' ? (system === 'dark' ? 'dark' : 'light') : pref;
-  // Change the actual native launcher icon in installed builds; on web update
-  // the favicon and install manifest. Do not switch before stored preferences load.
+  // Only web updates its favicon/install manifest automatically after restoration.
+  // Native launcher changes require the separate confirmed Settings action.
   useEffect(() => {
     if (!restored) return;
     if (Platform.OS === 'web') {
       syncLauncherIcon(accentPref, mode);
       return;
     }
-    // Avoid repeated Android activity-alias toggles while tapping swatches.
-    const handle = setTimeout(() => { syncLauncherIcon(accentPref, mode); }, 450);
-    return () => clearTimeout(handle);
+    // Native activity aliases can restart the Activity: apply only after explicit confirmation.
   }, [accentPref, mode, restored]);
   const value = useMemo(
     () => {

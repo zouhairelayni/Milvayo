@@ -1,3 +1,22 @@
+## v0.6.3 — Performance, Timeline and workspace refinement (2026-11-06)
+
+- Relabeled this pending release as 0.6.3; synchronized package/app versions and Android/iOS build numbers at 63. Prior runtime evidence was collected under 0.6.2; this relabel changes metadata only.
+- Theme selection no longer changes native launcher components automatically. Settings offers a separate confirmed Apply launcher icon action; cancellation leaves the app running. Pending workspace saves must succeed before an icon change can proceed.
+- Replaced the alternate-icon library's Android runtime at prebuild with an original Milvayo adapter. It reads actual component state and enables exactly one configured entry, disabling stale aliases; Android 13+ uses an atomic package-manager update. The upstream assets, aliases and iOS implementation remain in use.
+- Added Expo SDK 58's compatible expo-system-ui to support Android system appearance. Requires a new installed build; Fast Refresh cannot add native modules or replace Kotlin code.
+- Timeline uses a gesture-aware native chart ScrollView simultaneous with pinch, without disabling native scrolling during activation. Added focal zoom buttons, finite commit validation and diagnostic zoom breadcrumbs. Preset changes immediately rebase the drawing and calendar offsets, fixing a blank Weeks/Months canvas until the next scroll. Preserved task move/resize semantics and the 8192px canvas limit.
+- Retain bounded previous-run diagnostic breadcrumbs even without a JS exception. Updated Android builds optionally read OS main-process exit history on the next start, identifying native/Java crashes, ANR and explicit low-memory records without inferring a crash from a missing exit or an OS signal. Native runtime acceptance remains required.
+- Limited the test runner to two concurrent processes for phone/Termux environments. No project-data or import-format migration.
+- Fixed the web Board mark’s invalid boolean DOM accessibility attribute. Brand loading is static and workspace/theme restoration run concurrently instead of waiting for the 3.7-second logo animation.
+- Moved shared-value-bearing gesture relationships outside core Animated’s recursive prop traversal. Pinch previews counter-scale calendar/bar text, milestone glyphs and link dots; chart geometry keeps one shared timescale. Strict logging remains enabled.
+- Added 18px translucent SVG zoom magnifiers with 44px targets, tooltips, focus/hover/pressed/disabled states and a coalesced per-frame commit path. Calendar labels use bounded UTC selectors; dependency routes are cached separately from viewport filtering.
+- Gave the chart an explicit vertical extent and compute its visible rows from the owning Page scroll position, including trailing scroll events. Direct Chromium checks cover the final row in 34- and 1,000-task fixtures across presets, wheel and keyboard scrolling.
+- Refined Overview into a compact fact rail and clearer action hierarchy; aligned screen introductions across Board, Tasks, Sprints, Projects, Programs, Portfolios, Settings and More. Added project name/code search with progressive results, readable line heights, refined Board cards, accessible control states and cached Board drag order. Existing accent palettes, domain rules and data formats remain.
+- Added private warning fingerprints and startup/zoom timing correlations. Historical warning totals and missing clean exits are not treated as proof of a specific warning or crash.
+- Validation: 771/771 tests, source/worklet parsing, dependency compatibility and direct Chromium checks pass. Web sheets expose a named dialog and support Escape dismissal. Current evidence, limitations and reversible update plan: `docs/qa/remediation-062/ENGINEERING-REPORT.md`. No native/production builds, commit, push or deployment. Android/iOS runtime and release-mode performance remain acceptance gates.
+
+---
+
 ## v0.6.1 — Dynamic Theme Icons (2026-11-05)
 
 - Implemented native Android and iOS alternate launcher icons.

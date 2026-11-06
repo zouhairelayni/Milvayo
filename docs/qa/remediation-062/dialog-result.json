@@ -1,0 +1,9 @@
+{
+  "opened": {
+    "role": "dialog",
+    "name": "Task details",
+    "modal": "true"
+  },
+  "closedByEscape": true,
+  "console": []
+}

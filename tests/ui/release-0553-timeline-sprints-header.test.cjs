@@ -23,14 +23,14 @@ test('Calendar stays pinned and is translated directly from chart native scroll,
   assert.match(t, /Animated\.multiply\(horizontalOffset, -1\)/);
   assert.match(t, /<Animated\.View pointerEvents="none"/);
   assert.match(t, /transform: \[\{ translateX: calendarShift \}\]/);
-  assert.match(t, /<Animated\.ScrollView\s+ref=\{chartRef\}/);
+  assert.match(t, /<TimelineScrollView\s+simultaneousWith=\{pinch.gesture\}\s+ref=\{chartRef\}/);
   assert.match(t, /onScroll=\{horizontalScroll\}/);
   assert.match(t, /useNativeDriver: Platform\.OS !== 'web'/);
   assert.doesNotMatch(t, /calendarRef|<ScrollView ref=\{calendarRef\}/);
   const header=t.indexOf('<Chip label={showItems');
   const date=t.indexOf('<Animated.View pointerEvents="none"');
   const page=t.indexOf('<Page\n');
-  const chart=t.indexOf('<Animated.ScrollView\n');
+  const chart=t.indexOf('<TimelineScrollView\n');
   assert.ok(header>=0 && header<date && date<page && page<chart);
   assert.match(t, /topPadding=\{0\}/);
   assert.match(t, /borderTopWidth: 0,/);

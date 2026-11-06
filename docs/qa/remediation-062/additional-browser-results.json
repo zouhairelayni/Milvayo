@@ -1,0 +1,37 @@
+{
+  "layouts": [
+    {
+      "width": 320,
+      "documentWidth": 320,
+      "sidebar": false,
+      "home": true
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "sidebar": false,
+      "home": true
+    },
+    {
+      "width": 768,
+      "documentWidth": 768,
+      "sidebar": false,
+      "home": true
+    }
+  ],
+  "keyboard": {
+    "owner": {
+      "height": 823,
+      "max": 1144
+    },
+    "end": 1144,
+    "home": 0
+  },
+  "taskDialog": {
+    "dialog": false,
+    "dismiss": [
+      "Dismiss Task details"
+    ]
+  },
+  "console": []
+}

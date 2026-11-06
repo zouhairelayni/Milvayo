@@ -1,7 +1,7 @@
 // /src/gestures/TimelinePinch.native.js
 import { useCallback, useEffect, useRef } from 'react';
 import { View } from 'react-native';
-import { VirtualGestureDetector, usePinchGesture } from 'react-native-gesture-handler';
+import { GestureDetector, usePinchGesture } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 const { pinchZoom } = require('../timeline/timelineZoom.cjs');
@@ -28,6 +28,7 @@ export function useTimelinePinch(options) {
   useEffect(() => () => { latest.current.onEnd(); }, []);
   const gesture = usePinchGesture({
     enabled,
+    cancelsJSResponder: true,
     onActivate: e => {
       running.set(true); ready.set(false);
       basis.set({ width, scroll: 0, anchor: e.focalX, factor: e.scale > 0 ? e.scale : 1, count: e.numberOfPointers });
@@ -58,13 +59,25 @@ export function useTimelinePinch(options) {
     },
   });
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: preview.get().translate }, { scaleX: preview.get().ratio }] }));
-  return { gesture, style, reset };
+  const labelStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: 1 / preview.get().ratio }] }));
+  const previewTo = useCallback((nextWidth, scroll) => {
+    const o = latest.current;
+    preview.set({ width: nextWidth, scroll, ratio: nextWidth / o.width, translate: o.getScroll() - scroll });
+  }, [preview]);
+  const handle = useRef({});
+  Object.assign(handle.current, { gesture, style, labelStyle, reset, previewTo });
+  return handle.current;
 }
 
 // The existing TimelineGestureHost supplies the stable intercepting ancestor.
 export function TimelinePinchArea({ pinch, children }) {
-  return <VirtualGestureDetector gesture={pinch.gesture}><View collapsable={false} style={{ flex: 1 }}>{children}</View></VirtualGestureDetector>;
+  return <GestureDetector gesture={pinch.gesture}><View collapsable={false} style={{ flex: 1 }}>{children}</View></GestureDetector>;
 }
 export function TimelinePinchCanvas({ pinch, style, children }) {
   return <Animated.View style={[style, { transformOrigin: 'top left' }, pinch.style]}>{children}</Animated.View>;
+}
+
+// Counter-scale only glyph containers: their position follows geometry while text keeps its natural width.
+export function TimelinePinchLabel({ pinch, style, center = false, children }) {
+  return <Animated.View style={[style, { transformOrigin: center ? 'center' : 'left center' }, pinch.labelStyle]}>{children}</Animated.View>;
 }

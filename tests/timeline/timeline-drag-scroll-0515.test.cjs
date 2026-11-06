@@ -61,7 +61,7 @@ test('Timeline keeps the dragged bar mounted and whole, and stops stale auto-scr
   assert.match(t, /dragFollow\.isStale\(Date\.now\(\), k\.beat, BEAT_LIMIT_MS\)/);
   assert.doesNotMatch(t, /Platform\.OS !== 'web' && dragFollow\.isStale/, 'web beats too, so the watchdog covers it');
   // the existing contract: native chart scrolling is never disabled during a drag
-  assert.match(t, /scrollEnabled=\{!pinching && \(Platform\.OS === 'web' \? !active : true\)\}/);
+  assert.match(t, /scrollEnabled=\{Platform\.OS === 'web' \? !pinching && !active : true\}/);
 });
 
 test('web hook: a touch drag survives the browser pan, ends cleanly and beats', () => {

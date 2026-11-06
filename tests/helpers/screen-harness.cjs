@@ -10,7 +10,8 @@ const { palette } = require('../../src/ui/theme/themePalette.cjs');
 function screenHarness(file, store, extra = {}) {
   const stateByComponent = new Map();
   let slots = [];
-  const effects = [];
+  const effects = [], frames = new Map();
+  let frameSerial = 0;
   const headers = {};
   let cursor = 0;
   const hooks = {
@@ -66,8 +67,10 @@ function screenHarness(file, store, extra = {}) {
     if (id.endsWith('/labelPalette.cjs')) return require('../../src/ui/labelPalette.cjs');
     if (id.endsWith('/taskWorkflows.cjs')) return require('../../src/domain/taskWorkflows.cjs');
     if (id.endsWith('/planning.cjs')) return require('../../src/domain/planning.cjs');
+    if (id.endsWith('/zoomQueue.cjs')) return require('../../src/timeline/zoomQueue.cjs');
     if (id.endsWith('/gantt.cjs')) return require('../../src/timeline/gantt.cjs');
     if (id === './dueSoon.cjs') return require('../../src/screens/tasks/dueSoon.cjs');
+    if (id === './TimelineZoomControls') return { __esModule: true, default: 'TimelineZoomControls' };
     if (id === './DueSoon') return 'DueSoon';
     if (id.endsWith('/management/Management')) return { TaskConfiguration: 'TaskConfiguration' };
     if (id.endsWith('/TaskFields')) return { Field: 'Field', InlineDrop: 'InlineDrop', DateField: 'DateField', CustomValueInput: 'CustomValueInput' };
@@ -78,9 +81,10 @@ function screenHarness(file, store, extra = {}) {
     if (id === './today.cjs') return require('../../src/screens/overview/today.cjs');
     throw Error('Unmocked screen import: ' + id);
   };
-  vm.runInNewContext('(function(require,module,exports){' + code + '\n})', {})(req, m, m.exports);
+  vm.runInNewContext('(function(require,module,exports){' + code + '\n})', { requestAnimationFrame: fn => { frames.set(++frameSerial, fn); return frameSerial; }, cancelAnimationFrame: id => frames.delete(id) })(req, m, m.exports);
   return {
     headers,
+    flushFrames() { const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn()); },
     render(name = 'default', props = {}) {
       const component = typeof name === 'function' ? name : m.exports[name];
       if (!stateByComponent.has(component)) stateByComponent.set(component, []);

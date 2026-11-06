@@ -1,6 +1,6 @@
 // /src/ui/uiLayout.js
 import { useRef } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { radius, useTheme } from './theme/theme';
 import { Card, T, useWide } from './uiBase';
@@ -28,6 +28,7 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
       <View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: compact && wide ? 'center' : 'flex-end', alignItems: compact && wide ? 'center' : undefined, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Dismiss ${title || 'sheet'}`} onPress={onClose} style={compact ? { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } : { flex: 1 }} />
         <View onTouchStart={startSwipe} onTouchEnd={finishSwipe} accessibilityViewIsModal onAccessibilityEscape={onClose}
+          {...(Platform.OS === 'web' ? { role: 'dialog', 'aria-modal': true, 'aria-label': title || 'Dialog' } : {})}
           style={{
             width: compact && wide ? 420 : wide ? 560 : '100%',
             maxWidth: compact && wide ? '90%' : undefined,
@@ -65,8 +66,8 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
 export function Page({ title, subtitle, actions, children, scrollRef, onScroll, scrollEnabled = true, scrollProps, topPadding }) {
   const wide = useWide();
   return (
-    <ScrollView ref={scrollRef} onScroll={onScroll} scrollEventThrottle={16} scrollEnabled={scrollEnabled} {...scrollProps} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: wide ? 32 : 16, paddingTop: topPadding ?? (wide ? 24 : 16), paddingBottom: wide ? 72 : 96 }}>
-      <View style={{ width: '100%', minWidth: 0, alignSelf: 'stretch', gap: wide ? 22 : 16 }}>
+    <ScrollView ref={scrollRef} onScroll={onScroll} scrollEventThrottle={16} scrollEnabled={scrollEnabled} {...scrollProps} style={{ flex: 1, minHeight: 0, minWidth: 0 }} contentContainerStyle={{ paddingHorizontal: wide ? 32 : 16, paddingTop: topPadding ?? (wide ? 24 : 16), paddingBottom: wide ? 72 : 96 }}>
+      <View style={{ width: '100%', maxWidth: 1440, minWidth: 0, alignSelf: 'center', gap: wide ? 24 : 20 }}>
         {actions ? <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>{actions}</View> : null}
         {children}
       </View>
@@ -81,7 +82,7 @@ export function Grid({ children, gap = 12 }) {
 // A grid cell: `wide` basis on large screens, `mobile` basis on phones.
 export function Cell({ children, wide: wBasis = '48%', mobile = '100%' }) {
   const isWide = useWide();
-  return <View style={{ flexBasis: isWide ? wBasis : mobile, flexGrow: 1, flexShrink: 1, minWidth: isWide ? 240 : 0 }}>{children}</View>;
+  return <View style={{ flexBasis: isWide ? wBasis : mobile, flexGrow: 1, flexShrink: 1, minWidth: isWide ? 160 : 0 }}>{children}</View>;
 }
 
 export function Stat({ label, value, hint, accent, onPress }) {
@@ -112,4 +113,30 @@ export function Empty({ children }) {
       <T muted center>{children}</T>
     </View>
   );
+}
+
+// A shared introduction pairs a screen's job with its next action, without another container card.
+export function ScreenIntro({ title, description, action }) {
+  const wide = useWide();
+  return <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'stretch', justifyContent: 'space-between', gap: 12 }}>
+    <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+      <T size={22} weight="600" accessibilityRole="header">{title}</T>
+      {description ? <T muted size={13} style={{ maxWidth: 680, lineHeight: 20 }}>{description}</T> : null}
+    </View>
+    {action ? <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>{action}</View> : null}
+  </View>;
+}
+
+// Compact, scan-aligned facts let the task content carry the detail, instead of a grid of KPI cards.
+export function MetricStrip({ items }) {
+  const { c } = useTheme();
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.line, paddingVertical: 8, gap: 8 }}>
+    {items.map(item => <Pressable key={item.label} disabled={!item.onPress} onPress={item.onPress}
+      accessibilityRole={item.onPress ? 'button' : undefined} accessibilityLabel={`${item.label}, ${item.value}`}
+      style={({ pressed }) => ({ flex: 1, minWidth: 116, minHeight: 76, paddingHorizontal: 12, paddingVertical: 8, gap: 4, borderRadius: 8, backgroundColor: pressed ? c.surfaceAlt : 'transparent' })}>
+      <T size={12} muted>{item.label}</T>
+      <T size={26} weight="600" color={item.color} style={{ fontVariant: ['tabular-nums'] }}>{item.value}</T>
+      {item.hint ? <T size={12} muted>{item.hint}</T> : null}
+    </Pressable>)}
+  </View>;
 }

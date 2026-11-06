@@ -8,8 +8,8 @@ const path = require('node:path');
 const src = fs.readFileSync(path.join(__dirname, '../../src/screens/timeline/Timeline.js'), 'utf8');
 
 test('native timeline never toggles native scroll ownership during long-press drag', () => {
-  const matches = src.match(/scrollEnabled=\{!pinching && \(Platform\.OS === 'web' \? !active : true\)\}/g) || [];
-  assert.equal(matches.length, 2, 'native task dragging retains scroll ownership; only pinch locks it temporarily');
+  const matches = src.match(/scrollEnabled=\{Platform\.OS === 'web' \? !pinching && !active : true\}/g) || [];
+  assert.equal(matches.length, 2, 'native task dragging retains scroll ownership; pinch and drag must not disable the native scroll recognizer');
   assert.doesNotMatch(src, /scrollEnabled=\{!active\}/);
 });
 
@@ -24,5 +24,5 @@ test('background touch target only mounts for a visible dependency path', () => 
 
 test('horizontal dependency visibility considers routed polyline, not only endpoints', () => {
   assert.match(src, /const xs = pts\.map/);
-  assert.match(src, /Math\.min\(\.\.\.xs\), Math\.max\(\.\.\.xs\)/);
+  assert.match(src, /minX: Math\.min\(\.\.\.xs\), maxX: Math\.max\(\.\.\.xs\)/);
 });

@@ -17,11 +17,18 @@ const clean = (value, length = 450) => {
     .replace(/\b[A-Za-z0-9_-]{40,}\b/g, '[REDACTED TOKEN]')
     .slice(0, length);
 };
+const warningKind = args => {
+  const message = args.filter(x => typeof x === 'string').join(' ');
+  if (/Reanimated.*Reading from|Reading from.*component render/.test(message)) return 'reanimated-render-read';
+  if (/non-boolean attribute.*accessible|accessible.*non-boolean attribute/.test(message)) return 'svg-accessibility-prop';
+  if (/pointerEvents.*deprecated/.test(message)) return 'web-pointer-events-deprecation';
+  return 'unclassified';
+};
 const bounded = (a, max) => a.length > max ? a.slice(-max) : a;
 const fresh = (runId, now, meta = {}) => ({
   schema: 1, runId, startedAt: now, updatedAt: now, active: true, screen: 'overview',
   platform: meta.platform || 'unknown', os: meta.os || 'unknown', version: meta.version || 'unknown',
-  startupEvents: [], events: [], crashes: [], slow: [], warnings: 0, errors: 0, screenOpens: {}, render: {}, freezeMs: 0,
+  startupEvents: [], events: [], crashes: [], slow: [], warnings: 0, warningKinds: {}, errors: 0, screenOpens: {}, render: {}, freezeMs: 0,
   previous: null,
 });
 const addEvent = (state, type, detail, at = Date.now()) => {
@@ -49,6 +56,7 @@ const addSlow = (state, type, name, ms, at = Date.now()) => {
   return state;
 };
 const fmtTime = t => t ? new Date(t).toISOString() : 'unknown';
+const exitLabels = { 1:'self exit', 2:'OS signal (cause not inferred)', 3:'low memory', 4:'Java crash', 5:'native crash', 6:'ANR', 7:'initialization failure', 8:'permission change', 9:'excessive resource use', 10:'user requested', 11:'user stopped', 12:'dependency exited', 13:'other', 14:'app freezer', 15:'package state change', 16:'package updated' };
 const reportCrash = (s) => [
   '=== MILVAYO CRASH REPORT ===',
   `app version: ${s.version} | platform: ${s.platform} | OS: ${s.os} | run: ${s.runId}`,
@@ -56,6 +64,7 @@ const reportCrash = (s) => [
   `screen: ${s.screen} | recorded JS exceptions: ${s.crashes.length}`,
   `last safe step: ${s.events.filter(e=>e.type==='screen opened' || e.type==='navigation').at(-1)?.detail || 'not recorded'}`,
   s.previous ? `previous session: ${s.previous.active ? 'No clean exit recorded (NOT proof of crash)' : 'backgrounded/ended'} at ${fmtTime(s.previous.updatedAt)}` : 'previous session: unavailable',
+  ...(s.nativeExit ? [`latest Android-recorded process exit: ${exitLabels[s.nativeExit.reason] || 'unknown'} (reason ${s.nativeExit.reason}) at ${fmtTime(s.nativeExit.timestamp)}; OS history, may predate the previous JS run`] : []),
   '', ...s.crashes.slice().reverse().flatMap(c => [
     `--- ${fmtTime(c.at)} | ${c.source} | ${c.screen} | count ${c.count} ---`,
     `reason: ${c.name}: ${c.message}`, `fatal handler: ${c.fatal ? 'reported fatal JS exception' : 'no'}`,
@@ -63,6 +72,7 @@ const reportCrash = (s) => [
   ]), '--- startup steps (current run) ---', ...(s.startupEvents || []).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`), '--- recent steps ---', ...s.events.slice(-32).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
   ...(s.previous?.crashes?.length ? ['--- previous-run JS exceptions (not current-run counts) ---',
     ...s.previous.crashes.map(c => `${fmtTime(c.at)} | ${clean(c.source,40)} | ${clean(c.screen,48)} | ${clean(c.name,60)}: ${clean(c.message,450)}\n${clean(c.stack,2800)}`)] : []),
+  ...(s.previous?.events?.length ? ['--- previous-run last steps ---', ...s.previous.events.map(e => `${fmtTime(e.at)} | ${clean(e.type,30)} | ${clean(e.detail,170)}`)] : []),
   '', 'LIMITS: JS error boundaries do not capture native process terminations, OOM or ANR. A missing clean exit is not proof of a crash.',
 ].join('\n');
 const reportPerf = (s, now = Date.now()) => [
@@ -71,6 +81,7 @@ const reportPerf = (s, now = Date.now()) => [
   `run started: ${fmtTime(s.startedAt)} | uptime: ${Math.max(0, Math.round((now - s.startedAt)/1000))}s`,
   `current screen: ${s.screen} | longest observed JS timer delay: ${s.freezeMs}ms`,
   `Console errors and JS exceptions: ${s.errors} | console warnings: ${s.warnings}`,
+  'warnings by kind (message text withheld): ' + Object.entries(s.warningKinds || {}).map(([k,v])=>`${k} ${v}`).join(' · '),
   'navigation counts: ' + Object.entries(s.screenOpens).map(([k,v])=>`${k} ${v}`).join(' · '),
   'React renders (JS profiler, not native FPS):',
   ...Object.entries(s.render).map(([k, v]) => `${k}: ${v.count} renders, avg ${Math.round(v.sum / Math.max(1,v.count))}ms, max ${Math.round(v.max)}ms`),
@@ -79,4 +90,4 @@ const reportPerf = (s, now = Date.now()) => [
   '--- startup steps (current run) ---', ...(s.startupEvents || []).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`), '--- recent steps ---', ...s.events.slice(-25).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
   '', 'LIMITS: JS timers and React render costs are estimates, not a native FPS, memory, ANR or device CPU profiler.',
 ].join('\n');
-module.exports = {clean, fresh, addEvent, addCrash, addSlow, reportCrash, reportPerf};
+module.exports = {warningKind, clean, fresh, addEvent, addCrash, addSlow, reportCrash, reportPerf};

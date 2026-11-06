@@ -34,14 +34,15 @@ test('three ribbons move with the approved engineer timing and windows reveal in
  assert.ok(ribbonPath(0,.85).length>outlinePath(0,.85).length);
 });
 
-test('the startup screen is logo-only, 1x, before workspace mount, and respects saved palette',()=>{
+test('startup hydrates store concurrently, keeps static branding and respects saved palette',()=>{
  const app=read('src/app/ModernApp.js');
  const theme=read('src/ui/theme/theme.js');
  const brand=read('src/components/brand/BoardMorph.js');
  assert.match(app,/function ColdStartGate/);
- assert.match(app,/restored \? <BoardMorph size=\{200\} active speed=\{1\} onFinish=\{finish\}/);
- assert.match(app,/if \(complete\) return <StoreProvider><Shell \/><\/StoreProvider>/);
- assert.match(app,/<StatusBar hidden \/>/);
+ assert.match(app,/<StoreProvider>/);
+ assert.match(app,/restored \? <Shell\s*\/>/);
+ assert.match(app,/<BoardMorph size=\{64\}/);
+ assert.doesNotMatch(app,/if \(complete\)|onFinish=\{finish\}/);
  assert.match(theme,/setRestored\(true\)/);
  assert.match(theme,/setTimeout\(\(\)=>\{if\(active\)setRestored\(true\);\},1500\)/);
  assert.match(brand,/data\.palettes\[accentPref\]/);

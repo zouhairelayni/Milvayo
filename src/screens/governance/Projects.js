@@ -2,7 +2,7 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Bar, Card, Button, Chip, Page, Pill, Grid, Cell, Stat, Segmented, Input, T } from '../../ui/ui';
+import { ScreenIntro, Bar, Card, Button, Chip, Page, Pill, Grid, Cell, Stat, Segmented, Input, T } from '../../ui/ui';
 import { Fold, EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
 import { useStore, useStoreActions } from '../../store/store';
 const { projectSummary } = require('../../domain/projectRelations.cjs');
@@ -25,11 +25,17 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
  // Opened from a portfolio or program: show that project's governance detail.
  useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest);setTab('overview');onProjectRequestHandled?.()},[projectRequest]);
  const [creating,setCreating]=useState(false);
+ const [query,setQuery]=useState(''),[limit,setLimit]=useState(20);
+ const matching=open.filter(p=>`${p.name} ${p.code}`.toLowerCase().includes(query.trim().toLowerCase()));
  const openDetail=useCallback(id=>{setDetail(id);setTab('overview')},[]);
  const content=<>
-  <Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>
+  <ScreenIntro title="Projects" description={`${open.length} active projects · ${projects.length-open.length} archived. Open a project to inspect its delivery and governance.`} action={<Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>}/>
+
   <CreateProjectSheet visible={creating} onClose={()=>setCreating(false)} onCreated={openDetail}/>
-  {open.map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
+  <Input value={query} onChangeText={value=>{setQuery(value);setLimit(20)}} placeholder="Find a project by name or code" accessibilityLabel="Find a project"/>
+  {matching.slice(0,limit).map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
+  {matching.length>limit?<Button label={`Show more projects (${matching.length-limit} remaining)`} variant="secondary" onPress={()=>setLimit(n=>n+20)}/>:null}
+  {!matching.length?<T muted>No projects match this search. Try a different name or code.</T>:null}
   <T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>
  </>;
  const selected=workspace.projects.find(p=>p.id===detail&&p.id===workspace.selectedId);
@@ -51,7 +57,8 @@ const ProjectCard=memo(function ProjectCard({p,canArchive,canDelete,onOpen}){
     <Button label="Details" small variant="secondary" onPress={()=>{switchProject(p.id);onOpen(p.id)}}/>
    </View>
    <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Pill label={m.health} color={HEALTH_COLOR[m.health]||'#8C8577'}/><T size={12} muted>{Math.round(m.progress*100)}% progress · {m.approvedDocs}/10 approved documents</T></View>
-   <Bar value={m.progress} height={5}/><T size={12} muted>Spent ${Math.round(m.spent).toLocaleString()} of ${Math.round(m.budget).toLocaleString()} approved · {m.risks.length} open threats</T>
+   <Bar value={m.progress} height={5}/>
+   <View style={{flexDirection:'row',flexWrap:'wrap',gap:16}}><View style={{gap:3,flex:1,minWidth:120}}><T size={12} muted>Budget used</T><T size={15} weight="600">${Math.round(m.spent).toLocaleString()} / ${Math.round(m.budget).toLocaleString()}</T></View><View style={{gap:3}}><T size={12} muted>Open threats</T><T size={15} weight="600">{m.risks.length}</T></View></View>
    <EditRow title="Project settings" summary="Name, code, description and management">
     {editing?<View style={{gap:10}}>
      <Labeled title="Name" value={name} onChange={setName}/><Labeled title="Code" value={code} onChange={setCode}/>

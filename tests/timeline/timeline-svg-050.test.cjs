@@ -31,7 +31,7 @@ test('viewBox renders global chart coordinates in bounded native SVG without sca
 
 test('timeline keeps all scheduled tasks and drawing remains windowed without row paging', () => {
   assert.match(src, /const rows = allScheduled/);
-  assert.match(src, /viewport\.intersectsRows\(pr, tr, firstPaint, lastPaint\)/);
+  assert.match(src, /viewport\.intersectsRows\(rowIndex\[l\.pid\], rowIndex\[l\.tid\], firstPaint, lastPaint\)/);
   assert.match(src, /drawnBars\.map/);
   assert.match(src, /<Svg width=\{paintWidth\} height=\{paintH\}/);
   assert.doesNotMatch(src, /Next rows|Previous rows|Next window|Previous window/);

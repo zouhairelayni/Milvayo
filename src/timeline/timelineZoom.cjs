@@ -18,4 +18,11 @@ function previewWindow(width, scroll, viewportWidth) {
   return { left: Math.max(0, scroll - viewportWidth * 4), right: Math.min(width, scroll + viewportWidth * 5) };
 }
 
-module.exports = { pinchZoom, previewWindow };
+// Rebase every density change, including presets which may exceed a pinch's 4x limit.
+function rebaseZoom(width, nextWidth, scroll, span, viewportWidth) {
+  const canvas = nextWidth * span;
+  const previous = Math.max(0, Math.min(Math.max(0, width * span - viewportWidth), scroll));
+  const focal = viewportWidth / 2;
+  return Math.max(0, Math.min(Math.max(0, canvas - viewportWidth), (previous + focal) * nextWidth / width - focal));
+}
+module.exports = { pinchZoom, previewWindow, rebaseZoom };

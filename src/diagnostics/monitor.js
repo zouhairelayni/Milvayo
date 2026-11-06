@@ -3,6 +3,7 @@
 import { AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import core from './core.cjs';
+import { readNativeExit } from './nativeExit';
 import app from '../../app.json';
 const KEY = '@milvayo/diagnostics/v1';
 const VERSION = app.expo.version; // one place to bump per release
@@ -59,11 +60,15 @@ async function start(){
       // Preserve reports for the previous run only. Never imply that Expo Go
       // being killed by Android was a proven app crash.
       state.previous = {active:!!old.active,updatedAt:old.updatedAt,runId:old.runId,version:old.version,
+        events:Array.isArray(old.events)?old.events.slice(-16):[],
         crashes:Array.isArray(old.crashes)?old.crashes.slice(-12):[]};
       // Keep current-run counters and traces consistent. Previous-run status
       // stays in the explicitly labelled summary, never mixed into these arrays.
     }
   }catch { /* diagnostics must never block startup */ }
+  // Read asynchronously after startup: Android history is evidence, missing history is not a diagnosis.
+  const generation = ioGeneration;
+  readNativeExit().then(exit => { if (exit && generation === ioGeneration) { state.nativeExit = exit; pushSave(); notify(); } }).catch(() => {});
   safeEvent('run started','local diagnostics enabled');
   appSubscription = AppState.addEventListener('change',status=>{
     isActive = status === 'active';
@@ -93,7 +98,7 @@ async function start(){
   // Retain original console methods. Logs are sanitized before persistence.
   originalWarn = console.warn;
   originalError = console.error;
-  console.warn = (...args)=>{try{state.warnings++;if(state.warnings <= 15)core.addEvent(state,'warning','console.warn (message withheld for privacy)');}catch{} originalWarn(...args);};
+  console.warn = (...args)=>{try{state.warnings++;const kind=core.warningKind(args);state.warningKinds[kind]=(state.warningKinds[kind]||0)+1;if(state.warnings <= 15)core.addEvent(state,'warning','console.warn (message withheld for privacy)');}catch{} originalWarn(...args);};
   console.error = (...args)=>{try{state.errors++;if(state.errors <= 15)core.addEvent(state,'console error','console.error (message withheld for privacy)');}catch{} originalError(...args);};
 }
 export const diagnosticMonitor = {start, recordScreen, recordAction, recordTransition,recordRender,captureError,snapshot,subscribe,clear,

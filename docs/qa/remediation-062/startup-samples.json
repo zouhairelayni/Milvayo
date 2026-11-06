@@ -1,0 +1,197 @@
+{
+  "mode": "Development; Metro already warm; browser cache disabled; document reloads with 34 local tasks; not native cold process startup",
+  "samples": [
+    {
+      "run": {
+        "firstOverviewMs": 702.2999999523163,
+        "firstAcceptedNavigationMs": 1065
+      },
+      "paint": [
+        {
+          "name": "first-paint",
+          "startTime": 576
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 576
+        }
+      ],
+      "scripts": [
+        {
+          "responseEnd": 442.09999990463257,
+          "duration": 379.59999990463257
+        }
+      ],
+      "startup": [
+        {
+          "at": 1793927548986,
+          "type": "run started",
+          "detail": "local diagnostics enabled"
+        },
+        {
+          "at": 1793927549003,
+          "type": "action",
+          "detail": "startup storage read started"
+        },
+        {
+          "at": 1793927549005,
+          "type": "action",
+          "detail": "startup storage read 2ms"
+        },
+        {
+          "at": 1793927549010,
+          "type": "action",
+          "detail": "startup normalize 5ms"
+        },
+        {
+          "at": 1793927549151,
+          "type": "action",
+          "detail": "navigation request: overview -> tasks; source=screen or menu"
+        },
+        {
+          "at": 1793927549151,
+          "type": "screen opened",
+          "detail": "tasks"
+        },
+        {
+          "at": 1793927549158,
+          "type": "action",
+          "detail": "shell mounted"
+        },
+        {
+          "at": 1793927549158,
+          "type": "screen opened",
+          "detail": "overview"
+        }
+      ]
+    },
+    {
+      "run": {
+        "firstOverviewMs": 579.7000000476837,
+        "firstAcceptedNavigationMs": 890.5
+      },
+      "paint": [
+        {
+          "name": "first-paint",
+          "startTime": 496
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 496
+        }
+      ],
+      "scripts": [
+        {
+          "responseEnd": 357.09999990463257,
+          "duration": 311.19999980926514
+        }
+      ],
+      "startup": [
+        {
+          "at": 1793927553931,
+          "type": "run started",
+          "detail": "local diagnostics enabled"
+        },
+        {
+          "at": 1793927553951,
+          "type": "action",
+          "detail": "startup storage read started"
+        },
+        {
+          "at": 1793927553951,
+          "type": "action",
+          "detail": "startup storage read 0ms"
+        },
+        {
+          "at": 1793927553953,
+          "type": "action",
+          "detail": "startup normalize 2ms"
+        },
+        {
+          "at": 1793927554064,
+          "type": "action",
+          "detail": "navigation request: overview -> tasks; source=screen or menu"
+        },
+        {
+          "at": 1793927554064,
+          "type": "screen opened",
+          "detail": "tasks"
+        },
+        {
+          "at": 1793927554069,
+          "type": "action",
+          "detail": "shell mounted"
+        },
+        {
+          "at": 1793927554069,
+          "type": "screen opened",
+          "detail": "overview"
+        }
+      ]
+    },
+    {
+      "run": {
+        "firstOverviewMs": 587.7999999523163,
+        "firstAcceptedNavigationMs": 874.2999999523163
+      },
+      "paint": [
+        {
+          "name": "first-paint",
+          "startTime": 424
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 424
+        }
+      ],
+      "scripts": [
+        {
+          "responseEnd": 284.59999990463257,
+          "duration": 239.09999990463257
+        }
+      ],
+      "startup": [
+        {
+          "at": 1793927558876,
+          "type": "run started",
+          "detail": "local diagnostics enabled"
+        },
+        {
+          "at": 1793927558895,
+          "type": "action",
+          "detail": "startup storage read started"
+        },
+        {
+          "at": 1793927558895,
+          "type": "action",
+          "detail": "startup storage read 0ms"
+        },
+        {
+          "at": 1793927558912,
+          "type": "action",
+          "detail": "startup normalize 17ms"
+        },
+        {
+          "at": 1793927559094,
+          "type": "action",
+          "detail": "navigation request: overview -> tasks; source=screen or menu"
+        },
+        {
+          "at": 1793927559094,
+          "type": "screen opened",
+          "detail": "tasks"
+        },
+        {
+          "at": 1793927559098,
+          "type": "action",
+          "detail": "shell mounted"
+        },
+        {
+          "at": 1793927559098,
+          "type": "screen opened",
+          "detail": "overview"
+        }
+      ]
+    }
+  ]
+}

@@ -9,8 +9,11 @@ import { useTheme, STATUS_COLOR, PRIORITY_COLOR } from '../../ui/theme/theme';
 import { TODAY, addDays, daysBetween, fmt } from '../../store/data';
 import { useHoldDrag } from '../../gestures/gesture';
 import { GestureArea } from '../../gestures/gestureSurface';
+import TimelineZoomControls from './TimelineZoomControls';
+import TimelineScrollView from '../../gestures/TimelineScrollView';
 import TimelineGestureHost from '../../gestures/TimelineGestureHost';
-import { useTimelinePinch, TimelinePinchArea, TimelinePinchCanvas } from '../../gestures/TimelinePinch';
+import { useTimelinePinch, TimelinePinchArea, TimelinePinchCanvas, TimelinePinchLabel } from '../../gestures/TimelinePinch';
+const { createZoomQueue } = require('../../timeline/zoomQueue.cjs');
 const timelineZoom = require('../../timeline/timelineZoom.cjs');
 const windowing = require('../../timeline/timelineWindow.cjs');
 const { clipBar } = windowing;
@@ -72,7 +75,7 @@ function extent(t, e, w, x) {
 // One task bar. Hold the body and drag to move it, hold a left or right edge and drag to change the start or
 // due date, hold the dot after the bar and drag onto another row to make that task wait for this one.
 // A quick tap on the body opens the task; a swipe still scrolls the chart.
-const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLeft, paintWidth, rowTop, target, critical, dragging, k, onPreview, onCommit, onOpen, onLink }) {
+const TaskBar = memo(function TaskBar({ pinch, t, start, due, origin, w, span, paintLeft, paintWidth, rowTop, target, critical, dragging, k, onPreview, onCommit, onOpen, onLink }) {
   const { c } = useTheme();
   const color = STATUS_COLOR[t.status];
   const live = useRef({});
@@ -150,12 +153,12 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
   // was never seen and the auto-scroll ran on forever.
   const whole = dragFollow.keepWhole(dragging, hot || ln.lifted);
   const dot = (
-    <View
+    <TimelinePinchLabel pinch={pinch} center><View
       style={{
         width: ln.lifted ? 18 : 11, height: ln.lifted ? 18 : 11, borderRadius: 9, backgroundColor: ln.lifted ? c.accent : color,
         borderWidth: 2, borderColor: c.surface,
       }}
-    />
+    /></TimelinePinchLabel>
   );
 
   if (t.milestone) {
@@ -169,19 +172,19 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
             position: 'absolute', left, top: rowTop + 19, width: 16, height: 16, zIndex: hot ? 5 : 1,
           }}
         >
-          <View
+          <TimelinePinchLabel pinch={pinch} center><View
             style={{
               width: 16, height: 16, transform: [{ rotate: '45deg' }], backgroundColor: c.accent, borderRadius: 3,
               borderWidth: target || hot ? 2 : 0, borderColor: c.ink,
             }}
-          />
+          /></TimelinePinchLabel>
         </GestureArea>
         <GestureArea drag={ln}
           style={{ position: 'absolute', left: left + 18, top: rowTop + 27 - HANDLE / 2, width: HANDLE, height: HANDLE, alignItems: 'center', justifyContent: 'center', zIndex: 3 }}
         >
           {dot}
         </GestureArea>
-        <T size={11} weight="600" numberOfLines={1} pointerEvents="none" style={{ position: 'absolute', left: left + 52, top: rowTop + 16, width: 200 }}>{t.title}</T>
+        <TimelinePinchLabel pinch={pinch} style={{ position: 'absolute', left: left + 52, top: rowTop + 16, width: 200 }}><T size={11} weight="600" numberOfLines={1} pointerEvents="none">{t.title}</T></TimelinePinchLabel>
       </>
     );
   }
@@ -214,7 +217,7 @@ const TaskBar = memo(function TaskBar({ t, start, due, origin, w, span, paintLef
         <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: color + '26' }} pointerEvents="none" />
         <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${done}%`, backgroundColor: color + '45' }} pointerEvents="none" />
         {/* The title always stays inside the pill; when the bar is short it is cut with an ellipsis */}
-        <T size={12} weight="500" numberOfLines={1} style={{ paddingHorizontal: 14 }} pointerEvents="none">{t.title}</T>
+        <TimelinePinchLabel pinch={pinch} style={{ paddingHorizontal: 14 }}><T size={12} weight="500" numberOfLines={1} pointerEvents="none">{t.title}</T></TimelinePinchLabel>
         {/* Grips show where to hold to resize */}
         <View pointerEvents="none" style={{ position: 'absolute', left: 6, top: 8, width: 3, height: 14, borderRadius: 2, backgroundColor: color, opacity: hot ? 1 : 0.7 }} />
         <View pointerEvents="none" style={{ position: 'absolute', right: 6, top: 8, width: 3, height: 14, borderRadius: 2, backgroundColor: color, opacity: hot ? 1 : 0.7 }} />
@@ -244,10 +247,6 @@ export default function Timeline({ openTask }) {
   const [zoomFactor, setZoomFactor] = useState(1);
   const [pinching, setPinching] = useState(false);
   const [pinchWindow, setPinchWindow] = useState(null);
-  const chooseZoom = value => { pendingZoom.current = null; pinch.reset(); setZoom(value); setZoomFactor(1); };
-  // Header zoom remains visible at every vertical scroll position.
-  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoomFactor === 1 ? zoom : 'custom', onChange:chooseZoom}), [zoom, zoomFactor]);
-  useHeaderActions('timeline', zoomHeader, screenActive);
   const [showCritical, setShowCritical] = useState(false);
   const [collapsed, setCollapsed] = useState([]); // parent tasks folded in the hierarchy list
   const [drag, setDrag] = useState(null); // temporary date edits
@@ -298,6 +297,7 @@ export default function Timeline({ openTask }) {
   const paintLeft = drawViewport.left;
   const paintWidth = drawViewport.width;
   const dayTicks = useMemo(() => display.ticks(span, zoomMode, w), [span, zoomMode, w]);
+  const calendar = useMemo(() => display.calendarLabels(START, dayTicks), [START, dayTicks]);
   const visibleTicks = dayTicks.filter((i) => viewport.intersects(i * w, i * w + 80, paintLeft, paintWidth));
   // NP533_WEEKENDS: shade only viewport-visible weekend columns in Days zoom. No full-canvas nodes.
   const weekendDays = [];
@@ -343,22 +343,60 @@ export default function Timeline({ openTask }) {
   }
   const k = kRef.current;
   const pendingZoom = useRef(null);
+  const zoomQueue = useRef(null);
+  const zoomCommit = useRef(null);
+  if (!zoomQueue.current) zoomQueue.current = createZoomQueue(fn => requestAnimationFrame(fn), id => cancelAnimationFrame(id), value => zoomCommit.current(value));
+  useEffect(() => () => zoomQueue.current.clear(), []);
   const pinch = useTimelinePinch({
     width: w, span, viewportWidth: viewportW, enabled: screenActive && !active && viewportW > 0,
     getScroll: () => k.scroll.x,
     onStart: () => {
+      zoomQueue.current.clear();
+      diagnosticMonitor.recordAction('timeline pinch started');
       k.pinching = true; k.pointer.valid = false;
-      chartRef.current?.scrollTo({ x: k.scroll.x, animated: false });
       setPinching(true); setPick(null);
       setPinchWindow(timelineZoom.previewWindow(gridW, k.scroll.x, viewportW));
     },
     onCommit: (width, scroll) => {
+      if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(scroll)) return;
+      diagnosticMonitor.recordAction(`timeline zoom committed: ${width.toFixed(3)}px/day`);
       pendingZoom.current = { scroll, canvasWidth: width * span };
       if (Math.abs(width - w) < 0.000001) settleZoom(true);
       else setZoomFactor(width / ZOOM[zoom]);
     },
     onEnd: () => { k.pinching = false; k.suppressUntil = Date.now() + 350; setPinching(false); setPinchWindow(null); },
   });
+  function chooseZoom(value) {
+    if (!Object.hasOwn(ZOOM, value)) return;
+    zoomQueue.current.clear();
+    const width = display.dayWidth(ZOOM[value], span);
+    const scroll = timelineZoom.rebaseZoom(w, width, k.scroll.x, span, viewportW);
+    pendingZoom.current = { scroll, canvasWidth: width * span };
+    // Rebase drawing and calendar immediately; native content-size acknowledgement follows.
+    k.scroll.x = scroll;
+    horizontalOffset.setValue(scroll);
+    setScrollXPaint(scroll); setPinchWindow(null); pinch.reset();
+    setZoom(value); setZoomFactor(1);
+    if (Math.abs(width - w) < 0.000001) settleZoom(true);
+    diagnosticMonitor.recordAction(`timeline preset: ${value}`);
+  }
+  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoomFactor === 1 ? zoom : 'custom', onChange:chooseZoom}), [zoom, zoomFactor, w, span, viewportW]);
+  useHeaderActions('timeline', zoomHeader, screenActive);
+  zoomCommit.current = result => {
+    pendingZoom.current = { scroll: result.scroll, canvasWidth: result.width * span, started: result.started };
+    if (Math.abs(result.width - w) < 0.000001) settleZoom(true);
+    else setZoomFactor(result.width / ZOOM[zoom]);
+    diagnosticMonitor.recordAction(`timeline zoom handler-to-rAF ${Date.now() - result.started}ms`);
+  };
+  function zoomBy(factor) {
+    const base = zoomQueue.current.pending || { width: w, scroll: k.scroll.x };
+    const focal = viewportW / 2;
+    const result = timelineZoom.pinchZoom(base.width, factor, focal, focal, base.scroll, span, viewportW);
+    const started = Date.now();
+    pinch.previewTo?.(result.width, result.scroll);
+    zoomQueue.current.push({ ...result, started });
+    diagnosticMonitor.recordAction(`timeline zoom input ${factor}`);
+  }
   function settleZoom(contentReady = false) {
     const pending = pendingZoom.current;
     if (!pending || Math.abs(pending.canvasWidth - gridW) > 1) return;
@@ -367,6 +405,7 @@ export default function Timeline({ openTask }) {
     horizontalOffset.setValue(offset);
     chartRef.current?.scrollTo({ x: offset, animated: false });
     setScrollXPaint(offset); setPinchWindow(null); pinch.reset();
+    if (pending.started) { diagnosticMonitor.recordAction(`timeline zoom handler-to-layout ${Date.now() - pending.started}ms`); delete pending.started; }
     if (contentReady) pendingZoom.current = null;
   }
   useLayoutEffect(() => { settleZoom(); }, [w, viewportW]);
@@ -392,15 +431,20 @@ export default function Timeline({ openTask }) {
 
   // A single vertical scroll contains every row. Only near-viewport rows mount
   // bars and links, preventing the all-at-once gesture/SVG crash on Android.
+  const gridOrigin = useRef(null);
   const refreshPaint = () => {
-    if (!gridRef.current) return;
-    gridRef.current.measureInWindow((_x, y) => {
-      const next = display.paintedRange(rows.length, y, Dimensions.get('window').height, ROW);
-      // A native ScrollView can report a transient detached/offscreen measurement
-      // during reconciliation. Never replace a valid window with zero mounted
-      // rows while the current screen is open: it produces a one-second flicker.
-      if (rows.length && next.first === next.last) return;
-      setPaint((prev) => prev.first === next.first && prev.last === next.last ? prev : next);
+    const apply = () => {
+      const next = display.paintedRange(rows.length, gridOrigin.current - k.scroll.y, k.size.vh || Dimensions.get('window').height, ROW);
+      setPaint(prev => prev.first === next.first && prev.last === next.last ? prev : next);
+    };
+    if (gridOrigin.current !== null) { apply(); return; }
+    if (!gridRef.current || !pageRef.current) return;
+    gridRef.current.measureInWindow((_x, gridY) => {
+      pageRef.current?.measureInWindow((_px, pageY) => {
+        if (!Number.isFinite(gridY) || !Number.isFinite(pageY)) return;
+        gridOrigin.current = gridY - pageY + k.scroll.y;
+        apply();
+      });
     });
   };
   // Jump to where the schedule begins (gantt.calendarDomain starts a few days before the first scheduled task).
@@ -562,7 +606,7 @@ export default function Timeline({ openTask }) {
 
   // Dependency lines run out of the bottom (or top) of the predecessor into the gap between rows, along the gap,
   // down (or up) at a spot where no bar stands, and into the left end of the successor, so they never cross a bar.
-  const links = useMemo(() => {
+  const routedLinks = useMemo(() => {
   // Reuse bar extents during path routing instead of recalculating date math
   // in every candidate lane for every dependency.
   const extents = rows.map((t) => extent(t, eff(t), w, x));
@@ -579,7 +623,7 @@ export default function Timeline({ openTask }) {
       // Keep links crossing the painted viewport even when their endpoints are
       // outside it. Previous versions required BOTH endpoints to be inside,
       // silently hiding most dependencies on a continuously scrolling chart.
-      if (!viewport.intersectsRows(pr, tr, firstPaint, lastPaint)) return;
+
       const down = tr > pr;
       const pRight = p.milestone ? x(pe.due) + w / 2 : x(pe.due) + w - 2;
       const sx = p.milestone ? pRight : Math.max(x(pe.start) + 10, pRight - 10);
@@ -600,12 +644,12 @@ export default function Timeline({ openTask }) {
       // endpoints are offscreen horizontally; test the *actual route*.
       if (!pts.every(point => point.every(Number.isFinite))) return;
       const xs = pts.map((point) => point[0]);
-      if (!viewport.intersects(Math.min(...xs), Math.max(...xs), paintLeft, paintWidth, 10)) return;
+
       found.push({
         key: `${pid}>${t.id}`,
         pid,
         tid: t.id,
-        pts,
+        pts, minX: Math.min(...xs), maxX: Math.max(...xs),
         d: roundPath(pts),
         color: LINK_COLORS[found.length % LINK_COLORS.length],
         x2: x2 - 2,
@@ -615,7 +659,8 @@ export default function Timeline({ openTask }) {
   });
   return found;
   // Only expensive path routing is memoized. Tap/drag callback props remain live.
-  }, [rows, tasksById, rowIndex, drag, firstPaint, lastPaint, w, START, gridW, paintLeft, paintWidth]);
+  }, [rows, tasksById, rowIndex, drag, w, START, gridW]);
+  const links = routedLinks.filter(l => viewport.intersectsRows(rowIndex[l.pid], rowIndex[l.tid], firstPaint, lastPaint) && viewport.intersects(l.minX, l.maxX, paintLeft, paintWidth, 10));
 
   // Distinguish missing render geometry from a project without visible links.
   // Log at most once on initial layout; never store task names or IDs.
@@ -681,10 +726,9 @@ export default function Timeline({ openTask }) {
     }
   }
 
-  const lastMeasure = useRef(0);
   const pageScrollProps = {
     // Native vertical scrolling keeps touch ownership throughout gestures.
-    onLayout: (e) => { k.size.vh = e.nativeEvent.layout.height; refreshMax(k); },
+    onLayout: (e) => { k.size.vh = e.nativeEvent.layout.height; gridOrigin.current = null; refreshMax(k); refreshPaint(); },
     onContentSizeChange: (cw, ch) => { k.size.ch = ch; refreshMax(k); },
   };
 
@@ -710,16 +754,15 @@ export default function Timeline({ openTask }) {
             <Animated.View pointerEvents="none" style={{ width: gridW, height: HEAD,
               transform: [{ translateX: calendarShift }] }}>
             <TimelinePinchCanvas pinch={pinch} style={{ width: gridW, height: HEAD }}>
-              {visibleTicks.map((i) => {
-                const iso = addDays(START, i);
-                const date = new Date(`${iso}T12:00:00Z`);
-                const today = iso === TODAY;
+              {calendar.filter(label => visibleTicks.includes(label.index)).map((label) => {
+                const i = label.index;
+                const today = label.iso === TODAY;
                 const daily = zoomMode === 'Days' && w >= 28;
-                return <View key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0,
+                return <TimelinePinchLabel pinch={pinch} center={daily} key={i} style={{ position: 'absolute', left: i * w, top: 0, bottom: 0,
                   width: daily ? w : 72, paddingLeft: daily ? 0 : 6, alignItems: daily ? 'center' : 'flex-start', justifyContent: 'center', gap: 4 }}>
-                  <T size={11} muted>{daily && date.getUTCDate() !== 1 ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'][date.getUTCDay()] : date.toLocaleDateString('en', { month: 'short', timeZone: 'UTC' })}</T>
-                  <T size={12} weight={today ? '600' : '400'} color={today ? c.accentText : c.muted} style={{ fontVariant: ['tabular-nums'] }}>{date.getUTCDate()}</T>
-                </View>;
+                  <T size={11} muted>{daily && label.day !== 1 ? label.weekday : label.month}</T>
+                  <T size={12} weight={today ? '600' : '400'} color={today ? c.accentText : c.muted} style={{ fontVariant: ['tabular-nums'] }}>{label.day}</T>
+                </TimelinePinchLabel>;
               })}
             </TimelinePinchCanvas>
             </Animated.View>
@@ -740,12 +783,11 @@ export default function Timeline({ openTask }) {
       title="Timeline"
       scrollRef={pageRef}
       topPadding={0}
-      scrollEnabled={!pinching && (Platform.OS === 'web' ? !active : true)}
+      scrollEnabled={Platform.OS === 'web' ? !pinching && !active : true}
       scrollProps={{ ...pageScrollProps, nestedScrollEnabled: true }}
       onScroll={(e) => {
         k.scroll.y = e.nativeEvent.contentOffset.y;
-        const now = Date.now();
-        if (now - lastMeasure.current > 110) { lastMeasure.current = now; refreshPaint(); }
+        refreshPaint();
       }}
     >
       <Card pad={0} style={{ overflow: 'hidden', borderTopWidth: 0,
@@ -774,15 +816,20 @@ export default function Timeline({ openTask }) {
           ) : null}
 
           {/* Native scrolling retains touch ownership during a gesture; web locks only after lift. */}
-          <View ref={boxRef} collapsable={false} style={{ flex: 1 }}>
+          <View ref={boxRef} collapsable={false} style={{ flex: 1, minWidth: 0, height: gridH, flexShrink: 0 }}>
+            <TimelineZoomControls onZoomIn={() => zoomBy(1.25)} onZoomOut={() => zoomBy(0.8)}
+              canZoomIn={timelineZoom.pinchZoom(w, 1.25, 0, 0, 0, span, viewportW).width > w + 0.000001}
+              canZoomOut={timelineZoom.pinchZoom(w, 0.8, 0, 0, 0, span, viewportW).width < w - 0.000001} />
             <TimelinePinchArea pinch={pinch}>
-            <Animated.ScrollView
+            <TimelineScrollView
+              simultaneousWith={pinch.gesture}
               ref={chartRef}
               horizontal
+              style={{ height: gridH, flexGrow: 0, flexShrink: 0 }}
               nestedScrollEnabled
               directionalLockEnabled
               showsHorizontalScrollIndicator
-              scrollEnabled={!pinching && (Platform.OS === 'web' ? !active : true)}
+              scrollEnabled={Platform.OS === 'web' ? !pinching && !active : true}
               scrollEventThrottle={16}
               onLayout={(e) => { k.size.vw = e.nativeEvent.layout.width; setViewportW(e.nativeEvent.layout.width); refreshMax(k); }}
               onScroll={horizontalScroll}
@@ -816,6 +863,7 @@ export default function Timeline({ openTask }) {
                     const e = eff(t);
                     return (
                       <TaskBar
+                        pinch={pinch}
                         key={t.id}
                         t={t}
                         start={e.start}
@@ -871,7 +919,7 @@ export default function Timeline({ openTask }) {
 
                 </View>
               </TimelinePinchCanvas>
-            </Animated.ScrollView>
+            </TimelineScrollView>
             </TimelinePinchArea>
           </View>
         </View>

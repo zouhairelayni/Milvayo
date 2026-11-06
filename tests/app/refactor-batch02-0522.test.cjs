@@ -55,7 +55,7 @@ test('ui.js only re-exports; every shared component is still exported once', () 
   assert.doesNotMatch(barrel, /function /);
   const files = ['src/ui/uiBase.js', 'src/ui/uiControls.js', 'src/ui/uiLayout.js', 'src/ui/downloadText.js'].map(read).join('\n');
   const names = [...files.matchAll(/^export (?:async )?(?:function|const) (\w+)/gm)].map((m) => m[1]).sort();
-  assert.deepEqual(names, ['Avatar', 'Bar', 'Button', 'Card', 'Cell', 'Chip', 'Empty', 'Grid', 'IconBtn', 'Input', 'LayoutProvider', 'Page', 'Pill', 'SectionTitle', 'Segmented', 'Sheet', 'Stat', 'T', 'downloadBytes', 'downloadText', 'useLayoutPreference', 'useWide']);
+  assert.deepEqual(names, ['Avatar', 'Bar', 'Button', 'Card', 'Cell', 'Chip', 'Empty', 'Grid', 'IconBtn', 'Input', 'LayoutProvider', 'MetricStrip', 'Page', 'Pill', 'ScreenIntro', 'SectionTitle', 'Segmented', 'Sheet', 'Stat', 'T', 'downloadBytes', 'downloadText', 'useLayoutPreference', 'useWide']);
 });
 
 test('no cycle: base imports no other ui file, controls only base, layout only base and controls', () => {

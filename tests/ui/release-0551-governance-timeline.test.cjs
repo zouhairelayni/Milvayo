@@ -76,7 +76,7 @@ test('Timeline ribbon, calendar and zoom remain visible while the Gantt rows scr
   assert.match(timeline,/<TimelineGestureHost>\s*<View style=\{\{ flex: 1 \}\}>/);
   const ribbon=timeline.indexOf('<Chip label={showItems'), calendar=timeline.indexOf('<Animated.View pointerEvents="none"');
   const page=timeline.indexOf('    <Page\n');
-  const chart=timeline.indexOf('<Animated.ScrollView\n              ref={chartRef}');
+  const chart=timeline.indexOf('<TimelineScrollView\n');
   assert.ok(ribbon>0&&calendar>ribbon&&page>calendar&&chart>page,'pinned ribbon and calendar precede the scrolling page');
   assert.match(timeline,/transform: \[\{ translateX: calendarShift \}\]/);
   assert.match(timeline,/useNativeDriver: Platform\.OS !== 'web'/);

@@ -67,5 +67,5 @@ test('Governance group exposes independent screens with one shared relationship 
 test('Page removes redundant title/subtitle header while preserving its actions row',()=>{
  const source=require('../helpers/ui-source.cjs')();assert.doesNotMatch(source,/subtitle \? <T/);
  assert.match(source,/actions \? <View style=/);
- assert.match(source,/width: '100%', minWidth: 0/);
+ assert.match(source,/width: '100%', maxWidth: 1440, minWidth: 0/);
 });

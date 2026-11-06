@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Bar, Button, Card, Cell, Grid, Page, Pill, SectionTitle, Sheet, Stat, T, useWide } from '../../ui/ui';
+import { ScreenIntro, MetricStrip, Bar, Button, Card, Cell, Grid, Page, Pill, SectionTitle, Sheet, Stat, T, useWide } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { STAGES, STATUS, fmt, gatesFor, isOverdue, progressOf } from '../../store/data';
@@ -31,9 +31,7 @@ export default function Overview({ openTask, go, openStatus, onNewTask, onOpenBa
 
   return (
     <Page title="Today">
-      <View style={{ gap: 4 }}>
-        <T size={13} muted>{new Date().toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })}</T>
-      </View>
+      <ScreenIntro title="Today's work" description={`${s.project.name} · ${new Date().toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })}`} action={!wide ? <Button label="Add task" icon="plus" onPress={onNewTask}/> : null} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         <Button label={`Needs attention (${attention.length})`} icon="alert-circle" variant="secondary" onPress={() => { setAttentionLimit(5); setAlert('attention'); }} />
         <Button label={`Next due (${upcoming.length})`} icon="calendar" variant="secondary" onPress={() => setAlert('due')} />
@@ -48,20 +46,14 @@ export default function Overview({ openTask, go, openStatus, onNewTask, onOpenBa
         </View>
         <Button label="Open projects" variant="ghost" onPress={() => go('projects')} />
       </Card> : null}
-      <Grid>
-        {counts.map(({ st, n }) => (
-          <Cell key={st} wide="23%" mobile="48%">
-            <Stat label={st} value={n} accent={STATUS_COLOR[st]} hint={`${Math.round((n / Math.max(1, s.tasks.length)) * 100)}% of tasks`} onPress={() => openStatus(st)} />
-          </Cell>
-        ))}
-      </Grid>
+      <MetricStrip items={counts.map(({ st, n }) => ({ label: st, value: n, color: STATUS_COLOR[st], hint: `${Math.round(n / Math.max(1, s.tasks.length) * 100)}% of tasks`, onPress: () => openStatus(st) }))} />
 
       <Grid>
         <Cell wide={tools.releases ? '58%' : '100%'}>
           <Card style={{ gap: 16 }}>
             <SectionTitle>Weighted progress</SectionTitle>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12 }}>
-              <T size={wide ? 64 : 52} weight="600" serifFace style={{ letterSpacing: -2 }}>{Math.round(progress * 100)}%</T>
+              <T size={wide ? 44 : 36} weight="600" style={{ fontVariant: ['tabular-nums'] }}>{Math.round(progress * 100)}%</T>
               {tools.testing ? <T muted size={13} style={{ marginBottom: wide ? 12 : 0, flexShrink: 1, maxWidth: '100%' }}>{passed} of {s.checks.length} acceptance checks passed</T> : null}
             </View>
             <Bar value={progress} height={8} />

@@ -6,10 +6,19 @@ const { pinchZoom } = require('../timeline/timelineZoom.cjs');
 export function useTimelinePinch(options) {
   const latest = useRef(options); latest.current = options;
   const surfaces = useRef(new Set());
+  const labels = useRef(new Set());
   const reset = useCallback(() => {
     for (const node of surfaces.current) node.style.transform = 'translateX(0px) scaleX(1)';
+    for (const node of labels.current) node.style.transform = 'scaleX(1)';
   }, []);
-  return { latest, surfaces, reset };
+  const previewTo = useCallback((width, scroll) => {
+    const o = latest.current, ratio = width / o.width;
+    for (const node of surfaces.current) node.style.transform = `translateX(${o.getScroll() - scroll}px) scaleX(${ratio})`;
+    for (const node of labels.current) node.style.transform = `scaleX(${1 / ratio})`;
+  }, []);
+  const handle = useRef({});
+  Object.assign(handle.current, { latest, surfaces, labels, reset, previewTo });
+  return handle.current;
 }
 
 export function TimelinePinchCanvas({ pinch, style, children }) {
@@ -34,6 +43,7 @@ export function TimelinePinchArea({ pinch, children }) {
     const paint = result => {
       const ratio = result.width / session.originalWidth, translate = session.originalScroll - result.scroll;
       for (const node of pinch.surfaces.current) node.style.transform = `translateX(${translate}px) scaleX(${ratio})`;
+      for (const node of pinch.labels?.current || []) node.style.transform = `scaleX(${1 / ratio})`;
       session.result = result;
     };
     const start = e => {
@@ -82,4 +92,14 @@ export function TimelinePinchArea({ pinch, children }) {
     };
   }, [pinch.latest, pinch.surfaces, pinch.reset]);
   return <View ref={ref} style={{ flex: 1 }}>{children}</View>;
+}
+
+export function TimelinePinchLabel({ pinch, style, center = false, children }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const node = ref.current;
+    if (node) pinch.labels.current.add(node);
+    return () => { pinch.labels.current.delete(node); };
+  }, [pinch.labels]);
+  return <View ref={ref} style={[style, { transformOrigin: center ? 'center' : 'left center' }]}>{children}</View>;
 }

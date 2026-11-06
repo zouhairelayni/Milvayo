@@ -1,5 +1,5 @@
 // /src/app/ModernApp.js
-import { Profiler, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Profiler, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, StatusBar as NativeStatusBar, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -283,16 +283,15 @@ function Shell({}) {
 // The intro belongs to a cold app mount, not navigation or resuming from the background.
 function ColdStartGate() {
   const { c, restored } = useTheme();
-  const [complete, setComplete] = useState(false);
-  const finish = useCallback(() => setComplete(true), []);
-  if (complete) return <StoreProvider><Shell /></StoreProvider>;
-  return <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
-    <StatusBar hidden />
-    {restored ? <BoardMorph size={200} active speed={1} onFinish={finish} /> : null}
-  </View>;
+  // Theme and workspace restore concurrently. Branding never gates hydration or interaction.
+  return <StoreProvider>{restored ? <Shell /> : <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+    <BoardMorph size={64} />
+    <T muted>Restoring appearance…</T>
+  </View>}</StoreProvider>;
 }
 
 export default function ModernApp({}) {
+  useLayoutEffect(() => { void diagnosticMonitor.start(); }, []);
   return <SafeAreaProvider>
     <LayoutProvider><ThemeProvider><ColdStartGate /></ThemeProvider></LayoutProvider>
   </SafeAreaProvider>;

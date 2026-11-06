@@ -1,0 +1,481 @@
+{
+  "environment": "Chromium 156 headless; Expo development web; proot Linux on Android host; no device FPS claim",
+  "datasets": [
+    {
+      "count": 34,
+      "presets": [
+        {
+          "preset": "Days",
+          "calendarBeforeScroll": [
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"
+          ],
+          "height": 823,
+          "scrollHeight": 2188,
+          "top": 1043,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Weeks",
+          "calendarBeforeScroll": [
+            "23",
+            "30",
+            "6",
+            "13",
+            "20",
+            "27",
+            "4",
+            "11"
+          ],
+          "height": 823,
+          "scrollHeight": 2188,
+          "top": 1043,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Months",
+          "calendarBeforeScroll": [
+            "23",
+            "6",
+            "20",
+            "4"
+          ],
+          "height": 823,
+          "scrollHeight": 2188,
+          "top": 1043,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Days",
+          "calendarBeforeScroll": [
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17"
+          ],
+          "height": 823,
+          "scrollHeight": 2188,
+          "top": 1043,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        }
+      ],
+      "zooms": [
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 357.89999985694885
+        },
+        {
+          "before": 251,
+          "immediate": 200.800048828125,
+          "after": 200,
+          "inputToTwoRafMs": 320.89999985694885
+        },
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 333.7000000476837
+        },
+        {
+          "before": 251,
+          "immediate": 200.800048828125,
+          "after": 200,
+          "inputToTwoRafMs": 321.60000014305115
+        },
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 202.09999990463257
+        }
+      ],
+      "rapid": {
+        "ms": 11.399999856948853,
+        "finite": true
+      },
+      "pinch": {
+        "before": 15.28125,
+        "during": 15.28125,
+        "difference": 0
+      },
+      "wheelTop": 1365,
+      "keyboardHomeTop": 164
+    },
+    {
+      "count": 1000,
+      "presets": [
+        {
+          "preset": "Days",
+          "calendarBeforeScroll": [
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28"
+          ],
+          "height": 823,
+          "scrollHeight": 54448,
+          "top": 53207,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Weeks",
+          "calendarBeforeScroll": [
+            "23",
+            "30",
+            "6",
+            "13",
+            "20",
+            "27",
+            "4",
+            "11"
+          ],
+          "height": 823,
+          "scrollHeight": 54448,
+          "top": 53207,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Months",
+          "calendarBeforeScroll": [
+            "23",
+            "6",
+            "20",
+            "4"
+          ],
+          "height": 823,
+          "scrollHeight": 54448,
+          "top": 53207,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        },
+        {
+          "preset": "Days",
+          "calendarBeforeScroll": [
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17"
+          ],
+          "height": 823,
+          "scrollHeight": 54448,
+          "top": 53207,
+          "lastTask": [
+            {
+              "top": 916,
+              "bottom": 970,
+              "visible": true
+            },
+            {
+              "top": 927,
+              "bottom": 959,
+              "visible": true
+            }
+          ],
+          "mountedBars": 36
+        }
+      ],
+      "zooms": [
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 331.5
+        },
+        {
+          "before": 251,
+          "immediate": 200.800048828125,
+          "after": 200,
+          "inputToTwoRafMs": 347.80000019073486
+        },
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 195.79999995231628
+        },
+        {
+          "before": 251,
+          "immediate": 200.800048828125,
+          "after": 200,
+          "inputToTwoRafMs": 338.90000009536743
+        },
+        {
+          "before": 200,
+          "immediate": 250,
+          "after": 251,
+          "inputToTwoRafMs": 309.19999980926514
+        }
+      ],
+      "rapid": {
+        "ms": 7.599999904632568,
+        "finite": true
+      },
+      "pinch": {
+        "before": 15.28125,
+        "during": 15.28125,
+        "difference": 0
+      },
+      "wheelTop": 53625,
+      "keyboardHomeTop": 44099
+    }
+  ],
+  "navigation": [
+    {
+      "screen": "Board",
+      "elapsedIncludingWaitMs": 431,
+      "text": "ist\n\nDelete list\nValidation\n0\nNo tasks in this list\n\nDelete list\nDone\n0\nNo tasks in this list\n\nDelete list\n\nAdd list"
+    },
+    {
+      "screen": "Tasks",
+      "elapsedIncludingWaitMs": 537,
+      "text": " 10\nBacklog\nMedium\nQA row 0080\nTask · Development\nSO\nSolo operator\nNov 10\nBacklog\nMedium\nShow more tasks (920 remaining)"
+    },
+    {
+      "screen": "Sprints",
+      "elapsedIncludingWaitMs": 250,
+      "text": "frozen sprint history.\nNo sprints yet\nCreate a planned sprint, then assign tasks from the backlog.\n\nCreate first sprint"
+    },
+    {
+      "screen": "Projects",
+      "elapsedIncludingWaitMs": 243,
+      "text": "code, description and management\n\nArchived projects can be restored from Settings → Backup → Recover archived projects."
+    },
+    {
+      "screen": "Portfolios",
+      "elapsedIncludingWaitMs": 227,
+      "text": "spect delivery health.\n\nCreate portfolio\nNo portfolios yet. Create one to group projects, then include it in a program."
+    },
+    {
+      "screen": "Programs",
+      "elapsedIncludingWaitMs": 229,
+      "text": "th.\n\nCreate program\nNo programs yet. Create one, then add portfolios to form a Program → Portfolio → Project hierarchy."
+    },
+    {
+      "screen": "Settings",
+      "elapsedIncludingWaitMs": 256,
+      "text": "tely when ready: Android may close the app. Expo Go cannot change its icon.\nSystem\nDaylight\nDark\nAMOLED\n\nAccent · Coral"
+    },
+    {
+      "screen": "Overview",
+      "elapsedIncludingWaitMs": 261,
+      "text": "ess\nNone\nNo release in progress.\nOpen releases\n\nOpen testing\nStage distribution\nDevelopment\n1000\nTesting\n0\nProduction\n0"
+    }
+  ],
+  "mobile": {
+    "width": 390,
+    "documentWidth": 390,
+    "darkBackground": "rgba(0, 0, 0, 0)",
+    "hasSidebar": false,
+    "body": "pen releases\n\nOpen testing\nStage distribution\nDevelopment\n1000\nTesting\n0\nProduction\n0\n\nHome\n\nWork\n\n\nProjects\n\nMore"
+  },
+  "console": []
+}

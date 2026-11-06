@@ -1,7 +1,7 @@
 // /src/screens/governance/Programs.js
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
+import { ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
 import { EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
@@ -46,7 +46,7 @@ export function Programs({embedded=false,openProject}){
  const content=<>
   <Sheet visible={!!editing} onClose={()=>setEditing('')} title={editing==='new'?'Create program':'Edit program'} showNotice={false}
    footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setEditing('')}/><Button label="Save program" small disabled={!name.trim()} onPress={save}/></>}>{editor}</Sheet>
-  <Button label="Create program" icon="plus" small onPress={()=>select(null)}/>
+  <ScreenIntro title="Programs" description={`${programs.length} programs · inspect progress, membership and delivery health.`} action={<Button label="Create program" icon="plus" small onPress={()=>select(null)}/>}/>
   {programs.length===0?<T muted size={13}>No programs yet. Create one, then add portfolios to form a Program → Portfolio → Project hierarchy.</T>:null}
   {programs.map(p=>{
 

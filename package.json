@@ -1,6 +1,6 @@
 {
   "name": "milvayo",
-  "version": "0.6.1",
+  "version": "0.6.3",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "expo-font": "~58.0.11",
     "expo-sharing": "~58.0.22",
     "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
     "fflate": "^0.8.2",
     "js-sha256": "1.0.0",
     "react": "19.3.0",

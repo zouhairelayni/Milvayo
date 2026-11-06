@@ -1,14 +1,15 @@
 // /src/screens/workspace/Workspace.js
-import { Image, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Alert, Platform, Image, Pressable, ScrollView, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect} from 'react';
-import { Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, useWide, downloadText } from '../../ui/ui';
-import { useStore } from '../../store/store';
+import { ScreenIntro, Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, SectionTitle, Segmented, Stat, T, useWide, downloadText } from '../../ui/ui';
+import { useStore, useStoreActions } from '../../store/store';
 import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { money, openHours } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
 import ProjectToolsSheet from '../more/ProjectToolsSheet';
+import { syncLauncherIcon } from '../../ui/theme/launcherIcon';
 const iconPreview = require('../../ui/theme/iconPreview.cjs');
 const operations = require('../../domain/operations.cjs');
 import { localDay } from '../../utils/localDay.cjs';
@@ -239,12 +240,14 @@ export function Activity() {
 // ---- Settings (includes project, data and appearance) -----------------------
 
 export function Settings({go, backupRequest}) {
+  const { flush } = useStoreActions();
   const { c, pref, mode, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false);
   const [toolsOpen,setToolsOpen]=useState(false);
   const [tab,setTab]=useState(backupRequest ? 'backup' : 'general');
   useEffect(() => { if (backupRequest) setTab('backup'); }, [backupRequest]);
   return <Page title="Settings" subtitle={tab==='backup'?'Import, export and recover project data. Files stay on this device.':'Appearance and diagnostics stay on this device.'}>
+    <ScreenIntro title="Preferences & data" description="Appearance, local diagnostics and safe backup recovery."/>
     <Segmented options={[{value:'general',label:'General'},{value:'backup',label:'Backup'}]} value={tab} onChange={setTab}/>
     {tab==='backup'?<Backup/>:<>
     <Card style={{gap:12}}>
@@ -259,10 +262,11 @@ export function Settings({go, backupRequest}) {
       <View style={{flexDirection:'row',alignItems:'center',gap:12}}>
         <Image source={iconPreview(accentPref, mode)} resizeMode="contain" style={{width:54,height:54,borderRadius:14}} accessibilityLabel={`${accentPref} ${mode} app icon preview`}/>
         <View style={{flex:1,gap:3}}>
-          <T weight="600">App icon · Follows theme</T>
-          <T muted size={12}>The launcher icon follows your accent and appearance. Native changes require an installed build, not Expo Go. Installed web shortcuts may require reinstalling.</T>
+          <T weight="600">App icon preview</T>
+          <T muted size={12}>Theme changes apply immediately inside the app. Apply the launcher icon separately when ready: Android may close the app. Expo Go cannot change its icon.</T>
         </View>
       </View>
+      {Platform.OS !== 'web' ? <Button label="Apply launcher icon" small variant="secondary" onPress={() => Alert.alert('Apply launcher icon?', 'Android may close Milvayo to refresh its launcher entry. Your saved theme and project data stay on this device. You can cancel and continue working.', [{text:'Cancel',style:'cancel'}, {text:'Apply icon',onPress:async () => { const applied = await syncLauncherIcon(accentPref, mode, flush); if (!applied) Alert.alert('Icon not changed', 'The icon could not be applied. Check that your workspace can save and that you are using an installed native build. Expo Go cannot change its icon. You can continue using Milvayo.'); }}])} /> : null}
       <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}>
         <Chip label="System" active={pref==='system'} onPress={()=>setPref('system')}/>
         <Chip label="Daylight" active={pref==='light'} onPress={()=>setPref('light')}/>

@@ -45,6 +45,7 @@ export function T({ children, size = 14, weight = '400', color, muted, serifFace
         {
           fontFamily: serifFace ? serif : font,
           fontSize: size,
+          lineHeight: Math.round(size * (size >= 20 ? 1.2 : 1.45)),
           fontWeight: weight,
           color: color || (muted ? c.muted : c.ink),
           letterSpacing: upper ? 1 : size >= 20 ? -0.4 : 0,

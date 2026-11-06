@@ -15,7 +15,7 @@ test('Home control inventory: first task, explicit import, projects, task rows, 
   control(tree, 'Add your first task').props.onPress(); control(tree, 'Import a project').props.onPress(); control(tree, 'Open projects').props.onPress();
   assert.deepEqual(calls, ['create', 'backup', 'projects']);
   for (const label of ['Backlog', 'In progress', 'Validation', 'Done']) {
-    const stat = nodes(tree).find(n => n.type === 'Stat' && n.props.label === label); assert.ok(stat, label); stat.props.onPress();
+    const stat = nodes(tree).find(n => n.type === 'MetricStrip').props.items.find(item => item.label === label); assert.ok(stat, label); stat.onPress();
   }
   assert.ok(text(tree).includes('Project overview'));
   assert.equal(nodes(tree).some(n => n.type === 'Fold'), false);

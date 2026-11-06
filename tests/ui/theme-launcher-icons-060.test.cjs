@@ -55,5 +55,5 @@ test('theme provider controls icon across platform and the settings preview matc
  assert.match(web,/getLink\('manifest'\)/);assert.match(web,/getLink\('apple-touch-icon'\)/);
  assert.match(native,/setAlternateAppIcon\(desired\)/);assert.match(native,/getAppIconName\(\)/);
  assert.match(settings,/iconPreview\(accentPref, mode\)/);
- assert.match(settings,/Follows theme/);
+ assert.match(settings,/App icon preview/);
 });

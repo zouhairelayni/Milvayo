@@ -22,7 +22,7 @@ export function Chip({ label, active, onPress, color, quiet = false }) {
   if (!onPress) return <View style={style()}>{content}</View>;
   return (
     <Pressable onPress={onPress} hitSlop={2} accessibilityRole="button" accessibilityLabel={String(label)}
-      accessibilityState={{ selected: !!active }} style={({ pressed }) => style(pressed)}>
+      accessibilityState={{ selected: !!active }} style={({ pressed, hovered, focused }) => ({ ...style(pressed), ...(focused ? { borderColor: c.accentText } : {}), backgroundColor: hovered && !active ? c.surfaceAlt : style(pressed).backgroundColor })}>
       {content}
     </Pressable>
   );
@@ -68,7 +68,7 @@ export function Button({ label, onPress, icon, variant = 'primary', disabled }) 
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={4}
-      style={({ pressed }) => ({
+      style={({ pressed, hovered, focused }) => ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
@@ -76,10 +76,11 @@ export function Button({ label, onPress, icon, variant = 'primary', disabled }) 
         paddingHorizontal: 10,
         paddingVertical: 6,
         borderRadius: radius.sm, minHeight: 40,
-        backgroundColor: bg,
-        borderWidth: primary ? 0 : 1,
-        borderColor: c.line,
+        backgroundColor: hovered && !primary ? c.surfaceAlt : bg,
+        borderWidth: 1,
+        borderColor: focused ? c.accentText : primary ? bg : c.line,
         opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
+        transform: [{ scale: pressed ? 0.97 : 1 }],
       })}
     >
       {icon ? <Feather name={icon} size={13} color={fg} /> : null}

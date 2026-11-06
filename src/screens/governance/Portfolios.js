@@ -1,7 +1,7 @@
 // /src/screens/governance/Portfolios.js
 import { View } from 'react-native';
 import { useState } from 'react';
-import { Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
+import { ScreenIntro, Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
 import { EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
 import { useStore } from '../../store/store';
 import { useTheme } from '../../ui/theme/theme';
@@ -25,7 +25,7 @@ export default function Portfolios({embedded=false,openProject}) {
  const content=<>
   <Sheet visible={!!editing} onClose={()=>setEditing(null)} title={editing==='new'?'Create portfolio':'Edit portfolio'} showNotice={false}
    footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setEditing(null)}/><Button label="Save portfolio" small disabled={!name.trim()} onPress={save}/></>}>{editor}</Sheet>
-  <Button small label="Create portfolio" icon="plus" onPress={()=>select(null)}/>
+  <ScreenIntro title="Portfolios" description={`${(workspace.portfolios||[]).length} portfolios · group projects and inspect delivery health.`} action={<Button small label="Create portfolio" icon="plus" onPress={()=>select(null)}/>}/>
   {!(workspace.portfolios||[]).length?<T muted size={13}>No portfolios yet. Create one to group projects, then include it in a program.</T>:null}
   {(workspace.portfolios||[]).map(p=>{
 

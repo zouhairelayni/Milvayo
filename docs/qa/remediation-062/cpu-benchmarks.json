@@ -1,0 +1,122 @@
+{
+  "kind": "isolated CPU microbenchmarks; five samples per case; warm process; same Node engine",
+  "node": "v24.18.0",
+  "calendar56": {
+    "beforeIntl": {
+      "medianMs": 9.9683,
+      "samplesMs": [
+        8.2828,
+        9.7209,
+        9.9683,
+        10.7686,
+        11.2161
+      ]
+    },
+    "afterUtc": {
+      "medianMs": 0.1108,
+      "samplesMs": [
+        0.1089,
+        0.1106,
+        0.1108,
+        0.1738,
+        0.318
+      ]
+    }
+  },
+  "datasets": [
+    {
+      "count": 34,
+      "boardDragOrder": {
+        "beforeRepeated": {
+          "medianMs": 0.0019,
+          "samplesMs": [
+            0.0008,
+            0.0008,
+            0.0019,
+            0.0032,
+            0.0058
+          ]
+        },
+        "afterMemoHit": {
+          "medianMs": 0,
+          "samplesMs": [
+            0,
+            0,
+            0,
+            0,
+            0.0003
+          ]
+        }
+      },
+      "projects": {
+        "coldSummary": {
+          "medianMs": 0.0184,
+          "samplesMs": [
+            0.0127,
+            0.0143,
+            0.0184,
+            0.0292,
+            0.1908
+          ]
+        },
+        "cachedUnchanged": {
+          "medianMs": 0,
+          "samplesMs": [
+            0,
+            0,
+            0,
+            0,
+            0.0022
+          ]
+        }
+      }
+    },
+    {
+      "count": 1000,
+      "boardDragOrder": {
+        "beforeRepeated": {
+          "medianMs": 0.0136,
+          "samplesMs": [
+            0.0135,
+            0.0136,
+            0.0136,
+            0.0178,
+            0.019
+          ]
+        },
+        "afterMemoHit": {
+          "medianMs": 0,
+          "samplesMs": [
+            0,
+            0,
+            0,
+            0,
+            0.0002
+          ]
+        }
+      },
+      "projects": {
+        "coldSummary": {
+          "medianMs": 0.243,
+          "samplesMs": [
+            0.2193,
+            0.228,
+            0.243,
+            0.2652,
+            0.6908
+          ]
+        },
+        "cachedUnchanged": {
+          "medianMs": 0,
+          "samplesMs": [
+            0,
+            0,
+            0,
+            0,
+            0.0009
+          ]
+        }
+      }
+    }
+  ]
+}

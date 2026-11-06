@@ -55,3 +55,14 @@ test('sprint screen imports useState after sprint management refactor',()=>{
  const s=src('src/screens/delivery/Delivery.js');
  assert.match(s,/import \{ (useEffect, )?(useMemo, )?(useRef, )?useState \} from 'react';/);
 });
+
+test('previous-run breadcrumbs survive a missing JS exception and stay sanitized', () => {
+ const s=core.fresh('new',2000);
+ s.previous={active:true,updatedAt:1900,events:[{at:1800,type:'action',detail:'timeline pinch started'},{at:1900,type:'action',detail:'password=private123'}],crashes:[]};
+ const report=core.reportCrash(s);
+ assert.match(report,/previous-run last steps/);
+ assert.match(report,/timeline pinch started/);
+ assert.doesNotMatch(report,/private123/);
+ assert.match(report,/recorded JS exceptions: 0/);
+ assert.match(report,/NOT proof of crash/);
+});

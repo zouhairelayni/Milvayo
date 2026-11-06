@@ -17,6 +17,7 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
     'react-native': { Animated: { Value: class { constructor(v) { this.value = v; } setValue(v) { this.value = v; animated.push(v); } }, multiply: () => 'calendarShift', event: (_args, opts) => opts.listener, View: 'AnimatedView', ScrollView: 'AnimatedScrollView' }, View: 'View', ScrollView: 'ScrollView', Pressable: 'Pressable', Dimensions: { get: () => ({ width: 390, height: 800 }) }, Platform: { OS: 'android' } },
     '../../store/store': { useStore: () => ({ s: { tasks: project.tasks, project }, updateTask: (...args) => edits.push(args) }), useScreenActive: () => false },
     '../../store/data': { TODAY: '2026-11-05', addDays, fmt: String, daysBetween: (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000) },
+    '../../gestures/TimelineScrollView': { __esModule: true, default: 'AnimatedScrollView' },
     '../../gestures/TimelineGestureHost': { __esModule: true, default: 'TimelineHost' },
     '../../gestures/gesture': {}, '../../gestures/gestureSurface': { GestureArea: 'GestureArea' },
     '../../gestures/TimelinePinch': { useTimelinePinch(o) { options = o; return { reset: () => resets++ }; }, TimelinePinchArea: 'PinchArea', TimelinePinchCanvas: 'PinchCanvas' },
@@ -36,7 +37,7 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
   chart().props.ref.current = { scrollTo: v => scrolls.push(v) };
   chart().props.onLayout({ nativeEvent: { layout: { width: 320 } } }); tree = render();
   assert.equal(h.headers.timeline.value, 'Days'); assert.equal(options.width, 34);
-  options.onStart(); tree = render(); assert.equal(chart().props.scrollEnabled, false);
+  options.onStart(); tree = render(); assert.equal(chart().props.scrollEnabled, true, 'native scroll recognizer stays enabled during pinch');
   options.onCommit(68, 400); options.onEnd(); tree = render(); tree = render();
   assert.equal(options.width, 68); assert.equal(h.headers.timeline.value, 'custom');
   assert.equal(chart().props.scrollEnabled, true); assert.equal(scrolls.at(-1).x, 400); assert.equal(animated.at(-1), 400); assert.ok(resets);
@@ -44,6 +45,21 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
   chart().props.onContentSizeChange(3808, 108);
   h.headers.timeline.onChange('Months'); tree = render(); assert.equal(options.width, 6); assert.equal(h.headers.timeline.value, 'Months');
   h.headers.timeline.onChange('Days'); tree = render(); assert.equal(options.width, 34); assert.equal(h.headers.timeline.value, 'Days');
+  for (let i = 0; i < 30; i++) {
+    const label = i % 2 ? 'Zoom out' : 'Zoom in';
+    const controls = nodes(tree).find(n => n.type === 'TimelineZoomControls');
+    controls.props[label === 'Zoom in' ? 'onZoomIn' : 'onZoomOut'](); h.flushFrames();
+    tree = render(); tree = render();
+    assert.ok(Number.isFinite(options.width) && options.width > 0);
+    chart().props.onContentSizeChange();
+  }
+  h.headers.timeline.onChange('Days'); tree = render(); tree = render();
+  chart().props.onScroll({ nativeEvent: { contentOffset: { x: 1500 } } }); tree = render();
+  h.headers.timeline.onChange('Months'); tree = render(); tree = render();
+  assert.equal(options.width, 6);
+  assert.equal(scrolls.at(-1).x, 16, 'preset scroll rebases immediately without a user scroll or Today');
+  assert.equal(animated.at(-1), 16, 'calendar immediately matches the chart');
+  chart().props.onContentSizeChange();
   assert.deepEqual(edits, []); assert.equal(JSON.stringify(project), saved);
   const imported = model.importProject(JSON.parse(saved));
   assert.deepEqual(imported.tasks, project.tasks);

@@ -29,7 +29,7 @@ test('viewport adaptation does not fork cached pages or remount a new shell', ()
 test('all screens inherit a fluid page frame and shared tokenized controls', () => {
   const layout = read('src/ui/uiLayout.js');
   assert.doesNotMatch(layout, /maxWidth: 1180/);
-  assert.match(layout, /alignSelf: 'stretch'/);
+  assert.match(layout, /width: '100%', maxWidth: 1440, minWidth: 0, alignSelf: 'center'/);
   assert.match(read('src/ui/uiControls.js'), /minHeight: 40/);
 });
 test('Kanban keeps gestures while revealing useful card metadata without emoji icons', () => {

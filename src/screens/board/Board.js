@@ -2,7 +2,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
+import { ScreenIntro, Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold} from '../../components/inline/CompactTools';
@@ -116,7 +116,7 @@ export default function Board({ openTask }) {
   const clearFilters = () => { setDueF('all'); setPrioF('All'); setOwnerF('All'); setLabelF('All'); };
 
   // Refresh the display order for this render (used for drop slots and the insertion line).
-  k.order = Object.fromEntries(lists.map((l) => [l.id, byList[l.id].map((t) => t.id)]));
+  k.order = useMemo(() => Object.fromEntries(lists.map((l) => [l.id, byList[l.id].map((t) => t.id)])), [lists, byList]);
   // Where a dropped card goes when a filter hides some cards of the list (see kanbanUX.dropBefore).
   k.dropBefore = (listId, slotIndex, movingId) => dropBefore(s.tasks, cards, listId, slotIndex, movingId);
 
@@ -204,6 +204,7 @@ export default function Board({ openTask }) {
       scrollProps={pageScrollProps}
       onScroll={(e) => { k.scroll.y = e.nativeEvent.contentOffset.y; }}
     >
+      <ScreenIntro title={board.name} description={`${cards.length} visible tasks across ${lists.length} lists. Hold a card to move it, or open it to edit.`}/>
       <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex:1,flexGrow:1}} contentContainerStyle={{gap:8,alignItems:'center'}}>
           {boards.map((b) => <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />)}
@@ -639,7 +640,7 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
         ...liftShadow(lifted),
       }}
     >
-      <Card pad={14} style={{gap:11, borderRadius:11}}>
+      <Card pad={16} style={{gap:12, borderRadius:12}}>
         <TaskLabels labels={t.labels} colors={labelColors} compact />
         <View ref={titleRef} collapsable={false}>
           {editing?<Input value={titleDraft} autoFocus onChangeText={v=>{titleDraftRef.current=v;setTitleDraft(v);}} onSubmitEditing={endTitleEdit} onBlur={endTitleEdit} style={{backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,fontWeight:'600',fontSize:14}}/>:

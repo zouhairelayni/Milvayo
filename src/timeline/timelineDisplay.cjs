@@ -42,4 +42,12 @@ function ticks(span, zoom, width) {
   return result;
 }
 
-module.exports = { BASE_DAYS, MAX_CANVAS_WIDTH, INITIAL_ROWS, OVERSCAN_ROWS, rangeForTasks, dayWidth, paintedRange, ticks };
+function calendarLabels(start, indices) {
+  const origin = Date.parse(start + 'T00:00:00Z');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return indices.map(i => {
+    const date = new Date(origin + i * 86400000);
+    return { index: i, day: date.getUTCDate(), weekday: ['S','M','T','W','T','F','S'][date.getUTCDay()], month: months[date.getUTCMonth()], iso: date.toISOString().slice(0, 10) };
+  });
+}
+module.exports = { calendarLabels, BASE_DAYS, MAX_CANVAS_WIDTH, INITIAL_ROWS, OVERSCAN_ROWS, rangeForTasks, dayWidth, paintedRange, ticks };

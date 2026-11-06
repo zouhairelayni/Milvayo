@@ -1,4 +1,6 @@
 // /src/store/store.js
+import { diagnosticMonitor } from '../diagnostics/monitor';
+import BoardMorph from '../components/brand/BoardMorph';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -42,11 +44,16 @@ export function StoreProvider({children}){
   return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined')window.removeEventListener('pagehide',save);save();};
  },[]);
  useEffect(()=>{let active=true;(async()=>{
+   const started = Date.now();
+   diagnosticMonitor.recordAction('startup storage read started');
    const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);
    const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());
    const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);
    if(!active)return;
+   diagnosticMonitor.recordAction(`startup storage read ${Date.now()-started}ms`);
+   const normalizeStarted = Date.now();
    const loadedWorkspace=normalizer.current(raw?JSON.parse(raw):model.createWorkspace());
+   diagnosticMonitor.recordAction(`startup normalize ${Date.now()-normalizeStarted}ms`);
    writer.current=makeWriter(key);indexRef.current=index;
    currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setIdx(index);setReady(true);
    // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.
@@ -271,7 +278,7 @@ export function StoreProvider({children}){
  const projects=useMemo(()=>ws?ws.projects.map(p=>({id:p.id,name:p.name,release:p.version,tasks:p.tasks.length,current:p.id===ws.selectedId,archived:p.archived})):[],[ws]);
  const workspaceList=useMemo(()=>idx?{activeId:idx.activeId,items:idx.items}:null,[idx]);
  const context=useMemo(()=>({s:view,projects,workspace:ws,workspaceList,workspaceId:idx?.activeId,error:fault,notice,dismissNotice,...api}),[view,projects,ws,workspaceList,idx,fault,notice,dismissNotice,api]);
- if(!ready)return <View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><ActivityIndicator/><T>Opening local workspace…</T></View>;
+ if(!ready)return <View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><BoardMorph size={64}/><T weight="600">Opening your workspace</T><T muted size={13}>Projects and tasks stay on this device.</T></View>;
  if(!ws)return <View style={{flex:1,justifyContent:'center',padding:28,gap:12}}><T weight="600">Workspace data could not be opened safely</T><T>{fault}</T><T>Return to your last working release. Do not clear application storage.</T></View>;
  return <ActionsContext.Provider value={api}><StoreContext.Provider value={context}><View style={{flex:1}}>{children}</View></StoreContext.Provider></ActionsContext.Provider>;
 }

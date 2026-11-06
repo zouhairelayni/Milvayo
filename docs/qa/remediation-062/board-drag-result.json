@@ -1,0 +1,22 @@
+{
+  "source": {
+    "x": 309,
+    "y": 301,
+    "width": 294,
+    "height": 87,
+    "top": 301,
+    "right": 603,
+    "bottom": 388,
+    "left": 309
+  },
+  "before": {
+    "status": "Backlog",
+    "listId": ""
+  },
+  "after": {
+    "status": "In progress",
+    "listId": "board-default-lane-1"
+  },
+  "changed": true,
+  "console": []
+}

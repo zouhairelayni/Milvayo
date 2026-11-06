@@ -90,7 +90,7 @@ test('pinch guards prevent task moves/resizes/link creation and taps while ordin
     '../../ui/theme/theme': { useTheme: () => ({ c: {} }), STATUS_COLOR: { Backlog: '#888' }, PRIORITY_COLOR: {} },
     '../../store/data': { addDays: (day, n) => new Date(Date.parse(day + 'T12:00:00Z') + n * 86400000).toISOString().slice(0, 10), daysBetween: (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000) },
     '../../gestures/gesture': { useHoldDrag: config => { handlers.push(config); return { lifted: false }; } },
-    '../../gestures/gestureSurface': { GestureArea: 'GestureArea' }, '../../gestures/TimelineGestureHost': 'Host', '../../gestures/TimelinePinch': {}, '../../diagnostics/monitor': {},
+    '../../gestures/gestureSurface': { GestureArea: 'GestureArea' }, './TimelineZoomControls': 'TimelineZoomControls', '../../gestures/TimelineGestureHost': 'Host', '../../gestures/TimelineScrollView': 'ScrollView', '../../gestures/TimelinePinch': {}, '../../diagnostics/monitor': {},
   }, ['TaskBar']);
   const task = { id: 't1', title: 'Build', status: 'Backlog', progress: 0, start: '2026-11-05', due: '2026-11-06' }, saved = JSON.stringify(task);
   exports.__test.TaskBar({ t: task, start: task.start, due: task.due, origin: task.start, w: 34, span: 56, paintLeft: 0, paintWidth: 1904, rowTop: 0, k,
@@ -116,4 +116,24 @@ test('pinch guards prevent task moves/resizes/link creation and taps while ordin
   assert.match(source, /onContentSizeChange=\{\(\) => settleZoom\(true\)\}/);
   assert.match(source, /horizontalOffset.setValue\(offset\)/);
   assert.match(source, /setZoomFactor\(width \/ ZOOM\[zoom\]\)/);
+});
+
+test('repeated zoom in/out keeps finite density and scroll inside the native canvas budget', () => {
+  let width = 34, scroll = 0;
+  const span = 176, viewport = 350;
+  for (let i = 0; i < 1000; i++) {
+    const next = pinchZoom(width, i % 7 < 4 ? 1.25 : 0.8, 175, 175, scroll, span, viewport);
+    assert.ok(Number.isFinite(next.width) && next.width > 0);
+    assert.ok(next.width * span <= display.MAX_CANVAS_WIDTH + 0.001);
+    assert.ok(next.scroll >= 0 && next.scroll <= Math.max(0, next.width * span - viewport));
+    width = next.width; scroll = next.scroll;
+  }
+});
+
+test('presets rebase far-right scroll, preserve the focal date and handle a canvas smaller than the viewport', () => {
+  const { rebaseZoom } = require('../../src/timeline/timelineZoom.cjs');
+  assert.equal(rebaseZoom(34, 6, 3000, 176, 350), (3000 + 175) * 6 / 34 - 175);
+  assert.equal(rebaseZoom(34, 6, 0, 56, 350), 0);
+  assert.equal(rebaseZoom(6, 34, 0, 56, 350), (175 * 34 / 6) - 175);
+  assert.equal(rebaseZoom(34, 6, 99999, 176, 350), 706);
 });

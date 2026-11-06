@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
+import { ScreenIntro, Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
@@ -89,6 +89,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
     >
+      <ScreenIntro title="Task list" description={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`} action={<Button label="Add task" icon="plus" onPress={onNewTask}/>} />
       {dateBoards.length ? <DueSoon key={project.id} tasks={upcoming} onOpenTask={openTask} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
