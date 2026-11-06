@@ -1,12 +1,12 @@
 // /src/screens/governance/Projects.js
-import { memo, useCallback, useEffect, useState } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { FlatList, Platform, View, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ActionRow, ActionMenu, EmptyState, FormSection, ScreenIntro, Bar, Card, Button, Chip, Page, Pill, Grid, Cell, Stat, Segmented, Input, T, MetricStrip } from '../../ui/ui';
-import { Fold, EditRow, Labeled, DangerConfirm, Dropdown } from '../../components/inline/CompactTools';
+import { ActionMenu, EmptyState, ScreenIntro, Bar, Card, Button, Page, Pill, Segmented, Input, T, useWide } from '../../ui/ui';
+import { EditRow, Labeled, Dropdown } from '../../components/inline/CompactTools';
 import { useStore, useStoreActions } from '../../store/store';
-const { projectSummary } = require('../../domain/projectRelations.cjs');
 const { projectMetric } = require('../../domain/governanceSummary.cjs');
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore as useGovernance } from '../../governance/store';
 import { PM_DOCS, DOC_GROUPS, DOC_COLOR, DOC_BY_KEY, docOf, docProgress, PHASES, HEALTH, HEALTH_COLOR } from '../../governance/pm';
@@ -20,52 +20,71 @@ import { Field, Choice, DateInput } from './pm/pmui';
 
 // Project lifecycle lives here; Backup contains files and recovery, not editing.
 export function Projects({embedded=false,projectRequest=null,onProjectRequestHandled}){
- const {projects,workspace,createProject}=useStore();
- const open=workspace.projects.filter(p=>!p.archived);
+ useRenderMetric('projects');
+ const wide=useWide();
+ const {projects,workspace,workspaceId}=useStore();
+ const open=useMemo(()=>workspace.projects.filter(p=>!p.archived),[workspace.projects]);
  const [detail,setDetail]=useState(projectRequest),[tab,setTab]=useState('overview');
  // Opened from a portfolio or program: show that project's governance detail.
  useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest);setTab('overview');onProjectRequestHandled?.()},[projectRequest]);
  const [creating,setCreating]=useState(false);
  const [query,setQuery]=useState(''),[limit,setLimit]=useState(20);
- const matching=open.filter(p=>`${p.name} ${p.code}`.toLowerCase().includes(query.trim().toLowerCase()));
+ const deferredQuery=useDeferredValue(query),needle=deferredQuery.trim().toLowerCase();
+ const matching=useMemo(()=>open.filter(p=>`${p.name} ${p.code}`.toLowerCase().includes(needle)),[open,needle]);
+ // A virtualized row can unmount. Keep unsaved editor state scoped to this workspace.
+ const drafts=useMemo(()=>new Map(),[workspaceId]);
+ useEffect(()=>{const ids=new Set(workspace.projects.map(p=>p.id));for(const id of drafts.keys())if(!ids.has(id))drafts.delete(id);},[workspace.projects,drafts]);
  const openDetail=useCallback(id=>{setDetail(id);setTab('overview')},[]);
- const content=<>
+ const renderProject=useCallback(({item:p})=><ProjectCard key={p.id} p={p} drafts={drafts} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>,[drafts,open.length,projects.length,openDetail]);
+ const header=<View style={{gap:20}}>
   <ScreenIntro title="Your projects" description={`${open.length} active projects · ${projects.length-open.length} archived. Open a project to inspect its delivery and governance.`} action={<Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>}/>
 
   <CreateProjectSheet visible={creating} onClose={()=>setCreating(false)} onCreated={openDetail}/>
   <Input value={query} onChangeText={value=>{setQuery(value);setLimit(20)}} placeholder="Find a project by name or code" accessibilityLabel="Find a project"/>
-  {matching.slice(0,limit).map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
+ </View>;
+ const empty=<EmptyState title="No matching projects" description="Try another project name or code." action={<Button label="Clear search" variant="secondary" onPress={()=>setQuery('')}/>}/>;
+ const footer=<T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>;
+ const content=<>
+  {header}
+  {matching.slice(0,limit).map(p=>renderProject({item:p}))}
   {matching.length>limit?<Button label={`Show more projects (${matching.length-limit} remaining)`} variant="secondary" onPress={()=>setLimit(n=>n+20)}/>:null}
-  {!matching.length?<EmptyState title="No matching projects" description="Try another project name or code." action={<Button label="Clear search" variant="secondary" onPress={()=>setQuery('')}/>}/>:null}
-  <T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>
+  {!matching.length?empty:null}
+  {footer}
  </>;
  const selected=workspace.projects.find(p=>p.id===detail&&p.id===workspace.selectedId);
+ if(!embedded&&!selected&&Platform.OS!=='web')return <FlatList accessibilityLabel="Projects" data={matching} keyExtractor={p=>p.id} renderItem={renderProject}
+  initialNumToRender={2} maxToRenderPerBatch={2} windowSize={5} removeClippedSubviews={false} keyboardShouldPersistTaps="handled"
+  ListHeaderComponent={header} ListEmptyComponent={empty} ListFooterComponent={footer}
+  contentContainerStyle={{width:'100%',maxWidth:1440,alignSelf:'center',paddingHorizontal:wide?32:16,paddingTop:wide?24:16,paddingBottom:96,gap:wide?24:20}}/>;
  const body=selected?<ProjectGovernance key={detail} back={()=>setDetail(null)} tab={tab} setTab={setTab}/>:content;
- return embedded?body:<Page title={selected?selected.name:'Projects'} subtitle={selected?'Project governance · PMI documents, health, risks and work breakdown':`${open.length} active · ${projects.length-open.length} archived · Manage each project in one workspace.`}>{body}</Page>;
+ return embedded?body:<Page title={selected?selected.name:undefined} subtitle={selected?'Project governance · PMI documents, health, risks and work breakdown':undefined}>{body}</Page>;
 }
 
 
 // One project card. Its edit fields live here, so typing in one card never re-renders the other cards.
-const ProjectCard=memo(function ProjectCard({p,canArchive,canDelete,onOpen}){
+const ProjectCard=memo(function ProjectCard({p,drafts,canArchive,canDelete,onOpen}){
+ useRenderMetric('projects/card');
  const {switchProject,updateProject,duplicateProject,archiveProject,deleteProject}=useStoreActions();
  const{c}=useTheme();
  const m=projectMetric(p);
- const [editing,setEditing]=useState(false),[name,setName]=useState(''),[code,setCode]=useState(''),[description,setDescription]=useState('');
- const start=()=>{setName(p.name);setCode(p.code);setDescription(p.description||'');setEditing(true)};
- const save=()=>{if(updateProject(p.id,{name,code,description}))setEditing(false)};
+ const [draft,setDraft]=useState(()=>drafts.get(p.id)||null);
+ const editing=!!draft,name=draft?.name||'',code=draft?.code||'',description=draft?.description||'';
+ const change=next=>{if(next)drafts.set(p.id,next);else drafts.delete(p.id);setDraft(next);};
+ const start=()=>change({name:p.name,code:p.code,description:p.description||''});
+ const save=()=>{if(updateProject(p.id,{name,code,description}))change(null)};
  return <View style={{padding:20,borderRadius:16,backgroundColor:c.surface,gap:20}}>
    <View style={{flexDirection:'row',alignItems:'center',gap:16}}><CompletionArc value={m.progress} label="complete" size={88}/>
     <View style={{flex:1,gap:6}}><T weight="600" size={19} numberOfLines={2}>{p.name}</T><T muted size={12}>{p.code} · {m.phase}</T><T size={12} color={HEALTH_COLOR[m.health]||c.muted}>{m.health}</T></View>
    </View>
    <View style={{flexDirection:'row',borderTopWidth:1,borderBottomWidth:1,borderColor:c.line,paddingVertical:16,gap:20}}>
-    {[['Tasks',m.tasks],['Docs approved',`${m.approvedDocs}/10`],['Open threats',m.risks.length]].map(([label,value])=><View key={label} style={{flex:1,gap:6}}><T size={11} muted>{label}</T><T size={22} weight="500">{value}</T></View>)}
+    {[['Tasks',m.tasks],['Docs approved',`${m.approvedDocs}/10`],['Open threats',m.risks.length]].map(([label,value])=><View key={label} style={{flex:1,gap:6}}><T size={11} muted style={{minHeight:32}}>{label}</T><T size={22} weight="500">{value}</T></View>)}
    </View>
-   <View style={{flexDirection:'row',alignItems:'center',gap:12}}><View style={{flex:1,gap:4}}><T size={11} muted>Budget used</T><T size={14} weight="500">${Math.round(m.spent).toLocaleString()} <T size={12} muted>/ ${Math.round(m.budget).toLocaleString()}</T></T></View><Button label="Open project" icon="arrow-up-right" onPress={()=>{switchProject(p.id);onOpen(p.id)}}/></View>
-   <EditRow title="Project settings" summary="Name, code, description and management">
+   <View style={{flexDirection:'row',alignItems:'center',flexWrap:'wrap',gap:12}}><View style={{flex:1,minWidth:120,gap:4}}><T size={11} muted>Budget used</T><T size={14} weight="500">${Math.round(m.spent).toLocaleString()} <T size={12} muted>/ ${Math.round(m.budget).toLocaleString()}</T></T></View><Button label="Open project" icon="arrow-up-right" onPress={()=>{if(switchProject(p.id)!==false)onOpen(p.id)}}/></View>
+   <EditRow title="Project settings" summary="Name, code, description and management" initial={editing}>
     {editing?<View style={{gap:10}}>
-     <Labeled title="Name" value={name} onChange={setName}/><Labeled title="Code" value={code} onChange={setCode}/>
-     <Labeled title="Description" value={description} onChange={setDescription} markdown/>
-     <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button small label="Save changes" disabled={!name.trim()||!code.trim()} onPress={save}/><Button small label="Cancel" variant="ghost" onPress={()=>setEditing(false)}/></View>
+     <Labeled title="Name" value={name} onChange={name=>change({...draft,name})}/><Labeled title="Code" value={code} onChange={code=>change({...draft,code})}/>
+     <Labeled title="Description" value={description} onChange={description=>change({...draft,description})} markdown/>
+     <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button small label="Save changes" disabled={!name.trim()||!code.trim()} onPress={save}/><Button small label="Cancel" variant="ghost" onPress={()=>change(null)}/></View>
     </View>:p.description?<TaskMarkdown source={p.description}/>:null}
     <ActionMenu label="Project actions" items={[
       {label:'Edit project',icon:'edit-2',onPress:start},
@@ -87,6 +106,7 @@ const DocGroups=memo(function DocGroups({pm,setTab}){
 },(a,b)=>a.setTab===b.setTab&&a.pm.docs===b.pm.docs&&a.pm.wbs===b.pm.wbs&&a.pm.budget===b.pm.budget&&a.pm.risks===b.pm.risks);
 
 function ProjectGovernance({back,tab,setTab}){
+ useRenderMetric('projects/detail');
  const {s,setPm}=useGovernance();const {workspace}=useStore();const{c}=useTheme();
  const p=workspace.projects.find(x=>x.id===workspace.selectedId); const m=projectMetric(p);
  const info=s.pm.info;const patch=x=>setPm('info',{...info,...x},'Updated project governance');

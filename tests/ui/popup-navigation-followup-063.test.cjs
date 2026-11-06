@@ -81,7 +81,7 @@ test('Settings removes only its duplicate tools entry; More and Board header ret
 test('held Board lists render above the ribbon without replacing the responder; release restores strip clipping and scroll',()=>{
  const workspace=model.createWorkspace(),store={workspace,s:bridge.projectView(workspace)},h=screenHarness('src/screens/board/Board.js',store,{platform:'android',globals:{setInterval:()=>1,clearInterval(){}},mocks:{
  '../../store/data':{MAIN:model.boards.DEFAULT_BOARD_ID,PRIORITIES:model.PRIORITIES,fmt:String},
- './BoardManagement':{AddCard:'AddCard',NewListSheet:'NewListSheet',BoardsManager:'BoardsManager'},
+ './BoardManagement':{AddCard:'AddCard',BoardCreateSheet:'BoardCreateSheet',BoardsManager:'BoardsManager'},
  '../../board/boardGesture':{useHoldDrag:()=>({panHandlers:{},lifted:false,offset:{}}),cancelPendingBoardHolds(){}},
  '../../board/boardMotion':{BoardMotion:'BoardMotion'},
  '../../board/boardInteractions.cjs':require('../../src/board/boardInteractions.cjs'),

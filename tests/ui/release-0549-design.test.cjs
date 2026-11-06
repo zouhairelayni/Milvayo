@@ -20,7 +20,7 @@ test('large-surface components and secondary list interactions use the same layo
  const page=read('src/ui/uiLayout.js'), board=read('src/screens/board/Board.js')+read('src/screens/tasks/DueSoon.js');
  const tasks=read('src/screens/tasks/Tasks.js'),timeline=read('src/screens/timeline/Timeline.js');
  assert.match(page,/paddingTop: topPadding \?\? \(wide \? 24 : 16\)/);
- assert.match(board,/minHeight: 44, opacity: pressed \? 0\.6 : 1/);
+ assert.match(board,/rowHeight=Math\.max\(56,/);
  assert.match(tasks,/minHeight: 44, backgroundColor: c\.surfaceAlt/);
  assert.match(timeline,/minHeight: 44, justifyContent: 'center'/);
  assert.match(read('src/app/ModernApp.js'),/outline:2px solid currentColor/);

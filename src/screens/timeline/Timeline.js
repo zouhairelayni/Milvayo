@@ -1,4 +1,5 @@
 // /src/screens/timeline/Timeline.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
@@ -239,6 +240,7 @@ const TaskBar = memo(function TaskBar({ pinch, t, start, due, origin, w, span, p
 });
 
 export default function Timeline({ openTask }) {
+ useRenderMetric('timeline');
   const { c } = useTheme();
   const wide = useWide();
   const screenActive = useScreenActive();
@@ -381,8 +383,7 @@ export default function Timeline({ openTask }) {
     if (Math.abs(width - w) < 0.000001) settleZoom(true);
     diagnosticMonitor.recordAction(`timeline preset: ${value}`);
   }
-  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoomFactor === 1 ? zoom : 'custom', onChange:chooseZoom}), [zoom, zoomFactor, w, span, viewportW, START, TODAY]);
-  useHeaderActions('timeline', zoomHeader, screenActive);
+  useHeaderActions('timeline', null, screenActive);
   zoomCommit.current = result => {
     pendingZoom.current = { scroll: result.scroll, canvasWidth: result.width * span, started: result.started };
     if (Math.abs(result.width - w) < 0.000001) settleZoom(true);

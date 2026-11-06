@@ -1,4 +1,5 @@
 // /src/screens/management/Management.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import {useState} from 'react';
 import {View} from 'react-native';
 import {InlineCalendar,InlineDateField,Page,T,Button,Chip,EmptyState,Feedback,MetricStrip,Segmented,Sheet,FormSection} from '../../ui/ui';
@@ -10,6 +11,7 @@ const today=localDay;
 const useProject=()=>{const {workspace}=useStore();return workspace.projects.find(p=>p.id===workspace.selectedId)};
 
 export function Scheduling({openTask}){
+ useRenderMetric('scheduling');
  const p=useProject();const {updateCalendar,updateDependency,previewSchedule,applySchedule,s}=useStore();
  const cal=p.scheduling?.calendar||model.projectScheduling.DEFAULT_CALENDAR;
  const [mode,setMode]=useState(cal.mode||'calendar'),[weekdays,setWeekdays]=useState(cal.weekdays||[1,2,3,4,5]);
@@ -68,6 +70,7 @@ export function Scheduling({openTask}){
  </Page>;
 }
 export function TaskConfiguration({embedded=false}){
+ useRenderMetric('taskconfig');
  const p=useProject();const {saveTaskSchema,removeTaskField,removeTaskType}=useStore();
  const [name,setName]=useState(''),[id,setId]=useState(''),[kind,setKind]=useState('text'),[options,setOptions]=useState(''),[required,setRequired]=useState(false),[mode,setMode]=useState('field');
  const [configTab,setConfigTab]=useState('structure');
@@ -99,6 +102,7 @@ export function TaskConfiguration({embedded=false}){
  return embedded ? content : <Page title="Task configuration">{content}</Page>;
 }
 export function Collaboration({openTask}){
+ useRenderMetric('collaboration');
  const p=useProject();const {s,addReminder,finishReminder,deleteReminder,deleteComment}=useStore();
  const [taskId,setTaskId]=useState(''),[date,setDate]=useState(today()),[note,setNote]=useState('');
  const [composing,setComposing]=useState(false),[view,setView]=useState('reminders');
@@ -148,6 +152,7 @@ function SpecGroup({kind,title,items}){
  </View>;
 }
 export function Specifications(){
+ useRenderMetric('specifications');
  const p=useProject();const [active,setActive]=useState('phases');const groups=[['phases','Phases'],['schemas','Data schemas'],['apiContracts','API contracts'],['playbooks','Playbooks']];return <Page title="Project knowledge" subtitle="Phases, data schemas, API contracts and playbooks of this project. Add, edit or delete entries.">
  <Segmented options={groups.map(([value,label])=>({value,label}))} value={active} onChange={setActive}/>
  {groups.map(([kind,title])=><View key={kind} style={{display:active===kind?'flex':'none'}}><SpecGroup kind={kind} title={title} items={p[kind]||[]} initial={kind==='phases'}/></View>)}

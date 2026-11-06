@@ -1,0 +1,38 @@
+[
+  {
+    "file": "before-projects-320.html",
+    "width": 320,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "before-projects-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "before-projects-780.html",
+    "width": 780,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "before-projects-1440.html",
+    "width": 1440,
+    "height": 1000,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  }
+]

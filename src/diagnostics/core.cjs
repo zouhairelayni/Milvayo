@@ -28,7 +28,8 @@ const bounded = (a, max) => a.length > max ? a.slice(-max) : a;
 const fresh = (runId, now, meta = {}) => ({
   schema: 1, runId, startedAt: now, updatedAt: now, active: true, screen: 'overview',
   platform: meta.platform || 'unknown', os: meta.os || 'unknown', version: meta.version || 'unknown',
-  startupEvents: [], events: [], crashes: [], slow: [], warnings: 0, warningKinds: {}, errors: 0, screenOpens: {}, render: {}, freezeMs: 0,
+  runtime: meta.runtime || 'not reported',
+  startupEvents: [], startup: [], events: [], crashes: [], slow: [], warnings: 0, warningKinds: {}, errors: 0, screenOpens: {}, render: {}, commits: {}, work: {}, freezeMs: 0,
   previous: null,
 });
 const addEvent = (state, type, detail, at = Date.now()) => {
@@ -56,6 +57,24 @@ const addSlow = (state, type, name, ms, at = Date.now()) => {
   return state;
 };
 const fmtTime = t => t ? new Date(t).toISOString() : 'unknown';
+function addStartup(state, name, elapsed, detail = '') {
+  if (!Number.isFinite(elapsed) || elapsed < 0 || state.startup.length >= 32 || state.startup.some(mark => mark.name === name)) return false;
+  state.startup.push({name: clean(name, 64), elapsed: Math.round(elapsed), detail: clean(detail, 140)});
+  return true;
+}
+function addSample(state, group, screen, duration) {
+  if (!Number.isFinite(duration) || duration < 0) return false;
+  const name = clean(screen, 48);
+  if (name === '__proto__') return false;
+  const samples = state[group];
+  if (!Object.hasOwn(samples, name) && Object.keys(samples).length >= 32) return false;
+  const metric = Object.hasOwn(samples, name) ? samples[name] : {count: 0, sum: 0, max: 0};
+  metric.count++; metric.sum += duration; metric.max = Math.max(metric.max, duration);
+  samples[name] = metric;
+  return true;
+}
+const addCommit = (state, screen, duration) => addSample(state, 'commits', screen, duration);
+const addWork = (state, name, duration) => addSample(state, 'work', name, duration);
 const exitLabels = { 1:'self exit', 2:'OS signal (cause not inferred)', 3:'low memory', 4:'Java crash', 5:'native crash', 6:'ANR', 7:'initialization failure', 8:'permission change', 9:'excessive resource use', 10:'user requested', 11:'user stopped', 12:'dependency exited', 13:'other', 14:'app freezer', 15:'package state change', 16:'package updated' };
 const reportCrash = (s) => [
   '=== MILVAYO CRASH REPORT ===',
@@ -78,16 +97,24 @@ const reportCrash = (s) => [
 const reportPerf = (s, now = Date.now()) => [
   '=== MILVAYO PERFORMANCE REPORT ===',
   `app version: ${s.version} | platform: ${s.platform} | OS: ${s.os} | run: ${s.runId}`,
+  `JS runtime: ${s.runtime || 'not reported'}`,
   `run started: ${fmtTime(s.startedAt)} | uptime: ${Math.max(0, Math.round((now - s.startedAt)/1000))}s`,
   `current screen: ${s.screen} | longest observed JS timer delay: ${s.freezeMs}ms`,
   `Console errors and JS exceptions: ${s.errors} | console warnings: ${s.warnings}`,
   'warnings by kind (message text withheld): ' + Object.entries(s.warningKinds || {}).map(([k,v])=>`${k} ${v}`).join(' · '),
   'navigation counts: ' + Object.entries(s.screenOpens).map(([k,v])=>`${k} ${v}`).join(' · '),
   'React renders (JS profiler, not native FPS):',
+  ...(!Object.keys(s.render).length ? ['No React Profiler callbacks received. Standard release React disables this profiler; this is not zero renders.'] : []),
   ...Object.entries(s.render).map(([k, v]) => `${k}: ${v.count} renders, avg ${Math.round(v.sum / Math.max(1,v.count))}ms, max ${Math.round(v.max)}ms`),
+  'Screen render-to-commit samples (JS wall time, NOT React CPU duration or native FPS):',
+  ...Object.entries(s.commits || {}).map(([k, v]) => `${k}: ${v.count} commits, avg ${Math.round(v.sum / Math.max(1,v.count))}ms, max ${Math.round(v.max)}ms`),
+  'Startup milestones (since JS diagnostics initialization; NOT OS cold-launch time):',
+  ...(s.startup || []).map(mark => `${mark.elapsed}ms | ${mark.name}${mark.detail ? ' | ' + mark.detail : ''}`),
+  'Synchronous work samples (JS wall time):',
+  ...Object.entries(s.work || {}).map(([k, v]) => `${k}: ${v.count} samples, avg ${Math.round(v.sum / Math.max(1,v.count))}ms, max ${Math.round(v.max)}ms`),
   '--- slow events / transitions ---',
   ...s.slow.slice(-40).map(x => `${fmtTime(x.at)} | ${x.type} ${x.name} | ${x.ms}ms`),
   '--- startup steps (current run) ---', ...(s.startupEvents || []).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`), '--- recent steps ---', ...s.events.slice(-25).map(e => `${fmtTime(e.at)} | ${e.type} | ${e.detail}`),
   '', 'LIMITS: JS timers and React render costs are estimates, not a native FPS, memory, ANR or device CPU profiler.',
 ].join('\n');
-module.exports = {warningKind, clean, fresh, addEvent, addCrash, addSlow, reportCrash, reportPerf};
+module.exports = {warningKind, clean, fresh, addEvent, addCrash, addSlow, addStartup, addCommit, addWork, reportCrash, reportPerf};

@@ -1,4 +1,5 @@
 // /src/screens/more/More.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -35,6 +36,7 @@ function Group({ title, children }) {
 // Everything the bottom bar does not show: the project's optional tools (with the switches), the rest of the old menu,
 // the workspace switcher and the appearance toggle.
 export default function More({ go, onPickProject }) {
+ useRenderMetric('more');
   const { mode, setPref } = useTheme();
   const { setPreference } = useLayoutPreference();
   const tools = useProjectTools();

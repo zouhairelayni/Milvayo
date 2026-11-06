@@ -9,8 +9,8 @@ test('a hidden retained tab is told it is hidden, and the shown tab is told it i
 });
 test('Board does no deferred card or column mounting while hidden',()=>{
  const board=read('src/screens/board/Board.js');
- assert.match(board,/const \[shown, setShown\] = useState\(10\)/);
- assert.match(board,/setShown\(n=>Math\.min\(cardTotal,n\+10\)\)/);
+ assert.match(board,/useState\(\{key:windowKey,shown:INITIAL_CARDS\}\)/);
+ assert.match(board,/nextCardCount\(shown,cardTotal,\{active,userScroll:/);
  assert.doesNotMatch(board,/setInterval\(.*setShown/);
  assert.match(board,/Platform\.OS === 'web' \|\| !active\) return;/);
  assert.match(board,/if \(active\) ensureColumns\(/,'columns catch up when the tab is shown again');

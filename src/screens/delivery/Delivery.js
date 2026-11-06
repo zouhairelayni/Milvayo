@@ -1,9 +1,10 @@
 // /src/screens/delivery/Delivery.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useEffect, useMemo, useState } from 'react';
 import {EditRow,Labeled,DangerConfirm,Fold} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { InlineDateRange, ConfirmSheet, EmptyState, ActionRow, FormSection, Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
+import { IconBtn, InlineDateRange, ConfirmSheet, EmptyState, ActionRow, FormSection, Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -24,6 +25,7 @@ function SprintField({ label, value, onChange, multiline = false, placeholder })
 }
 
 export function Sprints({ openTask }) {
+ useRenderMetric('sprints');
   const { c } = useTheme();
   const wide = useWide();
   const { s, createSprint, updateSprint, deleteSprint, assignSprintTask, startSprint, finishSprint } = useStore();
@@ -82,10 +84,10 @@ export function Sprints({ openTask }) {
     subtitle={active ? `${active.name} · ${fmt(active.start)} to ${fmt(active.end)}` : 'Plan iterations, track delivery and manage the backlog'}
   >
     <ScreenIntro title="Sprint planning" description={active ? `${active.name} · ${fmt(active.start)} to ${fmt(active.end)}` : 'Plan iterations, then track delivery against the frozen sprint history.'}/>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4, alignItems:'center' }}>
+      <IconBtn label="New sprint" icon="plus" onPress={()=>startForm('create')}/>
       {s.sprints.map(sp => <Chip key={sp.id} label={`${sp.name} · ${sp.state}`} active={sp.id === selected?.id}
         onPress={() => { setSelectedId(sp.id); setConfirm(''); setBacklogLimit(25); }} />)}
-      <Button label="New sprint" icon="plus" variant="secondary" onPress={()=>startForm('create')}/>
     </ScrollView>
     {!selected ? <EmptyState kind="schedule" title="Make space for a focused iteration" description="Create a planned sprint, then choose the work it should contain." action={<Button label="Create first sprint" icon="plus" onPress={()=>startForm('create')}/>}/> : <>
       <Card style={{ gap: 12 }}>
@@ -177,6 +179,7 @@ export function Sprints({ openTask }) {
 // ---- Releases ---------------------------------------------------------------
 
 export function Releases({ releaseRequest = false, onReleaseRequestHandled }) {
+ useRenderMetric('releases');
   const { c } = useTheme();
   const {s,setStage,createRelease,editRelease,deleteRelease}=useStore();
   const [name,setName]=useState(''),[version,setVersion]=useState(''),[repo,setRepo]=useState(''),[notes,setNotes]=useState(''),[editing,setEditing]=useState('');
@@ -246,6 +249,7 @@ export function Releases({ releaseRequest = false, onReleaseRequestHandled }) {
 
 const CHECK_PAGE = 25; // shortcut: checks past the first page wait behind Show more; raise it if lists stay under ~100
 export function Testing() {
+ useRenderMetric('testing');
   const { c } = useTheme();
   const { s, setCheck } = useStore();
   const [limit, setLimit] = useState(CHECK_PAGE);

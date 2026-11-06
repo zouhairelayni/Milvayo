@@ -20,10 +20,13 @@ function easeInOut(t) {
   }
   return (-2 * u + 3) * u * u;
 }
-function outlinePath(i, t) {
+function outlinePath(i, t, continuous = false) {
   'worklet';
   const r = routes[i];
-  const p = easeInOut(fade([.16, .20, .24][i], [.72, .76, .80][i], clamp(t)));
+  const phase = fade(.015 + i * .025, .70 + i * .025, clamp(t));
+  // Cold playback starts moving immediately with an exact smoothstep. Keep the
+  // approved longer preview timing unchanged for every other caller.
+  const p = continuous ? phase * phase * (3 - 2 * phase) : easeInOut(fade([.16, .20, .24][i], [.72, .76, .80][i], clamp(t)));
   if (p >= 1) return outlines[i];
   return 'M' + r.from.map(([x,y],j) => {
     const [tx,ty] = r.to[j];
@@ -31,20 +34,20 @@ function outlinePath(i, t) {
   }).join(' L') + ' Z';
 }
 // Window timing, 3–2–1 across columns. No whole-logo opacity changes.
-function windowProgress(index, t) {
+function windowProgress(index, t, continuous = false) {
   'worklet';
-  const start = .81 + index * .03;
-  return easeOut(fade(start, start + .027, clamp(t)));
+  const start = continuous ? .72 + index * .04 : .81 + index * .03;
+  return easeOut(fade(start, start + (continuous ? .08 : .027), clamp(t)));
 }
-function ribbonPath(i, t) {
+function ribbonPath(i, t, continuous = false) {
   'worklet';
-  const base = outlinePath(i, t);
-  if (t < .81) return base;
+  const base = outlinePath(i, t, continuous);
+  if (t < (continuous ? .72 : .81)) return base;
   let compound = base;
   let start = 0;
   for (let col=0; col < i; col++) start += windows[col].length;
   for (let j=0; j<windows[i].length; j++) {
-    const p = windowProgress(start + j,t);
+    const p = windowProgress(start + j,t,continuous);
     if (p <= 0) continue;
     if (p >= 1) { compound += ' ' + windows[i][j]; continue; }
     // Scale an accurately pre-sampled window around its original centre.

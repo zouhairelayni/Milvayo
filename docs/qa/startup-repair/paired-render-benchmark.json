@@ -1,0 +1,81 @@
+{
+  "kind": "alternating paired warm Node React DOM renders; native FlatList adapter enforces initial mount policy; NOT Android latency/FPS",
+  "node": "v24.18.0",
+  "samplesPerVariant": 9,
+  "warmupsPerVariant": 10,
+  "cases": {
+    "web": {
+      "width": 1440,
+      "projects": 20,
+      "initialCardActions": {
+        "before": 20,
+        "after": 20
+      },
+      "before": {
+        "samplesMs": [
+          149.78807600000073,
+          321.5541919999996,
+          184.78823100000045,
+          314.6923459999998,
+          154.18019200000163,
+          366.47176899999977,
+          351.98399900000004,
+          360.6746540000022,
+          341.8101920000008
+        ],
+        "medianMs": 321.5541919999996
+      },
+      "after": {
+        "samplesMs": [
+          327.22684599999957,
+          317.51869199999965,
+          324.200268999999,
+          325.6736920000003,
+          353.55830700000115,
+          353.6365770000011,
+          340.0199610000018,
+          366.377923,
+          323.91665400000056
+        ],
+        "medianMs": 327.22684599999957
+      }
+    },
+    "nativeInitialPolicy": {
+      "width": 390,
+      "projects": 20,
+      "initialCardActions": {
+        "before": 20,
+        "after": 2
+      },
+      "before": {
+        "samplesMs": [
+          288.25961500000267,
+          319.7505000000019,
+          304.18438400000014,
+          248.67646100000275,
+          318.124154000001,
+          306.6570380000012,
+          323.1269609999981,
+          305.9246920000005,
+          318.5039999999972
+        ],
+        "medianMs": 306.6570380000012
+      },
+      "after": {
+        "samplesMs": [
+          41.615577000000485,
+          43.66573000000062,
+          41.94549999999799,
+          43.29557600000044,
+          42.26084700000138,
+          41.52976999999737,
+          42.196422999997594,
+          41.7545769999997,
+          42.45680800000264
+        ],
+        "medianMs": 42.196422999997594
+      }
+    }
+  },
+  "measurement": "elapsed JS wall time via performance.now; includes host scheduling and GC; not CPU profiler duration"
+}

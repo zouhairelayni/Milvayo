@@ -20,13 +20,13 @@ test('v0.5.48 uses shared header actions; New task is a text button on desktop a
  for(const name of ['Days','Weeks','Months']) assert.ok(bars.includes(name),name);
 });
 
-test('Timeline first focus waits for visible screen, not drag activity, and zoom moves to header',()=>{
+test('Timeline first focus waits for visible screen, not drag activity, and presets stay in Timeline options',()=>{
  const s=source('src/screens/timeline/Timeline.js');
  assert.match(s,/useScreenActive\(\)/);
  assert.match(s,/if \(!screenActive \|\| !viewportW \|\| !rows.length \|\| firstFocus.current\)/);
  assert.match(s,/todayTasks\[0\] \|\| upcoming/);
  assert.match(s,/chartRef.current\?\.scrollTo\(\{x:xNext,animated:false\}\)/);
- assert.match(s,/useHeaderActions\('timeline', zoomHeader, screenActive\)/);
+ assert.match(s,/useHeaderActions\('timeline', null, screenActive\)/);
  assert.doesNotMatch(s,/actions=\{<Segmented options=\{\['Days'/);
 });
 
@@ -35,7 +35,7 @@ test('Board and Tasks keep header Tools; New sprint belongs to the scrolling spr
  assert.match(board,/useHeaderActions\('board', headerControls, active\)/);
  assert.match(tasks,/useHeaderActions\('tasks', headerControls, screenActive\)/);
  assert.match(sprint,/useHeaderActions\('sprints', sprintHeader, screenActive\)/);
- assert.match(sprint,/<Button label="New sprint" icon="plus"/);
+ assert.match(sprint,/<IconBtn label="New sprint" icon="plus"/);
  assert.doesNotMatch(tasks,/label="New task" icon="plus"/);
 });
 

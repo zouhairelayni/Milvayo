@@ -15,7 +15,7 @@ export default function ProjectToolsSheet({ visible, onClose }) {
     footer={<Button label="Done" small onPress={onClose} />}>
     <Feedback text={`Choose the tools for ${s.project.name}. Turning a tool off only hides its views; its data stays here.`}/>
     <View style={{ borderWidth: 1, borderColor: c.line, borderRadius: radius.md, overflow: 'hidden' }}>
-      {TOOLS.map((tool, n) => <View key={tool.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, paddingVertical: 12, paddingHorizontal: 14,
+      {TOOLS.filter(tool=>!tool.retired).map((tool, n) => <View key={tool.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, paddingVertical: 12, paddingHorizontal: 14,
         borderTopWidth: n ? 1 : 0, borderTopColor: c.line }}>
         <View style={{ flex: 1, gap: 2 }}>
           <T weight="600">{tool.label}</T>

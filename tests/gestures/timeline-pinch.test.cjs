@@ -83,6 +83,7 @@ test('web timeline pinch transforms chart/calendar together, preserves ordinary 
 test('pinch guards prevent task moves/resizes/link creation and taps while ordinary edit semantics remain', () => {
   const handlers = [], changes = [], k = { scroll: { x: 0, y: 0 }, measure() {}, pointer: {}, pinching: true };
   const exports = load('src/screens/timeline/Timeline.js', {
+    '../../diagnostics/useRenderMetric': { useRenderMetric() {} },
     react: { memo: fn => fn, useRef: value => ({ current: value }) },
     'react-native': { View: 'View', Platform: { OS: 'web' }, Pressable: 'Pressable' },
     'react-native-svg': { __esModule: true, default: 'Svg', Circle: 'Circle', Line: 'Line', Path: 'Path' },

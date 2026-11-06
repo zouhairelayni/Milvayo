@@ -18,14 +18,17 @@ export function AddCard({ onAdd }) {
 
 // ---- add list -----------------------------------------------------------------
 
-export function NewListSheet({ visible, onClose, boardId }) {
-  const { addList } = useStore();
+export function BoardCreateSheet({ visible, onClose, board, onCreated }) {
+  const { addList, addBoard } = useStore();
+  const [kind, setKind] = useState('board');
   const [name, setName] = useState('');
   const [status, setStatus] = useState('Backlog');
   const submit = () => {
     if (!name.trim()) return;
-    if (addList(boardId, name.trim(), status)) {
+    const result = kind === 'board' ? addBoard(name.trim()) : addList(board.id, name.trim(), status);
+    if (result) {
       setName('');
+      if (kind === 'board') onCreated(result);
       onClose();
     }
   };
@@ -33,16 +36,18 @@ export function NewListSheet({ visible, onClose, boardId }) {
     <Sheet
       visible={visible}
       onClose={onClose}
-      title="New list"
-      footer={<Button label="Add list" icon="plus" disabled={!name.trim()} onPress={submit} />}
+      title="Create on Board"
+      footer={<Button label={kind === 'board' ? 'Create board' : 'Create list'} icon="plus" disabled={!name.trim()} onPress={submit} />}
     >
+      <Segmented fill options={[{value:'board',label:'New board'},{value:'list',label:'New list'}]} value={kind} onChange={setKind}/>
+      {kind==='list'?<T muted size={13}>Add a list to {board.name}</T>:null}
       <View style={{ gap: 8 }}>
-        <T size={12} weight="500" muted>List name</T>
-        <Input accessibilityLabel="List name" value={name} onChangeText={setName} placeholder="e.g. Blocked" onSubmitEditing={submit} />
+        <T size={12} weight="500" muted>{kind==='board'?'Board name':'List name'}</T>
+        <Input accessibilityLabel={kind==='board'?'Board name':'List name'} value={name} onChangeText={setName} placeholder={kind==='board'?'e.g. Design':'e.g. Blocked'} onSubmitEditing={submit} />
       </View>
-      <FormSection title="Progress mapping" description="Choose the status applied to cards in this list.">
+      {kind==='list'?<FormSection title="Progress mapping" description="Choose the status applied to cards in this list.">
         <Segmented fill options={STATUS} value={status} onChange={setStatus} />
-      </FormSection>
+      </FormSection>:null}
     </Sheet>
   );
 }

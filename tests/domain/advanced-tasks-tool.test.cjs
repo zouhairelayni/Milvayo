@@ -17,15 +17,19 @@ test('Advanced tasks defaults preserve existing access, new projects stay lean, 
   assert.throws(() => pt.setTool(p.tools, 'advanced-tasks-typo', false), /Unknown tool/);
 });
 
-test('Project tools includes Advanced tasks and the task sheet follows it with no Standard/Advanced selector or data mutation', () => {
+test('Planning & delivery remains available with legacy Advanced tasks off, while Manage tools omits the retired switch', () => {
   const p = model.makeProject({ id: 'p', name: 'P', tasks: [{ id: 't', title: 'A' }] }); const ws = model.normalizeWorkspace({ ...model.createWorkspace(), selectedId: 'p', projects: [p] });
-  const s = bridge.projectView(ws); const saved = JSON.stringify(ws); const tools = { advancedTasks: false };
+  const s = bridge.projectView(ws), saved = JSON.stringify(ws), tools = { advancedTasks: false };
   const h = screenHarness('src/screens/tasks/TaskSheet.js', { s, workspace: ws }, { tools }); const props = { taskId: 't', onClose() {} };
-  let tree = h.render('default', props); const rows = () => nodes(tree).filter(n => n.type === 'InlineDrop').map(n => n.props.id);
-  assert.ok(rows().includes('schedule')); assert.equal(rows().includes('dependencies'), false);
-  assert.equal(nodes(tree).some(n => n.type === 'Segmented' && n.props.options.includes('Advanced')), false);
-  tools.advancedTasks = true; tree = h.render('default', props); assert.ok(rows().includes('dependencies')); assert.ok(rows().includes('verification')); assert.equal(JSON.stringify(ws), saved);
-  const calls = []; const toolSheet = screenHarness('src/screens/more/ProjectToolsSheet.js', { s, setProjectTool: (...a) => calls.push(a) }, { tools });
-  const option = nodes(toolSheet.render('default', { visible: true, onClose() {} })).find(n => n.props.accessibilityLabel === 'Advanced tasks tool');
-  assert.ok(option); option.props.onValueChange(false); assert.deepEqual(calls, [['advancedTasks', false]]);
+  let tree = h.render('default', props);
+  const tabs = nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(x => x.value === 'planning'));
+  assert.ok(tabs); tabs.props.onChange('planning'); tree = h.render('default', props);
+  const rows = nodes(tree).filter(n => n.type === 'InlineDrop').map(n => n.props.id);
+  for (const id of ['schedule', 'dependencies', 'verification']) assert.ok(rows.includes(id), id);
+  assert.equal(JSON.stringify(ws), saved);
+  const calls = [], toolSheet = screenHarness('src/screens/more/ProjectToolsSheet.js', { s, setProjectTool: (...a) => calls.push(a) }, { tools });
+  const options = nodes(toolSheet.render('default', { visible: true, onClose() {} }));
+  assert.equal(options.some(n => n.props.accessibilityLabel === 'Advanced tasks tool'), false);
+  const option = options.find(n => n.props.accessibilityLabel === 'Sprints tool');
+  assert.ok(option); option.props.onValueChange(true); assert.deepEqual(calls, [['sprints', true]]);
 });

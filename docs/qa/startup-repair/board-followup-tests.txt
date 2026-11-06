@@ -1,0 +1,47 @@
+✔ background cancels pending Board hold and stale releases cannot open a task after resume (2637.298921ms)
+✔ background cancels a lifted list/card once, resets offset and unlocks through onCancel without committing a drop (261.804154ms)
+✔ background invalidates delayed title measurements and task-open timers; unmount removes lifecycle listener (241.353807ms)
+✔ List Due soon shows one task, expands/collapses on demand, and preserves task-open callbacks without changing dates (1740.307345ms)
+✔ Add list follows all columns as a compact vertical action; native column window starts at zero and reaches the last columns (7.985193ms)
+✔ native board finger offset follows the finger plus horizontal and vertical auto-scroll (6.764116ms)
+✔ scroll motion cancels pending lift; stationary long press is still eligible (0.632961ms)
+✔ Kanban restores original MockDesign responder, auto-scroll and full list structure (8.8715ms)
+✔ Native Kanban and Timeline gesture paths are isolated (2.810192ms)
+✔ Kan date classification never claims completed tasks are overdue (44.348ms)
+✔ Kan filters work together and never mutate original tasks (7.81323ms)
+✔ Kan rejects unsupported due/priority filters (1.138846ms)
+✔ Kan duplicate strips verification, Git refs, scheduling predecessors and sprint membership (6.231346ms)
+✔ Kan duplicate rejects unknown or duplicate IDs (1.876808ms)
+✔ Kan label editor deduplicates, revokes verification, blocks oversized lists (2.253ms)
+✔ Kan per-board description preference survives JSON normalization (4.985077ms)
+✔ Kan additional boards isolate display preferences and remove deleted entries (2.357731ms)
+✔ Kan drop index respects hidden cards under active filter (2.839154ms)
+✔ modern board retains card/list gesture logic and management actions (4.192115ms)
+✔ title double-tap geometry checks BOTH page coordinates, including edges (6.821153ms)
+✔ title double tap threshold does not accidentally reopen sheet (0.709077ms)
+✔ inline rename keeps internal spaces and commits only a valid title (0.690538ms)
+✔ swipes cancel pending hold; finger-offset accounts for two-axis auto-scrolling (4.935923ms)
+✔ original mock board controls remain wired after integration (11.467923ms)
+✔ rename via task sheet and board inline commit preserves canonical fields (58.873808ms)
+✔ each board list mounts five cards and only user scroll near the loaded end adds the next five (2251.608729ms)
+✔ web wheel/keyboard and accessibility scrolling also unlock demand mounting without a Show more control (526.009577ms)
+✔ mount counts are bounded and unchanged by non-user, inactive, top or invalid scroll samples (1.455615ms)
+✔ drop hit testing includes page and list scrolling and inserts before the unmounted tail, including filtered order (10.164692ms)
+✔ held-card auto-scroll selects the target list after horizontal/page scroll and clamps its range (1.406924ms)
+✔ card drags include source-list scroll and discard stale measurements when their card unmounts (414.264231ms)
+✔ date rail pages across months, recenters on the committed week, rejects duplicate/bad events and preserves day selection (1405.408076ms)
+✔ web date paging waits for scroll to stop and empty rails do not shift (93.152269ms)
+✔ Home date swipe removes chevrons, changes the chart week, clears the day filter, and keeps the existing year bound (620.852922ms)
+✔ task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success (711.630269ms)
+✔ bottom navigation has icon selection without a tile and still rejects stale press intents (220.294269ms)
+✔ Settings removes only its duplicate tools entry; More and Board header retain their tools (3.701769ms)
+✔ held Board lists render above the ribbon without replacing the responder; release restores strip clipping and scroll (532.624999ms)
+✔ description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place (257.821885ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5560.927804

@@ -1,6 +1,6 @@
 // /src/components/inline/CompactTools.js
 import {useState} from 'react';
-import {Pressable,View} from 'react-native';
+import {Platform,Pressable,View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
 import {Card,Input,T,Button,Chip,Sheet,ConfirmSheet} from '../../ui/ui';
 import Reveal from '../../ui/Reveal';
@@ -23,9 +23,9 @@ export function Fold({title,subtitle,children,initial=false,actions,open,onToggl
   {expanded?<Body style={{gap:16,paddingTop:12,borderTopWidth:1,borderColor:c.line}}>{children}{actions}</Body>:null}
  </View>;
 }
-export function EditRow({title,summary,children}){
- const [open,setOpen]=useState(false);const {c}=useTheme();return <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:8}}>
-  <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={()=>setOpen(!open)} style={{flexDirection:'row',alignItems:'center',minHeight:44,gap:10}} accessibilityState={{expanded:open}}>
+export function EditRow({title,summary,children,initial=false}){
+ const [open,setOpen]=useState(initial);const {c}=useTheme();return <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:8}}>
+  <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={()=>setOpen(!open)} style={{flexDirection:'row',alignItems:'center',minHeight:Platform.OS==='android'?48:44,gap:10}} accessibilityState={{expanded:open}}>
    <View style={{flex:1,gap:2}}><T size={13} weight="600">{title}</T>{summary?<T size={12} muted numberOfLines={1}>{summary}</T>:null}</View>
    <Feather name={open?'chevron-up':'chevron-down'} size={17} color={c.muted}/>
   </Pressable>{open?<Reveal style={{gap:12,paddingBottom:16,paddingTop:8}}>{children}</Reveal>:null}

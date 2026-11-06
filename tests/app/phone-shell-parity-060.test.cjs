@@ -94,22 +94,22 @@ test('bottom bar: Home, Work, Create, Projects, More; swipe and stale-press guar
 
 test('view pill: reuses the shared Segmented control, swipes between views, ignores the tap a swipe ends in', () => {
   const bars = read('src/components/shell/Bars.js');
-  const pill = bars.slice(bars.indexOf('export function ViewPill'), bars.indexOf('const ZOOMS'));
+  const pill = bars.slice(bars.indexOf('export function ViewPill'), bars.indexOf('function HeaderIcons'));
   assert.match(pill, /<Segmented fill/);
   assert.match(pill, /swipedAt\.current >= 450/);
   assert.match(read('src/app/ModernApp.js'), /views\.length > 1 \? <ViewPill views=\{views\} current=\{screen\} go=\{requestTab\}/);
 });
 
-test('header keeps every per-screen control: Tools, New sprint, New release, Timeline zoom, search', () => {
+test('header keeps every per-screen control: Tools, New sprint, New release, Timeline tools, search', () => {
   for (const [file, id] of [['src/screens/board/Board.js', 'board'], ['src/screens/tasks/Tasks.js', 'tasks'],
     ['src/screens/delivery/Delivery.js', 'sprints'], ['src/screens/delivery/Delivery.js', 'releases'], ['src/screens/timeline/Timeline.js', 'timeline']]) {
     assert.match(read(file), new RegExp(`useHeaderActions\\('${id}'`), `${id} lost its header controls`);
   }
   const bars = read('src/components/shell/Bars.js');
   const icons = bars.slice(bars.indexOf('function HeaderIcons'), bars.indexOf('export function PhoneHeader'));
-  assert.match(icons, /controls\.kind === 'zoom'/);
+  assert.doesNotMatch(icons, /controls\.kind === 'zoom'/);
   assert.match(icons, /controls\.actions\?\.map/);
-  assert.match(icons, /Zoom \$\{controls\.value\}/);
+  assert.match(read('src/screens/timeline/Timeline.js'), /useHeaderActions\('timeline', null, screenActive\)/);
   const header = bars.slice(bars.indexOf('export function PhoneHeader'));
   assert.match(header, /accessibilityLabel="Search tasks"/);
   assert.match(header, /onQuery\(''\); setSearching\(false\)/); // closing search clears the filter it set

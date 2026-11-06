@@ -13,8 +13,8 @@ test('Timeline control inventory: Items, First task, Today, Critical path, Paren
   const s = read('src/screens/timeline/Timeline.js');
   for (const label of ['Hide task names', 'Show task names', 'Jump to first task', 'Today', 'Show critical path', 'Parent tasks', 'To schedule', 'Remove', 'Keep', 'Move after predecessors', 'Schedule the sample tasks']) assert.ok(s.includes(label), label);
   for (const callback of ['goFirst', 'goToday(true)', 'setShowItems(v=>!v)', "setTaskPanel('parents')", "setTaskPanel('schedule')", 'setShowCritical(v=>!v)', 'onCommit={bar.onCommit}', 'onPreview={bar.onPreview}', 'onLink={bar.onLink}', 'onClose={()=>setTaskPanel(null)}', 'onAccessibilityTap={() => onOpen(t.id)}']) assert.ok(s.includes(callback), callback);
-  assert.match(s, /kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom/);
-  const preset = s.slice(s.indexOf('  function chooseZoom(value)'), s.indexOf('  const zoomHeader'));
+  assert.match(s, /useHeaderActions\('timeline', null, screenActive\)/);
+  const preset = s.slice(s.indexOf('  function chooseZoom(value)'), s.indexOf("  useHeaderActions('timeline'"));
   assert.match(preset, /timelineZoom.focusDay/);
   assert.match(preset, /pendingZoom.current = \{ scroll, canvasWidth: width \* span, focusDay \}/);
   assert.match(preset, /horizontalOffset.setValue\(scroll\)/);

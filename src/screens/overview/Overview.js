@@ -1,4 +1,5 @@
 // /src/screens/overview/Overview.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import {useMemo,useState} from 'react';
 import {Pressable,View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import {todayTasks} from './today.cjs';
 const{scheduleSeries,statusSeries}=require('../../domain/dashboard.cjs');
 
 export default function Overview({openTask,go,openStatus,onNewTask,onOpenBackup}){
+ useRenderMetric('overview');
  const{c}=useTheme(),wide=useWide(),{s}=useStore(),tools=useProjectTools();
  const[alert,setAlert]=useState(null),[attentionLimit,setAttentionLimit]=useState(8),[date,setDate]=useState(null);
  const today=localDay();

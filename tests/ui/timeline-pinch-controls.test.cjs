@@ -36,15 +36,16 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
   const chart = () => nodes(tree).find(n => n.type === 'AnimatedScrollView');
   chart().props.ref.current = { scrollTo: v => scrolls.push(v) };
   chart().props.onLayout({ nativeEvent: { layout: { width: 320 } } }); tree = render();
-  assert.equal(h.headers.timeline.value, 'Days'); assert.equal(options.width, 34);
+  const presets = () => nodes(tree).find(n => n.type === 'ActionMenu' && n.props.label === 'Timeline options').props.header.props;
+  assert.equal(h.headers.timeline, null); assert.equal(presets().value, 'Days'); assert.equal(options.width, 34);
   options.onStart(); tree = render(); assert.equal(chart().props.scrollEnabled, true, 'native scroll recognizer stays enabled during pinch');
   options.onCommit(68, 400); options.onEnd(); tree = render(); tree = render();
-  assert.equal(options.width, 68); assert.equal(h.headers.timeline.value, 'custom');
+  assert.equal(options.width, 68); assert.equal(presets().value, '');
   assert.equal(chart().props.scrollEnabled, true); assert.equal(scrolls.at(-1).x, 400); assert.equal(animated.at(-1), 400); assert.ok(resets);
   const surfaces = nodes(tree).filter(n => n.type === 'PinchCanvas'); assert.equal(surfaces.length, 2); assert.equal(surfaces[0].props.pinch, surfaces[1].props.pinch);
   chart().props.onContentSizeChange(3808, 108);
-  h.headers.timeline.onChange('Months'); tree = render(); assert.equal(options.width, 6); assert.equal(h.headers.timeline.value, 'Months');
-  h.headers.timeline.onChange('Days'); tree = render(); assert.equal(options.width, 34); assert.equal(h.headers.timeline.value, 'Days');
+  presets().onChange('Months'); tree = render(); assert.equal(options.width, 6); assert.equal(presets().value, 'Months');
+  presets().onChange('Days'); tree = render(); assert.equal(options.width, 34); assert.equal(presets().value, 'Days');
   for (let i = 0; i < 30; i++) {
     const label = i % 2 ? 'Zoom out' : 'Zoom in';
     const controls = nodes(tree).find(n => n.type === 'TimelineZoomControls');
@@ -53,14 +54,14 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
     assert.ok(Number.isFinite(options.width) && options.width > 0);
     chart().props.onContentSizeChange();
   }
-  h.headers.timeline.onChange('Days'); tree = render(); tree = render();
+  presets().onChange('Days'); tree = render(); tree = render();
   chart().props.onScroll({ nativeEvent: { contentOffset: { x: 1500 } } }); tree = render();
-  h.headers.timeline.onChange('Months'); tree = render(); tree = render();
+  presets().onChange('Months'); tree = render(); tree = render();
   assert.equal(options.width, 6);
   assert.equal(scrolls.at(-1).x, 0, 'Months focuses Today within the smaller canvas');
   assert.equal(animated.at(-1), 0, 'calendar immediately matches the chart');
   chart().props.onContentSizeChange();
-  h.headers.timeline.onChange('Days'); tree = render(); tree = render();
+  presets().onChange('Days'); tree = render(); tree = render();
   assert.equal(scrolls.at(-1).x,333,'returning to Days centers Today, independent of the previous scroll');
   assert.equal(animated.at(-1),333);
   assert.deepEqual(edits, []); assert.equal(JSON.stringify(project), saved);

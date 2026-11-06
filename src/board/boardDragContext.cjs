@@ -23,15 +23,36 @@ function newCtx() {
 }
 
 // Which slot a card would take in a list if dropped at window height py.
+function cardTop(k, card) {
+  const column = k.lists?.[card.listId]?.scroll?.y || 0;
+  return card.y - (k.scroll.y - card.sy) - (column - (card.cy || 0));
+}
+function listScrollAtPointer(k, pointer, edge = 56, speed = 14) {
+  for (const entry of Object.values(k.lists)) {
+    const box = entry.scroll?.box;
+    if (!box) continue;
+    const top = box.y - (k.scroll.y - box.sy), left = box.x - (k.scroll.x - box.sx);
+    if (pointer.x < left || pointer.x > left + box.w || pointer.y < top || pointer.y > top + box.h) continue;
+    const dy = pointer.y < top + edge ? -speed : pointer.y > top + box.h - edge ? speed : 0;
+    const y = Math.max(0, Math.min(entry.scroll.max, entry.scroll.y + dy));
+    if (dy && y !== entry.scroll.y) return {entry, y};
+  }
+  return null;
+}
 function slotFor(k, listId, py, excludeId) {
   const ids = (k.order[listId] || []).filter((id) => id !== excludeId);
+  let lastMeasured = -1;
   for (let i = 0; i < ids.length; i++) {
     const w = k.win[ids[i]];
     if (!w) continue;
-    const top = w.y - (k.scroll.y - w.sy); // page scroll since the lift moves everything up
+    lastMeasured = i;
+    const top = cardTop(k, w);
     if (py < top + w.h / 2) return { index: i, before: ids[i] };
   }
-  return { index: ids.length, before: null };
+  // Below the mounted window means before the next unseen card, never past an
+  // unmounted tail. Keep indices in the full filtered order for dropBefore.
+  const index = lastMeasured + 1;
+  return { index, before: ids[index] || null };
 }
 
-module.exports = { newCtx, refreshMax, slotFor };
+module.exports = { newCtx, refreshMax, slotFor, cardTop, listScrollAtPointer };

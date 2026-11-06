@@ -1,4 +1,5 @@
 // /src/screens/governance/Portfolios.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { View } from 'react-native';
 import { useState } from 'react';
 import { EmptyState, FormSection, MetricStrip, ScreenIntro, Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
@@ -11,6 +12,7 @@ const {portfolioMetric}=require('../../domain/governanceSummary.cjs');
 
 // Independent portfolio CRUD. Membership is by project ID; no task data is duplicated.
 export default function Portfolios({embedded=false,openProject}) {
+ useRenderMetric('portfolios');
  const {c}=useTheme();
  const {projects,workspace,savePortfolio,deletePortfolio,switchProject}=useStore();
  const [editing,setEditing]=useState(null),[name,setName]=useState(''),[description,setDescription]=useState(''),[members,setMembers]=useState([]),[objective,setObjective]=useState(''),[manager,setManager]=useState(''),[status,setStatus]=useState('Active');

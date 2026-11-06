@@ -46,10 +46,10 @@ test('screens use the extracted modules and no longer define them inline', () =>
   const timeline = read('src/screens/timeline/Timeline.js');
   assert.match(board, /from '\.\/BoardManagement'/);
   assert.match(board, /require\('\.\.\/\.\.\/board\/boardDragContext\.cjs'\)/);
-  assert.doesNotMatch(board, /function (newCtx|slotFor|refreshMax|AddCard|NewListSheet|BoardsManager|BoardNameEditor)\b/);
+  assert.doesNotMatch(board, /function (newCtx|slotFor|refreshMax|AddCard|BoardCreateSheet|BoardsManager|BoardNameEditor)\b/);
   assert.match(timeline, /require\('\.\.\/\.\.\/timeline\/timelineGeometry\.cjs'\)/);
   assert.match(timeline, /require\('\.\.\/\.\.\/gestures\/scrollLimits\.cjs'\)/);
   assert.doesNotMatch(timeline, /function (roundPath|distToPath|refreshMax)\b/);
   const mgmt = read('src/screens/board/BoardManagement.js');
-  for (const n of ['AddCard', 'NewListSheet', 'BoardsManager']) assert.match(mgmt, new RegExp(`export function ${n}\\b`));
+  for (const n of ['AddCard', 'BoardCreateSheet', 'BoardsManager']) assert.match(mgmt, new RegExp(`export function ${n}\\b`));
 });

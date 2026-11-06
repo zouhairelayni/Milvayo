@@ -1,6 +1,6 @@
-# Milvayo 0.7.9
+# Milvayo 0.7.11
 
-Independent, local-first project management for Android, iOS and Web/PWA, using React Native and Expo SDK 58. The approved premium redesign is now the main application. Android versionCode and iOS buildNumber are 79.
+Independent, local-first project management for Android, iOS and Web/PWA, using React Native and Expo SDK 58. The approved premium redesign is now the main application. Android versionCode and iOS buildNumber are 81.
 
 The app includes Board and Timeline planning, tasks, sprint history, releases, workspace/project management, charts, inline calendars and a first-run tour. More → Take the tour replays onboarding. Theme changes remain separate from optional launcher-icon changes.
 
@@ -22,7 +22,7 @@ Android may pause JavaScript in the background or terminate the process. Complet
 ## Engineering references
 
 - [Cumulative release history](docs/changelog/CHANGELOG.md)
-- [Current update and validation](docs/qa/release-079/ENGINEERING-REPORT.md)
+- [Current update and validation](docs/qa/release-0711/ENGINEERING-REPORT.md)
 - [0.7.1–0.7.9 controls and startup](docs/instructions/releases-071-079.md)
 - [First-run tour](docs/instructions/first-run-tour.md)
 - [Backup format](docs/instructions/niyav-format.md)
@@ -30,3 +30,7 @@ Android may pause JavaScript in the background or terminate the process. Complet
 - [Engineering rules](AGENTS.md)
 
 Historical QA documents describe their original release and are not runtime acceptance evidence for 0.7.0. The superseded redesign checkout and temporary promotion copies were removed after owner build confirmation, leaving one active app and dependency tree. Work stays on Git `work`; checkpoints and pushes require explicit owner instruction.
+
+Performance repair designated **0.7.10**: faster cold-start sequencing, layout-ready native logo playback, production commit/work timing, native Projects virtualization and five-card Board lists with scroll-triggered loading. No new dependencies or data migration. This repair remains uncommitted; no builds, commits or pushes were run. Evidence and Android acceptance: [engineering report](docs/qa/startup-repair/ENGINEERING-REPORT.md), [test guide](docs/instructions/startup-performance-repair.md).
+
+Current **0.7.11** adds one left-side Board creation sheet, confirmed board deletion, always-available task planning, header-only List search/Tools, three-row scrollable Due soon and left-side sprint creation. Timeline presets remain in Timeline options. Usage and acceptance: [0.7.11 guide](docs/instructions/release-0711.md). Source changes remain uncommitted on `work`; no new build or Git publication.

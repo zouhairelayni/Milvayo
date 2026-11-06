@@ -8,7 +8,7 @@ function lifecycleHarness(){
   useMemo(fn,deps){const ref=hooks.useRef(null);if(!ref.current||deps.some((v,i)=>!Object.is(v,ref.current.deps[i])))ref.current={deps,value:fn()};return ref.current.value;},
   useCallback(fn,deps){return hooks.useMemo(()=>fn,deps);},
   useId(){return hooks.useRef('lifecycle-'+cursor).current;},
-  useEffect(fn,deps=[]){const i=cursor++;if(!effects[i]||deps.some((v,n)=>!Object.is(v,effects[i].deps[n])))pending.push(()=>{effects[i]?.cleanup?.();effects[i]={deps,cleanup:fn()};});},
+  useEffect(fn,deps){const i=cursor++;if(!effects[i]||deps===undefined||deps.some((v,n)=>!Object.is(v,effects[i].deps[n])))pending.push(()=>{effects[i]?.cleanup?.();effects[i]={deps,cleanup:fn()};});},
  };
  hooks.useLayoutEffect=hooks.useEffect;
  return {hooks,render(fn,props){cursor=0;pending.length=0;const tree=fn(props);pending.splice(0).forEach(f=>f());return tree;},unmount(){effects.forEach(e=>e?.cleanup?.());}};

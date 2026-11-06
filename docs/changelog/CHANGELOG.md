@@ -1,3 +1,19 @@
+## v0.7.11 — Focused creation, planning and navigation controls (2026-11-06)
+
+- Board’s left-hand plus opens one sheet for a new board or a list in the current board. Remove the vertical Add list control. Board tools exposes confirmed deletion; tasks move safely to Main and Main remains protected.
+- Planning & delivery is always available in task details. Retire Advanced tasks from Manage tools while preserving legacy preferences and task data through import/export.
+- Remove Timeline’s duplicate header preset control; keep its existing tools pills and zoom/pinch behavior. List uses header search/Tools only, with saved-view search synchronized to the header.
+- Due soon shows three rows, then loads additional rows through nested scrolling instead of See more. Remove its descriptive paragraph and show the scroll hint. Sprint creation is an accessible icon-only plus at the left of its selector row.
+- Synchronize package/lock/Expo 0.7.11, Android versionCode 81 and iOS buildNumber 81. No new packages, builds, commits or pushes. QA: `docs/qa/release-0711/ENGINEERING-REPORT.md`.
+
+## v0.7.10 — Startup, Projects and Board performance repair (2026-11-06)
+
+- Replace the 3.7-second cold animation plus forced one-second hold with 1.1-second playback and a final rendered frame. Prepare the shell concurrently, defer tour/notices until reveal, start native motion after layout and reject stale completion callbacks. Keep selected accents, original geometry and reduced motion.
+- Add bounded startup milestones, runtime identification, production screen render-to-commit estimates and synchronous-work timings alongside the real React Profiler. Distinguish wall time, JS frame estimates and native layout callbacks from CPU/FPS/OS launch measurements.
+- Native Projects initially mounts two cards and batches two using FlatList. Retain unsaved/rejected drafts through recycling, preserve web/embedded pagination, align facts and wrap narrow budget/actions. Android shared action/icon and project-settings touch targets reach 48 units.
+- Board lists initially mount five cards and load additional five-card batches only on user scroll. Replace Show more with bounded list scrolling; preserve loaded editors/responders, full-order/filter-aware drops, nested-scroll offsets and held-card target auto-scroll.
+- No dependency additions or workspace migration. Designated version 0.7.10, Android/iOS 80, before the 0.7.11 work. Main source is authorized by the owner’s subsequent workspace correction. No builds, commits or pushes. Evidence: `docs/qa/startup-repair/ENGINEERING-REPORT.md`.
+
 ## v0.7.9 — Return to island notifications (2026-11-06)
 
 - Android CI packaging correction: restrict native-project ignore rules to root `/android/` and `/ios/`, and include the authored Kotlin icon adapter consumed by the prebuild plugin. Add a clean Git-package/plugin-copy regression so locally present but unshipped adapters fail tests. No version, dependency, storage or icon behavior change; no agent build.

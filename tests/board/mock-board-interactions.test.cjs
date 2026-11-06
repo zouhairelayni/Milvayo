@@ -57,7 +57,7 @@ test('original mock board controls remain wired after integration', () => {
     /moveListTo\(board\.id, list\.id, to\)/,
     /placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore \? k\.dropBefore\(lists\[to\]\.id, slot\.index, t\.id\) : slot\.before\)/,
     /onCancel:/,
-    /<NewListSheet visible=\{addingList\}/,
+    /<BoardCreateSheet visible onClose=\{\(\) => setCreating\(false\)\} board=\{board\}/,
     /<BoardsManager visible=\{managing\}/,
     /AddCard onAdd=/,
     /deleteList\(board\.id, list\.id\)/,

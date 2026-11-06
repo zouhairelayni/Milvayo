@@ -1,0 +1,24 @@
+✔ cold start prepares the shell during playback and reveals immediately when both animation and workspace are ready (1506.332345ms)
+✔ a slow or failed-safe workspace retains the completed logo until storage reports readiness, without replay (164.688807ms)
+✔ duplicate completion does not schedule a hold or replay; unmount cancels first-frame estimates (125.162115ms)
+✔ native Projects bounds initial cards and batches while web and embedded management retain their existing pagination (2655.544882ms)
+✔ virtualized project editors retain rejected and unsaved drafts across row unmount; successful save and cancel clear them (323.685115ms)
+✔ failed project selection stays in the list; workspace changes do not reuse another workspace’s draft cache (260.038577ms)
+✔ shared Android actions and icon controls have 48-unit targets while web sizes remain stable (163.181154ms)
+✔ official geometry is a three-piece N and six 3-2-1 board openings in all ten colorways (12.456423ms)
+✔ three ribbons move with the approved engineer timing and windows reveal in sequence (1.282423ms)
+✔ startup prepares the shell concurrently and removes the artificial final hold (11.387577ms)
+✔ the Brand logo can still play at 1.5x; the More screen shows it still and keeps the appearance toggle (8.272693ms)
+✔ 0.5.58 manifests match and no legacy logo dependency is necessary (20.991077ms)
+✔ native logo waits for layout and advances continuously on UI frames while JS callbacks are queued (1739.661268ms)
+✔ reduced motion presents the final Board on the first native frame and reveals after that frame without a timed hold (290.485654ms)
+✔ unmount and inactive transitions cancel playback and reject queued completion from an old epoch (417.854807ms)
+✔ cold choreography moves every ribbon early and retains the exact original N and Board endpoints (5.690346ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5147.503574

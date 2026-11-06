@@ -1,0 +1,26 @@
+✔ a hidden retained tab is told it is hidden, and the shown tab is told it is active (7.521116ms)
+✔ Board does no deferred card or column mounting while hidden (1.018539ms)
+✔ Testing shows 25 checks first and counts statuses in one pass (2.653692ms)
+✔ roundPath: straight line stays straight, a corner becomes one curve (3.130923ms)
+✔ distToPath: distance to a segment, clamped at its ends (0.458115ms)
+✔ refreshMax: never negative, follows content minus visible size (2.36527ms)
+✔ board drag context: fresh state and drop slot (0.749577ms)
+✔ screens use the extracted modules and no longer define them inline (6.802154ms)
+✔ native board finger offset follows the finger plus horizontal and vertical auto-scroll (6.495192ms)
+✔ scroll motion cancels pending lift; stationary long press is still eligible (0.487ms)
+✔ Kanban restores original MockDesign responder, auto-scroll and full list structure (6.055346ms)
+✔ Native Kanban and Timeline gesture paths are isolated (1.471923ms)
+✔ each board list mounts five cards and only user scroll near the loaded end adds the next five (810.118192ms)
+✔ web wheel/keyboard and accessibility scrolling also unlock demand mounting without a Show more control (148.016116ms)
+✔ mount counts are bounded and unchanged by non-user, inactive, top or invalid scroll samples (0.474308ms)
+✔ drop hit testing includes page and list scrolling and inserts before the unmounted tail, including filtered order (3.40077ms)
+✔ held-card auto-scroll selects the target list after horizontal/page scroll and clamps its range (0.535231ms)
+✔ card drags include source-list scroll and discard stale measurements when their card unmounts (122.563654ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2095.483075

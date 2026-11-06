@@ -60,14 +60,14 @@ export function Button({label,onPress,icon,variant='primary',disabled}){
  const color=primary?c.bg:danger?c.danger:c.ink;
  return <PressSurface accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled:!!disabled}} disabled={disabled} onPress={onPress} hitSlop={3}
   containerStyle={{alignSelf:'flex-start',maxWidth:'100%',flexShrink:1}}
-  style={{minHeight:46,paddingHorizontal:primary?19:14,paddingVertical:11,borderRadius:primary?24:12,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:9,
+  style={{minHeight:Platform.OS==='android'?48:46,paddingHorizontal:primary?19:14,paddingVertical:11,borderRadius:primary?24:12,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:9,
     borderWidth:primary||variant==='ghost'?0:1,borderColor:danger?c.danger+'44':c.line,backgroundColor:primary?c.ink:variant==='ghost'?'transparent':danger?c.danger+'12':c.elevated}}>
   {icon?<Feather name={icon} size={16} color={color}/>:null}<T size={13} weight="600" color={color} numberOfLines={1} style={{flexShrink:1,lineHeight:20}}>{label}</T>
  </PressSurface>;
 }
 export function IconBtn({icon,onPress,solid,label}){
  const{c}=useTheme();return <PressSurface accessibilityRole="button" accessibilityLabel={label||icon} onPress={onPress} hitSlop={3}
-  style={{width:44,height:44,borderRadius:14,alignItems:'center',justifyContent:'center',backgroundColor:solid?c.ink:c.elevated,borderWidth:1,borderColor:solid?'transparent':c.line}}>
+  style={{width:Platform.OS==='android'?48:44,height:Platform.OS==='android'?48:44,borderRadius:14,alignItems:'center',justifyContent:'center',backgroundColor:solid?c.ink:c.elevated,borderWidth:1,borderColor:solid?'transparent':c.line}}>
   <Feather name={icon} size={18} color={solid?c.bg:c.ink}/>
  </PressSurface>;
 }

@@ -10,7 +10,6 @@ import TaskLabels from '../../components/inline/TaskLabels';
 import { COLORS, textColor } from '../../ui/labelPalette.cjs';
 import { InlineDateRange, ActionMenu, FormSection, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
 import { useStore } from '../../store/store';
-import { useProjectTools } from '../../store/useProjectTools';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR, serif } from '../../ui/theme/theme';
 import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';
 import InlineNotice from '../../components/notice/InlineNotice';
@@ -43,7 +42,6 @@ export function NewTaskSheet({ onClose, onSave, extra }) {
 
 export default function TaskSheet({ taskId, onClose }) {
   const { c } = useTheme();
-  const tools = useProjectTools();
   const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
   const t = s.tasks.find((x) => x.id === taskId);
   const [open, setOpen] = useState(null);
@@ -63,12 +61,11 @@ export default function TaskSheet({ taskId, onClose }) {
   const [attachmentUrl, setAttachmentUrl] = useState('');
 
   useEffect(() => {
-    setOpen(null); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
+    setOpen(null); setDetailTab('activity'); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
     setGithubUrl(''); setSubTitle(''); setLogHours('1');
     setComment(''); setDepDraft(''); setParentDraft(''); setLabelDraft('');
     setCheckDraft(''); setAttachmentName(''); setAttachmentUrl('');
   }, [taskId]);
-  useEffect(() => { setOpen(null); if(!tools.advancedTasks)setDetailTab('activity'); }, [tools.advancedTasks]);
 
   const active = s.sprints.find((x) => x.state === 'active');
   const set = (patch, label) => t && updateTask(t.id, patch, label);
@@ -213,7 +210,7 @@ export default function TaskSheet({ taskId, onClose }) {
             </Card>:null}
           </View>
 
-          <Segmented fill options={[{value:'activity',label:'Activity & files'},...(tools.advancedTasks?[{value:'planning',label:'Planning & delivery'}]:[])]} value={detailTab} onChange={setDetailTab}/>
+          <Segmented fill options={[{value:'activity',label:'Activity & files'},{value:'planning',label:'Planning & delivery'}]} value={detailTab} onChange={setDetailTab}/>
           <View style={{display:detailTab==='activity'?'flex':'none',gap:8}}>
             {row('checks', 'Acceptance checks', `${checks.filter((k) => k.status === 'passed').length}/${checks.length} passed`,
               <View style={{ gap: 10 }}>
@@ -257,8 +254,8 @@ export default function TaskSheet({ taskId, onClose }) {
                 <Button label="Post comment" small disabled={!comment.trim()} onPress={() => { addComment(t.id, comment); setComment(''); }} />
             </View>
           </View>
-          {tools.advancedTasks?<View style={{display:detailTab==='planning'?'flex':'none',gap:8}}>
-            <T size={16} weight="700">Advanced planning & delivery</T>
+          <View style={{display:detailTab==='planning'?'flex':'none',gap:8}}>
+            <T size={16} weight="700">Planning & delivery</T>
             <T size={12} muted>Detailed planning and delivery fields for this project.</T>
             {row('subtasks', 'Subtasks', `${s.tasks.filter(x=>x.parentId===t.id).length} child tasks`,
               <View style={{gap:10}}><Input value={subTitle} onChangeText={setSubTitle} placeholder="New subtask title"/><Button label="Add subtask" small onPress={()=>{if(subTitle.trim()&&addSubtask(t.id,subTitle.trim()))setSubTitle('')}}/>
@@ -347,7 +344,7 @@ export default function TaskSheet({ taskId, onClose }) {
                 </View>
               </View>)}
 
-          </View>:null}
+          </View>
           <T size={11} muted>Task {t.id} · Due {fmt(t.due)} · {t.progress}% · {t.effort}h estimated</T>
         </>
       ) : null}

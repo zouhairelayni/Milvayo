@@ -15,5 +15,5 @@ test('List has no duplicate Add task action and retains its organize/filter cont
 });
 test('New sprint is in the scrolling selector row, absent from the top header, and opens the existing creation form',()=>{
  const h=screenHarness('src/screens/delivery/Delivery.js',{s:{tasks:[],sprints:[{id:'a',name:'Sprint A',state:'planned',start:'2026-11-06',end:'2026-11-19'}]}});let tree=h.render('Sprints',{openTask(){}});
- assert.equal(h.headers.sprints.actions.length,0);const row=nodes(tree).find(n=>n.type==='ScrollView'&&n.props.horizontal);assert.ok(control(row,'New sprint'));assert.equal(control(row,'New sprint').props.icon,'plus');control(row,'New sprint').props.onPress();tree=h.render('Sprints',{openTask(){}});assert.ok(control(tree,'Save sprint'));
+ assert.equal(h.headers.sprints.actions.length,0);const row=nodes(tree).find(n=>n.type==='ScrollView'&&n.props.horizontal);assert.ok(control(row,'New sprint'));assert.equal(row.props.children[0],control(row,'New sprint'));assert.equal(control(row,'New sprint').type,'IconBtn');assert.equal(text(row).includes('New sprint'),false);assert.equal(control(row,'New sprint').props.icon,'plus');control(row,'New sprint').props.onPress();tree=h.render('Sprints',{openTask(){}});assert.ok(control(tree,'Save sprint'));
 });

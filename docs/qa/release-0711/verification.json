@@ -1,0 +1,31 @@
+{
+  "release": "0.7.11",
+  "precedingRepairDesignation": "0.7.10",
+  "androidVersionCode": 81,
+  "iosBuildNumber": "81",
+  "branch": "work",
+  "tests": {
+    "tests": 853,
+    "pass": 853,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "sourceSyntax": "Pass (full suite plus explicit source check)",
+  "dependencyCheck": "Pass: offline Expo check says up to date; offline reliability warning applies",
+  "staticScreenshotsInspected": 10,
+  "staticWidths": [
+    320,
+    390
+  ],
+  "liveExpoWeb": "Not run",
+  "expoGoFastRefresh": "Not run",
+  "androidDevice": "Not run",
+  "iosDevice": "Not run",
+  "builds": false,
+  "playwright": false,
+  "gitPublication": false,
+  "newDependencies": false,
+  "dataMigration": false,
+  "ownerAcceptance": "Pending"
+}

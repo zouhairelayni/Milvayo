@@ -17,7 +17,7 @@ function screenHarness(file, store, extra = {}) {
   const hooks = {
     memo: fn => fn,
     Children: require('react').Children, Fragment: require('react').Fragment, isValidElement: require('react').isValidElement,
-    useCallback: fn => fn,
+    useCallback: fn => fn, useDeferredValue: value => value,
     useId() { return hooks.useRef('chart-id-' + cursor).current; },
     useState(initial) {
       const i = cursor++;
@@ -50,9 +50,10 @@ function screenHarness(file, store, extra = {}) {
     if (extra.mocks && Object.hasOwn(extra.mocks, id)) return extra.mocks[id];
     if(id.endsWith('/BackSurface'))return {__esModule:true,default:'BackSurface'};
     if(id.endsWith('/useBackNavigation'))return {useBackDismiss(){}};
+    if(id.endsWith('/useRenderMetric'))return {useRenderMetric(){}};
     if (id === 'react') return hooks;
     if (id === 'react/jsx-runtime') return require(id);
-    if (id === 'react-native') return { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', KeyboardAvoidingView:'KeyboardAvoidingView', Image: 'Image', Modal: 'Modal', Switch: 'Switch', Platform: { OS: extra.platform || 'web' }, PanResponder: { create: handlers => ({ panHandlers: handlers }) }, useWindowDimensions: () => ({ width: extra.width || 390 }) };
+    if (id === 'react-native') return { Dimensions:{get:()=>({width:extra.width||390,height:844})}, FlatList: 'FlatList', Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', KeyboardAvoidingView:'KeyboardAvoidingView', Image: 'Image', Modal: 'Modal', Switch: 'Switch', Platform: { OS: extra.platform || 'web' }, PanResponder: { create: handlers => ({ panHandlers: handlers }) }, useWindowDimensions: () => ({ width: extra.width || 390 }) };
     if (id === 'react-native-svg') return { __esModule: true, default: 'Svg', Circle: 'Circle', Defs: 'Defs', LinearGradient:'LinearGradient', Stop:'Stop', Line: 'Line', Path: 'Path', Rect: 'Rect', Text: 'SvgText' };
     if (id === 'react-native-safe-area-context') return { SafeAreaProvider: 'SafeAreaProvider', SafeAreaView: 'SafeAreaView' };
     if (id === '@expo/vector-icons') return { Feather: 'Feather' };
@@ -89,6 +90,7 @@ function screenHarness(file, store, extra = {}) {
     if (id.endsWith('/TaskFields')) return { Field: 'Field', InlineDrop: 'InlineDrop', DateField: 'DateField', CustomValueInput: 'CustomValueInput' };
     if (/\/(TaskMarkdown|MarkdownField|TaskLabels)$/.test(id)) return id.split('/').at(-1);
     if (id.endsWith('/projectTools.cjs')) return require('../../src/domain/projectTools.cjs');
+    if (id.endsWith('/cardMountWindow.cjs'))return require('../../src/board/cardMountWindow.cjs');
     if (id.endsWith('/dashboard.cjs'))return require('../../src/domain/dashboard.cjs');
     if (id.endsWith('/calendar.cjs'))return require('../../src/domain/calendar.cjs');
     if (id.endsWith('/localDay.cjs')) return { localDay: () => '2026-11-05' };

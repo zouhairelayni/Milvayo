@@ -28,6 +28,7 @@ import Portfolios from '../screens/governance/Portfolios';
 import { Programs } from '../screens/governance/Programs';
 import ScreenPresence from '../ui/ScreenPresence';
 import { diagnosticMonitor } from '../diagnostics/monitor';
+import { useRenderMetric } from '../diagnostics/useRenderMetric';
 import IslandNotice from '../components/notice/IslandNotice';
 import { backupJobs } from '../store/backupJobs';
 import { noticeTopOffset } from '../components/notice/noticePlacement.cjs';
@@ -51,7 +52,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
     '*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}' +
     'input,textarea{-webkit-user-select:text;user-select:text}' +
     '[role=button],[role=tab],[role=radio]{touch-action:manipulation}' +
-    '[role=button]:focus-visible,[role=tab]:focus-visible,[role=radio]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}' +
+    '[role=button]:focus-visible,[role=tab]:focus-visible,[role=radio]:focus-visible,[tabindex="0"]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid currentColor;outline-offset:2px}' +
     '@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:0.01ms!important}}';
   document.head.appendChild(style);
 }
@@ -96,7 +97,7 @@ const DEFERRED_NATIVE_TABS = ['timeline', 'board', 'tasks', 'sprints'];
 // Native retains visited primary tabs (a tab switch is a visibility toggle, not a rebuild). Hidden pages sit behind
 // StoreFreeze, so they no longer re-render on every edit. Web keeps unmounting heavy hidden screens.
 const retainHiddenTab = () => retainsHiddenTabs(Platform.OS);
-const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTask, onOpenBackup, go, query, openStatus, statusRequest }) {
+const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTask, onOpenBackup, go, query, onQueryChange, openStatus, statusRequest }) {
   // Heavy native screens (Timeline SVG/gestures, Board cards, Tasks, Sprints): commit the tab change first so the
   // bar, title and press feedback respond at once, then mount the screen two frames later. Only the first visit pays;
   // afterwards the page stays mounted and hidden.
@@ -121,10 +122,10 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTas
   // unless the store or its query really changed while it was hidden.
   const content = useMemo(() => ready
     ? <Profiler id={pageId} onRender={(_, __, duration) => diagnosticMonitor.recordRender(pageId, duration)}>
-        <ScreenComponent openTask={openTask} onNewTask={onNewTask} onOpenBackup={onOpenBackup} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
+        <ScreenComponent openTask={openTask} onNewTask={onNewTask} onOpenBackup={onOpenBackup} go={go} query={query} onQueryChange={onQueryChange} openStatus={openStatus} statusRequest={statusRequest} />
       </Profiler>
     : <View accessible accessibilityLabel={`Opening ${pageId}`} style={{ flex:1,justifyContent:'center',alignItems:'center' }}><T size={13} muted>{`Preparing ${pageId}…`}</T></View>,
-  [ready, pageId, ScreenComponent, openTask, onNewTask, onOpenBackup, go, query, openStatus, statusRequest]);
+  [ready, pageId, ScreenComponent, openTask, onNewTask, onOpenBackup, go, query, onQueryChange, openStatus, statusRequest]);
   return <ScreenPresence active={active} style={{flex:1}}>
     <StoreFreeze frozen={!active}>
       <ScreenErrorBoundary screenId={pageId} go={go}>{content}</ScreenErrorBoundary>
@@ -132,7 +133,9 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTas
   </ScreenPresence>;
 }, (prev, next) => !shouldRenderPage(prev, next)); // memo's comparator answers "equal, skip?"
 
-function Shell({}) {
+function Shell({ launching = false }) {
+  useRenderMetric('shell');
+  useLayoutEffect(() => { diagnosticMonitor.recordStartup('shell first commit'); }, []);
   const { c, mode } = useTheme();
   const { addTask, switchProject, workspace, workspaceId, notice, dismissNotice } = useStore();
   const wide = useWide();
@@ -256,15 +259,15 @@ function Shell({}) {
     const id = addTask(title, status, MAIN, {description, priority});
     if (id) { setCreatingTask(false); setTaskId(id); }
   };
-  const onQuery = (q) => {
+  const onQuery = useCallback((q) => {
     setQuery(q);
-    if (q && screen !== 'tasks') go('tasks');
-  };
+    if (q) go('tasks');
+  },[go]);
 
   
   const page = <HeaderActionsContext.Provider value={registerHeaderActions}>
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
-      <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} onOpenBackup={openBackup} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
+      <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} onOpenBackup={openBackup} go={go} query={query} onQueryChange={onQuery} openStatus={openStatus} statusRequest={statusRequest} />
     )}
     {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onPickProject={pickProject} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} backupRequest={backupRequest} releaseRequest={releaseRequest} onReleaseRequestHandled={clearReleaseRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
   </HeaderActionsContext.Provider>;
@@ -274,12 +277,12 @@ function Shell({}) {
   const controls = headerActions?.screen === screen ? headerActions.controls : null;
   const section = SECTIONS.find(x => x.id === sectionOf(screen));
   const views = viewsOf(section, tools);
-  const noticeLayer=<IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
+  const noticeLayer=launching ? null : <IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
         onAction={action => { if (action === 'backup') { setTouring(false); setBackupRequest(n => n + 1); go('settings', 'backup notice'); } }} wide={wide}
         topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />;
 
   return (
-    <BackSurface style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
+    <BackSurface onLayout={()=>diagnosticMonitor.recordStartup('shell native layout callback')} style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
       <SafeAreaView edges={['top', 'bottom', 'left', 'right']} accessibilityElementsHidden={touring} importantForAccessibility={touring?'no-hide-descendants':'auto'} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
         {wide ? <Sidebar nav={navFor(tools)} current={screen} go={go} onPickProject={pickProject}
           onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
@@ -294,7 +297,7 @@ function Shell({}) {
         </View>
         {sheet}
       </SafeAreaView>
-      {touring?<Onboarding onSkip={()=>setTouring(false)} onFinish={finishTour}>{noticeLayer}</Onboarding>:noticeLayer}
+      {!launching && touring?<Onboarding onSkip={()=>setTouring(false)} onFinish={finishTour}>{noticeLayer}</Onboarding>:noticeLayer}
 
     </BackSurface>
   );
@@ -302,19 +305,33 @@ function Shell({}) {
 
 // The intro belongs to a cold app mount, not navigation or resuming from the background.
 function ColdStartGate() {
+  const renderedAt=diagnosticMonitor.now();
   const { c, restored, mode } = useTheme();
   const barStyle = mode !== 'light' ? 'light' : 'dark';
-  const [workspaceReady,setWorkspaceReady]=useState(false),[finished,setFinished]=useState(false),[held,setHeld]=useState(false);
-  const workspaceLoaded=useCallback(()=>setWorkspaceReady(true),[]),finish=useCallback(()=>setFinished(true),[]);
-  useEffect(()=>{if(!finished)return;const timer=setTimeout(()=>setHeld(true),1000);return()=>clearTimeout(timer);},[finished]);
-  const opening=!restored||!workspaceReady||!held;
-  return <View style={{flex:1,backgroundColor:c.bg}}>
+  const [workspaceReady,setWorkspaceReady]=useState(false),[finished,setFinished]=useState(false);
+  const workspaceLoaded=useCallback(()=>{diagnosticMonitor.recordStartup('workspace ready');setWorkspaceReady(true);},[]);
+  const start=useCallback(()=>diagnosticMonitor.recordStartup('logo first UI frame callback'),[]);
+  const finish=useCallback((metrics={})=>{
+    diagnosticMonitor.recordStartup('logo complete',`frames ${metrics.frames??'unknown'}, max frame gap ${Math.round(metrics.maxGap||0)}ms, playback ${Math.round(metrics.elapsed||0)}ms`);
+    setFinished(true);
+  },[]);
+  const opening=!restored||!workspaceReady||!finished;
+  useLayoutEffect(()=>{diagnosticMonitor.recordStartup('root first render start','',renderedAt);diagnosticMonitor.recordStartup('root first commit');},[]);
+  useEffect(()=>{if(restored)diagnosticMonitor.recordStartup('theme ready');},[restored]);
+  useEffect(()=>{
+    if(opening)return;
+    diagnosticMonitor.recordStartup('workspace revealed');
+    let second=0;
+    const first=requestAnimationFrame(()=>{second=requestAnimationFrame(()=>diagnosticMonitor.recordStartup('first interactive frame (JS estimate)'));});
+    return()=>{cancelAnimationFrame(first);if(second)cancelAnimationFrame(second);};
+  },[opening]);
+  return <View onLayout={()=>diagnosticMonitor.recordStartup('root native layout callback')} style={{flex:1,backgroundColor:c.bg}}>
     <StatusBar style={barStyle} translucent={false}/>
-    <View style={{flex:1}} accessibilityElementsHidden={opening} importantForAccessibility={opening?'no-hide-descendants':'auto'}>
-      <StoreProvider loading={null} onReady={workspaceLoaded}>{restored && held ? <Shell /> : null}</StoreProvider>
+    <View style={{flex:1,pointerEvents:opening?'none':'auto'}} accessibilityElementsHidden={opening} importantForAccessibility={opening?'no-hide-descendants':'auto'}>
+      <StoreProvider loading={null} onReady={workspaceLoaded}>{restored ? <Shell launching={opening}/> : null}</StoreProvider>
     </View>
     {opening?<View accessibilityRole="progressbar" accessibilityLabel="Opening Milvayo" style={{position:'absolute',top:0,right:0,bottom:0,left:0,backgroundColor:c.bg,alignItems:'center',justifyContent:'center'}}>
-      {restored?<BoardMorph size={108} solid active={!finished} onFinish={finish}/>:null}
+      {restored?<BoardMorph size={108} solid duration={1100} continuous active={!finished} onStart={start} onFinish={finish}/>:null}
     </View>:null}
   </View>;
 }

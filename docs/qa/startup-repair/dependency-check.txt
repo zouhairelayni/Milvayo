@@ -1,0 +1,4 @@
+npm notice run milvayo@0.7.9 npx
+npm notice run 'expo' install --check
+Dependency validation is unreliable in offline-mode
+Dependencies are up to date

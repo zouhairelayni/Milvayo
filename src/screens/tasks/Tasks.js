@@ -1,8 +1,9 @@
 // /src/screens/tasks/Tasks.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ActionMenu, IconBtn, EmptyState, ScreenIntro, Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
+import { ActionMenu, EmptyState, ScreenIntro, Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
@@ -22,7 +23,8 @@ const PAGE_SIZE = Platform.OS === 'web' ? 80 : 20;
 const SORTS = { Due: { sort: 'due', descending: false }, Priority: { sort: 'priority', descending: true }, Progress: { sort: 'progress', descending: false }, Title: { sort: 'title', descending: false }, Manual: { sort: 'position', descending: false } };
 const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 
-export default function Tasks({ openTask, query = '', statusRequest = null }) {
+export default function Tasks({ openTask, query = '', onQueryChange, statusRequest = null }) {
+ useRenderMetric('tasks');
   const { c } = useTheme();
   const wide = useWide();
   // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
@@ -90,13 +92,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
     >
       <ScreenIntro title="Task list" description={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`} />
       {dateBoards.length ? <DueSoon key={project.id} tasks={upcoming} onOpenTask={openTask} /> : null}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        <View style={{ flex: 1, minWidth: 200 }}>
-          <Input lazy value={q} onChangeText={setQ} placeholder="Search title or owner" accessibilityLabel="Search task list" />
-        </View>
-        <IconBtn icon="sliders" label="Filter and organize tasks" onPress={()=>setToolsOpen(true)}/>
-      </View>
-      <View style={{flexDirection:'row',alignItems:'center',gap:8}}><Chip label={layout} active onPress={()=>setToolsOpen(true)}/><T muted size={12}>{filter==='All'?'All statuses':filter} · {sort} order</T></View>
+      <T muted size={12}>{layout} · {filter==='All'?'All statuses':filter} · {sort} order</T>
 
       <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Organize tasks" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
       <T size={16} weight="600">Filters & tags</T>
@@ -130,7 +126,7 @@ export default function Tasks({ openTask, query = '', statusRequest = null }) {
       <Fold title="Saved task views" subtitle={`${(project.savedViews||[]).length} saved filters and sorting presets`}>
         <Input value={viewName} onChangeText={setViewName} placeholder="Name this view"/>
         <Button small label="Save current view" onPress={()=>{if(viewName.trim()&&saveTaskView({id:`view-${Date.now()}`,name:viewName.trim(),filters:{status:filter,priority:prioFilter,owner:ownerFilter,text:q,label:labelFilter},sort:SORTS[sort].sort,descending:SORTS[sort].descending}))setViewName('')}}/>
-        {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
+        {(project.savedViews||[]).map(v=><EditRow key={v.id} title={v.name} summary={`${v.filters.status}${v.filters.label&&v.filters.label!=='All'?' · '+v.filters.label:''} · ${v.sort}`}><Button small variant="secondary" label="Apply view" onPress={()=>{setFilter(v.filters.status);setQ(v.filters.text);onQueryChange?.(v.filters.text||'');setLabelFilter(v.filters.label||'All');setPrioFilter(v.filters.priority||'All');setOwnerFilter(v.filters.owner||'All');setSort(Object.keys(SORTS).find(k=>SORTS[k].sort===v.sort)||'Due')}}/><DangerConfirm label="Delete saved view" onConfirm={()=>deleteTaskView(v.id)}/></EditRow>)}
       </Fold>
       <View style={{ gap: 8 }}>
         <T size={14} weight="600">Due soon</T>

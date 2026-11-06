@@ -113,20 +113,9 @@ export function ViewPill({ views, current, go }) {
   </View>;
 }
 
-const ZOOMS = ['Days', 'Weeks', 'Months'];
-
-// The screen's own header controls as icons: Board and Tasks Tools, New sprint, New release, Timeline zoom (one tap cycles).
+// The screen's own header actions; Timeline presets live in Timeline options.
 function HeaderIcons({ controls }) {
-  const { c } = useTheme();
   if (!controls) return null;
-  if (controls.kind === 'zoom') {
-    const next = ZOOMS[(ZOOMS.indexOf(controls.value) + 1) % ZOOMS.length];
-    return <Pressable accessibilityRole="button" accessibilityLabel={`Zoom ${controls.value}. Change to ${next}`} onPress={() => controls.onChange(next)} hitSlop={4}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 10, borderRadius: radius.sm, backgroundColor: c.surfaceAlt, opacity: pressed ? 0.7 : 1 })}>
-      <Feather name="zoom-in" size={15} color={c.ink} />
-      <T size={12} weight="600">{controls.value}</T>
-    </Pressable>;
-  }
   return controls.actions?.map(item => <IconBtn key={item.label} icon={item.icon || 'more-horizontal'} label={item.label} onPress={item.onPress} />) || null;
 }
 

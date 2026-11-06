@@ -1,15 +1,16 @@
 // /src/screens/board/Board.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ActionRow, EmptyState, ScreenIntro, Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
+import { ActionMenu, ActionRow, EmptyState, ScreenIntro, Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold} from '../../components/inline/CompactTools';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { MAIN, PRIORITIES, fmt } from '../../store/data';
-import { AddCard, NewListSheet, BoardsManager } from './BoardManagement';
+import { AddCard, BoardCreateSheet, BoardsManager } from './BoardManagement';
 import { useHoldDrag, cancelPendingBoardHolds } from '../../board/boardGesture';
 import { BoardMotion } from '../../board/boardMotion';
 import { committedName } from '../../board/boardInteractions.cjs';
@@ -18,8 +19,9 @@ const {visibleColumns} = require('../../board/boardColumns.cjs');
 const {filterCards, dropBefore} = require('../../board/kanbanUX.cjs');
 const DUE_FILTERS = [['all', 'Any date'], ['overdue', 'Overdue'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'Next 7 days'], ['month', 'Next 30 days'], ['none', 'No date']];
 const {ageInDays} = require('../../domain/powerUps.cjs');
-const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs');
-// Native only: first cards per column appear immediately, the rest follow in small chunks.
+const {newCtx, refreshMax, slotFor, listScrollAtPointer} = require('../../board/boardDragContext.cjs');
+const {INITIAL_CARDS,nextCardCount} = require('../../board/cardMountWindow.cjs');
+// Cards beyond the first five mount only in response to scrolling their list.
 const EMPTY_FEATURES = Object.freeze([]);
 const LIST_LIFT = 0.6;
 const COL_WIDE = 320;
@@ -46,10 +48,11 @@ const liftShadow = (on, amount = 1) => ({
 
 
 export default function Board({ openTask }) {
+ useRenderMetric('board');
   const { c } = useTheme();
   const wide = useWide();
   const active = useScreenActive();
-  const { s, addBoard, workspace, togglePowerUp, setBoardView, runCommand } = useStore();
+  const { s, deleteBoard, workspace, togglePowerUp, setBoardView, runCommand } = useStore();
   const project=workspace.projects.find(p=>p.id===workspace.selectedId);
   const [boardId, setBoardId] = useState(MAIN);
   const [q, setQ] = useState('');
@@ -59,12 +62,10 @@ export default function Board({ openTask }) {
   const [ownerF, setOwnerF] = useState('All');
   const [labelF, setLabelF] = useState('All');
   const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
   const [managing, setManaging] = useState(false);
   const [boardToolsOpen, setBoardToolsOpen] = useState(false);
   const headerControls = useMemo(() => ({ actions: [{ label: 'Tools', icon: 'sliders', variant: 'secondary', onPress: () => setBoardToolsOpen(true) }] }), []);
   useHeaderActions('board', headerControls, active);
-  const [addingList, setAddingList] = useState(false);
   const [drag, setDrag] = useState(null); // { kind: 'card'|'list', id, from, to, before? }
   const [mountedColumns, setMountedColumns] = useState({});
   const [locked, setLocked] = useState(false); // stops scrolling while anything is dragged
@@ -125,13 +126,15 @@ export default function Board({ openTask }) {
   k.measure = () => {
     k.win = {};
     Object.keys(k.cards).forEach((id) => {
-      const node = k.cards[id].ref.current;
-      if (node) node.measure((x, y, w, h, px, py) => { k.win[id] = { y: py, h, sy: k.scroll.y }; });
+      const entry = k.cards[id],node = entry.ref.current;
+      if (node) node.measure((x, y, w, h, px, py) => { k.win[id] = { y: py, h, sy: k.scroll.y, listId:entry.listId, cy:k.lists[entry.listId]?.scroll?.y||0 }; });
     });
     k.listTop = {};
     Object.keys(k.lists).forEach((id) => {
       const node = k.lists[id].ref.current;
       if (node) node.measure((x, y, w, h, px, py) => { k.listTop[id] = py; });
+      const entry=k.lists[id];
+      entry.viewportRef?.current?.measure((_x,_y,w,h,px,py)=>{entry.scroll.box={x:px,y:py,w,h,sy:k.scroll.y,sx:k.scroll.x};});
     });
     const strip = stripBoxRef.current;
     if (strip) strip.measure((x, y, w, h, px, py) => { k.stripBox = { x: px, w }; });
@@ -167,6 +170,10 @@ export default function Board({ openTask }) {
         }
       }
       const H = Dimensions.get('window').height;
+      // Prefer the list beneath the held card; its content moves while the
+      // source responder stays mounted and follows its own scroll offset.
+      const target=drag?.kind==='card'?listScrollAtPointer(k,p,56,SPEED):null;
+      if(target){target.entry.scroll.y=target.y;target.entry.scrollRef.current?.scrollTo({y:target.y,animated:false});return;}
       let dy = 0;
       if (p.y < EDGE_TOP) dy = -SPEED;
       else if (p.y > H - EDGE_BOTTOM) dy = SPEED;
@@ -178,16 +185,7 @@ export default function Board({ openTask }) {
     }, AUTO_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locked]);
-
-  const submitBoard = () => {
-    if (!newName.trim()) return;
-    const id = addBoard(newName.trim());
-    if (!id) return; // keep the form open if validation/persistence rejects the name
-    setBoardId(id);
-    setNewName('');
-    setCreating(false);
-  };
+  }, [locked,drag?.kind]);
 
   const pageScrollProps = {
     // Let ScrollView retain its normal web responder; pointer-based drag does not claim touches.
@@ -207,20 +205,11 @@ export default function Board({ openTask }) {
     >
       <ScreenIntro title={board.name} description={`${cards.length} tasks · ${lists.length} lists`}/>
       <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
+        <IconBtn icon="plus" label="Create board or list" onPress={() => setCreating(true)} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex:1,flexGrow:1}} contentContainerStyle={{gap:8,alignItems:'center'}}>
           {boards.map((b) => <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />)}
         </ScrollView>
-        <IconBtn icon={creating ? 'x' : 'plus'} label={creating ? 'Cancel new board' : 'New board'} onPress={() => setCreating(!creating)} />
       </View>
-
-      {creating ? (
-        <Card style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-          <View style={{ flex: 1, minWidth: 200 }}>
-            <Input value={newName} onChangeText={setNewName} placeholder="Board name, e.g. Design" onSubmitEditing={submitBoard} />
-          </View>
-          <Button label="Create board" small disabled={!newName.trim()} onPress={submitBoard} />
-        </Card>
-      ) : null}
 
       {/* Lift above the ribbon without reparenting the held responder or shifting the lists. */}
       <View ref={stripBoxRef} collapsable={false} style={{zIndex:locked?20:0,overflow:'visible'}}>
@@ -240,7 +229,7 @@ export default function Board({ openTask }) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: GAP, paddingTop:locked?96:0, paddingBottom: locked ? 320 : 8, alignItems: 'flex-start' }} // extra room below while dragging, so a card isn't clipped by the strip
         >
-          {lists.length === 0 ? <Empty>No lists. Use Add list to create one.</Empty> : null}
+          {lists.length === 0 ? <Empty>No lists. Use the plus button to create one.</Empty> : null}
           {lists.map((l, i) => (
             Platform.OS !== 'web' && i >= 2 && !mountedColumns[`${board.id}:${l.id}`] ?
             <View key={l.id} style={{width: colW, minHeight: 240}} /> :
@@ -253,6 +242,7 @@ export default function Board({ openTask }) {
               step={colW + GAP}
               width={colW}
               cards={byList[l.id]}
+              windowKey={JSON.stringify([board.id,q,urgentOnly,dueF,prioF,ownerF,labelF])}
               features={project.powerUps?.[board.id]||EMPTY_FEATURES}
               labelColors={project.labelColors||{}}
               showDescriptions={project.kanbanViews?.[board.id]?.showDescriptions===true}
@@ -264,18 +254,6 @@ export default function Board({ openTask }) {
               k={k}
             />
           ))}
-          <Pressable
-            onPress={() => setAddingList(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Add list"
-            style={({ pressed }) => ({
-              width: 44, minHeight: 112, paddingVertical: 8, borderRadius: 9, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line,
-              alignItems: 'center', justifyContent: 'center', gap: 8, opacity: pressed ? 0.6 : 1,
-            })}
-          >
-            <Feather name="plus" size={16} color={c.muted} />
-            <View style={{ width: 20, height: 72, alignItems: 'center', justifyContent: 'center' }}><T size={12} weight="500" muted style={{ width: 72, textAlign: 'center', transform: [{ rotate: '-90deg' }] }}>Add list</T></View>
-          </Pressable>
         </ScrollView>
       </View>
 
@@ -307,9 +285,12 @@ export default function Board({ openTask }) {
           <T size={12} muted>Power-Ups for this board</T>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{[['github','GitHub references'],['aging','Card age'],['checklist','Acceptance progress']].map(([id,label])=><Chip key={id} label={label} active={(project.powerUps?.[board.id]||[]).includes(id)} onPress={()=>togglePowerUp(board.id,id)}/>)}</View>
           {(project.automationCommands||[]).filter(c=>c.trigger==='boardButton'&&(!c.boardId||c.boardId===board.id)&&c.enabled).map(c=><Button key={c.id} small variant="secondary" label={`Run: ${c.name}`} onPress={()=>runCommand(c.id,'',board.id)}/>) }
+          {board.id!==MAIN?<ActionMenu label="Board actions" items={[{label:'Delete board',icon:'trash-2',danger:true,
+            confirmation:{title:'Delete board?',description:`Delete “${board.name}” and move its tasks to Main? This cannot be undone here.`,confirmLabel:'Delete board'},
+            onPress:()=>{const ok=deleteBoard(board.id);if(ok){setBoardId(MAIN);setBoardToolsOpen(false);}return ok;}}]}/>:null}
         </View>
       </Sheet>
-      <NewListSheet visible={addingList} onClose={() => setAddingList(false)} boardId={board.id} />
+      {creating?<BoardCreateSheet visible onClose={() => setCreating(false)} board={board} onCreated={setBoardId}/>:null}
       <BoardsManager visible={managing} onClose={() => setManaging(false)} />
     </Page>
   );
@@ -357,7 +338,7 @@ function BoardChip({ board, active, onSelect, onManage }) {
 // Hold the header and drag to reorder lists. Double-tap the title to rename.
 // While a card is held over this list, a line shows where it will land.
 
-const ListColumn = memo(function ListColumn({ board, list, index, total, step, width, cards: allCards, features, labelColors, showDescriptions, totalCards, openTask, drag, setDrag, setLock, k }) {
+const ListColumn = memo(function ListColumn({ board, list, index, total, step, width, cards: allCards, windowKey, features, labelColors, showDescriptions, totalCards, openTask, drag, setDrag, setLock, k }) {
   const { c } = useTheme();
   const { addTask, renameList, moveListTo, deleteList } = useStoreActions();
   const [editing, setEditing] = useState(false);
@@ -367,11 +348,24 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
   const editingRef = useRef(false);
   const titleRef = useRef(null);
   const colRef = useRef(null);
+  const scrollRef=useRef(null),viewportRef=useRef(null);
+  const scroll=useRef({y:0,max:0,h:0,content:0,box:null}).current;
+  const userScroll=useRef(false),lastLoad=useRef(-1);
   const active = useScreenActive();
-  // User-controlled card window keeps the board responsive without silently mounting every card.
-  const [shown, setShown] = useState(10);
+  const [mount,setMount]=useState({key:windowKey,shown:INITIAL_CARDS});
+  const shown=mount.key===windowKey?mount.shown:INITIAL_CARDS;
+  const setShown=count=>setMount(previous=>previous.key===windowKey&&previous.shown===count?previous:{key:windowKey,shown:count});
   const cardTotal = allCards.length;
   const cards = allCards.slice(0, shown);
+  useEffect(()=>{setShown(INITIAL_CARDS);userScroll.current=false;lastLoad.current=-1;scroll.y=0;scrollRef.current?.scrollTo({y:0,animated:false});},[windowKey]);
+  useEffect(()=>{if(!k.pointer.valid)return;const frame=requestAnimationFrame(()=>k.measure());return()=>cancelAnimationFrame(frame);},[shown,k]);
+  const scrollCards=e=>{
+    const {contentOffset,layoutMeasurement,contentSize}=e.nativeEvent;
+    scroll.y=contentOffset.y;
+    if(scroll.y<=lastLoad.current)return;
+    const next=nextCardCount(shown,cardTotal,{active,userScroll:userScroll.current||k.pointer.valid,offset:scroll.y,viewport:layoutMeasurement.height,content:contentSize.height});
+    if(next>shown){lastLoad.current=scroll.y;setShown(next);}
+  };
   useEffect(() => {
     if (!editingRef.current) { nameDraftRef.current = list.name; setNameDraft(list.name); }
   }, [list.name]);
@@ -390,9 +384,10 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
   };
 
   useEffect(() => {
-    k.lists[list.id] = { ref: colRef };
+    k.lists[list.id] = { ref: colRef, scrollRef, viewportRef, scroll };
     return () => {
       delete k.lists[list.id];
+      delete k.listTop[list.id];
     };
   }, [list.id, k]);
 
@@ -446,10 +441,11 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
     if (top !== undefined) {
       if (drag.before) {
         const w = k.win[drag.before];
-        if (w) lineY = w.y - top - 6;
+        if (w) lineY = w.y - top - (scroll.y-(w.cy||0)) - 6;
+        else {const previous=ids.slice(0,ids.indexOf(drag.before)).reverse().map(id=>k.win[id]).find(Boolean);if(previous)lineY=previous.y+previous.h-top-(scroll.y-(previous.cy||0))+6;}
       } else if (ids.length) {
-        const w = k.win[ids[ids.length - 1]];
-        if (w) lineY = w.y + w.h - top + 6;
+        const w = ids.slice().reverse().map(id=>k.win[id]).find(Boolean);
+        if (w) lineY = w.y + w.h - top - (scroll.y-(w.cy||0)) + 6;
       } else {
         lineY = HEADER_H;
       }
@@ -497,6 +493,23 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
         <View style={{ minWidth: 26, paddingHorizontal: 6, paddingVertical: 3, backgroundColor: c.surface, borderRadius: 7, alignItems: 'center' }}><T size={12} weight="600" muted>{cardTotal}</T></View>
       </View>
 
+      <View ref={viewportRef} collapsable={false} style={{maxHeight:Math.min(640,Math.max(240,Dimensions.get('window').height*.6)),overflow:drag?'visible':'hidden'}}>
+      <ScrollView ref={scrollRef} accessibilityLabel={`${list.name} cards`} accessibilityHint="Scroll to load more cards"
+        nestedScrollEnabled removeClippedSubviews={false} scrollEnabled={!drag} scrollEventThrottle={32}
+        accessibilityActions={[{name:'increment',label:'Scroll to more cards'},{name:'decrement',label:'Scroll to previous cards'}]}
+        onAccessibilityAction={e=>{
+          if(!active||drag||!['increment','decrement'].includes(e.nativeEvent.actionName))return;userScroll.current=true;
+          const forward=e.nativeEvent.actionName==='increment';
+          const y=clamp(scroll.y+(forward?1:-1)*Math.max(120,scroll.h*.8),0,scroll.max);
+          if(forward&&y===scroll.y&&shown<cardTotal)setShown(Math.min(cardTotal,shown+INITIAL_CARDS));
+          else scrollRef.current?.scrollTo({y,animated:false});
+        }}
+        onScrollBeginDrag={()=>{userScroll.current=true;cancelPendingBoardHolds();}}
+        {...(Platform.OS==='web'?{tabIndex:0,onWheel:()=>{userScroll.current=true;},onTouchMove:()=>{userScroll.current=true;},onKeyDown:()=>{userScroll.current=true;}}:{})}
+        onScroll={scrollCards} onLayout={e=>{scroll.h=e.nativeEvent.layout.height;scroll.max=Math.max(0,scroll.content-scroll.h);}}
+        onContentSizeChange={(_w,h)=>{scroll.content=h;scroll.max=Math.max(0,h-scroll.h);}}
+        style={{maxHeight:Math.min(640,Math.max(240,Dimensions.get('window').height*.6)),overflow:drag?'visible':undefined}}
+        contentContainerStyle={{gap:10,paddingBottom:4}}>
       {cards.map((t) => (
         <TaskCard
           key={t.id}
@@ -516,10 +529,12 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
         />
       ))}
 
-      {shown < cardTotal ? <Button label={`Show more (${cardTotal-shown} remaining)`} small variant="secondary" onPress={()=>setShown(n=>Math.min(cardTotal,n+10))} /> : null}
+      {shown < cardTotal ? <View style={{minHeight:80,justifyContent:'center',paddingHorizontal:8}}><T size={12} muted>Scroll for {cardTotal-shown} more cards</T></View> : null}
       {cardTotal === 0 ? <EmptyState compact title="Space for the next step" description="Add a card below, or move work here."/> : null}
+      </ScrollView>
+      </View>
 
-      {cardHere && lineY !== null ? <View pointerEvents="none" style={{position:'absolute',left:12,right:12,top:Math.max(42,lineY-8),height:22,borderRadius:11,backgroundColor:c.accent,zIndex:5,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6}}>
+      {cardHere && lineY !== null ? <View pointerEvents="none" style={{position:'absolute',left:12,right:12,top:clamp(lineY-8,54,Math.max(54,scroll.h+42)),height:22,borderRadius:11,backgroundColor:c.accent,zIndex:5,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6}}>
         <Feather name="corner-down-right" size={12} color={c.accentInk}/><T size={10} weight="600" color={c.accentInk}>Place task here</T>
       </View>:null}
 
@@ -587,15 +602,17 @@ const TaskCard = memo(function TaskCard({ t, previewY=0, board, features=[], lab
 
   // Register this card so the board can measure it when a drag starts.
   useEffect(() => {
-    k.cards[t.id] = { ref: cardRef };
+    k.cards[t.id] = { ref: cardRef, listId:t.list };
     return () => {
       delete k.cards[t.id];
+      delete k.win[t.id];
+      delete k.local[t.id];
     };
   }, [t.id, k]);
 
   const { panHandlers, lifted, offset } = useHoldDrag({
     titleRef,
-    getScroll: () => k.scroll,
+    getScroll: () => ({x:k.scroll.x,y:k.scroll.y+(k.lists[t.list]?.scroll?.y||0)}),
     onTap: () => openTask(t.id),
     onTitleDoubleTap: beginTitleEdit,
     onLift: () => {

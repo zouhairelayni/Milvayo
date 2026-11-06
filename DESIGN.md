@@ -303,8 +303,21 @@ First-run tour: retain the supplied Board/Timeline/release slides and the four B
 
 Top navigation bars omit screen-name text; in-screen ScreenIntro and section/dialog titles remain. The mobile List relies on the dock for task creation; New sprint belongs to its scrolling selector row. Timeline options begins with one Days/Weeks/Months pill row that focuses Today.
 
-Cold start uses the existing Board geometry once, filled with the resolved selected accent, with a one-second final hold while storage restores concurrently. Native paths run on the UI thread. Keep status-bar contrast correct before the shell mounts, and do not replay branding on warm navigation/resume. Launcher icon backgrounds use only substitute palette tones; primary ink is confined to the flat Board mark.
+Cold start uses the existing N-to-Board geometry once, filled with the resolved selected accent. The performance repair shortens cold-only playback to 1100ms, starts native playback after layout and lets the completed geometry render for one frame; there is no extra timed hold. Workspace/shell preparation runs concurrently, with tour/notice timers held until reveal. Native paths run on the UI thread. Keep status-bar contrast correct before the shell mounts, and do not replay branding on warm navigation/resume. Launcher icon backgrounds use only substitute palette tones; primary ink is confined to the flat Board mark.
 
 The top notification island expands for three seconds, morphs to compact, holds for three seconds after settling and exits. Animate the childless background size and text opacity; never scale the message text. Reduced motion keeps timing and meaningful state changes. Full reading and explicit sticky states remain usable, and stale timers must not dismiss new messages.
 
 Back uses bounded per-project/workspace history, dismisses the active layer first and reserves only the narrow iOS screen edge for navigation. Preserve interior Board/Timeline/chart/calendar gestures and retain Home as the root. See `docs/qa/release-079/ENGINEERING-REPORT.md` for exact validation and limits.
+
+
+Startup/Projects responsiveness repair: retain the quiet studio, palettes, charts and gestures. Android shared action/icon targets are at least 48 units; web dimensions remain unchanged. Project facts reserve a two-line label minimum so values align, and narrow budget/actions wrap. Native Projects mounts two initial cards and batches two in a bounded FlatList window; draft state remains scoped to the workspace outside recycled rows. Web and embedded management keep their existing pagination.
+
+Board lists initially mount five cards, with a bounded vertical scroll region. Additional five-card batches require user scrolling near the loaded end; there is no Show more control or idle growth. Loaded cards stay mounted to preserve title editors and held responders. Keep the full logical task order, offset hit testing by per-list/page scroll, and place below-window drops before the next unseen card. Retain the existing lift treatment and cross-list drag/auto-scroll. Native clipping, nested gesture feel and frame pacing require owner device acceptance.
+
+## 0.7.11 control placement
+
+The Board ribbon begins with a named icon-only plus opening one sheet with New board / New list choices. Lists target the current board and retain progress mapping. Use Board tools → Board actions for confirmed deletion; describe task relocation to Main. Preserve the same palette, touch targets, lift and drag behavior.
+
+Planning & delivery is always available beside Activity & files in the task sheet. Keep the legacy Advanced tasks preference import-compatible but omit it from Manage tools. List search and organization belong in the top header; saved views synchronize their search text there. Timeline preset pills belong in Timeline options, with no duplicate next to header search.
+
+Due soon has three visible, scalable rows and a trailing scroll hint when more exist. Additional rows mount in response to scrolling; keep the established upcoming-date eligibility without a thirty-item truncation. Place the accessible icon-only sprint plus first in the scrolling selector. Source-rendered mobile review and runtime limits: `docs/qa/release-0711/ENGINEERING-REPORT.md`.

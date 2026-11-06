@@ -33,9 +33,9 @@ test('stable wrappers always reach the latest closure',()=>{
  assert.deepEqual(calls,[['old',1],['new',2]]);
 });
 
-test('search boxes that only filter a list wait for a typing pause; Tasks counts in one pass',()=>{
+test('Board search waits for a typing pause; Tasks uses header search and counts in one pass',()=>{
  const tasks=read('src/screens/tasks/Tasks.js'),board=read('src/screens/board/Board.js');
- assert.match(tasks,/<Input lazy value=\{q\} onChangeText=\{setQ\} placeholder="Search title or owner"/);
+ assert.doesNotMatch(tasks,/placeholder="Search title or owner"|accessibilityLabel="Search task list"/);
  assert.match(board,/<Input lazy value=\{q\} onChangeText=\{setQ\} placeholder="Search board cards"/);
  assert.doesNotMatch(tasks,/s\.tasks\.filter\(t=>t\.status===st\)/,'no scan per status chip');
  assert.match(tasks,/\}, \[s\.tasks\]\);/);

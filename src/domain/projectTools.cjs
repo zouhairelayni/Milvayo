@@ -4,7 +4,7 @@
 // (sprints, releases, tests, costs...) is never read, changed or deleted by a switch.
 // Migration: a project saved before this field existed has no `tools`, and normalizeTools turns that into "everything on".
 // Nothing is rewritten on load; the field is saved with the project's next ordinary edit. Brand-new projects start LEAN.
-// Screen tools hide their matching route; Advanced tasks only changes task-sheet detail.
+// Keep the retired advancedTasks preference for import compatibility; task planning is always available.
 const TOOLS = Object.freeze([
   Object.freeze({ id: 'sprints', label: 'Sprints', hint: 'Plan work in time-boxed cycles', lean: true }),
   Object.freeze({ id: 'releases', label: 'Releases', hint: 'Release records and sign-off gates', lean: true }),
@@ -16,7 +16,7 @@ const TOOLS = Object.freeze([
   Object.freeze({ id: 'automations', label: 'Automations', hint: 'Commands that move tasks for you', lean: false }),
   Object.freeze({ id: 'reports', label: 'Reports', hint: 'Progress and delivery summaries', lean: false }),
   Object.freeze({ id: 'specifications', label: 'Specifications', hint: 'Phases, schemas, API contracts and playbooks', lean: false }),
-  Object.freeze({ id: 'advancedTasks', label: 'Advanced tasks', hint: 'Detailed planning, dependencies, time and delivery fields', lean: false, screen: false }),
+  Object.freeze({ id: 'advancedTasks', label: 'Advanced tasks', hint: 'Detailed planning, dependencies, time and delivery fields', lean: false, screen: false, retired: true }),
 ]);
 const IDS = TOOLS.map(t => t.id);
 const SCREEN_IDS = TOOLS.filter(t => t.screen !== false).map(t => t.id);

@@ -1,0 +1,220 @@
+{
+  "verifiedAt": "2026-11-06T22:01:44.863105+00:00",
+  "release": "0.7.9",
+  "androidVersionCode": 79,
+  "iosBuildNumber": "79",
+  "workspace": "main source per owner correction",
+  "branch": "work",
+  "baseCommit": "d78646838c0eb05230d41e42ecf980c477ffd554",
+  "nodeTests": {
+    "tests": 845,
+    "pass": 845,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "sourceChecks": {
+    "parsed": 205,
+    "nativeSourceFiles": 25,
+    "nativeAndSharedSourceTransforms": 26,
+    "workletSourceTransforms": {
+      "src/app/navigation/BackSurface.native.js": 1,
+      "src/board/boardMotion.native.js": 1,
+      "src/components/brand/BoardMorph.native.js": 2,
+      "src/components/charts/Column.native.js": 1,
+      "src/components/charts/TracePath.native.js": 1,
+      "src/components/inline/DisclosureGlyph.native.js": 1,
+      "src/components/notice/NoticeMotion.native.js": 4,
+      "src/components/shell/DrawerMotion.native.js": 1,
+      "src/components/shell/NavIcon.native.js": 1,
+      "src/gestures/DiagramGesture.native.js": 11,
+      "src/gestures/TimelineGestureHost.native.js": 1,
+      "src/gestures/TimelinePinch.native.js": 5,
+      "src/gestures/TimelineScrollView.native.js": 1,
+      "src/gestures/gesture.native.js": 5,
+      "src/gestures/gestureSurface.native.js": 2,
+      "src/ui/FillMotion.native.js": 1,
+      "src/ui/PressSurface.native.js": 1,
+      "src/ui/Reveal.native.js": 1,
+      "src/ui/ScreenPresence.native.js": 1,
+      "src/components/brand/morphMotion.cjs": 7
+    },
+    "nativeMorphFinalFrameGuard": true,
+    "nativeBuild": false
+  },
+  "expoCompatibility": "Pass offline; Expo reports offline validation is unreliable",
+  "packagesAdded": 0,
+  "dataMigration": false,
+  "protectedSourceFilesUnchanged": 63,
+  "protectedFiles": [
+    "app.json",
+    "package-lock.json",
+    "package.json",
+    "src/board/boardGesture.native.js",
+    "src/board/boardGesture.web.js",
+    "src/board/boardMotion.native.js",
+    "src/board/boardMotion.web.js",
+    "src/domain/agile.cjs",
+    "src/domain/automation.cjs",
+    "src/domain/boards.cjs",
+    "src/domain/calendar.cjs",
+    "src/domain/dashboard.cjs",
+    "src/domain/governanceCore.cjs",
+    "src/domain/governanceSummary.cjs",
+    "src/domain/model.cjs",
+    "src/domain/modernBridge.cjs",
+    "src/domain/operations.cjs",
+    "src/domain/planning.cjs",
+    "src/domain/powerUps.cjs",
+    "src/domain/programs.cjs",
+    "src/domain/projectRelations.cjs",
+    "src/domain/projectTools.cjs",
+    "src/domain/scheduleProject.cjs",
+    "src/domain/scheduling.cjs",
+    "src/domain/specifications.cjs",
+    "src/domain/taskSchema.cjs",
+    "src/domain/taskWorkflows.cjs",
+    "src/gestures/DiagramGesture.js",
+    "src/gestures/DiagramGesture.native.js",
+    "src/gestures/DiagramViewport.js",
+    "src/gestures/TimelineGestureHost.js",
+    "src/gestures/TimelineGestureHost.native.js",
+    "src/gestures/TimelinePinch.js",
+    "src/gestures/TimelinePinch.native.js",
+    "src/gestures/TimelineScrollView.js",
+    "src/gestures/TimelineScrollView.native.js",
+    "src/gestures/diagramZoom.cjs",
+    "src/gestures/dragFollow.cjs",
+    "src/gestures/gesture.js",
+    "src/gestures/gesture.native.js",
+    "src/gestures/gesture.web.js",
+    "src/gestures/gestureSurface.native.js",
+    "src/gestures/gestureSurface.web.js",
+    "src/gestures/scrollLimits.cjs",
+    "src/platform/android/AlternateIcons.kt",
+    "src/platform/plugins/withSafeAlternateIcons.cjs",
+    "src/timeline/gantt.cjs",
+    "src/timeline/nativeZoomHandoff.cjs",
+    "src/timeline/timelineDisplay.cjs",
+    "src/timeline/timelineEdit.cjs",
+    "src/timeline/timelineGeometry.cjs",
+    "src/timeline/timelineViewport.cjs",
+    "src/timeline/timelineWindow.cjs",
+    "src/timeline/timelineZoom.cjs",
+    "src/timeline/zoomQueue.cjs",
+    "src/ui/theme/iconName.cjs",
+    "src/ui/theme/iconPalette.cjs",
+    "src/ui/theme/iconPreview.cjs",
+    "src/ui/theme/launcherIcon.native.js",
+    "src/ui/theme/launcherIcon.web.js",
+    "src/ui/theme/theme.cjs",
+    "src/ui/theme/theme.js",
+    "src/ui/theme/themePalette.cjs"
+  ],
+  "timelineChanges": "diagnostic import/call only; remainder byte-identical",
+  "projectsBenchmark": {
+    "kind": "alternating paired warm Node React DOM renders; native FlatList adapter enforces initial mount policy; NOT Android latency/FPS",
+    "node": "v24.18.0",
+    "samplesPerVariant": 9,
+    "warmupsPerVariant": 10,
+    "cases": {
+      "web": {
+        "width": 1440,
+        "projects": 20,
+        "initialCardActions": {
+          "before": 20,
+          "after": 20
+        },
+        "before": {
+          "samplesMs": [
+            149.78807600000073,
+            321.5541919999996,
+            184.78823100000045,
+            314.6923459999998,
+            154.18019200000163,
+            366.47176899999977,
+            351.98399900000004,
+            360.6746540000022,
+            341.8101920000008
+          ],
+          "medianMs": 321.5541919999996
+        },
+        "after": {
+          "samplesMs": [
+            327.22684599999957,
+            317.51869199999965,
+            324.200268999999,
+            325.6736920000003,
+            353.55830700000115,
+            353.6365770000011,
+            340.0199610000018,
+            366.377923,
+            323.91665400000056
+          ],
+          "medianMs": 327.22684599999957
+        }
+      },
+      "nativeInitialPolicy": {
+        "width": 390,
+        "projects": 20,
+        "initialCardActions": {
+          "before": 20,
+          "after": 2
+        },
+        "before": {
+          "samplesMs": [
+            288.25961500000267,
+            319.7505000000019,
+            304.18438400000014,
+            248.67646100000275,
+            318.124154000001,
+            306.6570380000012,
+            323.1269609999981,
+            305.9246920000005,
+            318.5039999999972
+          ],
+          "medianMs": 306.6570380000012
+        },
+        "after": {
+          "samplesMs": [
+            41.615577000000485,
+            43.66573000000062,
+            41.94549999999799,
+            43.29557600000044,
+            42.26084700000138,
+            41.52976999999737,
+            42.196422999997594,
+            41.7545769999997,
+            42.45680800000264
+          ],
+          "medianMs": 42.196422999997594
+        }
+      }
+    },
+    "measurement": "elapsed JS wall time via performance.now; includes host scheduling and GC; not CPU profiler duration"
+  },
+  "startupBranding": {
+    "oldAnimationMs": 3700,
+    "oldHoldMs": 1000,
+    "newAnimationMs": 1100,
+    "newHoldMs": 0,
+    "finalRenderedFrame": true,
+    "shellPreparation": "concurrent"
+  },
+  "boardMounting": {
+    "initialCardsPerList": 5,
+    "additionalBatch": 5,
+    "trigger": "user scroll near loaded end; keyboard/accessibility/held-card auto-scroll supported",
+    "previouslyLoadedCards": "retained for editor and responder continuity"
+  },
+  "runtimeAndroidIOSWeb": "Not run by agent",
+  "realAndroidStartupAfter": "Not run",
+  "realProjectsTimerDelayAfter": "Not run",
+  "buildsPrebuildGradleEASPlaywright": "Not run",
+  "metroRestart": "Not run",
+  "commitsPushes": "Not run",
+  "gitHeadUnchanged": true,
+  "gitIndexUnchanged": true,
+  "ownerZipChangesPreserved": true,
+  "temporaryRedesignCopyRemoved": true
+}

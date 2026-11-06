@@ -7,7 +7,7 @@ const model=require('../../src/domain/model.cjs');
 
 test('Board keeps wire-engines filters and drop position AND shows Task Sheet colored cards',()=>{
  const b=read('src/screens/board/Board.js');
- for(const re of [/filterCards\(/,/dropBefore\(/,/useState\(10\)/,/DUE_FILTERS/,/<TaskLabels labels=\{t\.labels\} colors=\{labelColors\}/,/labelColors=\{project\.labelColors\|\|\{\}\}/,/placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore/]) assert.match(b,re,String(re));
+ for(const re of [/filterCards\(/,/dropBefore\(/,/shown:INITIAL_CARDS/,/DUE_FILTERS/,/<TaskLabels labels=\{t\.labels\} colors=\{labelColors\}/,/labelColors=\{project\.labelColors\|\|\{\}\}/,/placeTask\(t\.id, lists\[to\]\.id, k\.dropBefore/]) assert.match(b,re,String(re));
  assert.doesNotMatch(b,/\{t\.id\.toUpperCase\(\)\} · \{t\.type\}/,'no internal ID on cards');
 });
 test('Tasks keeps wire-engines search/layouts/bulk edit AND colored labels without a visible ID',()=>{
@@ -21,7 +21,7 @@ test('Task Sheet uses setLabels (trim, dedupe, clear verified) and the descendan
  assert.match(s,/setLabels\(t\.id, \[\.\.\.t\.labels, value\]\)/);
  assert.match(s,/setLabelColor\(value, labelColorDraft\)/);
  assert.doesNotMatch(s,/set\(\{ ?labels:/,'every label edit goes through setLabels');
- assert.match(s,/\{tools\.advancedTasks\?<View/);
+ assert.match(s,/detailTab==='planning'/);
  assert.doesNotMatch(s,/options=\{\['Standard','Advanced'\]\}/);
 });
 test('Store exposes both action sets and Timeline keeps critical path',()=>{

@@ -35,7 +35,7 @@ export function StoreProvider({children,onReady,loading}){
  if(!normalizer.current)normalizer.current=model.createWorkspaceNormalizer();
  // A writer is bound to one storage key for its whole life, so a late save can only ever reach the workspace it was made for.
  const makeWriter=key=>require('./latestWriter.cjs').createLatestWriter(
-  value=>AsyncStorage.setItem(key,JSON.stringify(value)),
+  value=>AsyncStorage.setItem(key,diagnosticMonitor.measureWork('workspace serialization',()=>JSON.stringify(value))),
   {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},
    onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});
  useEffect(()=>{
@@ -47,14 +47,17 @@ export function StoreProvider({children,onReady,loading}){
  useEffect(()=>{let active=true;(async()=>{
    const started = Date.now();
    diagnosticMonitor.recordAction('startup storage read started');
+   diagnosticMonitor.recordStartup('storage read started');
    const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);
    const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());
    const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);
    if(!active)return;
    diagnosticMonitor.recordAction(`startup storage read ${Date.now()-started}ms`);
+   diagnosticMonitor.recordStartup('storage read complete', `${Date.now()-started}ms`);
    const normalizeStarted = Date.now();
-   const loadedWorkspace=normalizer.current(raw?JSON.parse(raw):model.createWorkspace());
+   const loadedWorkspace=diagnosticMonitor.measureWork('startup parse and normalization',()=>normalizer.current(raw?JSON.parse(raw):model.createWorkspace()));
    diagnosticMonitor.recordAction(`startup normalize ${Date.now()-normalizeStarted}ms`);
+   diagnosticMonitor.recordStartup('normalization complete', `${Date.now()-normalizeStarted}ms`);
    writer.current=makeWriter(key);indexRef.current=index;
    currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setIdx(index);setReady(true);
    // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.
@@ -63,17 +66,17 @@ export function StoreProvider({children,onReady,loading}){
  })().catch(e=>{if(active){setFault(`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify('Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false}},[]);
  const put=(next)=>{
   // Validate before mutating any in-memory or persistent state.
-  const safe=normalizer.current(next);
+  const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));
   currentRef.current=safe;setWs(safe);
   void writer.current.enqueue(safe);
  };
  const trans=(fn,label)=>{
   lastError.current='';
   if(!loaded.current||!currentRef.current){lastError.current='The workspace is still loading. Try again in a moment.';return false}
-  try{const prev=currentRef.current;let next=fn(prev);if(next===prev)return true;
+  try{const prev=currentRef.current;let next=diagnosticMonitor.measureWork('workspace mutation',()=>fn(prev));if(next===prev)return true;
    // Snapshots are whole copies of earlier workspaces. Check on every edit, not only when snapshots change: ordinary edits grow the live data too.
    // shortcut: one extra JSON pass per edit, fine for a few MB; check only every Nth edit if edits start to lag.
-   {const fitted=backupBudget.fitBackups(next);if(fitted.trimmed){next=fitted.workspace;notify('Older recovery snapshots were removed to keep the workspace within device storage limits.','info')}}
+   {const fitted=diagnosticMonitor.measureWork('recovery budget check',()=>backupBudget.fitBackups(next));if(fitted.trimmed){next=fitted.workspace;notify('Older recovery snapshots were removed to keep the workspace within device storage limits.','info')}}
    put(activity(next,label));setFault('');if(/(?:Moved .+ to (?:Done|Validation)|Bulk moved|Created automation|Saved automation|Created task|Created sprint)/i.test(label))notify(label,'success');return true}
   catch(e){lastError.current=e.message||String(e);setFault(lastError.current);notify(lastError.current,'error');return false}
  };
@@ -275,7 +278,7 @@ export function StoreProvider({children,onReady,loading}){
   restoreSnapshot:id=>trans(w=>{const snapshot=w.backups.find(x=>x.id===id);if(!snapshot)throw Error('Recovery snapshot missing');return {...model.restoreSnapshot(w,snapshot),backups:[model.workspaceSnapshot(w,'Before restoring snapshot'),...w.backups].slice(0,12)}},`Restored snapshot ${id}`),
  }),[]);
  const dismissNotice=useMemo(()=>()=>setNotice(null),[]);
- const view=useMemo(()=>ws?bridge.projectView(ws):null,[ws]);
+ const view=useMemo(()=>ws?diagnosticMonitor.measureWork('selected project projection',()=>bridge.projectView(ws)):null,[ws]);
  const projects=useMemo(()=>ws?ws.projects.map(p=>({id:p.id,name:p.name,release:p.version,tasks:p.tasks.length,current:p.id===ws.selectedId,archived:p.archived})):[],[ws]);
  const workspaceList=useMemo(()=>idx?{activeId:idx.activeId,items:idx.items}:null,[idx]);
  const context=useMemo(()=>({s:view,projects,workspace:ws,workspaceList,workspaceId:idx?.activeId,error:fault,notice,dismissNotice,...api}),[view,projects,ws,workspaceList,idx,fault,notice,dismissNotice,api]);

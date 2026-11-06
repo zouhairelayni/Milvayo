@@ -8,13 +8,13 @@ const root=path.join(__dirname,'..', '..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const relations=require('../../src/domain/projectRelations.cjs');
 
-test('Projects, Programs and Portfolios have independent screens and one connector',()=>{
+test('Projects, Programs and Portfolios have independent screens and shared domain selectors',()=>{
  const app=read('src/app/ModernApp.js');
  for(const name of ['Projects','Programs','Portfolios']){
   const source=read(`src/screens/governance/${name}.js`);
   assert.match(source,new RegExp(`(?:export function|export default function) ${name}\\(`));
   assert.match(app,new RegExp(`from '../screens/governance/${name}'`));
-  assert.match(source,/projectRelations\.cjs/);
+  assert.match(source,name==='Projects'?/governanceSummary\.cjs/:/projectRelations\.cjs/);
  }
  assert.equal(fs.existsSync(path.join(root,'src/screens/ProjectsPrograms.js')),false);
  assert.match(read('src/app/navigation/sections.cjs'),/group: 'Governance'/);

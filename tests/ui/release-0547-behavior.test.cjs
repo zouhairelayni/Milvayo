@@ -47,8 +47,8 @@ test('Board Tools, mobile swiping, task configuration and governance editor are 
   assert.match(board,/label: 'Tools'/);
   assert.match(board,/useHeaderActions\('board', headerControls, active\)/);
   assert.match(board,/ScrollView horizontal showsHorizontalScrollIndicator=\{false\} style=\{\{flex:1/);
-  assert.match(board,/const \[shown, setShown\] = useState\(10\)/);
-  assert.match(board,/Show more \(\$\{cardTotal-shown\} remaining\)/);
+  assert.match(board,/shown:INITIAL_CARDS/);
+  assert.match(board,/Scroll for \{cardTotal-shown\} more cards/);
   assert.match(board,/newTaskAtTop:true/);
   assert.match(read('src/components/shell/Bars.js'),/onTouchStart=/);
   assert.match(read('src/components/shell/Bars.js'),/onTouchEnd=/);

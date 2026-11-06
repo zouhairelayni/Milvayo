@@ -1,4 +1,5 @@
 // /src/screens/workspace/Workspace.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import {Feather} from '@expo/vector-icons';
 import { Platform, Image, Pressable, ScrollView, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
@@ -19,6 +20,7 @@ import { localDay } from '../../utils/localDay.cjs';
 // ---- Resources --------------------------------------------------------------
 
 export function Resources() {
+ useRenderMetric('resources');
   const { c } = useTheme();
   const {s,addResource,deleteResource,logTime,removeTime,workspace}=useStore();
   const p=workspace.projects.find(x=>x.id===workspace.selectedId);
@@ -71,6 +73,7 @@ export function Resources() {
 // ---- Costs ------------------------------------------------------------------
 
 export function Costs() {
+ useRenderMetric('costs');
   const {c}=useTheme();
   const { s, costSummary, setBudget } = useStore();
   const summary=costSummary();
@@ -103,6 +106,7 @@ export function Costs() {
 // ---- Automations ------------------------------------------------------------
 
 export function Automations(){
+ useRenderMetric('automations');
  const {s,workspace,toggleRule,sweepDue,saveCommand,deleteCommand,runDueCommands,runAgingCommands,runCommand}=useStore();
  const project=workspace.projects.find(x=>x.id===workspace.selectedId);
  const [name,setName]=useState(''),[trigger,setTrigger]=useState('status'),[status,setStatus]=useState('Done');
@@ -178,6 +182,7 @@ export function Automations(){
 // ---- Reports ----------------------------------------------------------------
 
 export function Reports({go}) {
+ useRenderMetric('reports');
   const { c } = useTheme();
   const { s, tasksCsv, timeCsv } = useStore();
   const [report,setReport]=useState('status');
@@ -217,6 +222,7 @@ export function Reports({go}) {
 // ---- Activity ---------------------------------------------------------------
 
 export function Activity() {
+ useRenderMetric('activity');
   const { c } = useTheme();
   const wide = useWide();
   const { s } = useStore();
@@ -242,6 +248,7 @@ export function Activity() {
 // ---- Settings (includes project, data and appearance) -----------------------
 
 export function Settings({go, backupRequest}) {
+ useRenderMetric('settings');
   const { flush } = useStoreActions();
   const { c, pref, mode, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false),[iconConfirm,setIconConfirm]=useState(false);

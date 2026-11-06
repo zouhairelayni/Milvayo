@@ -16,6 +16,7 @@ function requireSource(file){
  if(cache.has(file))return cache.get(file).exports;
  if(/\.(png|jpe?g|webp)$/.test(file))return {uri:'file://'+file,width:128,height:128};
  if(file.endsWith('.json')||file.endsWith('.cjs'))return require(file);
+ if(file.endsWith('/diagnostics/useRenderMetric.js'))return {useRenderMetric:noop};
  if(file.endsWith('/src/store/store.js'))return {useStore:()=>api,useStoreActions:()=>api,useScreenActive:()=>true};
  if(file.endsWith('/DiagnosticsPanel.js')||file.endsWith('/Backup.js'))return {__esModule:true,default:()=>null};
  if(/launcherIcon(?:\.web)?\.js$/.test(file))return {syncLauncherIcon:noop};
@@ -23,7 +24,7 @@ function requireSource(file){
  const code=babel.transformSync(fs.readFileSync(file,'utf8'),{filename:file,babelrc:false,configFile:false,plugins:[[require.resolve('@babel/plugin-transform-react-jsx'),{runtime:'automatic'}],require.resolve('@babel/plugin-transform-modules-commonjs')]}).code;
  const load=id=>{
   if(id==='react'||id==='react/jsx-runtime')return require(id);
-  if(id==='react-native')return {...RN,useWindowDimensions:()=>({width,height:844,scale:1,fontScale:1})};
+  if(id==='react-native')return {...RN,Dimensions:{...RN.Dimensions,get:()=>({width,height:844})},useWindowDimensions:()=>({width,height:844,scale:1,fontScale:1})};
   if(id==='react-native-svg')return SVG;
   if(id==='@expo/vector-icons')return {Feather:({name,size=18,color,...props})=>React.createElement('span',{...props,'aria-hidden':true,style:{fontFamily:'Feather',fontSize:size,color,lineHeight:1,display:'inline-block'}},String.fromCodePoint(glyphs[name]||glyphs.circle))};
   if(id==='react-native-safe-area-context')return {SafeAreaProvider:RN.View,SafeAreaView:RN.View,useSafeAreaInsets:()=>({top:0,left:0,right:0,bottom:0})};

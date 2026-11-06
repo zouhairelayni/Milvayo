@@ -7,7 +7,8 @@ import { readNativeExit } from './nativeExit';
 import app from '../../app.json';
 const KEY = '@milvayo/diagnostics/v1';
 const VERSION = app.expo.version; // one place to bump per release
-let state = core.fresh(`${Date.now().toString(36)}`, Date.now(), {platform: Platform.OS, os: String(Platform.Version), version: VERSION});
+const RUNTIME = `${typeof __DEV__ === 'boolean' ? (__DEV__ ? 'development' : 'production') : 'mode unknown'}; ${typeof HermesInternal !== 'undefined' ? 'Hermes' : 'engine not identified'}`;
+let state = core.fresh(`${Date.now().toString(36)}`, Date.now(), {platform: Platform.OS, os: String(Platform.Version), version: VERSION, runtime:RUNTIME});
 let booted = false;
 let isActive = AppState.currentState == null || AppState.currentState === 'active';
 state.active = isActive;
@@ -23,6 +24,8 @@ let originalWarn = null;
 let originalError = null;
 let ioGeneration = 0;
 let saveTimer = null;
+const now = () => typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+let startupClock = now();
 const writer = require('../store/latestWriter.cjs').createLatestWriter(generation =>
  generation === ioGeneration ? AsyncStorage.setItem(KEY,JSON.stringify(state)) : undefined);
 // Ordinary breadcrumbs share one bounded 200ms window; critical evidence bypasses it.
@@ -45,6 +48,17 @@ function recordScreen(screen){
   safeEvent('screen opened',screen);
 }
 function recordAction(action){safeEvent('action',action);}
+function recordStartup(name, detail = '', at = now()) {
+  if (core.addStartup(state, name, Math.max(0, at - startupClock), detail)) pushSave();
+}
+function recordCommit(screen, duration) {
+  if (core.addCommit(state, screen, duration)) pushSave();
+}
+function measureWork(name, work) {
+  const started = now();
+  try { return work(); }
+  finally { if (core.addWork(state, name, Math.max(0, now() - started))) pushSave(); }
+}
 function recordTransition(screen,ms){ if (ms >= 180) {core.addSlow(state,'navigation',screen,ms);pushSave();notify();} }
 function recordRender(screen, duration){
   if (!Number.isFinite(duration)) return;
@@ -57,8 +71,9 @@ function snapshot(){return JSON.parse(JSON.stringify(state));}
 function subscribe(fn){listener = fn;return () => {if(listener===fn) listener=null;};}
 function clear(){
   ioGeneration += 1;
-  state = core.fresh(`${Date.now().toString(36)}`, Date.now(),{platform:Platform.OS,os:String(Platform.Version),version:VERSION});
+  state = core.fresh(`${Date.now().toString(36)}`, Date.now(),{platform:Platform.OS,os:String(Platform.Version),version:VERSION,runtime:RUNTIME});
   state.active = isActive;
+  startupClock = now();
   lastTick = Date.now();
   pushSave(true);notify();
 }
@@ -126,7 +141,7 @@ async function start(){
     if(exit&&!disposed&&generation===ioGeneration){state.nativeExit=exit;pushSave();notify();}
   }).catch(()=>{});
 }
-export const diagnosticMonitor = {start, recordScreen, recordAction, recordTransition,recordRender,captureError,snapshot,subscribe,clear,
+export const diagnosticMonitor = {start, now, measureWork, recordScreen, recordAction, recordStartup, recordCommit, recordTransition,recordRender,captureError,snapshot,subscribe,clear,
   crashReport:()=>core.reportCrash(state),performanceReport:()=>core.reportPerf(state)};
 
 // Fast Refresh should not stack global handlers or timers on each refresh.

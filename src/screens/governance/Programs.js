@@ -1,4 +1,5 @@
 // /src/screens/governance/Programs.js
+import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { EmptyState, FormSection, MetricStrip, ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
@@ -15,6 +16,7 @@ import { localDay } from '../../utils/localDay.cjs';
 // Independent program management. Programs reference portfolios; portfolios own project memberships.
 // Older direct project references remain readable and editable for lossless workspace migration.
 export function Programs({embedded=false,openProject}){
+ useRenderMetric('programs');
  const {c}=useTheme();
  const {workspace,projects,saveProgram,deleteProgram,switchProject}=useStore();
  const programs=workspace.programs||[],portfolios=workspace.portfolios||[];

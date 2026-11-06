@@ -27,7 +27,7 @@ test('Board: due-date, priority, owner and tag filters come from kanbanUX.filter
   const src = read('src/screens/board/Board.js');
   assert.match(src, /filterCards\(s\.tasks\.filter\(\(t\) => t\.board === board\.id\), \{ text: q, owner: ownerF, label: labelF, priority: prioF, due: dueF \}\)/);
   assert.match(src, /DUE_FILTERS/);
-  assert.match(src, /const \[shown, setShown\] = useState\(10\)/);
+  assert.match(src, /shown:INITIAL_CARDS/);
   const today = '2026-11-10';
   const tasks = [T('over', { due: '2026-11-01' }), T('tod', { due: today }), T('tom', { due: '2026-11-11' }), T('wk', { due: '2026-11-15' }), T('none', { due: '' }), T('done', { due: '2026-11-01', status: 'Done' })];
   const ids = (due) => kanban.filterCards(tasks, { due }, today).map((t) => t.id);

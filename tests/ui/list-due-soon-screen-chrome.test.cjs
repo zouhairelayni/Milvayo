@@ -23,7 +23,7 @@ test('Due soon merges enabled boards, preserves date/status/archive rules and su
   assert.deepEqual(dueSoonForList(model.importProject(JSON.parse(saved)), '2026-11-05'), result); assert.equal(JSON.stringify(p), saved);
   assert.deepEqual(dueSoonForList({ ...p, powerUps: {} }, '2026-11-05'), { boards: [], tasks: [] });
   const many = model.makeProject({ ...p, tasks: Array.from({ length: 50 }, (_, n) => ({ id: String(n), title: 'Task ' + n, boardId: n % 2 ? 'board-design' : 'board-default', due: '2026-11-06', position: n })) });
-  assert.equal(dueSoonForList(many, '2026-11-05').tasks.length, 30);
+  assert.equal(dueSoonForList(many, '2026-11-05').tasks.length, 50);
 });
 
 test('List keeps the preview, task-open callback and relocated per-board date switches; Board contains neither dates panel nor date switch', () => {
