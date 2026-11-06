@@ -37,7 +37,7 @@ test('feature parity matrix: where every old menu entry lives now', () => {
   const expected = {
     overview: 'home pill', board: 'work pill', tasks: 'work pill', timeline: 'work pill', sprints: 'work pill',
     projects: 'projects pill', portfolios: 'projects pill', programs: 'projects pill',
-    scheduling: 'more: Plan', settings: 'more: App',
+    scheduling: 'more: Project tools', settings: 'more: App',
     releases: 'more: Project tools', testing: 'more: Project tools', resources: 'more: Project tools', collaboration: 'more: Project tools',
     costs: 'more: Project tools', automations: 'more: Project tools', reports: 'more: Project tools', activity: 'more: Project tools',
     specifications: 'more: Project tools',
@@ -113,7 +113,7 @@ test('header keeps every per-screen control: Tools, New sprint, New release, Tim
   const header = bars.slice(bars.indexOf('export function PhoneHeader'));
   assert.match(header, /accessibilityLabel="Search tasks"/);
   assert.match(header, /onQuery\(''\); setSearching\(false\)/); // closing search clears the filter it set
-  assert.match(header, /<ProjectSwitcher onPickProject=\{onPickProject\} compact showProjectName=\{showProjectName\} \/>/);
+  assert.match(header, /<ProjectSwitcher onPickProject=\{onPickProject\} compact showProjectName=\{false\} \/>/);
   assert.match(header, /label="Back to More"/);
 });
 
@@ -130,14 +130,14 @@ test('Create sheet: the + button opens New task, with Project and Release one ta
   const release = read('src/screens/delivery/Delivery.js');
   assert.match(release, /export function Releases\(\{ releaseRequest = false, onReleaseRequestHandled \}\)/);
   assert.match(release, /onReleaseRequestHandled\?\.\(\)/); // consumed, so a later visit does not reopen the form
-  assert.match(read('src/components/shell/CreateMore.js'), /Create something else/);
+  assert.match(read('src/components/shell/CreateMore.js'), /Or create/);
 });
 
 test('More: the rest of the old menu, workspace switcher, appearance cycle and desktop layout', () => {
   const more = read('src/screens/more/More.js');
   assert.match(more, /moreGroups\(tools\)\.map/);
   assert.match(more, /label="Manage tools"/);
-  assert.match(more, /<WorkspaceSwitcher \/>/);
+  assert.match(more, /<WorkspaceSwitcher onPickProject=\{onPickProject\} \/>/);
   assert.match(more, /NEXT_MODE = \{ light: 'dark', dark: 'amoled', amoled: 'light' \}/);
   assert.match(more, /<Row icon="monitor" label="Desktop layout"/);
   const menus = read('src/components/shell/Menus.js');

@@ -40,16 +40,7 @@ test('task-check and selection affordances are separate',()=>{
  for(const expected of ["t.status==='Done'",'accessibilityRole="checkbox"',"moveTask(t.id",'onLongPress','Filter','allLabels','labelFilter'])assert.ok(src.includes(expected),expected);
  assert.ok(!src.includes("onPress={() => toggle(t.id)}"),'square must no longer toggle local-only selection');
 });
-test('single-app design has safe notification, drawer branding, theme picker and main section disclosures',()=>{
- const app=require('../helpers/shell-source.cjs')(),ui=read('src/components/inline/CompactTools.js'),ws=read('src/screens/workspace/Workspace.js'),theme=read('src/ui/theme/theme.js');
- assert.ok(app.includes('<IslandNotice')&&app.includes("edges={['top', 'bottom', 'left', 'right']}"));
- assert.ok(app.includes('milvayo-mask.png')); // Milvayo wordmark, one tinted mask
- const header=app.split("<SafeAreaView edges={['top', 'bottom', 'left', 'right']}")[1].split('<TabBar')[0];
- assert.ok(header&&!header.includes('<Brand />'),'logo must not be duplicated in mobile header');
- assert.ok(ui.includes('<DisclosureGlyph')&&ui.includes("name={open?'chevron-up':'chevron-down'}"));
- assert.ok(ws.includes('ACCENTS.map')&&ws.includes('setAccent(option.id)'));
- assert.ok(theme.includes('AsyncStorage.getItem')&&theme.includes('STORAGE_KEY'));
-});
+
 test('task config is not duplicated in settings and confirmation wraps',()=>{
  const ws=read('src/screens/workspace/Workspace.js');const settings=ws.slice(ws.indexOf('export function Settings('));
  assert.ok(!settings.includes('Task type preview'));

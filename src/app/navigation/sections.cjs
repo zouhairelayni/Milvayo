@@ -83,8 +83,7 @@ function moreGroups(tools) {
   const tool = projectTools.IDS.map(id => flat.find(([k]) => k === id)).filter(Boolean).filter(([k]) => projectTools.screenOn(tools, k));
   const named = new Set([...projectTools.IDS, 'scheduling', 'settings']);
   return [
-    { group: 'Project tools', items: tool },
-    { group: 'Plan', items: flat.filter(([k]) => k === 'scheduling') },
+    { group: 'Project tools', items: [...flat.filter(([k]) => k === 'scheduling'), ...tool] },
     { group: 'App', items: flat.filter(([k]) => k === 'settings') },
     { group: 'More', items: flat.filter(([k]) => !named.has(k)) },
   ].filter(g => g.items.length || g.group === 'Project tools');

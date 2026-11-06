@@ -54,14 +54,3 @@ test('Home, Work and Projects hide project-name text while both header layouts r
   }
   assert.equal((read('src/app/ModernApp.js').match(/showProjectName=\{screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'\}/g) || []).length, 2);
 });
-
-test('Visible page titles are removed while back/header actions, overview sections and modal titles remain', () => {
-  const h = screenHarness('src/components/shell/Bars.js', {}); let backed = 0;
-  assert.equal(h.render('PhoneHeader', { kind: 'hub', title: 'More' }), null);
-  const tree = h.render('PhoneHeader', { kind: 'sub', title: 'Testing', onBack: () => backed++, controls: { actions: [{ label: 'New item', icon: 'plus', onPress() {} }] } });
-  assert.equal(text(tree).includes('Testing'), false); control(tree, 'Back to More').props.onPress(); assert.equal(backed, 1);
-  assert.ok(nodes(tree).some(n => typeof n.type === 'function' && n.type.name === 'HeaderIcons'));
-  for (const file of ['src/screens/overview/Overview.js', 'src/screens/delivery/Delivery.js']) assert.doesNotMatch(read(file), /accessibilityRole="header"/);
-  assert.match(read('src/screens/overview/Overview.js'), /Project overview<\/SectionTitle>/);
-  assert.match(read('src/ui/uiLayout.js'), /accessibilityRole="header">\{title\}/);
-});

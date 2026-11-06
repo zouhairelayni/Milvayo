@@ -26,8 +26,8 @@ test('4: the Task Sheet and the project and workspace switchers are native Modal
   assert.match(projectSwitcher, /<ProjectDrawer[^>]*embedded /);
   assert.match(projectSwitcher, /<WorkspaceDrawer embedded /);
   assert.match(read('src/ui/uiLayout.js'), /showNotice \? <View[^>]*><InlineNotice \/>/);
-  assert.match(workspaceSwitcher, /<Modal visible=\{visible\}/);
-  assert.match(workspaceSwitcher, /<WorkspaceDrawer inModal /);
+  assert.match(workspaceSwitcher, /<ProjectSwitcher workspaceTrigger onPickProject=\{onPickProject\}/);
+  assert.doesNotMatch(workspaceSwitcher, /<Modal|<WorkspaceDrawer/);
   assert.equal((menus.match(/\{inModal \? <InlineNotice \/> : null\}/g) || []).length, 2);
   // The Task Sheet shows it in the footer, which stays visible while the sheet body scrolls.
   assert.match(read('src/screens/tasks/TaskSheet.js'), /const footer = t \? \(\n\s+<>\n\s+<InlineNotice \/>/);

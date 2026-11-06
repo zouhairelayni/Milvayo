@@ -1,0 +1,50 @@
+{
+  "parsed": 192,
+  "worklets": [
+    {
+      "file": "src/board/boardMotion.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/gestures/TimelinePinch.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/gestures/DiagramGesture.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/components/charts/TracePath.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/components/charts/Column.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/ui/Reveal.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/ui/PressSurface.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/ui/FillMotion.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/ui/ScreenPresence.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/ui/CountValue.native.js",
+      "pass": true
+    },
+    {
+      "file": "src/components/inline/InlineEditor.native.js",
+      "pass": true
+    }
+  ],
+  "fail": []
+}

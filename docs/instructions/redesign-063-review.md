@@ -1,0 +1,27 @@
+# Review the promoted 0.7.0 redesign
+
+Use `~/Milvayo` with your normal Metro/Fast Refresh workflow. The owner-approved 0.7.0 promotion copied the redesign and its installed dependencies into the main folder. The superseded checkout and temporary promotion copies were removed after owner build confirmation, leaving one active dependency tree.
+
+- Appearance: More → Settings → General. Choose Dark or AMOLED to review the neutral dark experience; accent changes affect controls/data rather than page backgrounds. Saved System/Daylight preferences remain available.
+- Overview: swipe the date row left/right to change weeks, or tap a day to focus work. The chevrons are removed; screen-reader Next/Previous week actions remain. Tap that day again, or “Show all work” in an empty date, to clear it. Inspect a workload column, then open its task status. Charts use actual project data; no activity history is inferred.
+- Kanban: hold a card to lift it, drag to the named destination, then release. Hold a list header to reorder a list (levitation is now 40% gentler; card lift is unchanged); its lift should draw above the board-name ribbon. Scroll before the hold threshold to browse normally. Double-tap a title to edit it. Placement and status rules still apply.
+- Task actions: description is directly below the title. While editing, tap the theme-colored checkmark to save/preview or the red X to discard the draft. In Task actions, Duplicate/Delete opens confirmation inside that same popup. Cancel and rejected changes stay there; successful duplication keeps the original task open. Confirmed deletion removes the deleted task view. The same popup rule applies to project, board and WBS actions.
+- Projects: open a card’s Project settings → Project actions → Edit project. The same name/code/description editor opens in place; Save changes and Cancel remain. In More, Scheduling now sits first in the Project tools group. Use its Manage tools card; the duplicate button above the workspace selector is removed. Tap the workspace row to open the existing Projects/Workspaces popup directly, starting on Workspaces; use its Projects tab to switch or create a project.
+- Navigation/tools: a selected bottom icon grows without a square highlight. Manage tools remains in More; Settings no longer repeats it. Board header Tools owns filters; the large duplicate Filter board button is removed.
+- Task dates: open a task → Plan this task → Schedule. Select Start or Due and pick a day inline. Valid task edits use the existing autosave path; a rejected range remains unchanged. Clear either endpoint independently.
+- Sprint dates: the same inline range is a draft until “Save sprint.” Scheduling exceptions are drafts until “Save calendar exceptions”/“Save calendar.” Calendar dots mark due work.
+- Contributor/time, reminder and governance date fields expand a calendar in place. “Type a date” remains available for exact ISO entry, without permitting impossible dates.
+- Resources, Costs and Automations use focused editors; Reports separates work distribution, frozen sprint history and exports. Specifications shows category content and its entry composer directly.
+- Changing the in-app theme does not apply native launcher aliases. “Apply launcher icon” is a separate save-aware confirmation and Android may close the app. Expo Go cannot replace its own icon. Native adapter changes are not delivered by Fast Refresh; no APK was built in this session.
+
+Review evidence, source-rendered fixture limitations, test results and the device acceptance checklist are in `docs/qa/redesign-063/ENGINEERING-REPORT.md`. Source fixtures are visual composition checks, not a running application. The owner already reported the pinch repair successful; new motion, warning counts and hardware performance still need device evaluation.
+
+Rollback uses the pre-promotion Git checkpoint documented in `docs/qa/release-070/PROMOTION-REPORT.md`. No storage/import schema migration was introduced. Do not uninstall or clear app data to evaluate the redesign. Source checks do not certify runtime acceptance.
+
+Follow-up evidence: `docs/qa/redesign-063/popup-nav-warning-followup.md`. Earlier static screenshots predate these interaction changes and do not verify them.
+
+Focused performance follow-up: portfolio-heavy edits and Home date calculations now avoid repeated work. A rejected bulk status edit keeps selection for retry. Diagnostic reports remain live; ordinary persistence is batched for up to 200ms, with JS errors and background transitions requesting an immediate save. Use comparable same-device sessions to assess real responsiveness. Evidence and phone checks: `docs/qa/redesign-063/FOCUSED-PERFORMANCE-AUDIT.md`.
+
+Error/background follow-up: global/console capture is installed without waiting for old report storage; errors and background events request immediate persistence. Backgrounding cancels a held Board item without dropping it; stale task-open/release callbacks are ignored, and a new foreground touch resumes normal interaction. Device checks/limits: `docs/qa/redesign-063/ERROR-BACKGROUND-FOLLOWUP.md`.
+
+First-run tour: use More → Take the tour on your current installation. Three slides lead to a starter and a named, empty project; Skip leaves project/tool data unchanged. Auto-opening is reserved for empty new installations. Never clear current app data to trigger it. Guide: `docs/instructions/first-run-tour.md`.

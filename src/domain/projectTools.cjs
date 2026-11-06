@@ -32,6 +32,12 @@ function normalizeTools(input) {
   return out;
 }
 
+// Creation accepts explicit boolean overrides only; existing imports keep their lenient migration rule.
+function initialTools(overrides){
+ if(overrides===undefined)return LEAN;
+ if(!overrides||typeof overrides!=='object'||Array.isArray(overrides)||Object.entries(overrides).some(([id,on])=>!IDS.includes(id)||typeof on!=='boolean'))throw Error('Invalid initial project tools');
+ return {...LEAN,...overrides};
+}
 const isTool = id => IDS.includes(id);
 // Screens that are not a tool (board, tasks, overview, settings...) are always on.
 const screenOn = (tools, screen) => !SCREEN_IDS.includes(screen) || normalizeTools(tools)[screen] !== false;
@@ -41,4 +47,4 @@ function setTool(tools, id, on) {
   return { ...normalizeTools(tools), [id]: on === true };
 }
 
-module.exports = { TOOLS, IDS, SCREEN_IDS, LEAN, allOn, normalizeTools, isTool, screenOn, setTool };
+module.exports = { TOOLS, IDS, SCREEN_IDS, LEAN, allOn, normalizeTools, isTool, screenOn, setTool, initialTools };

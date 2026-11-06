@@ -16,11 +16,8 @@ export function Brand({ narrow = false, symbolOnly = false, compact = false, ani
   const { c } = useTheme();
   const mark = <BoardMorph size={symbolOnly?34:compact?25:42} speed={1.5} active={animated && active} />;
   if(symbolOnly)return mark;
-  const width = compact ? 60 : narrow ? 119 : 158;
-  return <View accessible accessibilityLabel="Milvayo" style={{flexDirection:'row',alignItems:'center',gap:8,maxWidth:compact?92:narrow?172:220}}>
-    {mark}
-    <Image source={require('../../../assets/milvayo-mask.png')} resizeMode="contain"
-      style={{width,height:Math.round(width*45/316),tintColor:c.ink}} />
+  return <View accessible accessibilityLabel="Milvayo" style={{flexDirection:'row',alignItems:'center',gap:10,maxWidth:220}}>
+    {mark}<T size={compact?16:22} weight="600">Milvayo</T>
   </View>;
 }
 
@@ -37,7 +34,7 @@ function NavItem({ k, label, icon, current, go, collapsed = false, dense = false
         flexDirection: 'row', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start',
         gap: dense ? 8 : 12, minHeight: 44, marginVertical: 1,
         paddingHorizontal: collapsed ? 8 : dense ? 8 : 12, borderRadius: radius.sm,
-        backgroundColor: on ? c.surfaceAlt : pressed ? c.surfaceAlt : 'transparent',
+        backgroundColor: on ? c.selection : pressed ? c.surfaceAlt : 'transparent',
         opacity: pressed ? 0.75 : 1,
       })}
     >
@@ -84,7 +81,7 @@ function ProjectDrawer({ onClose, onPick, inModal, embedded = false }) {
       }}
     >
       {!embedded ? <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
-        <T serifFace size={20} weight="600">Projects</T>
+        <T size={20} weight="600">Projects</T>
         <IconBtn icon="x" label="Close projects" onPress={onClose} />
       </View> : null}
       {inModal ? <InlineNotice /> : null}
@@ -157,7 +154,7 @@ function WorkspaceDrawer({ onClose, inModal, embedded = false }) {
       }}
     >
       {!embedded ? <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 6, marginBottom: 16 }}>
-        <T serifFace size={20} weight="600">Workspaces</T>
+        <T size={20} weight="600">Workspaces</T>
         <IconBtn icon="x" label="Close workspaces" onPress={onClose} />
       </View> : null}
       {inModal ? <InlineNotice /> : null}
@@ -267,7 +264,7 @@ function ProjectCard({ onPress }) {
 export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
   const { c, mode } = useTheme();
   const { width } = useWindowDimensions();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [drawer, setDrawer] = useState(false);
   const [spaces, setSpaces] = useState(false);
   const compact = collapsed || width < 1120;
@@ -307,21 +304,22 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
   );
 }
 
-// Both headers use a compact workspace menu; existing drawers supply its controls.
-export function ProjectSwitcher({ onPickProject, compact = false, showProjectName = true }) {
+// Headers and More reuse one compact workspace manager with embedded controls.
+export function ProjectSwitcher({ onPickProject, compact = false, showProjectName = true, workspaceTrigger = false }) {
   const { c } = useTheme();
   const { s, workspaceList } = useStore();
   const [visible, setVisible] = useState(false);
   const [view, setView] = useState('Projects');
   const workspaceName = workspaceList.items.find(w => w.id === workspaceList.activeId)?.name || 'Workspace';
   return <>
+    {workspaceTrigger ? <WorkspaceRow onPress={() => { setView('Workspaces'); setVisible(true); }} /> :
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: compact ? 230 : 280, flexShrink: 1, minWidth: 0 }}>
       <Pressable accessibilityRole="button" accessibilityLabel="Open workspace menu" accessibilityState={{ expanded: visible }} onPress={() => { setView('Projects'); setVisible(true); }}
         style={({ pressed }) => ({ width: 44, height: 44, justifyContent: 'center', alignItems: 'center', borderRadius: radius.sm, backgroundColor: pressed ? c.surfaceAlt : 'transparent' })}>
         <Feather name="menu" size={22} color={c.ink} />
       </Pressable>
       {showProjectName ? <T weight="500" size={compact ? 14 : 16} numberOfLines={1} style={{ flexShrink: 1 }}>{s.project.name}</T> : null}
-    </View>
+    </View>}
     <Sheet visible={visible} compact title="Workspace menu" onClose={() => setVisible(false)}
       footer={<Button label="Done" variant="secondary" onPress={() => setVisible(false)} />}>
       <T size={13} muted>{workspaceName}</T>
@@ -333,19 +331,7 @@ export function ProjectSwitcher({ onPickProject, compact = false, showProjectNam
   </>;
 }
 
-// Workspace row plus its slide-over, used by the More screen on phones.
-export function WorkspaceSwitcher() {
-  const { c, mode } = useTheme();
-  const [visible, setVisible] = useState(false);
-  return <>
-    <WorkspaceRow onPress={() => setVisible(true)} />
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
-        <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
-          <WorkspaceDrawer inModal onClose={() => setVisible(false)} />
-        </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close workspaces" onPress={() => setVisible(false)} style={{ flex: 1 }} />
-      </View>
-    </Modal>
-  </>;
+// More opens the existing manager directly, starting with its Workspaces view.
+export function WorkspaceSwitcher({ onPickProject }) {
+  return <ProjectSwitcher workspaceTrigger onPickProject={onPickProject} />;
 }

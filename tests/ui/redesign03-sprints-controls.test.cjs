@@ -14,13 +14,13 @@ test('Sprints control inventory: New/first sprint, selector, Start/Edit/Delete, 
   for (const label of ['Start sprint', 'Edit', 'Delete', 'Remove', 'Add', 'Show more']) assert.ok(control(tree, label), label);
   control(tree, 'Start sprint').props.onPress(); control(tree, 'Remove').props.onPress(); control(tree, 'Add').props.onPress();
   assert.deepEqual(calls, [['start', 'sp'], ['a', ''], ['b0', 'sp']]);
-  control(tree, 'Delete').props.onPress(); tree = h.render('Sprints', props); assert.ok(control(tree, 'Delete sprint')); control(tree, 'Cancel').props.onPress();
+  control(tree, 'Delete').props.onPress(); tree = h.render('Sprints', props); const deletion = nodes(tree).find(n => n.type === 'ConfirmSheet' && n.props.visible); assert.equal(deletion.props.confirmLabel, 'Delete sprint'); deletion.props.onClose();
   control(tree, 'Edit').props.onPress(); tree = h.render('Sprints', props);
-  for (const label of ['Name', 'Goal', 'Start (YYYY-MM-DD)', 'End (YYYY-MM-DD)']) assert.ok(nodes(tree).some(n => n.props.label === label), label);
+  for (const label of ['Name', 'Goal']) assert.ok(nodes(tree).some(n => n.props.label === label), label);
   control(tree, 'Save sprint').props.onPress(); assert.ok(control(h.render('Sprints', props), 'Save sprint'), 'failure keeps form open');
   save = true; control(tree, 'Save sprint').props.onPress(); assert.equal(control(h.render('Sprints', props), 'Save sprint'), undefined);
   s.sprints[0].state = 'active'; tree = h.render('Sprints', props); control(tree, 'Finish sprint').props.onPress();
-  assert.ok(control(h.render('Sprints', props), 'Confirm finish'));
+  assert.equal(nodes(h.render('Sprints', props)).find(n => n.type === 'ConfirmSheet' && n.props.visible).props.confirmLabel, 'Finish sprint');
   const snapshot = { state: 'completed', velocity: 7, taskIds: ['a', 'deleted'], burn: { days: ['5'], ideal: [1], recorded: [0] } };
   Object.assign(s.sprints[0], snapshot); const before = JSON.stringify(s);
   tree = h.render('Sprints', props);

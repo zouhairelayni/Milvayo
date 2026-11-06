@@ -24,14 +24,9 @@ const selector = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props
 const viewport = tree => nodes(tree).find(n => n.type === 'DiagramViewport');
 const zoomControl = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(o => o.value === 'fit'));
 
-test('WBS: four compact summary cards share dimensions on phone and wide layouts and retain derived values', () => {
-  for (const wide of [false, true]) {
-    const { h } = setup(wide), tree = h.render();
-    const cards = nodes(tree).filter(n => n.type === 'Card' && n.props.style.height === 88);
-    assert.equal(cards.length, 4);
-    assert.deepEqual(cards.map(n => n.props.accessibilityLabel), ['Elements, 2', 'Work packages, 2', 'Levels, 1', 'Estimated hours, 32']);
-    for (const card of cards) { assert.equal(card.props.pad, 12); assert.equal(card.props.style.flexBasis, wide ? '23%' : '47%'); assert.equal(card.props.style.minWidth, 0); }
-  }
+test('WBS: compact summary preserves all derived values on phone and desktop',()=>{
+ for(const wide of [false,true]){const {h}=setup(wide),tree=h.render();const items=nodes(tree).find(n=>n.type==='MetricStrip').props.items;
+ assert.deepEqual(Array.from(items,x=>[x.label,x.value]),[['Elements',2],['Work packages',2],['Levels',1],['Estimated hours',32]]);}
 });
 
 test('WBS diagram inventory: Tree/directions, Fishbone, Mind map, Fit/100%/150%, pinch feedback, SVG/CSV export; gestures change no saved WBS', () => {
@@ -58,10 +53,11 @@ test('WBS diagram inventory: Tree/directions, Fishbone, Mind map, Fit/100%/150%,
       assert.deepEqual(Array.from(toolbarControls[0].props.options, o => o.label), ['Top-down', 'Left to right']);
       toolbarControls[0].props.onChange('right'); tree = h.render(); assert.match(viewport(tree).props.resetKey, /tree:right:/);
     }
-    control(tree, 'Export diagram (SVG)').props.onPress();
+    const exports=nodes(tree).find(n=>n.type==='ActionMenu'&&n.props.label==='Export work structure');
+    exports.props.items.find(x=>x?.label==='Diagram as SVG').onPress();
     const svg = downloads.at(-1); assert.equal(svg[2], 'image/svg+xml');
     assert.ok(svg[1].includes(`width="${viewport(tree).props.scene.width}"`)); assert.ok(svg[1].includes('Studio &amp; team'));
-    control(tree, 'Export WBS (CSV)').props.onPress(); assert.equal(downloads.at(-1)[2], 'text/csv'); assert.ok(downloads.at(-1)[1].includes('Design'));
+    exports.props.items.find(x=>x?.label==='Outline as CSV').onPress(); assert.equal(downloads.at(-1)[2], 'text/csv'); assert.ok(downloads.at(-1)[1].includes('Design'));
   }
   assert.deepEqual(calls, []); assert.equal(JSON.stringify(s.pm.wbs), before);
   const p = model.makeProject({ name: 'Studio', governance: { wbs: s.pm.wbs } });
@@ -83,11 +79,14 @@ test('WBS Outline control inventory and empty starters remain available; empty d
   const { h } = setup(); let tree = h.render(); assert.equal(viewport(tree), undefined);
   const row = nodes(tree).find(n => typeof n.type === 'function' && n.type.name === 'OutlineRow' && n.props.n.id === 'w1');
   const detail = h.render(row.type, { ...row.props, open: true });
-  for (const label of ['Add below', 'Add next', 'Up', 'Down', 'Indent', 'Outdent', 'Delete']) assert.ok(control(detail, label), label);
+  const actions=nodes(detail).find(n=>n.type==='ActionRow');assert.equal(actions.props.primary.props.label,'Add below');
+  for(const label of ['Add next','Move up','Move down','Indent','Outdent','Delete element'])assert.ok(actions.props.items.some(x=>x.label===label),label);
+  const deletion=actions.props.items.find(x=>x.label==='Delete element');assert.equal(deletion.danger,true);assert.equal(deletion.confirmation.title,'Delete work element?');assert.ok(deletion.confirmation.description);assert.equal(h.render().props.children==null,false);
   for (const label of ['Name', 'Owner', 'Estimated hours', 'Description (WBS dictionary)']) assert.ok(nodes(detail).some(n => n.props.label === label), label);
   const empty = setup(false, [fixture()[0]]); tree = empty.h.render();
-  for (const label of ['Deliverable-based', 'Phase-based (PMI process groups)', 'Add first element']) assert.ok(control(tree, label), label);
+  const emptyState=nodes(tree).find(n=>n.type==='EmptyState');const starter=emptyState.props.action;
+  assert.equal(starter.props.primary.props.label,'Add first element');assert.deepEqual(Array.from(starter.props.items,x=>x.label),['Deliverable-based','PMI process groups']);
   selector(tree).props.onChange('mind'); tree = empty.h.render(); assert.equal(viewport(tree), undefined); assert.equal(control(tree, 'Export diagram (SVG)'), undefined);
-  control(tree, 'Add first element').props.onPress(); assert.equal(empty.s.pm.wbs.length, 2);
+  starter.props.primary.props.onPress(); assert.equal(empty.s.pm.wbs.length, 2);
   assert.ok(text(empty.h.render()).includes('Pinch to zoom'));
 });

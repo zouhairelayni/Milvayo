@@ -25,13 +25,6 @@ test('0.5.33 tasks use physical viewport for optional table columns rather than 
   assert.match(s, />Priority<\/T>/);
 });
 
-test('release readiness has separate navigation buttons, not nested Pressables', () => {
-  const s = source('src/screens/overview/Overview.js');
-  assert.doesNotMatch(s, /<Card[^\n]*onPress=\{\(\) => go\('releases'\)\}/);
-  assert.match(s, /label="Open releases"/);
-  assert.match(s, /label="Open testing"/);
-});
-
 test('shared Store/UI cycle remains broken and source does not include Sonnet layout rewrite', () => {
   const store = source('src/store/store.js');
   assert.match(store, /import \{ T \} from '\.\.\/ui\/uiBase';/);

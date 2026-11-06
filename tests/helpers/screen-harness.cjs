@@ -16,6 +16,9 @@ function screenHarness(file, store, extra = {}) {
   let cursor = 0;
   const hooks = {
     memo: fn => fn,
+    Children: require('react').Children, Fragment: require('react').Fragment, isValidElement: require('react').isValidElement,
+    useCallback: fn => fn,
+    useId() { return hooks.useRef('chart-id-' + cursor).current; },
     useState(initial) {
       const i = cursor++;
       const values = slots;
@@ -47,20 +50,28 @@ function screenHarness(file, store, extra = {}) {
     if (extra.mocks && Object.hasOwn(extra.mocks, id)) return extra.mocks[id];
     if (id === 'react') return hooks;
     if (id === 'react/jsx-runtime') return require(id);
-    if (id === 'react-native') return { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', Image: 'Image', Modal: 'Modal', Switch: 'Switch', Platform: { OS: extra.platform || 'web' }, PanResponder: { create: handlers => ({ panHandlers: handlers }) }, useWindowDimensions: () => ({ width: extra.width || 390 }) };
-    if (id === 'react-native-svg') return { __esModule: true, default: 'Svg', Circle: 'Circle', Line: 'Line', Path: 'Path', Rect: 'Rect', Text: 'SvgText' };
+    if (id === 'react-native') return { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', KeyboardAvoidingView:'KeyboardAvoidingView', Image: 'Image', Modal: 'Modal', Switch: 'Switch', Platform: { OS: extra.platform || 'web' }, PanResponder: { create: handlers => ({ panHandlers: handlers }) }, useWindowDimensions: () => ({ width: extra.width || 390 }) };
+    if (id === 'react-native-svg') return { __esModule: true, default: 'Svg', Circle: 'Circle', Defs: 'Defs', LinearGradient:'LinearGradient', Stop:'Stop', Line: 'Line', Path: 'Path', Rect: 'Rect', Text: 'SvgText' };
     if (id === 'react-native-safe-area-context') return { SafeAreaProvider: 'SafeAreaProvider', SafeAreaView: 'SafeAreaView' };
     if (id === '@expo/vector-icons') return { Feather: 'Feather' };
     if (id.endsWith('/ui/ui')) return new Proxy({ useWide: () => !!extra.wide }, { get: (o, k) => o[k] || k });
+    if (id === './uiControls') return {Button:'Button',IconBtn:'IconBtn',Input:'Input'};
+    if (id === './TracePath') return {__esModule:true,default:'TracePath'};
+    if (id==='./FillMotion')return {__esModule:true,default:'FillMotion'};
+    if (id==='./PressSurface'||id.endsWith('/PressSurface')||id.endsWith('/DateRail')||id.endsWith('/Reveal'))return {__esModule:true,default:id.split('/').at(-1)};
+    if (id.endsWith('/StudioCharts'))return new Proxy({}, {get:(_,k)=>k});
+    if (id === './uiLayout') return {Sheet:'Sheet'};
+    if (id === './Reveal' || id.endsWith('/EmptyArtwork')) return {__esModule:true,default:'Reveal'};
     if (id === './uiBase') return { T: 'T', Card: 'Card', useWide: () => !!extra.wide };
     if (id === './commitBuffer.cjs') return require('../../src/ui/commitBuffer.cjs');
     if (id.endsWith('/theme/theme')) return theme;
-    if (id.endsWith('/store/store')) return { useStore: () => store, useScreenActive: () => true };
+    if (id.endsWith('/store/store')) return { useStore: () => store, useStoreActions:()=>store, useScreenActive: () => true };
     if (id.endsWith('/useProjectTools')) return { useProjectTools: () => extra.tools || { sprints: true, releases: true, testing: true } };
     if (id.endsWith('/HeaderActions')) return { useHeaderActions: (key, value) => { headers[key] = value; } };
-    if (id.endsWith('/CompactTools')) return { Fold: 'Fold', EditRow: 'EditRow', Labeled: 'Labeled', DangerConfirm: 'DangerConfirm' };
+    if (id.endsWith('/CompactTools')) return { Fold: 'Fold', EditRow: 'EditRow', Labeled: 'Labeled', DangerConfirm: 'DangerConfirm', Dropdown:'Dropdown' };
     if (id.endsWith('/charts')) return { BurnChart: 'BurnChart' };
     if (id === './DrawerMotion' || id.endsWith('/BoardMorph') || id.endsWith('/InlineNotice') || id.endsWith('/CreateProjectSheet')) return id.split('/').at(-1);
+    if (id === './NavIcon')return {__esModule:true,default:'NavIcon'};
     if (id === './Menus') return { ProjectSwitcher: 'ProjectSwitcher' };
     if (id.endsWith('/diagnostics/monitor')) return { diagnosticMonitor: { recordAction() {} } };
     if (id.endsWith('/navigation/sections.cjs')) return require('../../src/app/navigation/sections.cjs');
@@ -76,12 +87,14 @@ function screenHarness(file, store, extra = {}) {
     if (id.endsWith('/TaskFields')) return { Field: 'Field', InlineDrop: 'InlineDrop', DateField: 'DateField', CustomValueInput: 'CustomValueInput' };
     if (/\/(TaskMarkdown|MarkdownField|TaskLabels)$/.test(id)) return id.split('/').at(-1);
     if (id.endsWith('/projectTools.cjs')) return require('../../src/domain/projectTools.cjs');
+    if (id.endsWith('/dashboard.cjs'))return require('../../src/domain/dashboard.cjs');
+    if (id.endsWith('/calendar.cjs'))return require('../../src/domain/calendar.cjs');
     if (id.endsWith('/localDay.cjs')) return { localDay: () => '2026-11-05' };
     if (id.endsWith('/store/data')) return data;
     if (id === './today.cjs') return require('../../src/screens/overview/today.cjs');
     throw Error('Unmocked screen import: ' + id);
   };
-  vm.runInNewContext('(function(require,module,exports){' + code + '\n})', { requestAnimationFrame: fn => { frames.set(++frameSerial, fn); return frameSerial; }, cancelAnimationFrame: id => frames.delete(id) })(req, m, m.exports);
+  vm.runInNewContext('(function(require,module,exports){' + code + '\n})', {setTimeout,clearTimeout,...extra.globals,requestAnimationFrame: fn => { frames.set(++frameSerial, fn); return frameSerial; }, cancelAnimationFrame: id => frames.delete(id) })(req, m, m.exports);
   return {
     headers,
     flushFrames() { const pending = [...frames.values()]; frames.clear(); pending.forEach(fn => fn()); },
@@ -98,7 +111,7 @@ function nodes(tree, all = false) {
   if (Array.isArray(tree)) return tree.flatMap(t => nodes(t, all));
   if (!tree || typeof tree !== 'object' || !tree.props) return [];
   if (!all && tree.type === 'Sheet' && !tree.props.visible) return [];
-  return [tree, ...nodes(tree.props.children, all), ...nodes(tree.props.footer, all), ...nodes(tree.props.right, all)];
+  return [tree, ...nodes(tree.props.children, all), ...nodes(tree.props.footer, all), ...nodes(tree.props.right, all), ...nodes(tree.props.action,all), ...nodes(tree.props.primary,all)];
 }
 const control = (tree, label) => nodes(tree).find(n => (n.props.onPress || n.props.onConfirm) && (n.props.label === label || n.props.accessibilityLabel === label));
 const text = tree => nodes(tree).flatMap(n => [n.props.children].flat(Infinity).filter(x => typeof x === 'string' || typeof x === 'number')).join(' ');

@@ -31,7 +31,8 @@ test('native theme changes do not toggle launcher components automatically', () 
   assert.doesNotMatch(theme, /setTimeout\(\(\) => \{ syncLauncherIcon/);
   assert.match(theme, /Platform.OS === 'web'[\s\S]*syncLauncherIcon/);
   const settings = fs.readFileSync('src/screens/workspace/Workspace.js', 'utf8');
-  assert.match(settings, /Alert.alert\('Apply launcher icon\?'/);
+  assert.match(settings, /ConfirmSheet visible title="Apply launcher icon\?"/);
+  assert.match(settings,/syncLauncherIcon\(accentPref,mode,flush\)/);
   assert.equal(require('../../package.json').dependencies['expo-system-ui'], '~58.0.7');
   assert.ok(require('../../app.json').expo.plugins.includes('./src/platform/plugins/withSafeAlternateIcons.cjs'));
 });

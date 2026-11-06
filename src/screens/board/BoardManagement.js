@@ -1,7 +1,7 @@
 // /src/screens/board/BoardManagement.js
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
+import { ActionMenu, FormSection, Button, Card, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useTheme } from '../../ui/theme/theme';
 import { MAIN, STATUS } from '../../store/data';
@@ -40,17 +40,15 @@ export function NewListSheet({ visible, onClose, boardId }) {
         <T size={12} weight="500" muted>List name</T>
         <Input accessibilityLabel="List name" value={name} onChangeText={setName} placeholder="e.g. Blocked" onSubmitEditing={submit} />
       </View>
-      <View style={{ gap: 8 }}>
-        <T size={12} weight="500" muted>Counts as</T>
+      <FormSection title="Progress mapping" description="Choose the status applied to cards in this list.">
         <Segmented fill options={STATUS} value={status} onChange={setStatus} />
-        <T size={12} muted>The status decides how cards in this list count in progress, overview and reports.</T>
-      </View>
+      </FormSection>
     </Sheet>
   );
 }
 
 // Rename without re-normalizing the field on every keystroke (the store trims names).
-// The original manager row and its spacing are otherwise unchanged.
+// Keep edits local until the existing blur/submit boundary commits the normalized name.
 function BoardNameEditor({ board, onRename }) {
   const [draft, setDraft] = useState(board.name);
   const draftRef = useRef(board.name);
@@ -77,10 +75,8 @@ function BoardNameEditor({ board, onRename }) {
 export function BoardsManager({ visible, onClose }) {
   const { c } = useTheme();
   const { s, renameBoard, archiveBoard, deleteBoard } = useStore();
-  const [pending, setPending] = useState(null);
 
   const close = () => {
-    setPending(null);
     onClose();
   };
 
@@ -100,22 +96,11 @@ export function BoardsManager({ visible, onClose }) {
             </View>
             <T size={12} muted>{count} task{count === 1 ? '' : 's'} · {b.lists.length} list{b.lists.length === 1 ? '' : 's'}</T>
 
-            {isMain ? (
-              <T size={12} muted>Protected: Main can't be archived or deleted.</T>
-            ) : pending === b.id ? (
-              <View style={{ gap: 10 }}>
-                <T size={13} weight="500">Delete "{b.name}" and move its {count} task{count === 1 ? '' : 's'} to Main?</T>
-                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                  <Button label="Delete board" small variant="danger" onPress={() => { deleteBoard(b.id); setPending(null); }} />
-                  <Button label="Cancel" small variant="ghost" onPress={() => setPending(null)} />
-                </View>
-              </View>
-            ) : (
-              <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                <Button label={b.archived ? 'Restore' : 'Archive'} small variant="secondary" onPress={() => archiveBoard(b.id, !b.archived)} />
-                <Button label="Delete" small variant="ghost" onPress={() => setPending(b.id)} />
-              </View>
-            )}
+            {isMain ? <T size={12} muted>Main keeps every project task reachable.</T> : <ActionMenu label={`Manage ${b.name}`} items={[
+              {label:b.archived?'Restore board':'Archive board',icon:b.archived?'rotate-ccw':'archive',onPress:()=>archiveBoard(b.id,!b.archived)},
+              {label:'Delete board',icon:'trash-2',danger:true,confirmation:{title:'Delete board?',description:`Delete “${b.name}” and move its ${count} tasks to Main?`,confirmLabel:'Delete board'},onPress:()=>deleteBoard(b.id)},
+            ]}/>}
+
           </Card>
         );
       })}

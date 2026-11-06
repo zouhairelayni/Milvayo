@@ -1,0 +1,91 @@
+{
+  "branch": "work",
+  "release": "0.6.3",
+  "native_domain_motion_tests": {
+    "pass": 66,
+    "fail": 0
+  },
+  "shared_ui_structure_tests": {
+    "pass": 32,
+    "fail": 0
+  },
+  "review_fix_tests": {
+    "pass": 9,
+    "fail": 0
+  },
+  "additional_interaction_tests": {
+    "pass": 30,
+    "fail": 0,
+    "overlap": "Contains cases repeated in other groups; not extra unique coverage"
+  },
+  "source": {
+    "parsed": 192,
+    "worklets": [
+      {
+        "file": "src/board/boardMotion.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/gestures/TimelinePinch.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/gestures/DiagramGesture.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/components/charts/TracePath.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/components/charts/Column.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/ui/Reveal.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/ui/PressSurface.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/ui/FillMotion.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/ui/ScreenPresence.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/ui/CountValue.native.js",
+        "pass": true
+      },
+      {
+        "file": "src/components/inline/InlineEditor.native.js",
+        "pass": true
+      }
+    ],
+    "fail": []
+  },
+  "parent": {
+    "status": "Pass",
+    "baseline_files_checked": 761,
+    "changed": [],
+    "scope": "Existing protected-parent baseline files; all task writes restricted to redesign."
+  },
+  "runtime": "Not independently accepted; owner reported pinch success; new motion/device acceptance pending",
+  "builds": "Not run",
+  "playwright": "Not used",
+  "push_commit_merge": "Not performed",
+  "finish_review": {
+    "disposition": "ship",
+    "scope": "Both scored source fixes resolved; not whole-app/native acceptance",
+    "record": "finish-verdict.md"
+  },
+  "documentation": {
+    "design_md": true,
+    "sidecar_schema": 2,
+    "token_bearing": true
+  }
+}

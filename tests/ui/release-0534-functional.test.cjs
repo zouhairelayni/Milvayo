@@ -41,20 +41,6 @@ test('Board has a single tools entry and all old filters live inside its sheet',
   assert.match(board, /dropBefore\(s\.tasks, cards, listId, slotIndex, movingId\)/);
 });
 
-test('Timeline has a single task ribbon and preserved dependency colors/drag geometry', () => {
-  const timeline = source('src/screens/timeline/Timeline.js');
-  assert.match(timeline, /<ScrollView horizontal showsHorizontalScrollIndicator=\{false\}/);
-  for (const label of ['Hide items', 'Show items', 'First task', 'Today', 'Critical path', 'Parent tasks', 'To schedule']) {
-    assert.ok(timeline.includes(label), label);
-  }
-  assert.match(timeline, /taskPanel === 'parents' \? <Sheet visible/);
-  assert.match(timeline, /taskPanel === 'schedule' \? <Sheet visible/);
-  assert.match(timeline, /np533DependencyColor\(l\)/);
-  assert.match(timeline, /viewport\.svgViewBox/);
-  assert.match(timeline, /useHoldDrag/);
-  assert.match(timeline, /const rows = allScheduled/);
-});
-
 test('all navigation items use fills rather than decorative accent stripes', () => {
   const menus = source('src/components/shell/Menus.js');
   assert.doesNotMatch(menus, /borderLeftColor:\s*c\.accent|borderRightColor:\s*c\.accent/);

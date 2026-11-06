@@ -49,10 +49,11 @@ test('native pinch/pan: repeated gestures, third finger, remaining finger, cance
   assert.equal(pose().scale, 1); assert.deepEqual(reports, [2, 1]);
   tree = h.render({ ...props, initialScale: 1.5, resetKey: 'tree:1' }); equal(pose(), { scale: 1.5, x: 0, y: 0 });
   tree = h.render({ ...props, initialScale: 0.25, resetKey: 'tree:2' });
-  assert.equal(h.gestures.pan.enabled.value, false);
-  assert.ok(Array.isArray(h.gestures.pan.failOffsetY), 'RNGH offsets use a tuple of shared numbers');
-  equal(Array.from(h.gestures.pan.failOffsetY, endpoint => endpoint.value), [-8, 8]);
-  equal(Array.from(h.gestures.pan.activeOffsetY, endpoint => endpoint.value), [-1000000, 1000000]);
+  tree = h.render({ ...props, initialScale: 0.25, resetKey: 'tree:2' });
+  assert.equal(h.gestures.pan.enabled, false);
+  assert.ok(Array.isArray(h.gestures.pan.failOffsetY), 'RNGH offsets use plain numbers to avoid render reads');
+  equal(Array.from(h.gestures.pan.failOffsetY), [-8, 8]);
+  equal(Array.from(h.gestures.pan.activeOffsetY), [-1000000, 1000000]);
   tree = h.render({ ...props, bounds: { ...bounds, width: 400 }, initialScale: 1, resetKey: 'fishbone:2' });
   equal(pose(), { scale: 1, x: 0, y: 0 }); h.cleanup();
 });

@@ -1,0 +1,6 @@
+{
+  "kind": "source parsing and worklet transforms only; no build/runtime acceptance",
+  "sourceFiles": 196,
+  "workletFiles": 18,
+  "errors": []
+}

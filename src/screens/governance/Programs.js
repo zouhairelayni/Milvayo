@@ -1,7 +1,7 @@
 // /src/screens/governance/Programs.js
 import { useState } from 'react';
 import { View } from 'react-native';
-import { ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
+import { EmptyState, FormSection, MetricStrip, ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
 import { EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';
@@ -24,13 +24,17 @@ export function Programs({embedded=false,openProject}){
  const select=p=>{setEditing(p?.id||'new');setName(p?.name||'');setDescription(p?.description||'');setStatus(p?.status||'Planned');setMembers(p?.portfolioIds||[]);setLegacyMembers(p?.projectIds||[]);setManager(p?.manager||'');setSponsor(p?.sponsor||'');setObjective(p?.objective||'');setGovernance(p?.governance||'');setPhase(p?.phase||'Definition');setStart(p?.start||'');setEnd(p?.end||'');setBenefits(p?.benefits||[])};
  const open=id=>openProject?openProject(id):switchProject(id);
  const save=()=>{if(saveProgram({id:editing==='new'?'':editing,name,description,status,portfolioIds:members,projectIds:legacyMembers,manager,sponsor,objective,governance,phase,start,end,benefits}))setEditing('')};
- const editor=(<View style={{gap:14}}>
+ const editor=(<View style={{gap:20}}>
+    <FormSection title="Program overview">
     <Labeled title="Program name" value={name} onChange={setName}/><Labeled title="Description" value={description} onChange={setDescription} markdown/>
     <T muted size={12}>Status</T><Pick values={STATES} value={status} onChange={setStatus}/>
+    </FormSection><FormSection title="Leadership & review">
     <Labeled title="Manager" value={manager} onChange={setManager}/><Labeled title="Sponsor" value={sponsor} onChange={setSponsor}/>
     <Labeled title="Objective" value={objective} onChange={setObjective} multiline/><Labeled title="Governance and review cadence" value={governance} onChange={setGovernance} multiline/>
+    </FormSection><FormSection title="Delivery window">
     <T muted size={12}>Lifecycle</T><Pick values={['Definition','Delivery','Closure']} value={phase} onChange={setPhase}/>
     <View style={{gap:8}}><T muted size={12}>Start date</T><DateInput allowEmpty value={start} onChange={setStart}/><T muted size={12}>End date</T><DateInput allowEmpty value={end} onChange={setEnd}/></View>
+    </FormSection><FormSection title="Benefits & membership">
     <T weight="600">Benefits register</T>{benefits.map((benefit,i)=><Card key={benefit.id} style={{gap:8}}>
      <Labeled title="Benefit" value={benefit.benefit} onChange={v=>setBenefits(arr=>arr.map((b,j)=>i===j?{...b,benefit:v}:b))}/>
      <Labeled title="Target" value={benefit.target} onChange={v=>setBenefits(arr=>arr.map((b,j)=>i===j?{...b,target:v}:b))}/>
@@ -42,12 +46,13 @@ export function Programs({embedded=false,openProject}){
     <T muted size={12}>Portfolios included in this program</T>
     {portfolios.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{portfolios.map(p=><Chip key={p.id} label={p.name} active={members.includes(p.id)} onPress={()=>setMembers(m=>m.includes(p.id)?m.filter(id=>id!==p.id):[...m,p.id])}/>)}</View>:<T muted size={12}>Create a portfolio in the Portfolios tab, then assign it here.</T>}
     {legacyMembers.length?<View style={{gap:7}}><T muted size={12}>Legacy directly linked projects (preserved until you remove them)</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{projects.filter(p=>legacyMembers.includes(p.id)).map(p=><Chip key={p.id} active label={p.name+' ×'} onPress={()=>setLegacyMembers(ids=>ids.filter(x=>x!==p.id))}/>)}</View></View>:null}
+    </FormSection>
    </View>);
  const content=<>
   <Sheet visible={!!editing} onClose={()=>setEditing('')} title={editing==='new'?'Create program':'Edit program'} showNotice={false}
    footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setEditing('')}/><Button label="Save program" small disabled={!name.trim()} onPress={save}/></>}>{editor}</Sheet>
-  <ScreenIntro title="Programs" description={`${programs.length} programs · inspect progress, membership and delivery health.`} action={<Button label="Create program" icon="plus" small onPress={()=>select(null)}/>}/>
-  {programs.length===0?<T muted size={13}>No programs yet. Create one, then add portfolios to form a Program → Portfolio → Project hierarchy.</T>:null}
+  <ScreenIntro title="Programs of work" description={`${programs.length} programs · inspect progress, membership and delivery health.`} action={programs.length?<Button label="Create program" icon="plus" small onPress={()=>select(null)}/>:null}/>
+  {programs.length===0?<EmptyState kind="people" title="Give related work a shared direction" description="Connect portfolios, define the benefits and keep the underlying projects independent." action={<Button label="Create program" icon="plus" onPress={()=>select(null)}/>}/>:null}
   {programs.map(p=>{
 
    const {portfolios:linkedPortfolios,linked,taskCount,doneCount}=programSummary(workspace,p);

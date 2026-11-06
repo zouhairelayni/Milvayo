@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Button, Card, Cell, Chip, Grid, Input, Segmented, SectionTitle, Stat, T } from '../../../ui/ui';
+import { Button, Card, Cell, Chip, Grid, Input, Segmented, SectionTitle, Stat, T, EmptyState, MetricStrip } from '../../../ui/ui';
 import { DangerConfirm } from '../../../components/inline/CompactTools';
 import MarkdownField from '../../../components/inline/MarkdownField';
 const {buttonInk} = require('../../../ui/theme/themePalette.cjs');
@@ -126,12 +126,7 @@ export default function PmRisks() {
   return (
     <View style={{ gap: 14 }}>
       <DocHeader docKey="risks" />
-      <Grid>
-        <Cell wide="23%" mobile="48%"><Stat label="Live threats" value={threats.length} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="High and critical" value={high.length} accent={high.length ? '#E0512D' : undefined} hint="Score of 10 or more" /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Opportunities" value={opps.length} accent={OPP_COLOR} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Closed" value={risks.length - live.length} /></Cell>
-      </Grid>
+      <MetricStrip items={[{label:'Live threats',value:threats.length},{label:'High & critical',value:high.length},{label:'Opportunities',value:opps.length},{label:'Closed',value:risks.length-live.length}]}/>
 
       <Segmented fill options={[{ value: 'register', label: 'Register' }, { value: 'matrix', label: 'Matrix' }, { value: 'plan', label: 'Plan' }]} value={tab} onChange={setTab} />
 
@@ -159,7 +154,7 @@ export default function PmRisks() {
             onChange={(patch) => setDraftRisk(prev => prev ? {...prev, ...patch} : prev)}
             onSave={() => { if (!draftRisk.title.trim()) return; save([draftRisk, ...risks], 'Added a risk'); setOpenId(draftRisk.id); setDraftRisk(null); }}
             onCancel={() => setDraftRisk(null)} /> : null}
-          {shown.length === 0 && !draftRisk ? <Card><T muted center>No risks match. Choose Add risk to create the first entry.</T></Card> : null}
+          {shown.length === 0 && !draftRisk ? <EmptyState kind="work" title={risks.length?"No matching risks":"Make uncertainty visible"} description="Record a threat or opportunity, assess its impact and assign a response." action={<Button label="Add risk" icon="plus" onPress={add}/>}/> : null}
           {shown.map((r) => (
             <RiskCard
               key={r.id}

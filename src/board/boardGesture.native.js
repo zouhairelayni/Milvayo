@@ -1,6 +1,6 @@
 // /src/board/boardGesture.native.js
 import { useEffect, useRef, useState } from 'react';
-import { PanResponder } from 'react-native';
+import { AppState, PanResponder } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { dragOffset, hasScrolledBeforeHold } from './boardDragMath.cjs';
 import { hitTitle, isDoubleTap } from './boardInteractions.cjs';
@@ -41,7 +41,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
 
   const st = useRef({
     timer: null, openTimer: null, tick: null,
-    active: false, moved: false, justDropped: false, pageX: 0, pageY: 0, lastTitleTap: 0, tapSerial: 0,
+    active: false, moved: false, justDropped: false, cancelled: false, pageX: 0, pageY: 0, lastTitleTap: 0, tapSerial: 0,
     x0: 0, y0: 0,           // finger position at the lift
     px: 0, py: 0,           // latest finger position
     base: { x: 0, y: 0 },   // scroll position at the lift (a copy, not the live object)
@@ -114,6 +114,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
   const end = (allowTap, cancelled = false) => {
     clearHold();
     const s = st.current;
+    if (s.cancelled) return;
     if (s.active) {
       clearTick();
       const { x, y } = place();
@@ -136,6 +137,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
   // handlers observe the initial finger-down without claiming the responder;
   // PanResponder only claims MOVE events after the stationary hold succeeds.
   const beginTouch = (evt) => {
+    if (AppState.currentState != null && AppState.currentState !== 'active') return;
     const point = evt.nativeEvent;
     const s = st.current;
     clearHold();
@@ -153,6 +155,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
     s.moved = false;
     s.active = false;
     s.justDropped = false;
+    s.cancelled = false;
     // Do not cancel the pending first tap here: title double-tap uses it.
     s.timer = setTimeout(() => {
       const t = st.current;
@@ -175,6 +178,7 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
   };
   const moveTouch = (evt) => {
     const s = st.current;
+    if (s.cancelled) return;
     const point = evt.nativeEvent;
     if (!Number.isFinite(point.pageX) || !Number.isFinite(point.pageY)) return;
     s.px = point.pageX;
@@ -219,12 +223,27 @@ export function useHoldDrag({ holdMs = 350, axis = 'xy', titleRef, getScroll, on
     return () => pendingHolds.delete(cancelPending);
   }, []);
 
+  // Backgrounding is cancellation, never a task move or a delayed tap on resume.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', status => {
+      if (status === 'active') return;
+      const s = st.current;
+      clearTimeout(s.openTimer); s.openTimer = null;
+      s.tapSerial += 1; s.lastTitleTap = 0;
+      end(false, true);
+      s.cancelled = true; s.moved = true;
+    });
+    return () => subscription.remove();
+  }, []);
+
   // Stop any pending timers when the item unmounts.
   useEffect(
     () => () => {
       clearTimeout(st.current.timer);
       clearTimeout(st.current.openTimer);
       clearInterval(st.current.tick);
+      st.current.tapSerial += 1;
+      st.current.cancelled = true;
     },
     []
   );

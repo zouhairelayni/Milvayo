@@ -62,6 +62,6 @@ test('no cycle: base imports no other ui file, controls only base, layout only b
   const imports = (f) => [...read(f).matchAll(/from '\.\/(ui\w*)'/g)].map((m) => m[1]);
   assert.deepEqual(imports('src/ui/uiBase.js'), []);
   assert.deepEqual(imports('src/ui/uiControls.js'), ['uiBase']);
-  assert.deepEqual(imports('src/ui/uiLayout.js').sort(), ['uiBase']); // no unused dependency on uiControls
+  assert.deepEqual(imports('src/ui/uiLayout.js').sort(), ['uiBase', 'uiControls']); // Sheet reuses the shared close control without a reverse import
   assert.deepEqual(imports('src/ui/downloadText.js'), []);
 });

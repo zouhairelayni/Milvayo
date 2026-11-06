@@ -38,10 +38,10 @@ test('native timeline pinch uses a shared transform, commits once, rebases extra
   equal(controller.style().transform, [{ translateX: -400 }, { scaleX: 2 }]);
   h.gestures.pinch.onUpdate(e(2, 2));
   equal(controller.style().transform, [{ translateX: -400 }, { scaleX: 2 }]);
-  h.gestures.pinch.onFinalize({ canceled: true }); assert.deepEqual(calls, ['start', [68, 700], 'end']);
+  h.gestures.pinch.onFinalize({}); h.flushFrames(); assert.deepEqual(calls, ['start', [68, 700], 'end']);
   controller = h.render({ ...props, width: 68 }); controller.reset();
   equal(controller.style().transform, [{ translateX: 0 }, { scaleX: 1 }]);
-  h.gestures.pinch.onActivate(e(1)); h.gestures.pinch.onUpdate(e(0.5)); h.gestures.pinch.onFinalize({});
+  h.gestures.pinch.onActivate(e(1)); h.gestures.pinch.onUpdate(e(0.5)); h.gestures.pinch.onFinalize({}); h.flushFrames();
   assert.equal(calls.at(-2)[0], 34);
   h.render({ ...props, enabled: false }); assert.equal(h.gestures.pinch.enabled, false); h.cleanup();
 });
@@ -113,7 +113,7 @@ test('pinch guards prevent task moves/resizes/link creation and taps while ordin
   assert.equal((source.match(/if \(pinchBlocked\(\)\) return;/g) || []).length, 6);
   assert.match(source, /if \(!pinchBlocked\(\)\) live.current.onOpen/);
   assert.equal((source.match(/<TimelinePinchCanvas pinch=\{pinch\}/g) || []).length, 2);
-  assert.match(source, /onContentSizeChange=\{\(\) => settleZoom\(true\)\}/);
+  assert.match(source, /onContentSizeChange=\{\(width\) => settleZoom\(true, width\)\}/);
   assert.match(source, /horizontalOffset.setValue\(offset\)/);
   assert.match(source, /setZoomFactor\(width \/ ZOOM\[zoom\]\)/);
 });

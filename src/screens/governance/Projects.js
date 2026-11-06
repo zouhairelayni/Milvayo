@@ -2,8 +2,8 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ScreenIntro, Bar, Card, Button, Chip, Page, Pill, Grid, Cell, Stat, Segmented, Input, T } from '../../ui/ui';
-import { Fold, EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
+import { ActionRow, ActionMenu, EmptyState, FormSection, ScreenIntro, Bar, Card, Button, Chip, Page, Pill, Grid, Cell, Stat, Segmented, Input, T, MetricStrip } from '../../ui/ui';
+import { Fold, EditRow, Labeled, DangerConfirm, Dropdown } from '../../components/inline/CompactTools';
 import { useStore, useStoreActions } from '../../store/store';
 const { projectSummary } = require('../../domain/projectRelations.cjs');
 const { projectMetric } = require('../../domain/governanceSummary.cjs');
@@ -15,6 +15,7 @@ import PmRisks from './pm/PmRisks';
 import PmWbs from './pm/PmWbs';
 import CreateProjectSheet from './CreateProjectSheet';
 import TaskMarkdown from '../../components/inline/TaskMarkdown';
+import {CompletionArc,BudgetComparison} from '../../components/charts/StudioCharts';
 import { Field, Choice, DateInput } from './pm/pmui';
 
 // Project lifecycle lives here; Backup contains files and recovery, not editing.
@@ -29,13 +30,13 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
  const matching=open.filter(p=>`${p.name} ${p.code}`.toLowerCase().includes(query.trim().toLowerCase()));
  const openDetail=useCallback(id=>{setDetail(id);setTab('overview')},[]);
  const content=<>
-  <ScreenIntro title="Projects" description={`${open.length} active projects · ${projects.length-open.length} archived. Open a project to inspect its delivery and governance.`} action={<Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>}/>
+  <ScreenIntro title="Your projects" description={`${open.length} active projects · ${projects.length-open.length} archived. Open a project to inspect its delivery and governance.`} action={<Button label="Create project" small icon="plus" onPress={()=>setCreating(true)}/>}/>
 
   <CreateProjectSheet visible={creating} onClose={()=>setCreating(false)} onCreated={openDetail}/>
   <Input value={query} onChangeText={value=>{setQuery(value);setLimit(20)}} placeholder="Find a project by name or code" accessibilityLabel="Find a project"/>
   {matching.slice(0,limit).map(p=><ProjectCard key={p.id} p={p} canArchive={open.length>1} canDelete={projects.length>1} onOpen={openDetail}/>)}
   {matching.length>limit?<Button label={`Show more projects (${matching.length-limit} remaining)`} variant="secondary" onPress={()=>setLimit(n=>n+20)}/>:null}
-  {!matching.length?<T muted>No projects match this search. Try a different name or code.</T>:null}
+  {!matching.length?<EmptyState title="No matching projects" description="Try another project name or code." action={<Button label="Clear search" variant="secondary" onPress={()=>setQuery('')}/>}/>:null}
   <T size={12} muted>Archived projects can be restored from Settings → Backup → Recover archived projects.</T>
  </>;
  const selected=workspace.projects.find(p=>p.id===detail&&p.id===workspace.selectedId);
@@ -47,30 +48,34 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
 // One project card. Its edit fields live here, so typing in one card never re-renders the other cards.
 const ProjectCard=memo(function ProjectCard({p,canArchive,canDelete,onOpen}){
  const {switchProject,updateProject,duplicateProject,archiveProject,deleteProject}=useStoreActions();
+ const{c}=useTheme();
  const m=projectMetric(p);
  const [editing,setEditing]=useState(false),[name,setName]=useState(''),[code,setCode]=useState(''),[description,setDescription]=useState('');
  const start=()=>{setName(p.name);setCode(p.code);setDescription(p.description||'');setEditing(true)};
  const save=()=>{if(updateProject(p.id,{name,code,description}))setEditing(false)};
- return <Card style={{gap:12}}>
-   <View style={{flexDirection:'row',alignItems:'center',gap:12}}>
-    <View style={{flex:1,gap:3}}><T weight="600" size={16} numberOfLines={2}>{p.name}</T><T muted size={12}>{p.code} · {m.tasks} tasks · {m.phase}</T></View>
-    <Button label="Details" small variant="secondary" onPress={()=>{switchProject(p.id);onOpen(p.id)}}/>
+ return <View style={{padding:20,borderRadius:16,backgroundColor:c.surface,gap:20}}>
+   <View style={{flexDirection:'row',alignItems:'center',gap:16}}><CompletionArc value={m.progress} label="complete" size={88}/>
+    <View style={{flex:1,gap:6}}><T weight="600" size={19} numberOfLines={2}>{p.name}</T><T muted size={12}>{p.code} · {m.phase}</T><T size={12} color={HEALTH_COLOR[m.health]||c.muted}>{m.health}</T></View>
    </View>
-   <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Pill label={m.health} color={HEALTH_COLOR[m.health]||'#8C8577'}/><T size={12} muted>{Math.round(m.progress*100)}% progress · {m.approvedDocs}/10 approved documents</T></View>
-   <Bar value={m.progress} height={5}/>
-   <View style={{flexDirection:'row',flexWrap:'wrap',gap:16}}><View style={{gap:3,flex:1,minWidth:120}}><T size={12} muted>Budget used</T><T size={15} weight="600">${Math.round(m.spent).toLocaleString()} / ${Math.round(m.budget).toLocaleString()}</T></View><View style={{gap:3}}><T size={12} muted>Open threats</T><T size={15} weight="600">{m.risks.length}</T></View></View>
+   <View style={{flexDirection:'row',borderTopWidth:1,borderBottomWidth:1,borderColor:c.line,paddingVertical:16,gap:20}}>
+    {[['Tasks',m.tasks],['Docs approved',`${m.approvedDocs}/10`],['Open threats',m.risks.length]].map(([label,value])=><View key={label} style={{flex:1,gap:6}}><T size={11} muted>{label}</T><T size={22} weight="500">{value}</T></View>)}
+   </View>
+   <View style={{flexDirection:'row',alignItems:'center',gap:12}}><View style={{flex:1,gap:4}}><T size={11} muted>Budget used</T><T size={14} weight="500">${Math.round(m.spent).toLocaleString()} <T size={12} muted>/ ${Math.round(m.budget).toLocaleString()}</T></T></View><Button label="Open project" icon="arrow-up-right" onPress={()=>{switchProject(p.id);onOpen(p.id)}}/></View>
    <EditRow title="Project settings" summary="Name, code, description and management">
     {editing?<View style={{gap:10}}>
      <Labeled title="Name" value={name} onChange={setName}/><Labeled title="Code" value={code} onChange={setCode}/>
      <Labeled title="Description" value={description} onChange={setDescription} markdown/>
      <View style={{flexDirection:'row',gap:8,flexWrap:'wrap'}}><Button small label="Save changes" disabled={!name.trim()||!code.trim()} onPress={save}/><Button small label="Cancel" variant="ghost" onPress={()=>setEditing(false)}/></View>
-    </View>:<View style={{gap:10}}>{p.description?<TaskMarkdown source={p.description}/>:null}<Button label="Edit project" small variant="secondary" onPress={start}/></View>}
-    <Button label="Duplicate as template" small variant="secondary" onPress={()=>{const id=duplicateProject(p.id,`${p.name} template`);if(id)onOpen(id)}}/>
-    <T muted size={12}>Archiving hides this project without deleting data. Deleting removes it from portfolios and programs and creates a recovery snapshot.</T>
-    {canArchive?<DangerConfirm label="Archive project" onConfirm={()=>archiveProject(p.id)}/>:<T size={12} muted>Last active project cannot be archived.</T>}
-    {canDelete?<DangerConfirm label="Delete project" onConfirm={()=>{deleteProject(p.id);setEditing(false)}}/>:<T size={12} muted>At least one project must remain.</T>}
+    </View>:p.description?<TaskMarkdown source={p.description}/>:null}
+    <ActionMenu label="Project actions" items={[
+      {label:'Edit project',icon:'edit-2',onPress:start},
+      {label:'Duplicate as template',icon:'copy',confirmation:{title:'Duplicate project as template?',description:'Create an independent project template and stay here.',confirmLabel:'Duplicate',successMessage:'Project template created.'},onPress:()=>duplicateProject(p.id,`${p.name} template`)||false},
+      {label:'Archive project',icon:'archive',disabled:!canArchive,description:canArchive?'Hide this project while keeping its data.':'The last active project cannot be archived.',confirmation:{title:'Archive project?',description:'Hide this project without deleting its data.',confirmLabel:'Archive project'},onPress:()=>archiveProject(p.id)},
+      {label:'Delete project',icon:'trash-2',danger:true,disabled:!canDelete,description:canDelete?'Removes memberships and creates a recovery snapshot.':'At least one project must remain.',confirmation:{title:'Delete project?',description:'This removes the project and its memberships. A recovery snapshot is created first.',confirmLabel:'Delete project'},onPress:()=>deleteProject(p.id)},
+    ]}/>
+
    </EditRow>
-  </Card>;
+  </View>;
 });
 
 // The document list only depends on the document data, so typing in the governance fields above does not rebuild it.
@@ -82,17 +87,18 @@ const DocGroups=memo(function DocGroups({pm,setTab}){
 },(a,b)=>a.setTab===b.setTab&&a.pm.docs===b.pm.docs&&a.pm.wbs===b.pm.wbs&&a.pm.budget===b.pm.budget&&a.pm.risks===b.pm.risks);
 
 function ProjectGovernance({back,tab,setTab}){
- const {s,setPm}=useGovernance();const {workspace}=useStore();
+ const {s,setPm}=useGovernance();const {workspace}=useStore();const{c}=useTheme();
  const p=workspace.projects.find(x=>x.id===workspace.selectedId); const m=projectMetric(p);
  const info=s.pm.info;const patch=x=>setPm('info',{...info,...x},'Updated project governance');
  const special=tab==='overview'?null:DOC_BY_KEY[tab]?.special;
  return <View style={{gap:14}}>
   <Button label="All projects" icon="arrow-left" small variant="secondary" onPress={back}/>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7,paddingVertical:3}}>
-   {[{key:'overview',title:'Overview'},...PM_DOCS].map(item=><Chip key={item.key} active={tab===item.key} label={item.title} onPress={()=>setTab(item.key)}/>)}
-  </ScrollView>
+  <Dropdown options={[{value:'overview',label:'Project overview'},...PM_DOCS.map(d=>({value:d.key,label:d.title}))]} value={tab} onChange={setTab}/>
+
   {tab==='overview'?<>
-   <Grid><Cell mobile="48%" wide="23%"><Stat label="Progress" value={`${Math.round(m.progress*100)}%`}/></Cell><Cell mobile="48%" wide="23%"><Stat label="Spent" value={`$${Math.round(m.spent).toLocaleString()}`}/></Cell><Cell mobile="48%" wide="23%"><Stat label="Budget" value={`$${Math.round(m.budget).toLocaleString()}`}/></Cell><Cell mobile="48%" wide="23%"><Stat label="Approved docs" value={`${m.approvedDocs}/10`}/></Cell></Grid>
+   <View style={{flexDirection:'row',alignItems:'center',gap:20}}><CompletionArc value={m.progress} size={112}/><View style={{flex:1,gap:8}}><T size={24} weight="600">{s.project.name}</T><T size={13} muted>{m.approvedDocs}/10 documents approved · {m.risks.length} open threats</T></View></View>
+   <View style={{padding:20,backgroundColor:c.surface,borderRadius:16}}><BudgetComparison budget={m.budget} planned={m.planned||0} actual={m.spent} format={n=>'$'+Math.round(n).toLocaleString()}/></View>
+
    <Card style={{gap:12}}><T size={17} weight="600">Project governance</T>
     <Field label="PMI process group"><Choice options={PHASES} value={info.phase} onChange={v=>patch({phase:v})}/></Field>
     <Field label="Health"><Segmented options={HEALTH} fill value={info.health} onChange={v=>patch({health:v})}/></Field>

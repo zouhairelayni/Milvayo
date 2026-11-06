@@ -1,0 +1,32 @@
+[
+  {
+    "capture": "overview-mobile.png",
+    "exit": 0,
+    "exists": true
+  },
+  {
+    "capture": "overview-desktop.png",
+    "exit": 0,
+    "exists": true
+  },
+  {
+    "capture": "calendar-mobile.png",
+    "exit": 0,
+    "exists": true
+  },
+  {
+    "capture": "empty-artwork-mobile.png",
+    "exit": 0,
+    "exists": true
+  },
+  {
+    "capture": "resources-mobile.png",
+    "exit": 0,
+    "exists": true
+  },
+  {
+    "capture": "board-mobile.png",
+    "exit": 0,
+    "exists": true
+  }
+]

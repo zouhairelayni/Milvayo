@@ -8,7 +8,7 @@ const { DEFAULT_LEVEL } = require('../../store/niyav.cjs');
 const {MAX_IMPORT_BYTES,tooBig,parseBackupJson,pickAndroidFileBytes,pickDocumentFileBytes}=require('../../store/importFiles.cjs');
 import { niyavCodec } from '../../store/niyavPrimitives';
 import { backupJobs } from '../../store/backupJobs';
-import { Bar, Button, Card, Chip, Empty, Input, SectionTitle, Segmented, T, downloadBytes, downloadText } from '../../ui/ui';
+import { Feedback, FormSection, EmptyState, Bar, Button, Card, Chip, Empty, Input, SectionTitle, Segmented, T, downloadBytes, downloadText } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import {Fold,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
@@ -54,6 +54,7 @@ export default function Backup() {
   const [level, setLevel] = useState(DEFAULT_LEVEL); // remembered protection level: 'low' | 'medium' | 'high'
   const [withSnapshots, setWithSnapshots] = useState(false);
   const [busy, setBusy] = useState(null); // message while compressing / deriving a key
+  const [section,setSection]=useState('export');
   const [scope, setScope] = useState('project'); // what to back up: 'project' | 'workspace'
   const [pickedId, setPickedId] = useState(null);
   const [jobState, setJobState] = useState(() => backupJobs.getState());
@@ -154,6 +155,7 @@ export default function Backup() {
 
   return (
     <>
+      <Segmented fill options={[{value:'export',label:'Export'},{value:'import',label:'Import'},{value:'recovery',label:'Recovery'}]} value={section} onChange={setSection}/>
       {jobState.running ? (
         <Card style={{ gap: 10 }}>
           <SectionTitle>{jobState.running.label}</SectionTitle>
@@ -185,7 +187,7 @@ export default function Backup() {
       {jobState.interrupted ? <T size={12} muted>{jobState.interrupted}</T> : null}
       {jobState.error ? <T size={12} color={c.accent}>{jobState.error}</T> : null}
       {busy ? <Card style={{ gap: 10 }}><T size={13} weight="600">{busy}</T></Card> : null}
-      {notice ? <T size={13} weight="600" color={notice.ok ? c.ink : c.accent}>{notice.text}</T> : null}
+      {notice ? <Feedback type={notice.ok?'success':'danger'} text={notice.text}/> : null}
 
       {locked && !jobState.running && !jobState.decrypted ? (
         <Card style={{ gap: 10 }}>
@@ -199,8 +201,9 @@ export default function Backup() {
         </Card>
       ) : null}
 
+      <View style={{display:section==='export'?'flex':'none',gap:16}}>
       <Card style={{ gap: 12 }}>
-        <SectionTitle>Back up</SectionTitle>
+        <SectionTitle>Protect your work</SectionTitle>
         <T size={12} muted>JSON and unprotected .niyav files download immediately. Password-protected backups continue if you navigate away; return here to download the encrypted result. The app must remain installed. Android or iOS may pause the operation when you switch apps; interrupted work must be restarted.</T>
         <Segmented options={[{ value: 'project', label: 'Project' }, { value: 'workspace', label: 'Workspace' }]} value={scope} onChange={setScope} />
         {scope === 'project'
@@ -236,12 +239,17 @@ export default function Backup() {
         </View>
       </Card>
 
+      </View>
+      <View style={{display:section==='import'?'flex':'none',gap:16}}>
       <Card style={{ gap: 12 }}>
         <SectionTitle>Import project</SectionTitle>
         <T size={12} muted>Opens a .json or .niyav backup as a new project. Your current projects are not changed.</T>
         <Button label="Import .json or .niyav file" icon="upload" small variant="secondary" onPress={chooseProject} disabled={!!busy || !!jobState.running} />
       </Card>
 
+      </View>
+      <View style={{display:section==='recovery'?'flex':'none',gap:16}}>
+      <Feedback type="warning" text="Recovery can replace current workspace data. Export a backup first; every restore still asks for confirmation."/>
       <Fold title="Full workspace recovery" subtitle="Restores projects, programs, portfolios and local history together. Explicit confirmation required.">
         <T size={12} muted>Only use a complete Niyarvo workspace backup (.json or .niyav). An automatic snapshot of the current workspace is created before replacement. To add projects without replacing your workspace, use Import project above.</T>
         <Button label="Choose workspace file" icon="upload" small variant="secondary" onPress={chooseWorkspace} disabled={!!busy || !!jobState.running}/>
@@ -254,7 +262,7 @@ export default function Backup() {
       <Card style={{ gap: 12 }}>
         <SectionTitle>Recover archived projects</SectionTitle>
         {archived.length === 0 ? (
-          <Empty>No archived projects.</Empty>
+          <EmptyState compact title="Nothing archived" description="Archived projects stay recoverable and appear here."/>
         ) : (
           archived.map((p) => (
             <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderColor: c.line }}>
@@ -268,6 +276,7 @@ export default function Backup() {
           ))
         )}
       </Card>
+      </View>
     </>
   );
 }

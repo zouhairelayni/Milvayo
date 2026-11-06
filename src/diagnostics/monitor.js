@@ -9,7 +9,11 @@ const KEY = '@milvayo/diagnostics/v1';
 const VERSION = app.expo.version; // one place to bump per release
 let state = core.fresh(`${Date.now().toString(36)}`, Date.now(), {platform: Platform.OS, os: String(Platform.Version), version: VERSION});
 let booted = false;
-let isActive = true;
+let isActive = AppState.currentState == null || AppState.currentState === 'active';
+state.active = isActive;
+let disposed = false;
+let pageHideHandler = null;
+let pageShowHandler = null;
 let lastTick = Date.now();
 let tickTimer = null;
 let appSubscription = null;
@@ -18,16 +22,22 @@ let listener = null;
 let originalWarn = null;
 let originalError = null;
 let ioGeneration = 0;
+let saveTimer = null;
 const writer = require('../store/latestWriter.cjs').createLatestWriter(generation =>
  generation === ioGeneration ? AsyncStorage.setItem(KEY,JSON.stringify(state)) : undefined);
-function pushSave(){return writer.enqueue(ioGeneration);}
-function safeEvent(type, detail) { core.addEvent(state,type,detail); pushSave(); notify(); }
+// Ordinary breadcrumbs share one bounded 200ms window; critical evidence bypasses it.
+function pushSave(immediate=false){
+ if(disposed)return;
+ if(immediate||!isActive){if(saveTimer!==null)clearTimeout(saveTimer);saveTimer=null;return writer.enqueue(ioGeneration);}
+ if(saveTimer===null)saveTimer=setTimeout(()=>{saveTimer=null;void writer.enqueue(ioGeneration);},200);
+}
+function safeEvent(type, detail, immediate=false) { core.addEvent(state,type,detail); pushSave(immediate); notify(); }
 function notify(){try {listener?.();} catch{}}
 function captureError(err, source = 'error boundary', screen = state.screen, componentStack = '', fatal = false) {
-  const exception = err instanceof Error ? err : {name:'Error',message: String(err), stack:''};
+  const exception = err && typeof err === 'object' ? err : {name:'Error',message:String(err),stack:''};
   core.addCrash(state, {source, name:exception.name || 'Error', message:exception.message || '',
     stack:exception.stack || '', screen, componentStack, fatal});
-  pushSave(); notify();
+  pushSave(true); notify();
 }
 function recordScreen(screen){
   state.screen = String(screen);
@@ -48,45 +58,18 @@ function subscribe(fn){listener = fn;return () => {if(listener===fn) listener=nu
 function clear(){
   ioGeneration += 1;
   state = core.fresh(`${Date.now().toString(36)}`, Date.now(),{platform:Platform.OS,os:String(Platform.Version),version:VERSION});
-  pushSave();notify();
+  state.active = isActive;
+  lastTick = Date.now();
+  pushSave(true);notify();
 }
 async function start(){
-  if(booted)return;
+  if(booted||disposed)return;
   booted = true;
-  try {
-    const saved = await AsyncStorage.getItem(KEY);
-    if(saved){
-      const old = JSON.parse(saved);
-      // Preserve reports for the previous run only. Never imply that Expo Go
-      // being killed by Android was a proven app crash.
-      state.previous = {active:!!old.active,updatedAt:old.updatedAt,runId:old.runId,version:old.version,
-        events:Array.isArray(old.events)?old.events.slice(-16):[],
-        crashes:Array.isArray(old.crashes)?old.crashes.slice(-12):[]};
-      // Keep current-run counters and traces consistent. Previous-run status
-      // stays in the explicitly labelled summary, never mixed into these arrays.
-    }
-  }catch { /* diagnostics must never block startup */ }
-  // Read asynchronously after startup: Android history is evidence, missing history is not a diagnosis.
   const generation = ioGeneration;
-  readNativeExit().then(exit => { if (exit && generation === ioGeneration) { state.nativeExit = exit; pushSave(); notify(); } }).catch(() => {});
-  safeEvent('run started','local diagnostics enabled');
-  appSubscription = AppState.addEventListener('change',status=>{
-    isActive = status === 'active';
-    state.active = isActive;
-    safeEvent('app state', status);
-    lastTick = Date.now();
-  });
-  tickTimer = setInterval(()=>{
-    const now = Date.now();
-    const drift = Math.max(0, now - lastTick - 1000);
-    lastTick = now;
-    if (isActive && drift > 400 && drift < 30000) {
-      state.freezeMs = Math.max(state.freezeMs, Math.round(drift));
-      core.addSlow(state,'JS timer delay',state.screen,drift,now);
-      pushSave();notify();
-    }
-  },1000);
-  // Capture uncaught JS exceptions without suppressing React Native/Expo's handler.
+  // Request the old report before any new write, without delaying capture hooks.
+  let previousRead;
+  try{previousRead=AsyncStorage.getItem(KEY);}catch{previousRead=Promise.resolve(null);}
+
   const errorUtils = global.ErrorUtils;
   if(errorUtils?.getGlobalHandler && errorUtils?.setGlobalHandler){
     previousHandler = errorUtils.getGlobalHandler();
@@ -95,19 +78,67 @@ async function start(){
       previousHandler?.(error,isFatal);
     });
   }
-  // Retain original console methods. Logs are sanitized before persistence.
   originalWarn = console.warn;
   originalError = console.error;
-  console.warn = (...args)=>{try{state.warnings++;const kind=core.warningKind(args);state.warningKinds[kind]=(state.warningKinds[kind]||0)+1;if(state.warnings <= 15)core.addEvent(state,'warning','console.warn (message withheld for privacy)');}catch{} originalWarn(...args);};
-  console.error = (...args)=>{try{state.errors++;if(state.errors <= 15)core.addEvent(state,'console error','console.error (message withheld for privacy)');}catch{} originalError(...args);};
+  console.warn = (...args)=>{try{state.warnings++;const kind=core.warningKind(args);state.warningKinds[kind]=(state.warningKinds[kind]||0)+1;if(state.warnings <= 15)core.addEvent(state,'warning','console.warn (message withheld for privacy)');pushSave();}catch{} originalWarn(...args);};
+  console.error = (...args)=>{try{state.errors++;if(state.errors <= 15)core.addEvent(state,'console error','console.error (message withheld for privacy)');pushSave(true);notify();}catch{} originalError(...args);};
+
+  const onAppState=status=>{
+    isActive = status === 'active';
+    state.active = isActive;
+    safeEvent('app state',status,!isActive);
+    lastTick = Date.now();
+  };
+  appSubscription = AppState.addEventListener('change',onAppState);
+  if(AppState.currentState!=null){isActive=AppState.currentState==='active';state.active=isActive;}
+  if(Platform.OS==='web'&&typeof window!=='undefined'){
+    pageHideHandler=()=>onAppState('background');
+    pageShowHandler=()=>onAppState(AppState.currentState||'active');
+    window.addEventListener('pagehide',pageHideHandler);
+    window.addEventListener('pageshow',pageShowHandler);
+  }
+  lastTick=Date.now();
+  tickTimer = setInterval(()=>{
+    const now = Date.now();
+    const drift = Math.max(0,now-lastTick-1000);
+    lastTick = now;
+    if(isActive&&drift>400&&drift<30000){
+      state.freezeMs=Math.max(state.freezeMs,Math.round(drift));
+      core.addSlow(state,'JS timer delay',state.screen,drift,now);
+      pushSave();notify();
+    }
+  },1000);
+  safeEvent('run started','local diagnostics enabled');
+
+  try{
+    const saved=await previousRead;
+    if(disposed||generation!==ioGeneration)return;
+    if(saved){
+      const old=JSON.parse(saved);
+      state.previous={active:!!old.active,updatedAt:old.updatedAt,runId:old.runId,version:old.version,
+        events:Array.isArray(old.events)?old.events.slice(-16):[],
+        crashes:Array.isArray(old.crashes)?old.crashes.slice(-12):[]};
+    }
+  }catch{ /* a failed report read must never block capture or startup */ }
+  if(disposed||generation!==ioGeneration)return;
+  pushSave();
+  Promise.resolve().then(readNativeExit).then(exit=>{
+    if(exit&&!disposed&&generation===ioGeneration){state.nativeExit=exit;pushSave();notify();}
+  }).catch(()=>{});
 }
 export const diagnosticMonitor = {start, recordScreen, recordAction, recordTransition,recordRender,captureError,snapshot,subscribe,clear,
   crashReport:()=>core.reportCrash(state),performanceReport:()=>core.reportPerf(state)};
 
 // Fast Refresh should not stack global handlers or timers on each refresh.
 if (module.hot) module.hot.dispose(() => {
-  if (tickTimer) clearInterval(tickTimer);
+  if(saveTimer!==null)pushSave(true);
+  disposed = true;
+  if (tickTimer!==null) clearInterval(tickTimer);
   appSubscription?.remove?.();
+  if(typeof window!=='undefined'){
+    if(pageHideHandler)window.removeEventListener('pagehide',pageHideHandler);
+    if(pageShowHandler)window.removeEventListener('pageshow',pageShowHandler);
+  }
   if (originalWarn) console.warn = originalWarn;
   if (originalError) console.error = originalError;
   if (previousHandler && global.ErrorUtils?.setGlobalHandler) global.ErrorUtils.setGlobalHandler(previousHandler);

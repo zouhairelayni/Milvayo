@@ -5,12 +5,12 @@ const path = require('node:path');
 const vm = require('node:vm');
 const babel = require('@babel/core');
 
-function load(file, mocks, expose = []) {
+function load(file, mocks, expose = [], globals = {}, moduleOptions = {}) {
   const filename = path.resolve(__dirname, '../..', file);
   const code = babel.transformSync(fs.readFileSync(filename, 'utf8'), { filename, babelrc: false, configFile: false, plugins: [[require.resolve('@babel/plugin-transform-react-jsx'), { runtime: 'automatic' }], require.resolve('@babel/plugin-transform-modules-commonjs')] }).code;
-  const module = { exports: {} };
+  const module = { exports: {}, ...moduleOptions };
   const exposed = expose.length ? '\nexports.__test = {' + expose.join(',') + '};' : '';
-  vm.runInNewContext('(function(require,module,exports){' + code + exposed + '\n})', {})(id => {
+  vm.runInNewContext('(function(require,module,exports){' + code + exposed + '\n})', globals)(id => {
     if (Object.hasOwn(mocks, id)) return mocks[id];
     if (id === 'react/jsx-runtime') return require(id);
     if (id.endsWith('.cjs')) return require(path.resolve(path.dirname(filename), id));
@@ -21,10 +21,13 @@ function load(file, mocks, expose = []) {
 
 function gestureHarness(file, host, drawing, exportName = 'default') {
   let cursor = 0, pending = [];
-  const slots = [], effects = [], gestures = {};
+  const slots = [], effects = [], gestures = {}, frames = new Map(), appListeners = new Set();
+  let frameId = 0;
   const hooks = {
     useRef(value) { const i = cursor++; return slots[i] || (slots[i] = { current: value }); },
-    useCallback: fn => fn,
+    useState(initial) { const i=cursor++; if(!slots[i]) slots[i]={value:typeof initial==='function'?initial():initial};return [slots[i].value,value=>{slots[i].value=typeof value==='function'?value(slots[i].value):value;}]; },
+    useMemo(fn,deps) { const i=cursor++;if(!slots[i]||!deps||deps.some((v,n)=>!Object.is(v,slots[i].deps[n])))slots[i]={value:fn(),deps};return slots[i].value; },
+    useCallback: (fn,deps) => hooks.useMemo(()=>fn,deps),
     useEffect(fn, deps) {
       const i = cursor++;
       if (!effects[i] || deps.some((v, n) => !Object.is(v, effects[i].deps[n]))) {
@@ -34,7 +37,7 @@ function gestureHarness(file, host, drawing, exportName = 'default') {
   };
   const component = load(file, {
     react: hooks,
-    'react-native': { View: 'View' },
+    'react-native': { View: 'View', AppState: {addEventListener(_name,fn){appListeners.add(fn);return {remove(){appListeners.delete(fn);}};}} },
     'react-native-gesture-handler': {
       GestureDetector: 'Detector',
       VirtualGestureDetector: 'VirtualDetector',
@@ -53,7 +56,7 @@ function gestureHarness(file, host, drawing, exportName = 'default') {
       useAnimatedStyle: fn => fn,
     },
     'react-native-worklets': { scheduleOnRN: (fn, ...args) => fn(...args) },
-  })[exportName];
+  }, [], {requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id)})[exportName];
   const bindRefs = tree => {
     if (!tree?.props) return;
     if (tree.props.ref) tree.props.ref.current = host;
@@ -64,6 +67,9 @@ function gestureHarness(file, host, drawing, exportName = 'default') {
   };
   return {
     gestures,
+    frame() { const batch=[...frames.values()];frames.clear();batch.forEach(fn=>fn()); },
+    flushFrames() { for(let i=0;i<4&&frames.size;i++)this.frame(); },
+    appState(state) { appListeners.forEach(fn=>fn(state)); },
     render(props) {
       cursor = 0; pending = [];
       const tree = component(props); if (host) bindRefs(tree);

@@ -4,7 +4,7 @@ import { AppState, Platform, StatusBar as NativeStatusBar, View } from 'react-na
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
-import { StoreProvider, StoreFreeze, useStore } from '../store/store';
+import { StoreProvider, StoreFreeze, useStore, useStoreActions } from '../store/store';
 import { LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar } from '../components/shell/Menus';
 import { TopBar, TabBar, PhoneHeader, ViewPill } from '../components/shell/Bars';
@@ -26,6 +26,7 @@ import { Scheduling, TaskConfiguration, Collaboration, Specifications } from '..
 import { Projects } from '../screens/governance/Projects';
 import Portfolios from '../screens/governance/Portfolios';
 import { Programs } from '../screens/governance/Programs';
+import ScreenPresence from '../ui/ScreenPresence';
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import IslandNotice from '../components/notice/IslandNotice';
 import { backupJobs } from '../store/backupJobs';
@@ -35,6 +36,10 @@ import { resolveVisited, addVisited } from './navigation/visitedTabs.cjs';
 import { SECTIONS, sectionOf, labelOf, viewsOf, navFor } from './navigation/sections.cjs';
 import { useProjectTools } from '../store/useProjectTools';
 import { screenOn } from '../domain/projectTools.cjs';
+import Onboarding from '../screens/onboarding/Onboarding';
+import '../screens/onboarding/freshInstall';
+const { starterPlan, starterTools, validName } = require('../screens/onboarding/onboardingPlan.cjs');
+const { subscribeTour } = require('../screens/onboarding/tourEvents.cjs');
 
 // Text can't be selected anywhere except in input fields (web, including phone browsers).
 if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getElementById('no-select-style')) {
@@ -118,11 +123,11 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTas
       </Profiler>
     : <View accessible accessibilityLabel={`Opening ${pageId}`} style={{ flex:1,justifyContent:'center',alignItems:'center' }}><T size={13} muted>{`Preparing ${pageId}…`}</T></View>,
   [ready, pageId, ScreenComponent, openTask, onNewTask, onOpenBackup, go, query, openStatus, statusRequest]);
-  return <View style={{ flex: 1, display: active ? 'flex' : 'none' }}>
+  return <ScreenPresence active={active} style={{flex:1}}>
     <StoreFreeze frozen={!active}>
       <ScreenErrorBoundary screenId={pageId} go={go}>{content}</ScreenErrorBoundary>
     </StoreFreeze>
-  </View>;
+  </ScreenPresence>;
 }, (prev, next) => !shouldRenderPage(prev, next)); // memo's comparator answers "equal, skip?"
 
 function Shell({}) {
@@ -230,6 +235,16 @@ function Shell({}) {
   useEffect(() => { setTaskId(null); setCreatingTask(false); setQuery(''); setStatusRequest(null); setProjectRequest(null); setCreatingProject(false); setReleaseRequest(false); }, [workspaceId]);
   // A tool switched off while its screen is open (or in the project just opened): leave the screen, keep the data.
   useEffect(() => { if (!screenOn(tools, screen)) go(sectionOf(screen) === 'work' ? 'board' : 'more', 'tool switched off'); }, [tools, screen, go]);
+  const {createProject}=useStoreActions();
+  const [touring,setTouring]=useState(false);
+  useEffect(()=>subscribeTour(()=>{setTaskId(null);setCreatingTask(false);setCreatingProject(false);setTouring(true);}),[]);
+  const finishTour=useCallback(({name,starterId})=>{
+    if(!validName(name))return false;
+    const plan=starterPlan(starterId);
+    const id=createProject({name:name.trim(),tools:starterTools(plan.id)});
+    if(!id)return false;
+    setTaskId(null);setTouring(false);go(plan.screen,'first-run starter');return true;
+  },[createProject,go]);
   const newTask = useCallback(() => setCreatingTask(true), []);
   const openBackup = useCallback(() => { setBackupRequest(n => n + 1); go('settings', 'Home import starter'); }, [go]);
   const saveNewTask = ({title, description, status, priority}) => {
@@ -246,7 +261,7 @@ function Shell({}) {
     {CACHED_TABS.filter(id => visited.includes(id) && (retainHiddenTab(id) || id === screen)).map(id =>
       <CachedPage key={`${projectId}:${id}`} pageId={id} active={screen === id} openTask={openTask} onNewTask={newTask} onOpenBackup={openBackup} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} />
     )}
-    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} backupRequest={backupRequest} releaseRequest={releaseRequest} onReleaseRequestHandled={clearReleaseRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
+    {!CACHED_TABS.includes(screen) ? (() => { const Current = SCREENS[screen]; return <ScreenErrorBoundary key={screen === 'projects' ? `${workspaceId}:${screen}` : `${projectId}:${screen}`} screenId={screen} go={go}><Profiler id={screen} onRender={(_, __, duration) => diagnosticMonitor.recordRender(screen, duration)}><Current openTask={openTask} onPickProject={pickProject} onNewTask={newTask} go={go} query={query} openStatus={openStatus} statusRequest={statusRequest} openProject={openProject} projectRequest={projectRequest} onProjectRequestHandled={clearProjectRequest} backupRequest={backupRequest} releaseRequest={releaseRequest} onReleaseRequestHandled={clearReleaseRequest} /></Profiler></ScreenErrorBoundary>; })() : null}
   </HeaderActionsContext.Provider>;
   const sheet = <>{taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null}{creatingTask ? <NewTaskSheet onClose={()=>setCreatingTask(false)} onSave={saveNewTask}
     extra={<CreateMore onProject={() => { setCreatingTask(false); setCreatingProject(true); }} onRelease={tools.releases ? () => { setCreatingTask(false); setReleaseRequest(true); go('releases', 'create sheet'); } : undefined} />} /> : null}
@@ -255,11 +270,14 @@ function Shell({}) {
   const controls = headerActions?.screen === screen ? headerActions.controls : null;
   const section = SECTIONS.find(x => x.id === sectionOf(screen));
   const views = viewsOf(section, tools);
+  const noticeLayer=<IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
+        onAction={action => { if (action === 'backup') { setTouring(false); setBackupRequest(n => n + 1); go('settings', 'backup notice'); } }} wide={wide}
+        topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />;
 
   return (
     <View style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
       <StatusBar style={barStyle} translucent={false} />
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
+      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} accessibilityElementsHidden={touring} importantForAccessibility={touring?'no-hide-descendants':'auto'} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
         {wide ? <Sidebar nav={navFor(tools)} current={screen} go={go} onPickProject={pickProject}
           onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -273,9 +291,8 @@ function Shell({}) {
         </View>
         {sheet}
       </SafeAreaView>
-      <IslandNotice notice={backupNotice || notice} onDismiss={() => { if (backupNotice) setBackupNotice(null); else dismissNotice(); }}
-        onAction={action => { if (action === 'backup') { setBackupRequest(n => n + 1); go('settings', 'backup notice'); } }} wide={wide}
-        topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />
+      {touring?<Onboarding onSkip={()=>setTouring(false)} onFinish={finishTour}>{noticeLayer}</Onboarding>:noticeLayer}
+
     </View>
   );
 }

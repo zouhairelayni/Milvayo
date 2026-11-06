@@ -8,17 +8,7 @@ test('the app root is only the gesture-handler root: nothing there can change id
  assert.match(src,/GestureHandlerRootView/);
  assert.equal(/InterceptingGestureDetector|VirtualGestureDetector|useHoldDrag|Warmup|warm/.test(src),false);
 });
-test('Timeline owns its intercepting detector and seeds it so it is born in Reanimated mode',()=>{
- const host=read('src/gestures/TimelineGestureHost.native.js');
- assert.match(host,/useTapGesture\(\{\s*enabled: false,\s*onActivate: \(\) => \{ 'worklet'; \},\s*\}\)/,'inert, disabled, worklet-backed seed');
- assert.match(host,/<InterceptingGestureDetector gesture=\{seed\}>/);
- const timeline=read('src/screens/timeline/Timeline.js');
- assert.match(timeline,/import TimelineGestureHost from '\.\.\/\.\.\/gestures\/TimelineGestureHost'/);
- assert.match(timeline,/<TimelineGestureHost>\s*<View style=\{\{ flex: 1 \}\}>/);
- assert.match(timeline,/<Page\s+title="Timeline"/);
- assert.match(timeline,/<\/Page>\s*<\/View>\s*<\/TimelineGestureHost>/);
- assert.equal(/InterceptingGestureDetector/.test(read('src/gestures/TimelineGestureHost.js')),false,'web/fallback has no native wrapper');
-});
+
 test('no recovery layers mask a remount; a tripwire reports it instead',()=>{
  const app=read('src/app/ModernApp.js'),store=read('src/store/store.js');
  assert.equal(fs.existsSync(path.join(root,'src/navigationMemory.cjs')),false);

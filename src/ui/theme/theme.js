@@ -6,7 +6,7 @@ import { syncLauncherIcon } from './launcherIcon';
 const {ACCENTS,DEFAULT_ACCENT,STORAGE_KEY,palette}=require('./theme.cjs');
 export {ACCENTS};
 
-// Appearance surfaces come from the selected RIVNA accent; semantic status colors remain independent.
+// Appearance surfaces follow the selected Milvayo palette; semantic status colors remain independent.
 export const LIGHT = palette(DEFAULT_ACCENT, 'light');
 export const DARK = palette(DEFAULT_ACCENT, 'dark');
 export const AMOLED = palette(DEFAULT_ACCENT, 'amoled');
@@ -42,7 +42,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const system = useColorScheme();
-  const [pref, changeMode] = useState('system');
+  const [pref, changeMode] = useState('dark');
   const [accentPref, changeAccent] = useState(DEFAULT_ACCENT);
   const [restored, setRestored] = useState(false);
   useEffect(() => { let active=true; const fallback=setTimeout(()=>{if(active)setRestored(true);},1500); Promise.all([AsyncStorage.getItem('milvayo-appearance-v1'),AsyncStorage.getItem(STORAGE_KEY)]).then(([m,a])=>{if(!active)return;if(['system','light','dark','amoled'].includes(m))changeMode(m);if(ACCENTS.some(c=>c.id===a))changeAccent(a);}).catch(()=>{}).finally(()=>{clearTimeout(fallback);if(active)setRestored(true);});return()=>{active=false;clearTimeout(fallback)}; }, []);

@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 import { Platform, Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { isDesktopLayout } from './layoutMode.cjs';
+import FillMotion from './FillMotion';
 import { font, radius, serif, useTheme } from './theme/theme';
 
 // Browser layout preference is purely visual; no workspace or task data is touched.
@@ -63,7 +64,7 @@ export function T({ children, size = 14, weight = '400', color, muted, serifFace
 export function Card({ children, style, onPress, pad = 16, accessibilityLabel }) {
   const { c } = useTheme();
   const body = (
-    <View style={[{ backgroundColor: c.surface, borderRadius: radius.md, borderWidth: 1, borderColor: c.line, padding: pad }, style]}>
+    <View style={[{ backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.line, padding: pad }, style]}>
       {children}
     </View>
   );
@@ -104,10 +105,10 @@ export function Avatar({ name = '?', size = 24 }) {
 
 export function Bar({ value = 0, color, height = 6, track }) {
   const { c } = useTheme();
-  const pct = Math.max(0, Math.min(1, value)) * 100;
+  const pct = Math.max(0, Math.min(1, Number.isFinite(value)?value:0)) * 100;
   return (
     <View style={{ height, borderRadius: height, backgroundColor: track || c.surfaceAlt, overflow: 'hidden' }}>
-      <View style={{ width: `${pct}%`, height: '100%', borderRadius: height, backgroundColor: color || c.accent }} />
+      <FillMotion value={pct} style={{width:`${pct}%`,height:'100%',borderRadius:height,backgroundColor:color||c.accent}}/>
     </View>
   );
 }

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ScreenIntro, Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
+import { ActionMenu, IconBtn, EmptyState, ScreenIntro, Avatar, Button, Card, Chip, Empty, Input, Page, Pill, Sheet, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold,EditRow,DangerConfirm,Dropdown} from '../../components/inline/CompactTools';
@@ -43,7 +43,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
   const [picked, setPicked] = useState([]);
   const heldRef=useRef(false);
   const [pages, setPages] = useState(1);
-  const [layout, setLayout] = useState('List');
+  const [layout, setLayout] = useState('By status');
   const [prioFilter, setPrioFilter] = useState('All');
   const [ownerFilter, setOwnerFilter] = useState('All');
 
@@ -79,8 +79,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
   const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const clearPicked = () => setPicked([]);
   const applyBulk = (status) => {
-    bulkStatus(picked, status);
-    clearPicked();
+    if (bulkStatus(picked, status)) clearPicked();
   };
   const applyBulkField = (field, value) => { if (bulkSet(picked, field, value)) clearPicked(); };
 
@@ -93,11 +92,13 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
       {dateBoards.length ? <DueSoon key={project.id} tasks={upcoming} onOpenTask={openTask} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>
-          <Input lazy value={q} onChangeText={setQ} placeholder="Search title or owner" />
+          <Input lazy value={q} onChangeText={setQ} placeholder="Search title or owner" accessibilityLabel="Search task list" />
         </View>
+        <IconBtn icon="sliders" label="Filter and organize tasks" onPress={()=>setToolsOpen(true)}/>
       </View>
+      <View style={{flexDirection:'row',alignItems:'center',gap:8}}><Chip label={layout} active onPress={()=>setToolsOpen(true)}/><T muted size={12}>{filter==='All'?'All statuses':filter} · {sort} order</T></View>
 
-      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Tools" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
+      <Sheet visible={toolsOpen} onClose={()=>setToolsOpen(false)} title="Organize tasks" showNotice={false} footer={<Button label="Done" onPress={()=>setToolsOpen(false)}/> }>
       <T size={16} weight="600">Filters & tags</T>
         <T size={12} muted weight="600">Status</T>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -143,20 +144,20 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
       {picked.length > 0 ? (
         <Card style={{ gap: 12, backgroundColor: c.surfaceAlt, width: '100%' }}>
           <T weight="600" style={{ flexShrink: 0 }} numberOfLines={1}>{picked.length} selected</T>
-          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Button label="Mark Done" icon="check" small onPress={() => applyBulk('Done')} />
-          <Button label="To Validation" small variant="ghost" onPress={() => applyBulk('Validation')} />
-          <Button label="Clear" small variant="ghost" onPress={clearPicked} />
+          <View style={{flexDirection:'row',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+            <Button label="Mark Done" icon="check" onPress={()=>applyBulk('Done')}/>
+            <Button label="Clear" variant="ghost" onPress={clearPicked}/>
+            <ActionMenu label="Change selected tasks" items={[
+              {label:'Move to Validation',icon:'check-square',onPress:()=>applyBulk('Validation')},
+              ...PRIORITIES.map(p=>({label:`Priority: ${p}`,icon:'flag',onPress:()=>applyBulkField('priority',p)})),
+              ...['Development','Testing','Production'].map(stage=>({label:`Stage: ${stage}`,icon:'layers',onPress:()=>applyBulkField('stage',stage)})),
+            ]}/>
           </View>
-          <T size={12} muted weight="600">Priority of selected</T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{PRIORITIES.map((p) => <Chip key={p} label={p} onPress={() => applyBulkField('priority', p)} />)}</View>
-          <T size={12} muted weight="600">Stage of selected</T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{['Development', 'Testing', 'Production'].map((g) => <Chip key={g} label={g} onPress={() => applyBulkField('stage', g)} />)}</View>
           {owners.length ? <><T size={12} muted weight="600">Assign selected to</T><Dropdown options={owners.map((o) => ({ value: o, label: o }))} value={null} onChange={(o) => applyBulkField('owner', o)} /></> : null}
         </Card>
       ) : null}
 
-      <Card pad={0} style={{ overflow: 'hidden' }}>
+      <View style={{overflow:'hidden'}}>
         {roomForColumns && list.length ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 44, backgroundColor: c.surfaceAlt }}>
             <View style={{ width: 20 }} />
@@ -169,7 +170,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
         ) : null}
         {list.length === 0 ? <Empty>No tasks match these filters.</Empty> : null}
         {pageOf.items.map((row, i) => {
-          if (row.kind === 'group') return <View key={row.key} style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: c.surfaceAlt, borderTopWidth: i ? 1 : 0, borderColor: c.line }}><T size={12} weight="600" muted>{row.title} · {row.count}</T></View>;
+          if (row.kind === 'group') return <View key={row.key} style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: 'transparent', borderTopWidth: i ? 1 : 0, borderColor: c.line }}><T size={12} weight="600" muted>{row.title} · {row.count}</T></View>;
           const t = row.task, roll = rollups?.get(t.id);
           const on = picked.includes(t.id);
           return (
@@ -184,7 +185,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
               onLongPress={() => {heldRef.current=true;toggle(t.id)}}
               delayLongPress={450}
               style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 14, paddingVertical: 10,
+                flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14 + row.depth * 18, paddingRight: 16, paddingVertical: 20,minHeight:88,
                 borderTopWidth: i ? 1 : 0, borderColor: c.line, opacity: pressed ? 0.7 : 1, backgroundColor: on ? c.surfaceAlt : undefined,
               })}
             >
@@ -199,11 +200,11 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
                   borderColor: t.status==='Done' ? c.accent : c.faint, backgroundColor: t.status==='Done' ? c.accent : 'transparent',
                 }}
               >
-                {t.status==='Done' ? <Feather name="check" size={13} color="#FFFFFF" /> : null}
+                {t.status==='Done' ? <Feather name="check" size={13} color={c.accentInk} /> : null}
               </Pressable>
 
               <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-                <T size={14} weight="500" numberOfLines={1}>{t.title}</T>
+                <T size={15} weight="500" numberOfLines={2}>{t.title}</T>
                 <T size={12} muted numberOfLines={1}>
                   {t.type} · {t.stage}{roll && roll.rollup ? ` · ${roll.progress}% of ${roll.children} subtask${roll.children === 1 ? '' : 's'}` : ''}
                 </T>
@@ -218,11 +219,11 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
               ) : null}
               {roomForColumns ? <T size={12} muted style={{ width: 62 }}>{fmt(t.due)}</T> : null}
               {roomForColumns ? <View style={{ width: 104 }}><Pill label={t.status} color={STATUS_COLOR[t.status]} /></View> : <View accessibilityLabel={t.status} style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: STATUS_COLOR[t.status] }} />}
-              <View style={roomForColumns ? { width: 80 } : undefined}><Pill label={roomForColumns ? t.priority : t.priority.slice(0, 1)} color={PRIORITY_COLOR[t.priority]} /></View>
+              <View style={roomForColumns ? { width: 80 } : undefined}><Pill label={t.priority} color={PRIORITY_COLOR[t.priority]} /></View>
             </Pressable>
           );
         })}
-      </Card>
+      </View>
       {pageOf.hasMore ? <Button label={`Show more tasks (${pageOf.total-pageOf.items.length} remaining)`} small variant="secondary" onPress={()=>setPages(n=>n+1)} /> : null}
     </Page>
   );

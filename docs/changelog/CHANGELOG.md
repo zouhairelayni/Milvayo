@@ -1,4 +1,57 @@
-## v0.6.3 — Performance, Timeline and workspace refinement (2026-11-06)
+## v0.7.0 — Premium redesign promoted to the main workspace (2026-11-06)
+
+- Promoted the approved redesign, first-run tour, interaction and stability fixes into the main Milvayo workspace. Replace source, tests and installed Expo/React Native dependencies together; delete obsolete application files and package remnants.
+- Synchronize package, lockfile and Expo versions at 0.7.0, Android versionCode 70 and iOS buildNumber 70. Preserve local data/import formats, signing credentials and main Git history.
+- Remove superseded patch installers, obsolete manifest backup and stale generated native/cache files. Reconcile historical UI tests with the current experience while retaining functional regressions.
+- Verified 799/799 tests from the promoted main folder, 193 source parses, 23 native source transforms, clean source reachability and offline Expo compatibility. Restored executable npm CLI links inherited from the candidate. Device/runtime acceptance remains pending.
+- Owner reported a successful Expo build and authorized the 0.7.0 checkpoint/push to `work`. Removed the superseded redesign checkout and temporary promotion/scratch copies; preserve signing files and use Git history for source rollback. No additional agent build or deployment. Verification and rollback: `docs/qa/release-070/PROMOTION-REPORT.md`.
+
+## v0.6.3 — Isolated premium workspace redesign (2026-11-06)
+
+### Candidate redesign (owner acceptance pending)
+
+- Replaced the initial visual pass after owner feedback: neutral Dark/AMOLED canvases, asymmetric analytical dashboard, date-focused agenda, workload/status/due/history/cost/capacity charts, white capsule controls, contextual actions and original SVG empty artwork. `Home _ X` is excluded as inspiration.
+- Added visible reduced-motion-aware chart, press, numeric, fill, page-presence, sheet, notice and illustration transitions. Kanban adds lift/tilt, neighbour movement, insertion feedback and drop settlement while preserving placement rules and scroll arbitration.
+- Added inline month/range calendars for scheduling, task/sprint dates, reminders, time entries and governance. Dates remain validated ISO strings; calendar exceptions require explicit save.
+- Repaired native zoom finalization and render-time shared endpoint configuration. The owner subsequently reported pinch-to-zoom fixed; an independent zero-warning/native performance matrix remains unverified.
+- This work stays exclusively in the existing `redesign` copy on `work`. No package additions, build, commit, push, parent integration or data migration. Current focused checks, source-rendered visual evidence, limits and manual acceptance: `docs/qa/redesign-063/ENGINEERING-REPORT.md`.
+
+### Interaction follow-up (2026-11-06)
+
+- Moved Edit project into each card’s Project actions menu, preserving its inline editor. More now groups Scheduling with Project tools, retaining its always-available route and existing optional-tool switches. Removed More’s duplicate header Manage tools action; the Manage tools card remains. More’s workspace row now opens the existing compact Projects/Workspaces manager directly, replacing its separate side modal.
+
+- Task description editing now uses a theme-accent SVG checkmark to save and a red SVG X to cancel, with named 44px controls and existing press feedback. A rejected save retains the draft.
+
+- Reduced Board list levitation by 40% on native/web, including scale/tilt and shadow height/elevation; card lift and drag/drop displacement remain unchanged.
+- Kept the native Kanban arrival fade and drag opacity under one animated owner, removing the competing entering animation that produced the Reanimated opacity warning. Kept lift/tilt, measured refs and drop behavior. Held lists now use an elevated, unclipped strip above the board-name ribbon, with compensated top room and restored clipping/scroll on release.
+- Moved task description immediately below its title. Delete/copy confirmations stay in the same action popup, including cancel, errors, retries and successful copies. Applied the same confirmation pattern to project, board and WBS actions; project copies keep the current selection.
+- Removed bottom-tab selection tiles; selected icons grow from 20px to 24px over 150ms with reduced-motion support. Removed duplicate Settings tools and large Board filter controls; More → Manage tools and Board header Tools remain.
+- Home dates now slide between weeks without chevrons. Day selection still filters work, changing weeks clears the filter, and the existing ±52-week bound remains. Paging uses native scrolling, bounded pages and no per-frame React state; screen-reader week actions are available.
+- Focused results and honest device/runtime limits: `docs/qa/redesign-063/popup-nav-warning-followup.md`. No new dependencies, schema migration, builds, commit or push; parent app remains untouched.
+
+### Focused performance / UX audit (2026-11-06)
+
+- Removed repeated per-portfolio project health calculations with immutable project/day caching, and derive sprint velocity once per view projection. Preserve domain formulas, history and import compatibility.
+- Replaced repeated per-day task scans/Intl weekday formatting with one-pass schedule aggregation. DateRail retains adjacent pages through day-selection/callback changes.
+- Coalesced ordinary diagnostics writes within 200ms; exceptions, clear and background transitions request an immediate save. Preserve retries, bounded evidence and strict console logging.
+- Keep bulk task selection after a rejected status edit; cancel pending native Reveal work on unmount while preserving approved motion.
+- 106 focused tests and source/worklet checks passed. Isolated selector CPU timings and mock write counts improved; these are not Android FPS/latency claims. Detailed results, persistence tradeoff and phone gates: `docs/qa/redesign-063/FOCUSED-PERFORMANCE-AUDIT.md`. No builds, package changes, pushes, migration or parent integration.
+
+### Error/background lifecycle follow-up (2026-11-06)
+
+- Attach diagnostics error/console/lifecycle hooks before awaiting previous-report storage. Console errors and background evidence now bypass foreground save batching; original handlers/privacy remain.
+- Respect initial/background state, preserve it on clear, reset resume timer accounting, guard late startup/native-history callbacks and clean up web pagehide/pageshow/Fast Refresh listeners.
+- Cancel native Board holds, drags and delayed title opens on background, without committing drops; suppress stale release/measurement callbacks until a new foreground touch.
+- 43 focused regressions passed. No builds, dependencies, model/import migration or parent integration; actual device/OS acceptance remains pending. Details: `docs/qa/redesign-063/ERROR-BACKGROUND-FOLLOWUP.md`.
+
+### First-run tour integration (2026-11-06)
+
+- Integrated the owner-supplied first-run ZIP into the current redesign without overwriting recent fixes: three swipeable slides, themed SVG artwork, four starters, project naming, Skip/Back and manual replay in More.
+- Auto-open only on empty storage; existing/recovered workspaces and failed reads suppress it. Fresh eligibility is delivered after shell mount, without a new storage key.
+- Apply starter tools atomically in the existing validated project creation transaction. Keep existing projects untouched, ordinary creation lean, and the import/schema format unchanged. Guard failed/repeated submissions; add keyboard/Back/focus/pager recovery and keep notices actionable above the tour.
+- 67 focused tests, 201 source parses and 18 native transforms pass. Static artwork was visually reviewed in three modes; device/runtime acceptance remains pending. No builds, dependencies, pushes or main integration. QA: `docs/qa/redesign-063/FIRST-RUN-TOUR-INTEGRATION.md`.
+
+### Earlier 0.6.3 remediation carried into the candidate
 
 - Relabeled this pending release as 0.6.3; synchronized package/app versions and Android/iOS build numbers at 63. Prior runtime evidence was collected under 0.6.2; this relabel changes metadata only.
 - Theme selection no longer changes native launcher components automatically. Settings offers a separate confirmed Apply launcher icon action; cancellation leaves the app running. Pending workspace saves must succeed before an icon change can proceed.
@@ -13,7 +66,7 @@
 - Gave the chart an explicit vertical extent and compute its visible rows from the owning Page scroll position, including trailing scroll events. Direct Chromium checks cover the final row in 34- and 1,000-task fixtures across presets, wheel and keyboard scrolling.
 - Refined Overview into a compact fact rail and clearer action hierarchy; aligned screen introductions across Board, Tasks, Sprints, Projects, Programs, Portfolios, Settings and More. Added project name/code search with progressive results, readable line heights, refined Board cards, accessible control states and cached Board drag order. Existing accent palettes, domain rules and data formats remain.
 - Added private warning fingerprints and startup/zoom timing correlations. Historical warning totals and missing clean exits are not treated as proof of a specific warning or crash.
-- Validation: 771/771 tests, source/worklet parsing, dependency compatibility and direct Chromium checks pass. Web sheets expose a named dialog and support Escape dismissal. Current evidence, limitations and reversible update plan: `docs/qa/remediation-062/ENGINEERING-REPORT.md`. No native/production builds, commit, push or deployment. Android/iOS runtime and release-mode performance remain acceptance gates.
+- Earlier remediation baseline only: 771/771 tests, source/worklet parsing, dependency compatibility and direct Chromium checks passed before the present redesign. This is not a result for the redesigned candidate. Web sheets expose a named dialog and support Escape dismissal. Current evidence, limitations and reversible update plan: `docs/qa/remediation-062/ENGINEERING-REPORT.md`. No native/production builds, commit, push or deployment. Android/iOS runtime and release-mode performance remain acceptance gates.
 
 ---
 
@@ -745,7 +798,7 @@ The screenshot-based nine-pass redline is in `docs/UNSLOP-NP-0.2.4.md`. Notable 
 
 | Check | Result |
 |---|---|
-| Node `npm test` (model/contract/viewport) | **Pass — 66/66** |
+| Node `npm test` (model/contract/viewport) | **Pass — 67/67** |
 | JSX parse with TypeScript 5 parser | **Pass — 0 syntax errors** in App.js/GanttView.js |
 | ZIP structural integrity | Verified during packaging |
 | `npx expo install --check` in this environment | **Not run** (Expo packages/node_modules unavailable) |

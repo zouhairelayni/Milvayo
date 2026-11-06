@@ -1,0 +1,56 @@
+[
+  {
+    "file": "overview-mobile.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "overview-desktop.html",
+    "width": 1440,
+    "height": 1000,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "calendar-mobile.html",
+    "width": 390,
+    "height": 620,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "empty-artwork-mobile.html",
+    "width": 390,
+    "height": 800,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "amoled",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "resources-mobile.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "board-mobile.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  }
+]

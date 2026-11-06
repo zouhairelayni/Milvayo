@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { radius, useTheme } from '../../ui/theme/theme';
 import { Button, IconBtn, Input, Segmented, T } from '../../ui/ui';
 import { diagnosticMonitor } from '../../diagnostics/monitor';
+import NavIcon from './NavIcon';
 import { ProjectSwitcher } from './Menus';
 import { swipeStep } from '../../app/navigation/sections.cjs';
 
@@ -78,12 +79,12 @@ export function TabBar({ tabs, current, go, intent, onCreate }) {
   const items = onCreate ? [...tabs.slice(0, 2), ['create'], ...tabs.slice(2)] : tabs;
   return (
     <View onTouchStart={swipe.onStart} onTouchEnd={swipe.onEnd}
-      style={{ flexDirection:'row', backgroundColor:c.surface, paddingHorizontal:8, paddingTop:7, paddingBottom:Platform.OS==='ios'?12:7 }}>
+      style={{ flexDirection:'row', backgroundColor:c.dock, marginHorizontal:12,marginTop:4,marginBottom:8,borderRadius:24,borderWidth:1,borderColor:c.line,paddingHorizontal:6,paddingTop:6,paddingBottom:6 }}>
       {items.map(([k,l,i]) => {
         if (k === 'create') return <View key={k} style={{ flex:1, minHeight:56, alignItems:'center', justifyContent:'center' }}>
           <Pressable accessibilityRole="button" accessibilityLabel="Create" onPress={onCreate} hitSlop={4}
-            style={({pressed})=>({ width:52, height:42, borderRadius:radius.sm, alignItems:'center', justifyContent:'center', backgroundColor:c.accent, opacity:pressed?0.8:1 })}>
-            <Feather name="plus" size={22} color="#FFFFFF" />
+            style={({pressed})=>({ width:48, height:48, borderRadius:16, alignItems:'center', justifyContent:'center', backgroundColor:c.accent, opacity:pressed?0.8:1 })}>
+            <Feather name="plus" size={22} color={c.accentInk} />
           </Pressable>
         </View>;
         const on=current===k;
@@ -95,7 +96,7 @@ export function TabBar({ tabs, current, go, intent, onCreate }) {
           go(k);
         }}
           style={({pressed})=>({flex:1, minHeight:56, alignItems:'center', justifyContent:'center', gap:3, opacity:pressed?0.65:1})}>
-          <View style={{width:28,height:28,alignItems:'center',justifyContent:'center'}}><Feather name={i} size={on?24:19} color={on?c.accent:c.muted}/></View>
+          <NavIcon name={i} selected={on} color={on?c.accent:c.muted}/>
           <T size={11} weight={on?'600':'500'} color={on?c.ink:c.muted} numberOfLines={1}>{l}</T>
         </Pressable>;
       })}
@@ -137,7 +138,7 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
   if (kind === 'hub') return null;
   if (kind === 'sub') return <View style={row}>
     <IconBtn icon="chevron-left" label="Back to More" onPress={onBack} />
-    <View style={{ flex: 1 }} />
+    <T weight="600" size={17} style={{flex:1}} numberOfLines={1}>{title}</T>
     <HeaderIcons controls={controls} />
   </View>;
   if (searching) return <View style={row}>
@@ -149,7 +150,8 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
     <IconBtn icon="x" label="Close search" onPress={() => { onQuery(''); setSearching(false); }} />
   </View>;
   return <View style={row}>
-    <View style={{ flex: 1, minWidth: 0, flexDirection: 'row' }}><ProjectSwitcher onPickProject={onPickProject} compact showProjectName={showProjectName} /></View>
+    <ProjectSwitcher onPickProject={onPickProject} compact showProjectName={false} />
+    <T size={17} weight="600" style={{flex:1}} numberOfLines={1}>{title}</T>
     <IconBtn icon="search" label="Search tasks" onPress={() => setSearching(true)} />
     <HeaderIcons controls={controls} />
   </View>;

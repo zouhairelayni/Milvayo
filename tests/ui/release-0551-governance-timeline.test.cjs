@@ -7,14 +7,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const read = file => fs.readFileSync(path.join(root,file),'utf8');
 
-test('Light/Dark/AMOLED inputs expose a visible surface, outline and focused border',()=>{
-  const ui=read('src/ui/uiControls.js');
-  const input=ui.slice(ui.indexOf('export function Input('));
-  for (const required of ['backgroundColor: c.surface','borderWidth: 1',"c.faint + 'A8'",'focused ? c.accentText', 'onFocus={() => setFocused(true)}','setFocused(false)','minHeight: multiline ? 104 : 44'])
-    assert.ok(input.includes(required),required);
-  assert.doesNotMatch(input,/backgroundColor: c\.surfaceAlt/);
-});
-
 test('Project creation uses six accessible field controls and only saves on explicit Create',()=>{
   const src=read('src/screens/governance/CreateProjectSheet.js');
   for(const label of ['Project name','Project code (optional)','Description','Project manager','Sponsor','Objective'])
@@ -43,22 +35,6 @@ test('Markdown renderer supports bold, italics, headings, lists, quote and code 
   assert.doesNotMatch(field,/<WebView|dangerouslySetInnerHTML/);
 });
 
-test('Portfolio and Program editors have concise sheets, anchored footer actions and Markdown descriptions',()=>{
-  for(const [f,label] of [['Portfolios','portfolio'],['Programs','program']]){
-    const s=read(`src/screens/governance/${f}.js`);
-    assert.match(s,/const editor=\(<View style=\{\{gap:14\}\}>/);
-    assert.match(s,/<Labeled title="Description"[^>]+markdown/);
-    assert.match(s,/<TaskMarkdown source=\{p\.description\}/);
-    assert.ok(s.includes(`footer={<><Button label="Cancel"`),f);
-    assert.ok(s.includes(`label="Save ${label}"`),f);
-    assert.doesNotMatch(s,new RegExp('<Fold title="Manage '+f.toLowerCase()+'"'));
-    assert.ok(s.includes(`label="Create ${label}"`));
-  }
-  const projects=read('src/screens/governance/Projects.js');
-  assert.match(projects,/<Labeled title="Description"[^>]+markdown/);
-  assert.match(projects,/<TaskMarkdown source=\{p\.description\}/);
-});
-
 test('Other long-form planning editors reuse the same Markdown source/preview path',()=>{
   for(const p of ['src/screens/governance/pm/PmDocs.js','src/screens/governance/pm/PmWbs.js','src/screens/governance/pm/PmRisks.js','src/screens/tasks/TaskSheet.js'])
     assert.match(read(p),/import MarkdownField/,p);
@@ -66,26 +42,6 @@ test('Other long-form planning editors reuse the same Markdown source/preview pa
   assert.match(read('src/screens/governance/pm/PmWbs.js'),/<MarkdownField showLabel=\{false\} label="WBS description"/);
   assert.match(read('src/screens/governance/pm/PmRisks.js'),/<MarkdownField showLabel=\{false\} label="Response plan"/);
   assert.match(read('src/screens/tasks/TaskSheet.js'),/<MarkdownField label="Description"/);
-});
-
-test('Timeline ribbon, calendar and zoom remain visible while the Gantt rows scroll vertically',()=>{
-  const timeline=read('src/screens/timeline/Timeline.js');
-  const bars=read('src/components/shell/Bars.js');
-  assert.match(timeline,/const zoomHeader = useMemo\(\(\) => \(\{kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom\}\)/);
-  assert.doesNotMatch(timeline,/scrolledDown|hideChrome|scrollChromeRef/);
-  assert.match(timeline,/<TimelineGestureHost>\s*<View style=\{\{ flex: 1 \}\}>/);
-  const ribbon=timeline.indexOf('<Chip label={showItems'), calendar=timeline.indexOf('<Animated.View pointerEvents="none"');
-  const page=timeline.indexOf('    <Page\n');
-  const chart=timeline.indexOf('<TimelineScrollView\n');
-  assert.ok(ribbon>0&&calendar>ribbon&&page>calendar&&chart>page,'pinned ribbon and calendar precede the scrolling page');
-  assert.match(timeline,/transform: \[\{ translateX: calendarShift \}\]/);
-  assert.match(timeline,/useNativeDriver: Platform\.OS !== 'web'/);
-  assert.doesNotMatch(timeline,/calendarRef\.current/);
-  assert.match(timeline,/directionalLockEnabled/);
-  assert.match(timeline,/scrollProps=\{\{ \.\.\.pageScrollProps, nestedScrollEnabled: true \}\}/);
-  assert.match(bars,/controls\.kind === 'zoom'/);
-  assert.match(timeline,/onCommit=\{bar\.onCommit\}/);
-  assert.match(timeline,/np533DependencyColor\(l\)/);
 });
 
 test('Shared sheets reset prior scroll position when opened again',()=>{

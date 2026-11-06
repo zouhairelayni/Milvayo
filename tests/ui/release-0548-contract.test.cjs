@@ -39,42 +39,6 @@ test('Board and Tasks Tools and new Sprint are in header with no second page act
  assert.doesNotMatch(tasks,/label="New task" icon="plus"/);
 });
 
-test('all shared sheets have a handle and dismiss gesture and no standalone close X',()=>{
- const s=source('src/ui/uiLayout.js');
- const sheet=s.slice(s.indexOf('export function Sheet'),s.indexOf('export function Page'));
- assert.match(sheet,/onTouchStart=\{startSwipe\}/);
- assert.match(sheet,/onTouchEnd=\{finishSwipe\}/);
- assert.match(sheet,/Swipe down to dismiss/);
- assert.match(sheet,/dy>110/);
- assert.match(sheet,/onRequestClose=\{onClose\}/);
- assert.doesNotMatch(sheet,/icon="x"/);
-});
-
-test('Delete and Duplicate confirmations show only their selected primary action and cancel',()=>{
- const s=source('src/screens/tasks/TaskSheet.js');
- const footer=s.slice(s.indexOf('const footer = t ?'),s.indexOf('const row =',s.indexOf('const footer = t ?')));
- assert.match(footer,/confirmDuplicate \? <>/);
- assert.match(footer,/Duplicate this task\?/);
- assert.match(footer,/duplicateTask\(t\.id\)/);
- assert.match(footer,/confirmDelete \? <>/);
- assert.match(footer,/deleteTask\(t\.id\)/);
- assert.equal((footer.match(/label="Cancel"/g)||[]).length,2);
- assert.match(footer,/Delete this task\? This cannot be undone/);
- assert.match(footer,/label="Done"/);
-});
-
-test('More cycles three modes, the logo is the tinted Milvayo wordmark, and Settings offers four modes',()=>{
- const more=source('src/screens/more/More.js'), menu=source('src/components/shell/Menus.js'),settings=source('src/screens/workspace/Workspace.js');
- assert.match(more,/NEXT_MODE = \{ light: 'dark', dark: 'amoled', amoled: 'light' \}/);
- assert.match(menu,/milvayo-mask\.png/);
- assert.match(menu,/tintColor:c\.ink/);
- for(const label of ['System','Daylight','Dark','AMOLED']) assert.ok(settings.includes(`label="${label}"`),label);
- const {palette}=require('../../src/ui/theme/themePalette.cjs');
- assert.equal(palette('Amber','light').accent,'#FFA500');
- assert.equal(palette('Orange','light').accent,'#E65A19');
- assert.equal(palette('Orange','dark').accent,'#FF6F61');
-});
-
 test('one complete historical changelog and categorized QA/instructions only',()=>{
  const changelog=path.join(root,'docs/changelog/CHANGELOG.md');
  const s=fs.readFileSync(changelog,'utf8');

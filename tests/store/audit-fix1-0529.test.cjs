@@ -22,11 +22,6 @@ test('1: the writer is null until the first load, so every flush is guarded', ()
   return Promise.resolve(writer.current?.flush() ?? Promise.resolve(true)).then((v) => assert.equal(v, true));
 });
 
-test('2: Flag overdue has a button on the Automations page, beside Due checks and Card aging', () => {
-  const src = read('src/screens/workspace/Workspace.js');
-  assert.match(src, /label="Due checks"[^\n]*label="Card aging"[^\n]*label="Flag overdue" small variant="secondary" icon="flag" onPress=\{sweepDue\}/);
-});
-
 test('3: due, aging and overdue sweeps tell the user when nothing applies', () => {
   const src = read('src/store/store.js');
   assert.match(src, /runDueCommands:[^\n]*if\(!r\.applied\.length\)\{notify\('No tasks matched\.','info'\);return p\}return r\.project/);

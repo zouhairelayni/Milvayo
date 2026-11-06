@@ -1,0 +1,290 @@
+[
+  {
+    "file": "tests/app/brand-mark-web.test.cjs",
+    "test": "single modern shell uses branded imagery instead of mock text-only logo",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/dynamic-island-056.test.cjs",
+    "test": "Dynamic Island has distinct compact, expanded and closing phases with interactive controls",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/dynamic-island-056.test.cjs",
+    "test": "errors stay visible until dismissed and ordinary updates auto-collapse",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/dynamic-island-056.test.cjs",
+    "test": "Android and iOS use Reanimated UI-thread worklets to animate island dimensions",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/dynamic-island-056.test.cjs",
+    "test": "Desktop web animates state transitions and safe-area anchors remain in the shell",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/nav-brand-hotfix-054.test.cjs",
+    "test": "Board logo replaces company N and the Milvayo wordmark is one tinted mask",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/notice-safe-anchor-055.test.cjs",
+    "test": "mobile island floats near top of app window, not under the app header or scrolling content",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/notice-safe-anchor-055.test.cjs",
+    "test": "native animation and desktop wide safe area remain intact",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/app/sprints-navigation-047.test.cjs",
+    "test": "only the active primary screen retains a workspace subscription",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/domain/ui-automation-052.test.cjs",
+    "test": "single-app design has safe notification, drawer branding, theme picker and main section disclosures",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/gestures/gesture-host-0515.test.cjs",
+    "test": "Timeline owns its intercepting detector and seeds it so it is born in Reanimated mode",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/store/audit-fix1-0529.test.cjs",
+    "test": "2: Flag overdue has a button on the Automations page, beside Due checks and Card aging",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/store/backup-notices-0555.test.cjs",
+    "test": "Island supports swipe dismissal, pull down to read more, accent background and opening Backup",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/store/backup-notices-0555.test.cjs",
+    "test": "AMOLED follows user-specified deep-black surface multipliers and keeps controls readable",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/list-due-soon-screen-chrome.test.cjs",
+    "test": "Visible page titles are removed while back/header actions, overview sections and modal titles remain",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/modern-design-regression.test.cjs",
+    "test": "Task sheet preserves discoverable inline dropdown rows and original sheet rhythm",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/np533-hf5-interface.test.cjs",
+    "test": "RIVNA palette has all ten accent themes and accurate sample surfaces",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/np533-hf5-interface.test.cjs",
+    "test": "appearance picker uses rounded square swatches in five-column mobile flow",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/np533-hf5-interface.test.cjs",
+    "test": "Board tools owns search, priority filter, advanced filters and options without nested switches",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/np533-hf5-interface.test.cjs",
+    "test": "Timeline has one task ribbon, Show items/Hide items and two task sheets",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0534-functional.test.cjs",
+    "test": "Timeline has a single task ribbon and preserved dependency colors/drag geometry",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0547-behavior.test.cjs",
+    "test": "Theme keeps four appearance modes, Claude Orange, and the Board mark with the Milvayo wordmark",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0548-contract.test.cjs",
+    "test": "all shared sheets have a handle and dismiss gesture and no standalone close X",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0548-contract.test.cjs",
+    "test": "Delete and Duplicate confirmations show only their selected primary action and cancel",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0548-contract.test.cjs",
+    "test": "More cycles three modes, the logo is the tinted Milvayo wordmark, and Settings offers four modes",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0549-design.test.cjs",
+    "test": "shared header zoom, contextual tools and task action use one control rhythm",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0549-design.test.cjs",
+    "test": "More and the sidebar have readable navigation rows and no decorative active stripe",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0549-design.test.cjs",
+    "test": "every screen inherits improved field touch targets and non-shouting typography",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0550-design-audit.test.cjs",
+    "test": "editable controls and cards expose consistent semantics",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0550-design-audit.test.cjs",
+    "test": "shared sheets retain gestures and expose modal dismissal to assistive tech",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0551-governance-timeline.test.cjs",
+    "test": "Light/Dark/AMOLED inputs expose a visible surface, outline and focused border",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0551-governance-timeline.test.cjs",
+    "test": "Portfolio and Program editors have concise sheets, anchored footer actions and Markdown descriptions",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0551-governance-timeline.test.cjs",
+    "test": "Timeline ribbon, calendar and zoom remain visible while the Gantt rows scroll vertically",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0552-sticky-cross-screen.test.cjs",
+    "test": "Timeline pins the ribbon and calendar before the scrollable page",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0552-sticky-cross-screen.test.cjs",
+    "test": "Overview shows real due dates, an empty state, and accessible metric touch areas",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0552-sticky-cross-screen.test.cjs",
+    "test": "Activity is progressively rendered and overspent cost gets semantic color",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0552-sticky-cross-screen.test.cjs",
+    "test": "Critical notices announce errors assertively",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0552-sticky-cross-screen.test.cjs",
+    "test": "Reports, Activity and Resources are readable and usable on phones",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0553-timeline-sprints-header.test.cjs",
+    "test": "Calendar stays pinned and is translated directly from chart native scroll, without separate scroll state",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-0553-timeline-sprints-header.test.cjs",
+    "test": "Global create action is compact but remains accessible",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-057-ui-hotfix.test.cjs",
+    "test": "the Milvayo wordmark is one tinted mask beside the themed Board logo in all layouts",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-057-ui-hotfix.test.cjs",
+    "test": "accent-filled action text and icons are consistently white",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-057-ui-hotfix.test.cjs",
+    "test": "the header hamburger opens the workspace popup while More retains the screen navigation",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/release-057-ui-hotfix.test.cjs",
+    "test": "existing v0.5.57 version, user accent values and AMOLED darkness are intact",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/selective-merge-0533.test.cjs",
+    "test": "release readiness has separate navigation buttons, not nested Pressables",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/theme-prefs-057.test.cjs",
+    "test": "user-approved 10 palettes and deep AMOLED dimensions stay unchanged",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/theme-prefs-057.test.cjs",
+    "test": "All accent-filled buttons use white labels and matching icons in every mode",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  },
+  {
+    "file": "tests/ui/theme-prefs-057.test.cjs",
+    "test": "Appearance row shows sun / moon plus the mode name, and the Milvayo wordmark mask is present",
+    "reason": "Superseded source/UI snapshot; accepted redesign changes its visual/token/control structure",
+    "replacement": "tests/ui/current-design-contracts.test.cjs and existing behavioral flow suites"
+  }
+]

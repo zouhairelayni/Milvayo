@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Button, Chip, Input, T } from '../../../ui/ui';
+import { Button, Chip, InlineDateField, Input, T } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import { emptyRow } from '../../../governance/pm';
@@ -22,20 +22,8 @@ export const Field = ({ label, children, hint, style }) => (
 export const Row = ({ children, gap = 12 }) => <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap }}>{children}</View>;
 
 // Keeps what is typed and writes only a valid ISO date (or an empty value).
-export function DateInput({ value, onChange, allowEmpty }) {
-  const [d, setD] = useState(value || '');
-  useEffect(() => setD(value || ''), [value]);
-  return (
-    <Input
-      value={d}
-      placeholder="YYYY-MM-DD"
-      onChangeText={(v) => {
-        setD(v);
-        if (DATE.test(v)) onChange(v);
-        else if (allowEmpty && v === '') onChange('');
-      }}
-    />
-  );
+export function DateInput({value,onChange,allowEmpty}){
+ return <InlineDateField value={value} onChange={onChange} allowEmpty={!!allowEmpty}/>;
 }
 
 // A number box that keeps its own text while typing and reports a real number.
@@ -71,7 +59,7 @@ export function MiniBtn({ icon, onPress, label, danger, disabled }) {
       hitSlop={6}
       style={({ pressed }) => ({ width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surfaceAlt, opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}
     >
-      <Feather name={icon} size={15} color={danger ? c.accent : c.ink} />
+      <Feather name={icon} size={15} color={danger ? c.danger : c.ink} />
     </Pressable>
   );
 }
@@ -122,7 +110,7 @@ export function TableEditor({ cols, rows, onChange, addLabel = 'Add row' }) {
   return (
     <View style={{ gap: 10 }}>
       {arr.map((r, n) => (
-        <View key={r.id} style={{ gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: c.line, backgroundColor: c.bg }}>
+        <View key={r.id} style={{ gap: 12, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: c.line, backgroundColor: c.bg }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <T size={12} weight="500" muted>Row {n + 1}</T>
             <MiniBtn icon="trash-2" label="Delete row" danger onPress={() => onChange(arr.filter((x) => x.id !== r.id))} />
@@ -130,7 +118,7 @@ export function TableEditor({ cols, rows, onChange, addLabel = 'Add row' }) {
           <Row>
             {cols.map((col, ci) => (
               <View key={col.key} style={{ flexBasis: ci === 0 || col.kind === 'choice' ? '100%' : 150, flexGrow: 1, flexShrink: 1, gap: 6 }}>
-                <T size={11} weight="600" muted>{col.label}</T>
+                <T size={13} weight="500" muted>{col.label}</T>
                 {col.kind === 'choice' ? (
                   <Choice options={col.options} value={r[col.key]} onChange={(v) => set(r.id, col.key, v)} />
                 ) : col.kind === 'number' ? (

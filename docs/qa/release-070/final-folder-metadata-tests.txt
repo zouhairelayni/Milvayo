@@ -1,0 +1,22 @@
+✔ the project root holds no code files except the Expo entry App.js (12.122962ms)
+✔ src has no loose code files, and tests/ has no loose code files except run-all.cjs (1.624231ms)
+✔ every test is a *.test.cjs inside a tests/<group>/ folder (0.926308ms)
+✔ every code file starts with a comment holding its own /path (96.228347ms)
+✔ every relative import and require in App.js, src, tests and scripts points to a real file (211.520154ms)
+✔ Milvayo release versions, build numbers and cumulative changelog agree (6.637384ms)
+✔ one app entry, one store, and no legacy screen reachable (7.917847ms)
+✔ app does not replace dependency files during initialization (2.808115ms)
+✔ timeline does not jump away from task bars after opening (0.960577ms)
+✔ management screens use original domain mutation layer (4.649231ms)
+✔ all legacy management capabilities are presented in one compact interface (9.790308ms)
+✔ one cumulative changelog under docs/changelog and QA/instructions in their own directories (11.736962ms)
+✔ four phone sections plus Create, all other screens through More (7.7875ms)
+✔ unique encrypted backup format reference lives only in docs/instructions (2.500846ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 724.138538

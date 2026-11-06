@@ -1,0 +1,9 @@
+{
+  "sourceFiles": 201,
+  "nativeTransforms": 18,
+  "errors": [],
+  "version": "0.6.3",
+  "android": 63,
+  "ios": 63,
+  "kind": "source checks only; no build/runtime test"
+}

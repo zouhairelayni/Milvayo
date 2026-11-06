@@ -1,7 +1,7 @@
 // /src/screens/governance/Portfolios.js
 import { View } from 'react-native';
 import { useState } from 'react';
-import { ScreenIntro, Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
+import { EmptyState, FormSection, MetricStrip, ScreenIntro, Bar, Button, Card, Chip, Page, Pill, Sheet, T } from '../../ui/ui';
 import { EditRow, Labeled, DangerConfirm } from '../../components/inline/CompactTools';
 import { useStore } from '../../store/store';
 import { useTheme } from '../../ui/theme/theme';
@@ -17,16 +17,18 @@ export default function Portfolios({embedded=false,openProject}) {
  const select=p=>{setEditing(p?.id||'new');setName(p?.name||'');setDescription(p?.description||'');setMembers(p?.projectIds||[]);setObjective(p?.objective||'');setManager(p?.manager||'');setStatus(p?.status||'Active')};
  const open=id=>openProject?openProject(id):switchProject(id);
  const save=()=>{if(savePortfolio({id:editing==='new'?'':editing,name,description,projectIds:members,objective,manager,status})){setEditing(null)}};
- const editor=(<View style={{gap:14}}>
+ const editor=(<View style={{gap:20}}>
+    <FormSection title="Portfolio purpose">
     <Labeled title="Name" value={name} onChange={setName}/><Labeled title="Description" value={description} onChange={setDescription} markdown/><Labeled title="Objective" value={objective} onChange={setObjective} multiline/><Labeled title="Manager" value={manager} onChange={setManager}/><T muted size={12}>Status</T><View style={{flexDirection:'row',gap:7,flexWrap:'wrap'}}>{['Planned','Active','Completed'].map(k=><Chip key={k} label={k} active={status===k} onPress={()=>setStatus(k)}/>)}</View>
-    <T size={12} muted>Projects in this portfolio</T>
+    </FormSection><FormSection title="Projects in this portfolio" description="Membership links the original project; its tasks are not copied.">
     <View style={{flexDirection:'row',flexWrap:'wrap',gap:7}}>{projects.map(p=><Chip key={p.id} label={p.name} active={members.includes(p.id)} onPress={()=>setMembers(old=>old.includes(p.id)?old.filter(x=>x!==p.id):[...old,p.id])}/>)}</View>
+    </FormSection>
    </View>);
  const content=<>
   <Sheet visible={!!editing} onClose={()=>setEditing(null)} title={editing==='new'?'Create portfolio':'Edit portfolio'} showNotice={false}
    footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setEditing(null)}/><Button label="Save portfolio" small disabled={!name.trim()} onPress={save}/></>}>{editor}</Sheet>
-  <ScreenIntro title="Portfolios" description={`${(workspace.portfolios||[]).length} portfolios · group projects and inspect delivery health.`} action={<Button small label="Create portfolio" icon="plus" onPress={()=>select(null)}/>}/>
-  {!(workspace.portfolios||[]).length?<T muted size={13}>No portfolios yet. Create one to group projects, then include it in a program.</T>:null}
+  <ScreenIntro title="Connected projects" description={`${(workspace.portfolios||[]).length} portfolios · group projects and inspect delivery health.`} action={(workspace.portfolios||[]).length?<Button small label="Create portfolio" icon="plus" onPress={()=>select(null)}/>:null}/>
+  {!(workspace.portfolios||[]).length?<EmptyState kind="people" title="A wider view of your projects" description="Bring related projects into a portfolio without duplicating their work." action={<Button label="Create portfolio" icon="plus" onPress={()=>select(null)}/>}/>:null}
   {(workspace.portfolios||[]).map(p=>{
 
    const linked=portfolioSummary(workspace,p).linked; const totals=portfolioMetric(workspace,p);
@@ -38,6 +40,7 @@ export default function Portfolios({embedded=false,openProject}) {
      <Pill label={`${linked.length} projects`} color={c.accent}/>
     </View>
     {p.description?<TaskMarkdown source={p.description}/>:null}
+    <MetricStrip items={[{label:'Projects',value:linked.length},{label:'Tasks done',value:`${done}/${total}`}]} />
     <Bar value={total?done/total:0} height={6}/>
     <T size={12} muted>{done} of {total} tasks done · ${Math.round(totals.spent).toLocaleString()} spent of ${Math.round(totals.budget).toLocaleString()} approved · {totals.health}</T>
     <EditRow title="Projects in portfolio" summary={`${linked.length} projects · tap to inspect`}>

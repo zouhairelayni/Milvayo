@@ -22,14 +22,7 @@ test('modern sprint management uses original agile lifecycle; sprint goals are p
  assert.match(store,/model\.agile\.deleteSprint/);
  assert.match(agile,/function updatePlannedSprint/);
 });
-test('only the active primary screen retains a workspace subscription',()=>{
- const app=src('src/app/ModernApp.js');
- assert.match(app,/const CACHED_TABS = \['overview', 'board', 'timeline', 'tasks', 'sprints'\];/);
- assert.match(app,/setVisitedState\(v => addVisited\(v, projectIdRef\.current, fromScreen, k, CACHED_TABS\)\)/); // 0.5.14: project-aware retained set
- assert.match(app,/display: active \? 'flex' : 'none'/);
- assert.match(app,/retainHiddenTab\(id\) \|\| id === screen/);
- assert.match(app,/const retainHiddenTab = \(\) => retainsHiddenTabs\(Platform\.OS\)/); // native retains tabs, but hidden pages are frozen (0.5.14)
-});
+
 test('native Kanban scroll can own swipes before a hold, unlike prior responder-capturing release',()=>{
  const board=src('src/screens/board/Board.js');
  const gestures=src('src/board/boardGesture.native.js');

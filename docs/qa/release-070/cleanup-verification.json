@@ -1,0 +1,264 @@
+{
+  "release": "0.7.0",
+  "ownerReportedExpoBuild": "successful",
+  "ownerAuthorized": "remove redesign/temporary folders, commit 0.7.0, push work",
+  "removedAt": "2026-11-06T16:48:22.441674+00:00",
+  "removed": [
+    {
+      "path": "/mnt/milvayo-pre-070-20261106T161452Z",
+      "type": "directory"
+    },
+    {
+      "path": "/tmp/milvayo-062-acceptance-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-backup-path",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-baseline-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-current-contracts.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-current-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-dependency-tree.err",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-dependency-tree.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-expo-check.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-final-comparison.txt",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-final-metadata-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-installed-tree.err",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-installed-tree.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-main-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-orphans.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-reconcile.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-repaired-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-rsync-applied.txt",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-rsync-plan.txt",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-source-check.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-source-graph.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-070-working-status.txt",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-acceptance-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-board-drag.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-browser-baseline-events.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-browser-results.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-browser.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-browser.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-capture.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-chromium-probe.err",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-chromium-probe.txt",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-complete-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-design-detect.err",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-design-detect.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-dialog.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-expo-check.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-final-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-focused-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-focused.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-inspect.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-interactions.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-interactions.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-isolated-browser-backup.json",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-latest-focused.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-preset-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-remediation-browser",
+      "type": "directory"
+    },
+    {
+      "path": "/tmp/milvayo-remediation-final-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-remediation-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-remediation-tests2.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-runtime.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-scroll.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-startup.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-startup.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-targeted.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-tests-final.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-tests.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-tools",
+      "type": "directory"
+    },
+    {
+      "path": "/tmp/milvayo-update-tests.py",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-validate-browser.cjs",
+      "type": "file/link"
+    },
+    {
+      "path": "/tmp/milvayo-validation-062.log",
+      "type": "file/link"
+    },
+    {
+      "path": "/data/data/com.termux/files/usr/tmp/sw-Zb2zm4",
+      "type": "test directory"
+    },
+    {
+      "path": "/data/data/com.termux/files/usr/tmp/sw-X7mESG",
+      "type": "test directory"
+    }
+  ],
+  "privateSigningFilesPreserved": true,
+  "activeDependenciesPreserved": true,
+  "otherProjectFoldersPreserved": true,
+  "runtimeOrBuildRunByAgent": false,
+  "postCleanupTests": {
+    "pass": 14,
+    "fail": 0
+  }
+}

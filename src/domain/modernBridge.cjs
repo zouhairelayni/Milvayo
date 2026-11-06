@@ -86,18 +86,23 @@ function builtTask(p,t,types,hours,commentSrc){
 const same=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
 const section=()=>{let deps=null,out;return (d,compute)=>{if(!deps||!same(deps,d)){out=compute();deps=d;}return out;};};
 const boardView=new WeakMap();
+const healthCache=new WeakMap();
+function healthFor(project,today){
+ const hit=healthCache.get(project);if(hit?.day===today)return hit.value;
+ const value=model.operations.health(project,today);healthCache.set(project,{day:today,value});return value;
+}
 const viewParts={boards:section(),tasks:section(),checks:section(),sprints:section(),releases:section(),portfolios:section(),project:section(),labour:section(),contributors:section(),automations:section(),activity:section(),taskTypes:section()};
-function projectView(ws){const p=ws.projects.find(p=>p.id===ws.selectedId)||ws.projects[0];
+function projectView(ws){const today=day(),p=ws.projects.find(p=>p.id===ws.selectedId)||ws.projects[0];
  const boards=viewParts.boards([p.boards],()=>p.boards.map(b=>{let v=boardView.get(b);if(!v||v.lists!==b.lists){v={...b,lists:listSafe(b)};boardView.set(b,v);}return v;}));
  const tasks=viewParts.tasks([p.tasks,p.boards,p.taskTypes,p.timeEntries,p.comments],()=>{const hours=new Map(),commentSrc=new Map(),types=new Map((p.taskTypes||[]).map(t=>[t.id,t.name]));
   for(const e of p.timeEntries||[])hours.set(e.taskId,(hours.get(e.taskId)||0)+e.hours);
   for(const c of p.comments||[]){if(!commentSrc.has(c.taskId))commentSrc.set(c.taskId,[]);commentSrc.get(c.taskId).push(c);}
   return p.tasks.slice().sort((a,b)=>a.position-b.position).map(t=>builtTask(p,t,types,hours,commentSrc));});
  const checks=viewParts.checks([p.tasks],()=>p.tasks.flatMap(t=>t.tests.map(x=>({id:`${t.id}::${x.id}`,title:x.title,taskId:t.id,status:x.result,evidence:!!x.evidence}))));
- const sprints=viewParts.sprints([p.sprints,day()],()=>(p.sprints||[]).map(x=>{const burn=model.agile.burndown(p,x.id);return {...x,velocity:x.state==='completed'?(model.operations.sprintVelocity(p).find(v=>v.id===x.id)?.completed||0):null,burn:burn.length?{days:burn.map(v=>v.date.slice(5)),ideal:burn.map(v=>v.ideal),recorded:burn.map(v=>v.remaining)}:null};}));
+ const sprints=viewParts.sprints([p.sprints,today],()=>{const velocity=new Map(model.operations.sprintVelocity(p).map(v=>[v.id,v.completed]));return (p.sprints||[]).map(x=>{const burn=model.agile.burndown(p,x.id,today);return {...x,velocity:x.state==='completed'?(velocity.get(x.id)||0):null,burn:burn.length?{days:burn.map(v=>v.date.slice(5)),ideal:burn.map(v=>v.ideal),recorded:burn.map(v=>v.remaining)}:null};});});
  const releases=viewParts.releases([p.releases,p.tasks],()=>p.releases.map(r=>({...r,stage:r.status,version:r.version||r.name,tasks:p.tasks.filter(t=>t.releaseId===r.id).map(t=>t.id),ready:model.canRelease(r,p)})));
- const portfolios=viewParts.portfolios([ws.portfolios,ws.projects],()=>(ws.portfolios||[]).map(x=>{const ps=ws.projects.filter(p=>x.projectIds.includes(p.id));return {id:x.id,name:x.name,projects:ps.map(z=>z.name),health:ps.some(z=>model.operations.health(z).attention)?'At risk':'On track',progress:ps.length?ps.reduce((n,z)=>n+model.operations.health(z).progress,0)/(ps.length*100):0};}));
- const project=viewParts.project([p.name,p.version,p.tasks,p.budget],()=>({name:p.name,release:p.version,due:p.tasks.filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).at(-1)?.due||day(),budget:p.budget?.amount||0}));
+ const portfolios=viewParts.portfolios([ws.portfolios,ws.projects,today],()=>(ws.portfolios||[]).map(x=>{const ps=ws.projects.filter(p=>x.projectIds.includes(p.id)),health=ps.map(p=>healthFor(p,today));return {id:x.id,name:x.name,projects:ps.map(z=>z.name),health:health.some(v=>v.attention)?'At risk':'On track',progress:ps.length?health.reduce((n,v)=>n+v.progress,0)/(ps.length*100):0};}));
+ const project=viewParts.project([p.name,p.version,p.tasks,p.budget,today],()=>({name:p.name,release:p.version,due:p.tasks.filter(t=>t.due).sort((a,b)=>a.due.localeCompare(b.due)).at(-1)?.due||today,budget:p.budget?.amount||0}));
  const actualLabour=viewParts.labour([p.timeEntries,p.resources],()=>model.operations.timeSummary(p).cost);
  const contributors=viewParts.contributors([p.resources],()=>(p.resources||[]).map(r=>({...r,weekly:r.weeklyHours,rate:r.hourlyRate,role:'Contributor'})));
  const automations=viewParts.automations([p.automations],()=>(p.automations||[]).map(x=>({...x,on:x.enabled,trigger:`Status becomes ${x.triggerStatus}`,action:`Set ${x.action} to ${x.value}`})));

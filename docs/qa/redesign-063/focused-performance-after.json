@@ -1,0 +1,38 @@
+{
+  "kind": "isolated CPU and operation-count audit; five warm-process samples; no native performance claims",
+  "node": "v24.18.0",
+  "fixture": {
+    "tasks": 1000,
+    "projects": 10,
+    "portfolios": 20
+  },
+  "schedule21Days": {
+    "medianMs": 0.1603,
+    "samplesMs": [
+      0.2947,
+      0.1603,
+      0.1157,
+      0.2069,
+      0.1091
+    ]
+  },
+  "projectViewEdit": {
+    "medianMs": 2.6583,
+    "samplesMs": [
+      3.9777,
+      2.6583,
+      2.4755,
+      2.5412,
+      3.072
+    ]
+  },
+  "healthCalls": {
+    "first": 10,
+    "nextEdit": 1
+  },
+  "diagnosticBurst": {
+    "events": 100,
+    "spacingMs": 5,
+    "writes": 3
+  }
+}

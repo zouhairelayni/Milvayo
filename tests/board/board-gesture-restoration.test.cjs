@@ -47,7 +47,10 @@ test('Kanban restores original MockDesign responder, auto-scroll and full list s
   assert.match(board, /cards\.map\(\(t\) => \(/); // no cap hides offscreen cards during placement
   assert.doesNotMatch(board, /visibleLimit|VirtualGestureDetector|GestureArea|DragMotion/);
   assert.match(motion, /useAnimatedStyle/);
-  assert.match(motion, /withTiming\(shift, \{ duration: 140 \}\)/);
+  assert.match(motion,/withSpring\(shift/);
+  assert.match(motion,/ReduceMotion.System/);
+  assert.match(motion,/LinearTransition/);
+  assert.match(motion,/x.get\(\)/);
   assert.doesNotMatch(motion, /PanResponder|VirtualGestureDetector|Animated\.timing/);
   assert.match(web, /from '\.\.\/gestures\/gesture'/);
   assert.match(read('src/gestures/gesture.web.js'), /onPointerDown/);

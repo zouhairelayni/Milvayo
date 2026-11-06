@@ -2,7 +2,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
-import { Button, Card, Chip, Page, Segmented, Sheet, T, useWide } from '../../ui/ui';
+import { ActionMenu, Button, Card, Chip, Page, Segmented, Sheet, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, STATUS_COLOR, PRIORITY_COLOR } from '../../ui/theme/theme';
@@ -355,7 +355,7 @@ export default function Timeline({ openTask }) {
       diagnosticMonitor.recordAction('timeline pinch started');
       k.pinching = true; k.pointer.valid = false;
       setPinching(true); setPick(null);
-      setPinchWindow(timelineZoom.previewWindow(gridW, k.scroll.x, viewportW));
+      if (Platform.OS === 'web') setPinchWindow(timelineZoom.previewWindow(gridW, k.scroll.x, viewportW));
     },
     onCommit: (width, scroll) => {
       if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(scroll)) return;
@@ -397,9 +397,10 @@ export default function Timeline({ openTask }) {
     zoomQueue.current.push({ ...result, started });
     diagnosticMonitor.recordAction(`timeline zoom input ${factor}`);
   }
-  function settleZoom(contentReady = false) {
+  function settleZoom(contentReady = false, contentWidth) {
     const pending = pendingZoom.current;
     if (!pending || Math.abs(pending.canvasWidth - gridW) > 1) return;
+    if (Number.isFinite(contentWidth) && Math.abs(contentWidth - pending.canvasWidth) > 1) return;
     const offset = clamp(pending.scroll, 0, Math.max(0, gridW - viewportW));
     k.scroll.x = offset;
     horizontalOffset.setValue(offset);
@@ -738,15 +739,17 @@ export default function Timeline({ openTask }) {
       {/* The ribbon and calendar are outside Page's vertical ScrollView; neither can scroll away. */}
       <View style={{ marginHorizontal: wide ? 32 : 16, marginTop: 4,
         overflow: 'hidden', backgroundColor: c.bg }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}
-          contentContainerStyle={{ paddingVertical: 4, alignItems: 'center', gap: 4 }}>
-          <Chip label={showItems ? 'Hide items' : 'Show items'} quiet active={showItems} onPress={() => setShowItems(!showItems)} />
-          {rows.length ? <Chip label="First task" quiet onPress={goFirst} /> : null}
+        <View style={{flexDirection:'row',alignItems:'center',gap:8,paddingVertical:8}}>
+          <View style={{flex:1,gap:2}}><T size={16} weight="600">Project schedule</T><T size={12} muted>{rows.length} scheduled · {zoomMode.toLowerCase()}</T></View>
           <Chip label="Today" quiet onPress={() => goToday(true)} />
-          <Chip label="Critical path" quiet active={showCritical} onPress={() => setShowCritical(v=>!v)} />
-          <Chip label={`Parent tasks · ${summaries.size}`} quiet active={taskPanel==='parents'} onPress={() => setTaskPanel('parents')} />
-          <Chip label={`To schedule · ${unscheduled.length}`} quiet active={taskPanel==='schedule'} onPress={() => setTaskPanel('schedule')} />
-        </ScrollView>
+          <ActionMenu label="Timeline options" items={[
+            {label:showItems?'Hide task names':'Show task names',icon:'sidebar',onPress:()=>setShowItems(v=>!v)},
+            rows.length?{label:'Jump to first task',icon:'skip-back',onPress:goFirst}:null,
+            {label:showCritical?'Hide critical path':'Show critical path',icon:'git-branch',onPress:()=>setShowCritical(v=>!v)},
+            {label:`Parent tasks · ${summaries.size}`,icon:'layers',onPress:()=>setTaskPanel('parents')},
+            {label:`To schedule · ${unscheduled.length}`,icon:'calendar',onPress:()=>setTaskPanel('schedule')},
+          ]}/>
+        </View>
         <View style={{ flexDirection: 'row', minHeight: HEAD, backgroundColor: c.bg, borderBottomWidth: 1, borderBottomColor: c.line }}>
           {showItems ? <View style={{ width: labelW, justifyContent: 'center', paddingHorizontal: 14,
               borderRightWidth: 1, borderRightColor: c.line }}><T size={12} weight="600" muted>Task</T></View> : null}
@@ -780,6 +783,7 @@ export default function Timeline({ openTask }) {
         ) : null}
       </View>
     <Page
+      intro={false}
       title="Timeline"
       scrollRef={pageRef}
       topPadding={0}
@@ -833,7 +837,7 @@ export default function Timeline({ openTask }) {
               scrollEventThrottle={16}
               onLayout={(e) => { k.size.vw = e.nativeEvent.layout.width; setViewportW(e.nativeEvent.layout.width); refreshMax(k); }}
               onScroll={horizontalScroll}
-              onContentSizeChange={() => settleZoom(true)}
+              onContentSizeChange={(width) => settleZoom(true, width)}
             >
               <TimelinePinchCanvas pinch={pinch} style={{ width: gridW }}>
                 <View ref={gridRef} collapsable={false} onLayout={refreshPaint} style={{ height: gridH }}>

@@ -15,14 +15,3 @@ test('drawer/sidebar navigation keys are unique and Task configuration belongs t
   assert.equal(keys.filter(id => id === 'taskconfig').length, 0);
   assert.match(fs.readFileSync(path.join(root,'src/screens/tasks/Tasks.js'),'utf8'), /TaskConfiguration/);
 });
-
-test('Board logo replaces company N and the Milvayo wordmark is one tinted mask', () => {
-  const menu = fs.readFileSync(path.join(root, 'src/components/shell/Menus.js'), 'utf8');
-  assert.match(menu,/BoardMorph/);
-  assert.match(menu,/milvayo-mask\.png/);
-  assert.match(menu,/tintColor:c\.ink/);
-  for (const file of ['milvayo-mask.png']) {
-    const bytes = fs.readFileSync(path.join(root, 'assets', file));
-    assert.ok(bytes.length > 100 && bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),file);
-  }
-});

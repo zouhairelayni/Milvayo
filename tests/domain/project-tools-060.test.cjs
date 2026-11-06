@@ -31,7 +31,7 @@ test('damaged or unknown switch values never stop a workspace loading and never 
 
 test('a brand-new project starts lean; the sample and existing projects do not', () => {
   assert.deepEqual(Object.entries(pt.LEAN).filter(([, v]) => v).map(([k]) => k), ['sprints', 'releases', 'testing', 'activity']);
-  assert.match(read('src/store/store.js'), /tools:projectTools\.LEAN/);
+  assert.match(read('src/store/store.js'), /tools:projectTools\.initialTools\(details.tools\)/);
   assert.ok(Object.values(model.demoProject().tools).every(Boolean));
 });
 
@@ -67,11 +67,11 @@ test('navigation follows the switches: pill, More and the wide sidebar', () => {
   const work = nav.SECTIONS.find(s => s.id === 'work');
   assert.deepEqual(ids(nav.viewsOf(work, pt.allOn())), ['board', 'timeline', 'tasks', 'sprints']);
   assert.deepEqual(ids(nav.viewsOf(work, { ...pt.allOn(), sprints: false })), ['board', 'timeline', 'tasks']);
-  assert.deepEqual(ids(nav.moreGroups(pt.LEAN).find(g => g.group === 'Project tools').items), ['releases', 'testing', 'activity']);
+  assert.deepEqual(ids(nav.moreGroups(pt.LEAN).find(g => g.group === 'Project tools').items), ['scheduling', 'releases', 'testing', 'activity']);
   const none = Object.fromEntries(pt.IDS.map(id => [id, false]));
   const groups = nav.moreGroups(none);
-  assert.deepEqual(groups.map(g => g.group), ['Project tools', 'Plan', 'App']); // the group stays, so Manage tools is always reachable
-  assert.deepEqual(groups[0].items, []);
+  assert.deepEqual(groups.map(g => g.group), ['Project tools', 'App']); // the group stays, so Manage tools is always reachable
+  assert.deepEqual(ids(groups[0].items), ['scheduling']);
   const side = nav.navFor({ ...pt.allOn(), costs: false }).flatMap(g => ids(g.items));
   assert.ok(!side.includes('costs') && side.includes('resources'));
 });
@@ -89,14 +89,14 @@ test('with every tool on, all 19 entries are reachable; switching any tool off a
   }
 });
 
-test('wiring: store action, More and Settings switches, Overview shortcuts, redirect and Create sheet follow the switches', () => {
+test('wiring: store action, More tool switches, Overview shortcuts, redirect and Create sheet follow the switches', () => {
   assert.match(read('src/store/store.js'), /setProjectTool:\(toolId,on\)=>trans\(/);
   assert.match(read('src/screens/more/More.js'), /<ProjectToolsSheet visible=\{managing\}/);
-  assert.match(read('src/screens/workspace/Workspace.js'), /label="Choose tools"/);
+  assert.doesNotMatch(read('src/screens/workspace/Workspace.js'), /label="Choose tools"/);
   const sheet = read('src/screens/more/ProjectToolsSheet.js');
   assert.match(sheet, /<Switch value=\{tools\[tool\.id\]\} onValueChange=\{on => setProjectTool\(tool\.id, on\)\}/);
   const overview = read('src/screens/overview/Overview.js');
-  for (const t of ['tools.sprints', 'tools.releases', 'tools.testing']) assert.ok(overview.includes(t), t);
+  for (const t of ['tools.releases', 'tools.testing']) assert.ok(overview.includes(t), t);
   const app = read('src/app/ModernApp.js');
   assert.match(app, /if \(!screenOn\(tools, screen\)\) go\(sectionOf\(screen\) === 'work' \? 'board' : 'more'/);
   assert.match(app, /onRelease=\{tools\.releases \?/);

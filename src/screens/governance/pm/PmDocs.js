@@ -1,13 +1,15 @@
 // /src/screens/governance/pm/PmDocs.js
 // Document views for a project: the generic PMI template editor, the stakeholder grid and the budget.
 
+import { useState } from 'react';
 import { View } from 'react-native';
-import { Bar, Button, Card, Cell, Grid, Input, Pill, SectionTitle, Segmented, Stat, T } from '../../../ui/ui';
+import { Bar, Button, Card, Cell, Grid, Input, Pill, SectionTitle, Segmented, Stat, T, MetricStrip, FormSection, Feedback } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../../ui/theme/theme';
 import { money } from '../../../governance/data';
 import { DOC_BY_KEY, DOC_COLOR, DOC_STATUS, budgetOf, docOf, docProgress, financeOf } from '../../../governance/pm';
 import { Field, ListEditor, MiniBtn, NumInput, Row, TableEditor } from './pmui';
+import {Dropdown} from '../../../components/inline/CompactTools';
 import MarkdownField from '../../../components/inline/MarkdownField';
 
 // Title, what the document is for, its status and how much of the template has content.
@@ -17,9 +19,9 @@ export function DocHeader({ docKey }) {
   const doc = docOf(s.pm, docKey);
   const pct = docProgress(s.pm, docKey);
   return (
-    <Card style={{ gap: 14 }}>
-      <View style={{ gap: 4 }}>
-        <T serifFace size={24}>{def.title}</T>
+    <View style={{ gap: 16 }}>
+      <View style={{ gap: 6 }}>
+        <T size={24} weight="600" accessibilityRole="header">{def.title}</T>
         <T size={13} muted>{def.blurb}</T>
       </View>
       <Field label="Status">
@@ -29,7 +31,7 @@ export function DocHeader({ docKey }) {
         <Bar value={pct} height={6} color={DOC_COLOR[doc.status]} />
         <T size={12} muted>{Math.round(pct * 100)}% of the template filled in</T>
       </View>
-    </Card>
+    </View>
   );
 }
 
@@ -98,11 +100,14 @@ export function DocView({ docKey, bare }) {
   const { s, setDocValue } = useStore();
   const def = DOC_BY_KEY[docKey];
   const vals = docOf(s.pm, docKey).values;
+  const [section,setSection]=useState(null);
+  const current=def.sections.some(x=>x.key===section)?section:def.sections[0]?.key;
   return (
     <View style={{ gap: 14 }}>
       {bare ? null : <DocHeader docKey={docKey} />}
+      <Dropdown title="Document section" options={def.sections.map(sec=>({value:sec.key,label:sec.label}))} value={current} onChange={setSection}/>
       {def.sections.map((sec) => (
-        <Card key={sec.key} style={{ gap: 12 }}>
+        <View key={sec.key} style={{display:current===sec.key?'flex':'none',gap:16}}>
           <SectionTitle>{sec.label}</SectionTitle>
           {sec.hint ? <T size={12} muted style={{ marginTop: -6 }}>{sec.hint}</T> : null}
           {sec.kind === 'text' ? <MarkdownField showLabel={false} label={sec.label} lazy value={vals[sec.key] || ''} onChangeText={(t) => setDocValue(docKey, sec.key, t)} placeholder="Write here" /> : null}
@@ -110,7 +115,7 @@ export function DocView({ docKey, bare }) {
           {sec.kind === 'table' ? <TableEditor cols={sec.cols} rows={vals[sec.key]} onChange={(v) => setDocValue(docKey, sec.key, v)} /> : null}
           {sec.kind === 'finance' ? <Finance value={vals[sec.key]} onChange={(v) => setDocValue(docKey, sec.key, v)} /> : null}
           {sec.kind === 'derived' ? <T size={14}>{sec.get(s)}</T> : null}
-        </Card>
+        </View>
       ))}
       {def.extra === 'grid' ? <StakeholderGrid rows={vals.register} /> : null}
     </View>
@@ -145,12 +150,8 @@ export function BudgetView() {
         </Row>
       </Card>
 
-      <Grid>
-        <Cell wide="23%" mobile="48%"><Stat label="Planned cost" value={money(b.planned)} hint="Labour and cost lines" /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Contingency" value={money(b.contingency)} hint={`${s.pm.budget.contingencyPct || 0}% of planned`} /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label="Cost baseline" value={money(b.baseline)} hint="Planned plus contingency" /></Cell>
-        <Cell wide="23%" mobile="48%"><Stat label={over ? 'Over budget by' : 'Unallocated'} value={money(Math.abs(b.unallocated))} accent={over ? PRIORITY_COLOR.Critical : STATUS_COLOR.Done} hint={over ? 'Baseline exceeds approved' : 'Approved minus baseline'} /></Cell>
-      </Grid>
+      <MetricStrip items={[{label:'Planned cost',value:money(b.planned)},{label:'Contingency',value:money(b.contingency)},
+        {label:'Cost baseline',value:money(b.baseline)},{label:over?'Over budget':'Unallocated',value:money(Math.abs(b.unallocated)),color:over?c.danger:c.success}]}/>
 
       <Card style={{ gap: 14 }}>
         <SectionTitle>Against the approved budget</SectionTitle>

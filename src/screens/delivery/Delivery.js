@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {EditRow,Labeled,DangerConfirm,Fold} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
+import { InlineDateRange, ConfirmSheet, EmptyState, ActionRow, FormSection, Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -74,6 +74,7 @@ export function Sprints({ openTask }) {
     if (!selected) return;
     const ok = confirm === 'delete' ? deleteSprint(selected.id) : finishSprint(selected.id);
     if (ok) { if (confirm === 'delete') setSelectedId(''); setConfirm(''); }
+    return ok;
   };
 
   return <Page
@@ -85,15 +86,11 @@ export function Sprints({ openTask }) {
       {s.sprints.map(sp => <Chip key={sp.id} label={`${sp.name} · ${sp.state}`} active={sp.id === selected?.id}
         onPress={() => { setSelectedId(sp.id); setConfirm(''); setBacklogLimit(25); }} />)}
     </ScrollView>
-    {!selected ? <Card style={{ gap: 10 }}>
-      <T size={15} weight="600">No sprints yet</T>
-      <T size={13} muted>Create a planned sprint, then assign tasks from the backlog.</T>
-      <Button label="Create first sprint" icon="plus" small onPress={() => startForm('create')} />
-    </Card> : <>
+    {!selected ? <EmptyState kind="schedule" title="Make space for a focused iteration" description="Create a planned sprint, then choose the work it should contain." action={<Button label="Create first sprint" icon="plus" onPress={()=>startForm('create')}/>}/> : <>
       <Card style={{ gap: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
           <View style={{ flex: 1, gap: 5 }}>
-            <T serifFace size={22} weight="500">{selected.name}</T>
+            <T size={22} weight="600">{selected.name}</T>
             <T size={12} muted>{fmt(selected.start)} – {fmt(selected.end)} · {selected.state}</T>
           </View>
           <Pill label={selected.state} color={selected.state === 'completed' ? STATUS_COLOR.Done : selected.state === 'active' ? c.accent : c.muted} />
@@ -114,13 +111,9 @@ export function Sprints({ openTask }) {
           {selected.state === 'active' ? <Button label="Finish sprint" icon="flag" small onPress={() => setConfirm('finish')} /> : null}
         </View>
         {selected.state === 'planned' && !!active ? <T size={12} muted>Finish the active sprint before starting this one.</T> : null}
-        {confirm ? <View style={{ gap: 10, padding: 12, borderWidth: 1, borderColor: c.line, borderRadius: 12 }}>
-          <T size={13}>{confirm === 'delete' ? 'Delete this planned sprint? Assigned tasks will return to the backlog. This cannot be undone.' : 'Finish this sprint? Its history and final scope will be retained; unfinished tasks return to the backlog.'}</T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            <Button label={confirm === 'delete' ? 'Delete sprint' : 'Confirm finish'} small variant={confirm === 'delete' ? 'danger' : 'primary'} onPress={commitAction} />
-            <Button label="Cancel" small variant="ghost" onPress={() => setConfirm('')} />
-          </View>
-        </View> : null}
+        {confirm?<ConfirmSheet visible title={confirm==='delete'?'Delete planned sprint?':'Finish this sprint?'}
+          description={confirm==='delete'?'Assigned tasks return to the backlog. This cannot be undone.':'The final scope and history will be retained. Unfinished tasks return to the backlog.'}
+          danger={confirm==='delete'} confirmLabel={confirm==='delete'?'Delete sprint':'Finish sprint'} onClose={()=>setConfirm('')} onConfirm={commitAction}/>:null}
         </EditRow>
       </Card>
       <Card style={{ gap: 12 }}>
@@ -174,8 +167,7 @@ export function Sprints({ openTask }) {
       </>}>
       <SprintField label="Name" value={draft.name} onChange={v => updateDraft('name', v)} placeholder="Sprint 03" />
       <SprintField label="Goal" multiline value={draft.goal} onChange={v => updateDraft('goal', v)} placeholder="What should this iteration deliver?" />
-      <SprintField label="Start (YYYY-MM-DD)" value={draft.start} onChange={v => updateDraft('start', v)} />
-      <SprintField label="End (YYYY-MM-DD)" value={draft.end} onChange={v => updateDraft('end', v)} />
+      <FormSection title="Sprint dates"><InlineDateRange start={draft.start} end={draft.end} endLabel="End" onStart={v=>updateDraft('start',v)} onEnd={v=>updateDraft('end',v)}/></FormSection>
       {validation ? <T size={12} color={PRIORITY_COLOR.Critical}>{validation}</T> : null}
     </Sheet>
   </Page>;
@@ -198,7 +190,7 @@ export function Releases({ releaseRequest = false, onReleaseRequestHandled }) {
   useHeaderActions('releases', releaseHeader, activeScreen);
   return (
     <Page title="Releases" subtitle="Release records and verification gates. No Git operations are performed here.">
-      {s.releases.length === 0 ? <Empty>No releases yet. Use New release to create one.</Empty> : null}
+      {s.releases.length === 0 ? <EmptyState title="A clear path to release" description="Collect linked work and verification gates in a release record." action={<Button label="New release" icon="plus" onPress={()=>{reset(null);setFormOpen(true);}}/>}/> : null}
       <Sheet visible={formOpen} title={editing?'Edit release':'New release'} onClose={()=>setFormOpen(false)}
         footer={<><Button label="Cancel" small variant="ghost" onPress={()=>setFormOpen(false)}/><Button label={editing?'Save changes':'Create release'} small onPress={save}/></>}>
         <Labeled title="Release name" value={name} onChange={setName}/>
@@ -213,7 +205,7 @@ export function Releases({ releaseRequest = false, onReleaseRequestHandled }) {
           <Card key={r.id} style={{ gap: 14 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <View style={{ gap: 4, flexShrink: 1 }}>
-                <T serifFace size={22} weight="500">Release {r.name}</T>
+                <T size={22} weight="600">Release {r.name}</T>
                 <T size={12} muted>{r.version} · {r.repo} · {r.tasks.length} linked tasks</T>
               </View>
               <Pill label={r.stage} color={ready ? STATUS_COLOR.Done : c.accent} />
@@ -263,7 +255,8 @@ export function Testing() {
   const selectedCheck = s.checks.find(k => k.id === selectedCheckId);
 
   return (
-    <Page title="Testing" subtitle="Acceptance checks with evidence. Results are entered by people, not run automatically.">
+    <Page title="Acceptance evidence" subtitle="A clear record of what has been checked. Results are entered by people, not run automatically.">
+      {!s.checks.length?<EmptyState title="Define what good looks like" description="Add acceptance checks to a task, then record the result and evidence here."/>:null}
       <Card style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
         {CHECK_STATES.map((st) => (
           <View key={st} style={{ flex: 1, minWidth: 56, gap: 4 }}>

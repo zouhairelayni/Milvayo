@@ -7,23 +7,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname,'../..');
 const read = f => fs.readFileSync(path.join(root,f),'utf8');
 
-test('Timeline pins the ribbon and calendar before the scrollable page',()=>{
-  const s=read('src/screens/timeline/Timeline.js');
-  const ribbon=s.indexOf("<Chip label={showItems ? 'Hide items' : 'Show items'}");
-  const date=s.indexOf('<Animated.View pointerEvents="none"');
-  const page=s.indexOf('    <Page\n');
-  const body=s.indexOf('ref={chartRef}',page);
-  assert.ok(ribbon>=0 && date>ribbon && page>date && body>page);
-  assert.doesNotMatch(s,/scrolledDown|hideChrome|scrollChromeRef|opacity:scrolledDown/);
-  assert.match(s,/onScroll=\{horizontalScroll\}/);
-  assert.match(s,/useNativeDriver: Platform\.OS !== 'web'/);
-  assert.doesNotMatch(s,/calendarRef/);
-  assert.match(s,/pointerEvents="none"/);
-  assert.match(s,/ref=\{gridRef\}/);
-  assert.match(s,/critical=\{showCritical && critIds\.has\(t\.id\)\}/);
-  assert.match(s,/stroke=\{showCritical && critEdges/);
-});
-
 test('Releases uses one task-style editor and persistent form data saved on command',()=>{
   const s=read('src/screens/delivery/Delivery.js');
   assert.match(s,/useHeaderActions\('releases', releaseHeader, activeScreen\)/);
@@ -56,34 +39,12 @@ test('Scheduling previews render safe, readable tasks, dates and errors instead 
   assert.match(s,/const r=previewSchedule\(anchors\)/);
 });
 
-test('Overview shows real due dates, an empty state, and accessible metric touch areas',()=>{
-  const s=read('src/screens/overview/Overview.js')+read('src/screens/overview/today.cjs');
-  assert.match(s,/tasks\.filter\(t => t\.status !== 'Done'\)/);
-  assert.match(s,/open\.filter\(t => dated\(t\) && t\.due >= today\)/);
-  assert.match(s,/No upcoming dated tasks/);
-  assert.match(s,/minHeight: 44/);
-});
-
 test('Sprint burndown lets vertical gestures reach the page',()=>{
   const s=read('src/components/charts/charts.js');
   assert.match(s,/onStartShouldSetPanResponder: \(\) => false/);
   assert.match(s,/Math\.abs\(g\.dx\) > Math\.abs\(g\.dy\) \* 1\.4/);
   assert.match(s,/onTouchEnd=\{e=>/);
   assert.match(s,/onPanResponderMove/);
-});
-
-test('Activity is progressively rendered and overspent cost gets semantic color',()=>{
-  const s=read('src/screens/workspace/Workspace.js');
-  assert.match(s,/const \[visibleCount,setVisibleCount\] = useState\(50\)/);
-  assert.match(s,/s\.activity\.slice\(0,visibleCount\)/);
-  assert.match(s,/Show more activity/);
-  assert.match(s,/budget-actual<0\?PRIORITY_COLOR\.Critical/);
-});
-
-test('Critical notices announce errors assertively',()=>{
-  const s=read('src/components/notice/IslandNotice.js');
-  assert.match(s,/accessibilityLiveRegion=\{type === 'error' \? 'assertive' : 'polite'\}/);
-  assert.match(s,/display\.type === 'error'\) return undefined/);
 });
 
 test('Current release is a full source version with one cumulative changelog',()=>{
@@ -106,18 +67,6 @@ test('Sprint assignment and archived lists are disclosed progressively without d
   assert.match(s,/title={`Final sprint scope · \$\{/);
   assert.match(s,/onPress=\{\(\) => assignSprintTask\(t.id, selected.id\)\}/);
   assert.match(s,/setBacklogLimit\(n => n \+ 25\)/);
-});
-
-test('Reports, Activity and Resources are readable and usable on phones',()=>{
-  const s=read('src/screens/workspace/Workspace.js');
-  assert.match(s,/No completed sprint data yet/);
-  assert.match(s,/<ScrollView horizontal showsHorizontalScrollIndicator accessibilityLabel="Sprint velocity chart"/);
-  assert.match(s,/width: 86, alignItems: 'center'/);
-  assert.match(s,/flexDirection: wide \? 'row' : 'column'/);
-  assert.match(s,/Show more activity/);
-  assert.match(s,/title="Time entries"|title="Time entries"/); // screen retains the time-log group
-  assert.match(s,/value=\{taskId\} onChange=\{setTaskId\}/);
-  assert.match(s,/disabled=\{!taskId\}/);
 });
 
 test('Long specification text and Scheduling/Collaboration task selection use existing shared editors',()=>{

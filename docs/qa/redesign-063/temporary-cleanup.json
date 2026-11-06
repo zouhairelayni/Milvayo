@@ -1,0 +1,10 @@
+{
+  "removed_owned_temporary_profiles": [
+    "docs/qa/redesign-063/chromium-profile",
+    "docs/qa/redesign-063/runtime",
+    "node_modules/.cache/redesign-runtime/chromium",
+    "node_modules/.cache/redesign-runtime/chromium-dark",
+    "node_modules/.cache/redesign-runtime/static-chromium"
+  ],
+  "retained": "Screenshots, HTML review fixtures, source/test evidence and Metro cache; no project data removed."
+}

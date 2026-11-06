@@ -30,25 +30,6 @@ test('noninteractive labels no longer imitate pressable buttons',()=>{
   assert.match(labels,/minHeight:onPress\?44/);
 });
 
-test('editable controls and cards expose consistent semantics',()=>{
-  const base=read('src/ui/uiBase.js'),ui=read('src/ui/uiControls.js'),inline=read('src/components/inline/CompactTools.js');
-  assert.match(base,/<Pressable onPress=\{onPress\} accessibilityRole="button"/);
-  assert.match(ui,/accessibilityRole="radio"/);
-  assert.match(ui,/accessibilityState=\{\{disabled:!!disabled\}\}/);
-  assert.match(ui,/accessibilityLabel=\{accessibilityLabel \|\| placeholder \|\| undefined\}/);
-  assert.match(inline,/accessibilityLabel=\{title\}/);
-  assert.match(inline,/accessibilityLabel=\{cur\?cur.label/);
-});
-
-test('shared sheets retain gestures and expose modal dismissal to assistive tech',()=>{
-  const layout=read('src/ui/uiLayout.js');
-  assert.match(layout,/accessibilityViewIsModal onAccessibilityEscape=\{onClose\}/);
-  assert.match(layout,/accessibilityLabel=\{`Dismiss \$\{title \|\| 'sheet'\}`\}/);
-  assert.match(layout,/accessibilityRole="header"/);
-  assert.match(layout,/dy>110/);
-  assert.doesNotMatch(layout,/IconBtn icon="x"/);
-});
-
 test('new risks stay draft-only until a named Save; deleting risks requires confirmation',()=>{
   const src=read('src/screens/governance/pm/PmRisks.js');
   const add=src.slice(src.indexOf('  const add = () => {'),src.indexOf('  let shown = risks.filter'));

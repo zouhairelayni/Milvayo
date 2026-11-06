@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { Button, Card, Input, Segmented, SectionTitle, T, downloadText, useWide } from '../../../ui/ui';
+import { ActionMenu, ActionRow, EmptyState, MetricStrip, Button, Card, Input, Segmented, SectionTitle, T, downloadText, useWide } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import {
@@ -63,15 +63,16 @@ function OutlineRow({ n, open, onOpen, nodes, save, select }) {
           ) : (
             <T size={12} muted>The project is the top of the structure. Add the main deliverables or phases beneath it.</T>
           )}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            <Button label="Add below" icon="corner-down-right" small variant="secondary" onPress={() => add(wbsAddChild(nodes, n.id))} />
-            {!root ? <Button label="Add next" icon="plus" small variant="secondary" onPress={() => add(wbsAddSibling(nodes, n.id))} /> : null}
-            {!root ? <Button label="Up" icon="arrow-up" small variant="ghost" onPress={() => save(wbsMove(nodes, n.id, -1))} /> : null}
-            {!root ? <Button label="Down" icon="arrow-down" small variant="ghost" onPress={() => save(wbsMove(nodes, n.id, 1))} /> : null}
-            {!root ? <Button label="Indent" icon="arrow-right" small variant="ghost" disabled={!canIndent(nodes, n.id)} onPress={() => save(wbsIndent(nodes, n.id))} /> : null}
-            {!root ? <Button label="Outdent" icon="arrow-left" small variant="ghost" disabled={!canOutdent(nodes, n.id)} onPress={() => save(wbsOutdent(nodes, n.id))} /> : null}
-            {!root ? <Button label="Delete" icon="trash-2" small variant="danger" onPress={() => { save(wbsDelete(nodes, n.id)); select(null); }} /> : null}
-          </View>
+          <ActionRow primary={<Button label="Add below" icon="corner-down-right" small onPress={() => add(wbsAddChild(nodes, n.id))} />}
+            menuLabel="Arrange work element" items={root ? [] : [
+              {label:'Add next',icon:'plus',onPress:()=>add(wbsAddSibling(nodes,n.id))},
+              {label:'Move up',icon:'arrow-up',onPress:()=>save(wbsMove(nodes,n.id,-1))},
+              {label:'Move down',icon:'arrow-down',onPress:()=>save(wbsMove(nodes,n.id,1))},
+              {label:'Indent',icon:'arrow-right',disabled:!canIndent(nodes,n.id),onPress:()=>save(wbsIndent(nodes,n.id))},
+              {label:'Outdent',icon:'arrow-left',disabled:!canOutdent(nodes,n.id),onPress:()=>save(wbsOutdent(nodes,n.id))},
+              {label:'Delete element',icon:'trash-2',danger:true,confirmation:{title:'Delete work element?',description:`Remove “${n.name}” and its nested work elements? This changes the outline only, not project tasks.`,confirmLabel:'Delete element'},onPress:()=>{const ok=save(wbsDelete(nodes,n.id));if(ok!==false)select(null);return ok;}},
+            ]}/>
+
         </Card>
       ) : null}
     </View>
@@ -110,27 +111,14 @@ export default function PmWbs() {
     <View style={{ gap: 14 }}>
       <DocHeader docKey="wbs" />
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {[['Elements', rows.length - 1], ['Work packages', leaves], ['Levels', depth], ['Estimated hours', tree.hours]].map(([label, value]) => (
-          <Card key={label} pad={12} accessibilityLabel={`${label}, ${value}`} style={{ flexBasis: wide ? '23%' : '47%', flexGrow: 1, minWidth: 0, height: 88, gap: 4, justifyContent: 'space-between' }}>
-            <T size={12} muted numberOfLines={2} style={{ lineHeight: 16 }}>{label}</T>
-            <T size={24} weight="600" numberOfLines={1} style={{ lineHeight: 28, fontVariant: ['tabular-nums'] }}>{value}</T>
-          </Card>
-        ))}
-      </View>
+      <MetricStrip items={[{label:'Elements',value:rows.length-1},{label:'Work packages',value:leaves},{label:'Levels',value:depth},{label:'Estimated hours',value:tree.hours}]}/>
 
       <Segmented fill options={[{ value: 'outline', label: 'Outline' }, { value: 'tree', label: 'Tree' }, { value: 'fishbone', label: 'Fishbone' }, { value: 'mind', label: 'Mind map' }]} value={view} onChange={setView} />
 
       {empty ? (
-        <Card style={{ gap: 12 }}>
-          <SectionTitle>Start the structure</SectionTitle>
-          <T size={13} muted>Begin from a template, or add your first element and build down from there.</T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            <Button label="Deliverable-based" small onPress={() => seedFrom(TEMPLATES.deliverables)} />
-            <Button label="Phase-based (PMI process groups)" small variant="secondary" onPress={() => seedFrom(TEMPLATES.phases)} />
-            <Button label="Add first element" icon="plus" small variant="secondary" onPress={() => { const r = wbsAddChild(nodes, WBS_ROOT); save(r.nodes); setSel(r.id); }} />
-          </View>
-        </Card>
+        <EmptyState title="Give the work a structure" description="Start with one deliverable, then break it into smaller work packages."
+          action={<ActionRow primary={<Button label="Add first element" icon="plus" onPress={()=>{const r=wbsAddChild(nodes,WBS_ROOT);save(r.nodes);setSel(r.id);}}/>}
+            menuLabel="Start from a template" items={[{label:'Deliverable-based',icon:'layers',onPress:()=>seedFrom(TEMPLATES.deliverables)},{label:'PMI process groups',icon:'list',onPress:()=>seedFrom(TEMPLATES.phases)}]}/>}/>
       ) : null}
 
       {view === 'outline' && !empty ? (
@@ -157,18 +145,10 @@ export default function PmWbs() {
       ) : null}
 
       {!empty ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {view !== 'outline' && scene ? (
-            <Button
-              label="Export diagram (SVG)"
-              icon="image"
-              small
-              variant="secondary"
-              onPress={() => downloadText(`${slug(s.project.name)}-wbs-${view}.svg`, sceneToSvg(scene, c), 'image/svg+xml')}
-            />
-          ) : null}
-          <Button label="Export WBS (CSV)" icon="download" small variant="secondary" onPress={() => downloadText(`${slug(s.project.name)}-wbs.csv`, wbsCSV(tree), 'text/csv')} />
-        </View>
+        <View style={{alignItems:'flex-end'}}><ActionMenu label="Export work structure" icon="download" items={[
+          view!=='outline'&&scene?{label:'Diagram as SVG',icon:'image',onPress:()=>downloadText(`${slug(s.project.name)}-wbs-${view}.svg`,sceneToSvg(scene,c),'image/svg+xml')}:null,
+          {label:'Outline as CSV',icon:'file-text',onPress:()=>downloadText(`${slug(s.project.name)}-wbs.csv`,wbsCSV(tree),'text/csv')},
+        ]}/></View>
       ) : null}
     </View>
   );

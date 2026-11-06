@@ -2,7 +2,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { ScreenIntro, Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
+import { ActionRow, EmptyState, ScreenIntro, Avatar, Bar, Button, Card, Chip, Empty, IconBtn, Input, Page, Sheet, T, useWide } from '../../ui/ui';
 import { useScreenActive, useStore, useStoreActions } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import {Fold} from '../../components/inline/CompactTools';
@@ -21,6 +21,7 @@ const {ageInDays} = require('../../domain/powerUps.cjs');
 const {newCtx, refreshMax, slotFor} = require('../../board/boardDragContext.cjs');
 // Native only: first cards per column appear immediately, the rest follow in small chunks.
 const EMPTY_FEATURES = Object.freeze([]);
+const LIST_LIFT = 0.6;
 const COL_WIDE = 320;
 const COL_NARROW = 280;
 const GAP = 14;
@@ -35,12 +36,12 @@ const NOSELECT = Platform.OS === 'web' ? { userSelect: 'none' } : {};
 // A card drag only matters to its source and target columns; a list drag moves every column.
 const dragFor = (drag, i) => (!drag || drag.kind === 'list' || drag.from === i || drag.to === i ? drag : null);
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-const liftShadow = (on) => ({
+const liftShadow = (on, amount = 1) => ({
   shadowColor: '#000',
   shadowOpacity: on ? 0.25 : 0,
   shadowRadius: 14,
-  shadowOffset: { width: 0, height: 8 },
-  elevation: on ? 8 : 0,
+  shadowOffset: { width: 0, height: 8 * amount },
+  elevation: on ? 8 * amount : 0,
 });
 
 
@@ -204,7 +205,7 @@ export default function Board({ openTask }) {
       scrollProps={pageScrollProps}
       onScroll={(e) => { k.scroll.y = e.nativeEvent.contentOffset.y; }}
     >
-      <ScreenIntro title={board.name} description={`${cards.length} visible tasks across ${lists.length} lists. Hold a card to move it, or open it to edit.`}/>
+      <ScreenIntro title={board.name} description={`${cards.length} tasks · ${lists.length} lists`}/>
       <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{flex:1,flexGrow:1}} contentContainerStyle={{gap:8,alignItems:'center'}}>
           {boards.map((b) => <BoardChip key={b.id} board={b} active={b.id === board.id} onSelect={() => setBoardId(b.id)} onManage={() => setManaging(true)} />)}
@@ -221,10 +222,13 @@ export default function Board({ openTask }) {
         </Card>
       ) : null}
 
-      <View ref={stripBoxRef}>
+      {/* Lift above the ribbon without reparenting the held responder or shifting the lists. */}
+      <View ref={stripBoxRef} collapsable={false} style={{zIndex:locked?20:0,overflow:'visible'}}>
         <ScrollView
           ref={stripRef}
           horizontal
+          removeClippedSubviews={false}
+          style={{marginTop:locked?-96:0,...(Platform.OS!=='web'?{overflow:locked?'visible':'hidden'}:{})}}
           scrollEnabled={!locked}
           scrollEventThrottle={16}
           nestedScrollEnabled
@@ -234,7 +238,7 @@ export default function Board({ openTask }) {
           onContentSizeChange={(w) => { k.size.cw = w; refreshMax(k); }}
           onScroll={(e) => { k.scroll.x = e.nativeEvent.contentOffset.x; ensureColumns(k.scroll.x, k.size.vw); }}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: GAP, paddingBottom: locked ? 320 : 8, alignItems: 'flex-start' }} // extra room below while dragging, so a card isn't clipped by the strip
+          contentContainerStyle={{ gap: GAP, paddingTop:locked?96:0, paddingBottom: locked ? 320 : 8, alignItems: 'flex-start' }} // extra room below while dragging, so a card isn't clipped by the strip
         >
           {lists.length === 0 ? <Empty>No lists. Use Add list to create one.</Empty> : null}
           {lists.map((l, i) => (
@@ -275,7 +279,7 @@ export default function Board({ openTask }) {
         </ScrollView>
       </View>
 
-      <Sheet visible={boardToolsOpen} onClose={() => setBoardToolsOpen(false)} title="Tools" showNotice={false}
+      <Sheet visible={boardToolsOpen} onClose={() => setBoardToolsOpen(false)} title="Board view" showNotice={false}
         footer={<Button label="Done" onPress={() => setBoardToolsOpen(false)} />}>
         <View style={{gap:8}}>
           <T size={14} weight="600">Find cards</T>
@@ -456,17 +460,19 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
     <BoardMotion
       ref={colRef}
       offset={offset}
+      lifted={lifted}
+      liftAmount={LIST_LIFT}
       shift={drag ? shiftTo : 0}
       style={{
         width,
         backgroundColor: c.surfaceAlt,
-        borderRadius: 14,
-        borderWidth: 1, borderColor: c.line,
+        borderRadius: 16,
+        borderWidth: 0, borderColor: c.line,
         padding: 12,
         gap: 10,
         zIndex: lifted || listDragging || cardFromHere ? 6 : 0,
         opacity: lifted ? 0.94 : 1,
-        ...liftShadow(lifted),
+        ...liftShadow(lifted, LIST_LIFT),
       }}
     >
       <View
@@ -495,6 +501,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
         <TaskCard
           key={t.id}
           t={t}
+          previewY={cardHere&&drag.id!==t.id&&drag.before===t.id?14:0}
           board={board}
           features={features}
           labelColors={labelColors}
@@ -510,14 +517,11 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
       ))}
 
       {shown < cardTotal ? <Button label={`Show more (${cardTotal-shown} remaining)`} small variant="secondary" onPress={()=>setShown(n=>Math.min(cardTotal,n+10))} /> : null}
-      {cardTotal === 0 ? <View style={{ padding: 20, borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', borderColor: c.line }}><T size={12} muted center>No tasks in this list</T></View> : null}
+      {cardTotal === 0 ? <EmptyState compact title="Space for the next step" description="Add a card below, or move work here."/> : null}
 
-      {cardHere && lineY !== null ? (
-        <View
-          pointerEvents="none"
-          style={{ position: 'absolute', left: 4, right: 4, top: lineY, height: 3, borderRadius: 2, backgroundColor: c.accent, zIndex: 5 }}
-        />
-      ) : null}
+      {cardHere && lineY !== null ? <View pointerEvents="none" style={{position:'absolute',left:12,right:12,top:Math.max(42,lineY-8),height:22,borderRadius:11,backgroundColor:c.accent,zIndex:5,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:6}}>
+        <Feather name="corner-down-right" size={12} color={c.accentInk}/><T size={10} weight="600" color={c.accentInk}>Place task here</T>
+      </View>:null}
 
       <AddCard onAdd={(title) => addTask(title, list.status, board.id, { list: list.id })} />
 
@@ -554,7 +558,7 @@ const ListColumn = memo(function ListColumn({ board, list, index, total, step, w
 // One tap opens the task. Hold and drag moves it, to any list and any position.
 // Double-tap the title to edit it in place.
 
-const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={}, showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
+const TaskCard = memo(function TaskCard({ t, previewY=0, board, features=[], labelColors={}, showDescriptions=false, fromIndex, total, step, openTask, setDrag, setLock, k }) {
   const { c } = useTheme();
   const { updateTask, placeTask } = useStoreActions();
   const [editing, setEditing] = useState(false);
@@ -625,6 +629,9 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
     <BoardMotion
       offset={offset}
       ref={cardRef}
+      lifted={lifted}
+      previewY={previewY}
+      layoutKey={`${t.list}:${t.position}`}
       accessibilityRole="button"
       accessibilityLabel={`${t.title}, ${t.status}, ${t.priority} priority`}
       onAccessibilityTap={() => openTask(t.id)}
@@ -640,11 +647,12 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
         ...liftShadow(lifted),
       }}
     >
-      <Card pad={16} style={{gap:12, borderRadius:12}}>
+      <View style={{padding:18,gap:18,borderRadius:16,backgroundColor:lifted?c.elevated:c.surface,borderWidth:1,borderColor:lifted?c.accent:c.line}}>
+        <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><T size={10} muted>{t.id.toUpperCase()}</T><Feather name="file-text" size={14} color={c.faint}/></View>
         <TaskLabels labels={t.labels} colors={labelColors} compact />
         <View ref={titleRef} collapsable={false}>
           {editing?<Input value={titleDraft} autoFocus onChangeText={v=>{titleDraftRef.current=v;setTitleDraft(v);}} onSubmitEditing={endTitleEdit} onBlur={endTitleEdit} style={{backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,fontWeight:'600',fontSize:14}}/>:
-            <T size={14} weight="500" numberOfLines={3} style={{lineHeight:21}}>{t.title}</T>}
+            <T size={16} weight="500" numberOfLines={3} style={{lineHeight:23}}>{t.title}</T>}
         </View>
         {showDescriptions&&t.description?<T muted size={12} numberOfLines={2}>{t.description.replace(/[#*`_~]/g,'')}</T>:null}
         {features.includes('aging')&&t.status!=='Done'?<T muted size={11}>Updated {ageInDays(t)}d ago</T>:null}
@@ -659,7 +667,7 @@ const TaskCard = memo(function TaskCard({ t, board, features=[], labelColors={},
           <View style={{flex:1}}/>
           {t.owner?<Avatar name={t.owner} size={20}/>:null}
         </View>
-      </Card>
+      </View>
     </BoardMotion>
   );
 });

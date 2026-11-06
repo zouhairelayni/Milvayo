@@ -1,7 +1,9 @@
 // /src/components/charts/charts.js
 import { useRef, useState } from 'react';
 import { PanResponder, Platform, Pressable, View } from 'react-native';
-import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Stop, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import TracePath from './TracePath';
+import {useId} from 'react';
 import { T } from '../../ui/ui';
 import { useTheme } from '../../ui/theme/theme';
 
@@ -13,6 +15,7 @@ const WEB_TOUCH = Platform.OS === 'web' ? { touchAction: 'pan-y' } : {};
 // Touch or drag across the chart to read any day; tap a legend item to hide or show that line.
 export function BurnChart({ burn, height = 200 }) {
   const { c } = useTheme();
+  const gradient=useId().replace(/[^a-z0-9]/gi,'');
   const [width, setWidth] = useState(320);
   const [sel, setSel] = useState(null); // selected day index; null means the latest day
   const [show, setShow] = useState({ ideal: true, recorded: true });
@@ -77,6 +80,7 @@ export function BurnChart({ burn, height = 200 }) {
           if(t&&a&&Math.abs(t.pageX-a.x)<8&&Math.abs(t.pageY-a.y)<8&&Number.isFinite(e.nativeEvent.locationX))pick(e.nativeEvent.locationX);}}
         style={[{ width: '100%', height }, WEB_TOUCH]}>
         <Svg width={width} height={height} pointerEvents="none">
+          <Defs><LinearGradient id={gradient} x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor={c.accent} stopOpacity={.2}/><Stop offset="1" stopColor={c.accent} stopOpacity={0}/></LinearGradient></Defs>
           {ticks.map((tv) => (
             <Line key={'g' + tv} x1={padL} x2={width - padR} y1={y(tv)} y2={y(tv)} stroke={c.line} strokeWidth={1} />
           ))}
@@ -85,7 +89,7 @@ export function BurnChart({ burn, height = 200 }) {
               {tv}
             </SvgText>
           ))}
-          {burn.days.map((d, di) => chartType === 'line' || di === 0 || di === n - 1 ? (
+          {burn.days.map((d, di) => di===0||di===n-1||di%Math.max(1,Math.ceil(n/5))===0 ? (
             <SvgText
               key={d}
               x={x(di)}
@@ -107,7 +111,7 @@ export function BurnChart({ burn, height = 200 }) {
             {show.ideal ? burn.ideal.map((v, di) => <Line key={'ideal' + di} x1={x(di) - barWidth / 2} x2={x(di) + barWidth / 2} y1={y(v)} y2={y(v)} stroke={c.ink} strokeOpacity={0.55} strokeWidth={2} />) : null}
           </> : <>
           {show.ideal ? <Path d={line(burn.ideal)} stroke={c.muted} strokeWidth={2} strokeDasharray="6,5" fill="none" /> : null}
-          {show.recorded ? <Path d={line(burn.recorded)} stroke={c.accent} strokeWidth={3} fill="none" strokeLinejoin="round" /> : null}
+          {show.recorded ? <><Path d={`${line(burn.recorded)} L${x(n-1)},${height-padB} L${x(0)},${height-padB} Z`} fill={`url(#${gradient})`}/><TracePath d={line(burn.recorded)} length={(width+height)*2} stroke={c.accent} strokeWidth={2.5} fill="none" strokeLinejoin="round" strokeLinecap="round"/></> : null}
           {show.recorded
             ? burn.recorded.map((v, di) => (
                 <Circle key={'d' + di} cx={x(di)} cy={y(v)} r={di === i ? 7 : 4.5} fill={c.accent} stroke={c.surface} strokeWidth={2} />

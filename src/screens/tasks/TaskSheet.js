@@ -2,17 +2,20 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
+import PressSurface from '../../ui/PressSurface';
 import TaskMarkdown from '../../components/inline/TaskMarkdown';
 import MarkdownField from '../../components/inline/MarkdownField';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { COLORS, textColor } from '../../ui/labelPalette.cjs';
-import { Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
+import { InlineDateRange, ActionMenu, FormSection, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
 import { useStore } from '../../store/store';
 import { useProjectTools } from '../../store/useProjectTools';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR, serif } from '../../ui/theme/theme';
 import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';
 import InlineNotice from '../../components/notice/InlineNotice';
 import { Field, InlineDrop, DateField, CustomValueInput } from './TaskFields';
+import { Fold } from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
 import { descendants } from '../../domain/taskWorkflows.cjs';
 const NONE = new Set();
@@ -31,7 +34,7 @@ export function NewTaskSheet({ onClose, onSave, extra }) {
   return <Sheet visible onClose={onClose} title="Create task" showNotice={false}
     footer={<><Button label="Cancel" small variant="ghost" onPress={onClose}/><Button label="Save task" small icon="check" disabled={!title.trim() || title.trim().length>240} onPress={save}/></>}>
     <View style={{gap:8}}><T weight="600">Task title</T><Input value={title} onChangeText={setTitle} autoFocus accessibilityLabel="New task title" placeholder="What needs to be done?"/></View>
-    <MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/>
+    <Fold title="Add a description" initial={false}><MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/></Fold>
     <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>
     <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>
     {extra}
@@ -44,13 +47,14 @@ export default function TaskSheet({ taskId, onClose }) {
   const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
   const t = s.tasks.find((x) => x.id === taskId);
   const [open, setOpen] = useState(null);
+  const [detailTab,setDetailTab]=useState('activity');
   const [descriptionEditing, setDescriptionEditing] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [labelColorDraft, setLabelColorDraft] = useState(COLORS[0]);
   const [labelEditor, setLabelEditor] = useState(false);
   const [comment, setComment] = useState('');
   const [githubUrl,setGithubUrl]=useState('');
-  const [confirmDelete,setConfirmDelete]=useState(false),[confirmDuplicate,setConfirmDuplicate]=useState(false),[subTitle,setSubTitle]=useState(''),[logHours,setLogHours]=useState('1');
+  const [subTitle,setSubTitle]=useState(''),[logHours,setLogHours]=useState('1');
   const [depDraft, setDepDraft] = useState('');
   const [parentDraft, setParentDraft] = useState('');
   const [labelDraft, setLabelDraft] = useState('');
@@ -60,11 +64,11 @@ export default function TaskSheet({ taskId, onClose }) {
 
   useEffect(() => {
     setOpen(null); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);
-    setConfirmDelete(false); setConfirmDuplicate(false); setGithubUrl(''); setSubTitle(''); setLogHours('1');
+    setGithubUrl(''); setSubTitle(''); setLogHours('1');
     setComment(''); setDepDraft(''); setParentDraft(''); setLabelDraft('');
     setCheckDraft(''); setAttachmentName(''); setAttachmentUrl('');
   }, [taskId]);
-  useEffect(() => { setOpen(null); }, [tools.advancedTasks]);
+  useEffect(() => { setOpen(null); if(!tools.advancedTasks)setDetailTab('activity'); }, [tools.advancedTasks]);
 
   const active = s.sprints.find((x) => x.state === 'active');
   const set = (patch, label) => t && updateTask(t.id, patch, label);
@@ -105,21 +109,20 @@ export default function TaskSheet({ taskId, onClose }) {
 
   const footer = t ? (
     <>
-      <InlineNotice />
-      {confirmDuplicate ? <>
-        <T size={12} muted>Duplicate this task?</T>
-        <Button label="Duplicate" small onPress={()=>{duplicateTask(t.id);setConfirmDuplicate(false);onClose();}}/>
-        <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDuplicate(false)}/>
-      </> : confirmDelete ? <>
-        <T size={12} muted>Delete this task? This cannot be undone.</T>
-        <Button label="Delete" small onPress={()=>{if(deleteTask(t.id))onClose();setConfirmDelete(false);}}/>
-        <Button label="Cancel" small variant="ghost" onPress={()=>setConfirmDelete(false)}/>
-      </> : <>
-        <Button label="Duplicate" icon="copy" small variant="secondary" onPress={()=>setConfirmDuplicate(true)}/>
-        <Button label="Delete" icon="trash-2" small variant="secondary" onPress={()=>setConfirmDelete(true)}/>
-        <View style={{ flex: 1 }} />
-        <Button label="Done" small onPress={closeTask} />
-      </>}
+    <InlineNotice />
+    <ActionMenu label="Task actions" items={[
+      {label:'Duplicate task',icon:'copy',confirmation:{title:'Duplicate this task?',description:'Create a copy and keep this task open.',confirmLabel:'Duplicate',successMessage:'Task duplicated.'},onPress:()=>{
+        if(descriptionEditing&&descriptionDraft!==(t.description||'')){
+          if(set({description:descriptionDraft})===false)return false;
+          setDescriptionEditing(false);
+        }
+        return duplicateTask(t.id)||false;
+      }},
+      {label:'Delete task',icon:'trash-2',danger:true,confirmation:{title:'Delete this task?',description:'This removes the task and cannot be undone here.',confirmLabel:'Delete'},onPress:()=>{
+        const ok=deleteTask(t.id);if(ok)onClose();return !!ok;
+      }},
+    ]}/>
+    <View style={{flex:1}}/><Button label="Done" small onPress={closeTask}/>
     </>
   ) : null;
 
@@ -131,12 +134,59 @@ export default function TaskSheet({ taskId, onClose }) {
     <Sheet visible={!!t} onClose={closeTask} title={t ? 'Task details' : ''} footer={footer} showNotice={false}>
       {t ? (
         <>
-          <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontFamily:serif,fontSize:23,fontWeight:'600',backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:2,minHeight:48}} />
+          <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontSize:24,fontWeight:'600',lineHeight:32,backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:4,minHeight:56}} />
+          <View style={{gap:10}}>
+            <T size={16} weight="700">Description</T>
+            {descriptionEditing?<Card pad={12} style={{gap:10}}>
+              <T size={12} muted>Markdown source · **bold**, *italic*, headings and lists</T>
+              <Input value={descriptionDraft} onChangeText={setDescriptionDraft} multiline placeholder="Add a description..." style={{minHeight:160,fontSize:14}}/>
+              <View style={{flexDirection:'row',gap:8}}>
+                <PressSurface accessibilityRole="button" accessibilityLabel="Save description" onPress={()=>{
+                  if(descriptionDraft!==(t.description||'')&&set({description:descriptionDraft})===false)return;
+                  setDescriptionEditing(false);
+                }} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
+                  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={c.accentText} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" accessible={false}><Path d="M20 6 9 17 4 12"/></Svg>
+                </PressSurface>
+                <PressSurface accessibilityRole="button" accessibilityLabel="Cancel description editing" onPress={()=>setDescriptionEditing(false)} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
+                  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={c.danger} strokeWidth={2} strokeLinecap="round" accessible={false}><Path d="m6 6 12 12M18 6 6 18"/></Svg>
+                </PressSurface>
+              </View>
+            </Card>:<Pressable accessibilityRole="button" accessibilityLabel="Edit description" onPress={()=>{setDescriptionDraft(t.description||'');setDescriptionEditing(true);}} style={{padding:14,borderRadius:12,backgroundColor:c.surface,borderWidth:1,borderColor:c.line,minHeight:72}}>
+              {t.description?<TaskMarkdown source={t.description}/>:<T muted size={13}>Add a description of the task, its purpose and next steps...</T>}
+            </Pressable>}
+          </View>
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:8,alignItems:'center'}}>
             <Pill label={s.boards.find(b=>b.id===t.board)?.name || 'Board'} color={c.muted} />
             <Pill label={t.status} color={STATUS_COLOR[t.status]} />
             {isOverdue(t)?<Pill label="Overdue" color={PRIORITY_COLOR.Critical}/>:null}
             {blocked?<Pill label="Blocked" color={PRIORITY_COLOR.High}/>:null}
+          </View>
+          <View style={{gap:4}}>
+            <T size={16} weight="600" style={{marginBottom:4}}>Plan this task</T>
+            {row('status', 'Status', t.status,
+              <Segmented options={STATUS} value={t.status} onChange={(v) => { moveTask(t.id, v); setOpen(null); }} />)}
+            {row('schedule', 'Schedule', `${t.start ? fmt(t.start) : 'No start'} – ${t.due ? fmt(t.due) : 'No due'}`,
+              <View style={{ gap: 12 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                  <InlineDateRange start={t.start} end={t.due} onStart={v=>set({start:v})} onEnd={v=>set({due:v})}/>
+                </View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                  <View style={{ flex: 1, minWidth: 135 }}><Field label="Effort (hours)">
+                    <Input value={String(t.effort)} keyboardType="numeric" onChangeText={(v) => set({ effort: Number(v) || 0 })} />
+                  </Field></View>
+                  <View style={{ flex: 1, minWidth: 135 }}><Field label="Logged hours">
+                    <T size={13} muted style={{ paddingTop: 9 }}>{String(t.logged)}h · see Time tracking above</T>
+                  </Field></View>
+                </View>
+              </View>)}
+            {row('priority', 'Priority', t.priority,
+              <Segmented options={PRIORITIES} value={t.priority} onChange={(v) => { set({ priority: v }, `Priority of "${t.title}" set to ${v}`); setOpen(null); }} />)}
+            {row('owner', 'Owner', t.owner || 'Unassigned',
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {[...new Set([...s.contributors.map((p) => p.name), 'Unassigned'])].map((name) => (
+                  <Chip key={name} label={name} active={t.owner === name} onPress={() => { set({ owner: name }, `Assigned "${t.title}" to ${name}`); setOpen(null); }} />
+                ))}
+              </View>)}
           </View>
           <View style={{gap:10}}>
             <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
@@ -162,49 +212,9 @@ export default function TaskSheet({ taskId, onClose }) {
               {t.labels.length?<><T size={12} weight="600">Recolor assigned labels</T><View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{t.labels.map(name=><Button key={name} small variant="secondary" label={`Recolor ${name}`} onPress={()=>setLabelColor(name,labelColorDraft)}/>)}</View></>:null}
             </Card>:null}
           </View>
-          <View style={{gap:10}}>
-            <T size={16} weight="700">Description</T>
-            {descriptionEditing?<Card pad={12} style={{gap:10}}>
-              <T size={12} muted>Markdown source · **bold**, *italic*, headings and lists</T>
-              <Input value={descriptionDraft} onChangeText={setDescriptionDraft} multiline placeholder="Add a description..." style={{minHeight:160,fontSize:14}}/>
-              <View style={{flexDirection:'row',gap:8}}>
-                <Button small label="Save & preview" onPress={()=>{if(descriptionDraft!==t.description)set({description:descriptionDraft});setDescriptionEditing(false);}}/>
-                <Button small variant="ghost" label="Cancel" onPress={()=>setDescriptionEditing(false)}/>
-              </View>
-            </Card>:<Pressable accessibilityRole="button" accessibilityLabel="Edit description" onPress={()=>{setDescriptionDraft(t.description||'');setDescriptionEditing(true);}} style={{padding:14,borderRadius:12,backgroundColor:c.surface,borderWidth:1,borderColor:c.line,minHeight:72}}>
-              {t.description?<TaskMarkdown source={t.description}/>:<T muted size={13}>Add a description of the task, its purpose and next steps...</T>}
-            </Pressable>}
-          </View>
-          <View style={{gap:4}}>
-            <T size={15} weight="700" style={{marginTop:4,marginBottom:4}}>Essentials</T>
-            {row('status', 'Status', t.status,
-              <Segmented options={STATUS} value={t.status} onChange={(v) => { moveTask(t.id, v); setOpen(null); }} />)}
-            {row('schedule', 'Schedule', `${t.start ? fmt(t.start) : 'No start'} – ${t.due ? fmt(t.due) : 'No due'}`,
-              <View style={{ gap: 12 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-                  <DateField label="Start" value={t.start} onValid={(v) => set({ start: v })} />
-                  <DateField label="Due" value={t.due} onValid={(v) => set({ due: v })} />
-                </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-                  <View style={{ flex: 1, minWidth: 135 }}><Field label="Effort (hours)">
-                    <Input value={String(t.effort)} keyboardType="numeric" onChangeText={(v) => set({ effort: Number(v) || 0 })} />
-                  </Field></View>
-                  <View style={{ flex: 1, minWidth: 135 }}><Field label="Logged hours">
-                    <T size={13} muted style={{ paddingTop: 9 }}>{String(t.logged)}h · see Time tracking above</T>
-                  </Field></View>
-                </View>
-              </View>)}
-            {row('priority', 'Priority', t.priority,
-              <Segmented options={PRIORITIES} value={t.priority} onChange={(v) => { set({ priority: v }, `Priority of "${t.title}" set to ${v}`); setOpen(null); }} />)}
-            {row('owner', 'Owner', t.owner || 'Unassigned',
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                {[...new Set([...s.contributors.map((p) => p.name), 'Unassigned'])].map((name) => (
-                  <Chip key={name} label={name} active={t.owner === name} onPress={() => { set({ owner: name }, `Assigned "${t.title}" to ${name}`); setOpen(null); }} />
-                ))}
-              </View>)}
-          </View>
-          <View style={{gap:4}}>
-            <T size={15} weight="700" style={{marginBottom:4}}>Activity & files</T>
+
+          <Segmented fill options={[{value:'activity',label:'Activity & files'},...(tools.advancedTasks?[{value:'planning',label:'Planning & delivery'}]:[])]} value={detailTab} onChange={setDetailTab}/>
+          <View style={{display:detailTab==='activity'?'flex':'none',gap:8}}>
             {row('checks', 'Acceptance checks', `${checks.filter((k) => k.status === 'passed').length}/${checks.length} passed`,
               <View style={{ gap: 10 }}>
                 {checks.map((k) => (
@@ -247,7 +257,7 @@ export default function TaskSheet({ taskId, onClose }) {
                 <Button label="Post comment" small disabled={!comment.trim()} onPress={() => { addComment(t.id, comment); setComment(''); }} />
             </View>
           </View>
-          {tools.advancedTasks?<View style={{gap:4}}>
+          {tools.advancedTasks?<View style={{display:detailTab==='planning'?'flex':'none',gap:8}}>
             <T size={16} weight="700">Advanced planning & delivery</T>
             <T size={12} muted>Detailed planning and delivery fields for this project.</T>
             {row('subtasks', 'Subtasks', `${s.tasks.filter(x=>x.parentId===t.id).length} child tasks`,

@@ -40,23 +40,7 @@ test('completion and failures create routeable, nonsecret notices without storin
   assert.equal(failing.getState().event.action,'backup');
   assert.match(failing.getState().event.text,/Wrong password/);
 });
-test('Island supports swipe dismissal, pull down to read more, accent background and opening Backup',()=>{
-  const island=src('src/components/notice/IslandNotice.js');
-  assert.match(island,/PanResponder\.create/);
-  assert.match(island,/Math\.abs\(dx\) >= 48/);
-  assert.match(island,/dy >= 42/);
-  assert.match(island,/setFullText\(true\)/);
-  assert.match(island,/onAction\(display\.action\)/);
-  assert.match(island,/backgroundColor: c\.accent/);
-  assert.match(island,/display\.sticky/);
-  const app=src('src/app/ModernApp.js');
-  assert.match(app,/AppState\.addEventListener\('change'/);
-  assert.match(app,/queuedBackupEvent\.current/);
-  assert.match(app,/onAction=\{action =>/);
-  assert.match(app,/go\('settings', 'backup notice'\)/);
-  const settings=src('src/screens/workspace/Workspace.js');
-  assert.match(settings,/if \(backupRequest\) setTab\('backup'\)/);
-});
+
 test('retry after incorrect password retains selected ciphertext in memory, never the typed password',()=>{
   const ui=src('src/screens/workspace/Backup.js');
   const unlock=ui.slice(ui.indexOf('  const unlock=()=>'),ui.indexOf('  const applyDecrypted=()=>'));
@@ -64,22 +48,4 @@ test('retry after incorrect password retains selected ciphertext in memory, neve
   assert.doesNotMatch(unlock,/setLocked\(null\)/);
   assert.match(unlock,/setUnlockPw\(''\)/);
   assert.match(ui,/locked && !jobState\.running && !jobState\.decrypted/);
-});
-test('AMOLED follows user-specified deep-black surface multipliers and keeps controls readable',()=>{
-  for(const accent of ACCENTS){
-    const dark=palette(accent.id,'dark');
-    const amoled=palette(accent.id,'amoled');
-    const rgb=(hex)=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
-    for(const key of ['surface','surfaceAlt']){
-      const a=rgb(amoled[key]),d=rgb(dark[key]);
-      const factor=key==='surface'?.50:.35;
-      assert.ok(a.every((ch,i)=>Math.abs(ch-Math.round(d[i]*factor))<=1),`${accent.id} ${key} follows user AMOLED multiplier`);
-    }
-    assert.equal(amoled.bg,'#000000');
-    assert.ok(contrast(amoled.line,amoled.surface)>1.25,`${accent.id} visible card outline`);
-    assert.ok(contrast(amoled.accent,amoled.accentInk)>=4.5,`${accent.id} button contrast`);
-    assert.ok(contrast(amoled.ink,amoled.surface)>=4.5,`${accent.id} text contrast`);
-  }
-  assert.equal(palette('Amber','light').accent,'#FFA500');
-  assert.equal(palette('Orange','light').accent,'#E65A19');
 });

@@ -11,8 +11,8 @@ const read = f => fs.readFileSync(path.resolve(__dirname, '../..', f), 'utf8');
 
 test('Timeline control inventory: Items, First task, Today, Critical path, Parents, To schedule, zoom, Open, move/resize/link, Remove/Keep, conflict repair, sample schedule and sheet dismissal', () => {
   const s = read('src/screens/timeline/Timeline.js');
-  for (const label of ['Hide items', 'Show items', 'First task', 'Today', 'Critical path', 'Parent tasks', 'To schedule', 'Remove', 'Keep', 'Move after predecessors', 'Schedule the sample tasks']) assert.ok(s.includes(label), label);
-  for (const callback of ['goFirst', 'goToday(true)', 'setShowItems(!showItems)', "setTaskPanel('parents')", "setTaskPanel('schedule')", 'setShowCritical(v=>!v)', 'onCommit={bar.onCommit}', 'onPreview={bar.onPreview}', 'onLink={bar.onLink}', 'onClose={()=>setTaskPanel(null)}', 'onAccessibilityTap={() => onOpen(t.id)}']) assert.ok(s.includes(callback), callback);
+  for (const label of ['Hide task names', 'Show task names', 'Jump to first task', 'Today', 'Show critical path', 'Parent tasks', 'To schedule', 'Remove', 'Keep', 'Move after predecessors', 'Schedule the sample tasks']) assert.ok(s.includes(label), label);
+  for (const callback of ['goFirst', 'goToday(true)', 'setShowItems(v=>!v)', "setTaskPanel('parents')", "setTaskPanel('schedule')", 'setShowCritical(v=>!v)', 'onCommit={bar.onCommit}', 'onPreview={bar.onPreview}', 'onLink={bar.onLink}', 'onClose={()=>setTaskPanel(null)}', 'onAccessibilityTap={() => onOpen(t.id)}']) assert.ok(s.includes(callback), callback);
   assert.match(s, /kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom/);
   const preset = s.slice(s.indexOf('  function chooseZoom(value)'), s.indexOf('  const zoomHeader'));
   assert.match(preset, /timelineZoom.rebaseZoom/);
@@ -54,11 +54,11 @@ test('Softer view pills preserve all options, selection, press feedback and call
   const h = screenHarness('src/ui/uiControls.js', {});
   const calls = [];
   const tree = h.render('Segmented', { options: ['Board', 'Timeline', 'List', 'Sprints'], value: 'Timeline', fill: true, onChange: v => calls.push(v) });
-  assert.equal(tree.props.style.borderRadius, 14); assert.equal(tree.props.style.padding, 4);
+  assert.equal(tree.props.style.borderRadius, 24); assert.equal(tree.props.style.padding, 4);
   const radios = nodes(tree).filter(n => n.props.accessibilityRole === 'radio');
   assert.equal(radios.length, 4); assert.equal(radios.filter(n => n.props.accessibilityState.checked).length, 1);
   radios.forEach(n => n.props.onPress()); assert.deepEqual(calls, ['Board', 'Timeline', 'List', 'Sprints']);
-  assert.equal(radios[0].props.style({ pressed: false }).borderRadius, 9);
+  assert.equal(radios[0].props.style({ pressed: false }).borderRadius, 20);
   assert.notEqual(radios[0].props.style({ pressed: false }).backgroundColor, radios[0].props.style({ pressed: true }).backgroundColor);
   const normal = h.render('Chip', { label: 'Result', active: true, onPress() {} });
   const quiet = h.render('Chip', { label: 'Today', quiet: true, active: true, onPress() {} });

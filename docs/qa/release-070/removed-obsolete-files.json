@@ -1,0 +1,33 @@
+{
+  "files": [
+    "src/components/shell/useSidebar.js",
+    "src/gestures/viewport.cjs",
+    "src/governance/theme.js",
+    "src/governance/ui.js",
+    "src/screens/delivery/Sprints.js",
+    "src/ui/theme/design.cjs",
+    "src/ui/theme/layout.cjs",
+    "src/utils/progressiveCount.cjs",
+    "tests/timeline/viewport.test.cjs",
+    "package.json.backup",
+    "README-HF5.md",
+    "README-HF5-COMPAT.md",
+    "README-HF5-COMPAT-V2.md",
+    "README-UPDATE-0.5.33.md",
+    "scripts/apply-np-0533-hf5.cjs",
+    "scripts/apply-np-mobile-web-and-dependency-colors.cjs",
+    "scripts/apply-np-portrait-hf2.cjs",
+    "scripts/apply-np-v0.5.33.cjs",
+    "scripts/set-np-version-0533.cjs",
+    "scripts/reconcile-np-0533-tests.cjs",
+    "summary.md",
+    "RESUME.md",
+    "README-THEME-ICONS.txt"
+  ],
+  "generatedDirectories": [
+    "android",
+    ".expo"
+  ],
+  "orphanSourceReason": "Not reachable from Expo entry on any platform or app config plugin; replaced implementations remain covered by current regression suites",
+  "retiredOrphanOnlyTests": 12
+}

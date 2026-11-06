@@ -67,7 +67,19 @@ test('Bottom bar has no upper outline or selected surface, selected icons grow a
   const props = { tabs: [['home', 'Home', 'home'], ['work', 'Work', 'columns']], current: 'home', go: id => calls.push(id), intent: { begin: target => ({ target }), accept: () => true }, onCreate() {} };
   const tree = h.render('TabBar', props); assert.equal(tree.props.style.borderTopWidth, undefined);
   const home = control(tree, 'Home'), work = control(tree, 'Work'); assert.equal(home.props.style({}).backgroundColor, undefined);
-  assert.equal(nodes(home).find(n => n.type === 'Feather').props.size, 24); assert.equal(nodes(work).find(n => n.type === 'Feather').props.size, 19);
+  assert.equal(nodes(home).find(n => n.type === 'NavIcon').props.selected, true); assert.equal(nodes(work).find(n => n.type === 'NavIcon').props.selected, false);
   work.props.onPressIn({ nativeEvent: { timestamp: 1 } }); work.props.onPress({ nativeEvent: { timestamp: 2 } }); assert.deepEqual(calls, ['work']);
   assert.ok(control(tree, 'Create'));
+});
+
+
+test('More workspace row opens the shared compact manager directly, starts with Workspaces and forwards project picks',()=>{
+ const calls=[],h=screenHarness('src/components/shell/Menus.js',store());
+ const entry=h.render('WorkspaceSwitcher',{onPickProject:(...args)=>calls.push(args)});assert.equal(entry.type.name,'ProjectSwitcher');assert.equal(entry.props.workspaceTrigger,true);
+ const render=()=>h.render(entry.type,entry.props);let tree=render();assert.equal(nodes(tree).some(n=>n.type==='Modal'),false);assert.equal(nodes(tree).some(n=>n.type==='Sheet'),false);
+ const row=drawer(tree,'WorkspaceRow');h.render(row.type,row.props).props.onPress();tree=render();
+ assert.equal(nodes(tree).find(n=>n.type==='Sheet').props.compact,true);assert.equal(nodes(tree).find(n=>n.type==='Segmented').props.value,'Workspaces');assert.equal(drawer(tree,'WorkspaceDrawer').props.embedded,true);assert.equal(nodes(tree).some(n=>n.type==='Modal'),false);
+ nodes(tree).find(n=>n.type==='Segmented').props.onChange('Projects');tree=render();let projects=drawer(tree,'ProjectDrawer');control(h.render(projects.type,projects.props),'Open project Studio').props.onPress();assert.deepEqual(calls,[['p1',false]]);assert.equal(nodes(render()).some(n=>n.type==='Sheet'),false);
+ row.props.onPress();tree=render();nodes(tree).find(n=>n.type==='Segmented').props.onChange('Projects');tree=render();projects=drawer(tree,'ProjectDrawer');projects.props.onPick('new-project',true);assert.deepEqual(calls.at(-1),['new-project',true]);
+ row.props.onPress();tree=render();nodes(tree).find(n=>n.type==='Sheet').props.onClose();assert.equal(nodes(render()).some(n=>n.type==='Sheet'),false);
 });

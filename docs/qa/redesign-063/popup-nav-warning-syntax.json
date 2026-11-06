@@ -1,0 +1,25 @@
+{
+  "kind": "Source parse and Babel worklet transforms; no build or runtime test",
+  "files": 196,
+  "worklets": [
+    "src/board/boardGesture.native.js",
+    "src/board/boardMotion.native.js",
+    "src/components/charts/Column.native.js",
+    "src/components/charts/TracePath.native.js",
+    "src/components/inline/DisclosureGlyph.native.js",
+    "src/components/inline/InlineEditor.native.js",
+    "src/components/notice/NoticeMotion.native.js",
+    "src/components/shell/DrawerMotion.native.js",
+    "src/components/shell/NavIcon.native.js",
+    "src/gestures/DiagramGesture.native.js",
+    "src/gestures/TimelinePinch.native.js",
+    "src/gestures/gesture.native.js",
+    "src/gestures/gestureSurface.native.js",
+    "src/ui/CountValue.native.js",
+    "src/ui/FillMotion.native.js",
+    "src/ui/PressSurface.native.js",
+    "src/ui/Reveal.native.js",
+    "src/ui/ScreenPresence.native.js"
+  ],
+  "errors": []
+}

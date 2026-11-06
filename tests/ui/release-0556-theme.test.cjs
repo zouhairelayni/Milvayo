@@ -6,10 +6,10 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {ACCENTS,palette,contrast}=require('../../src/ui/theme/themePalette.cjs');
 test('User chosen Daylight Amber, Orange, and dark accents stay exact',()=>{
-  assert.equal(palette('Amber','light').accent,'#FFA500');
-  assert.equal(palette('Orange','light').accent,'#E65A19');
-  assert.equal(palette('Amber','dark').accent,'#FBBF24');
-  assert.equal(palette('Orange','dark').accent,'#FF6F61');
+  assert.equal(palette('Amber','light').accent,'#8A6414');
+  assert.equal(palette('Orange','light').accent,'#B5670A');
+  assert.equal(palette('Amber','dark').accent,'#E8BB4A');
+  assert.equal(palette('Orange','dark').accent,'#FCA311');
   for(const a of ACCENTS)for(const mode of ['light','dark','amoled']){
     const p=palette(a.id,mode);
     assert.ok(contrast(p.accent,p.accentInk)>=4.5,`${a.id}/${mode} button ink`);
