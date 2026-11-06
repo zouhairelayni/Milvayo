@@ -55,3 +55,15 @@ Use the existing Metro workflow with the main folder. Reload once to exercise a 
 No data migration. Source rollback is the owner-built 0.7.0 checkpoint `5541a9b6ee611341de8fbda628a56cf7f5278a90`. Review the current diff before discarding work; use a clean checkout of that checkpoint with its matching lockfile/dependencies if rollback is needed. Avoid extracting an old tree over new-only source/assets. Preserve AsyncStorage, credentials and signing files. No automatic reset/clean, temporary project copy or redesign folder was created.
 
 Design review: the scoped before-audit and five-line product direction are in `IMPLEMENTATION-PLAN.md`. Unslop by [Damir Sokolovsky](https://heydamir.design/unslop), CC BY 4.0; credit retained. Shared neutral chrome, the original Board geometry and the approved in-screen design remain.
+
+## GitHub native-source packaging correction (2026-11-06)
+
+The owner’s GitHub run passed regression tests but failed prebuild while copying `src/platform/android/AlternateIcons.kt`. Root cause: the unanchored `android/` ignore rule also excluded that authored source directory. The adapter existed in the local workspace, so earlier source tests passed without proving it was shipped. The earlier staged-file checks did not catch the omission.
+
+Scope: anchor generated-native ignore rules to `/android/` and `/ios/`, and include the existing Kotlin adapter in Git. Keep the adapter, plugin callback, aliases, version 0.7.9/79, Metro configuration, dependencies, data and UI behavior unchanged. No migration. An ignored-source scan found no other excluded files under `src/`, `tests/` or `scripts/` after this correction.
+
+The new regression first failed with the original ignore rule. It creates a disposable Git index using the project ignore rules, checks that generated native projects stay excluded, and reconstructs the adapter and plugin from staged blobs. It executes only the plugin callback against a mock dependency: the exact Kotlin source must copy successfully, and a moved upstream target must still fail safely. This does not invoke Expo prebuild, Gradle or the installed native module. Temporary fixtures are removed in `finally`.
+
+Focused packaging/icon-safety/folder checks: **Pass**, 11 tests. Full `npm test`: **Pass**, 827 tests, zero failures/skips/cancellations (`native-packaging-tests.txt`). Offline Expo compatibility: **Pass**, with Expo’s offline-validation warning (`native-packaging-dependency-check.txt`). JSX parsing remains part of the full suite. GitHub APK/prebuild rerun, Kotlin compilation, Metro and device/browser acceptance: **Not run by agent**. No build or workflow dispatch. Publish through the previously authorized `work` → `main` path, without a version tag.
+
+Rollback is a reviewed revert of this correction; it changes no persisted data or signing material, but reverting would restore the reported clean-checkout packaging failure. Preserve app data and credentials.

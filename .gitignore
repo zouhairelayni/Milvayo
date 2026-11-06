@@ -1,8 +1,9 @@
 node_modules/
 dist/
 .expo/
-android/
-ios/
+# Expo-generated projects only; keep authored native adapters under src/.
+/android/
+/ios/
 *.log
 .env*
 !.env.example

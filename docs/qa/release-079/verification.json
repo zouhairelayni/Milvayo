@@ -49,5 +49,25 @@
     "verification": "Resulting commit and merge are recorded in Git history; remote refs checked after publication",
     "forcePush": false,
     "versionTagOrBuildDispatch": false
+  },
+  "nativePackagingFollowup": {
+    "rootCause": "Unanchored android/ ignored authored src/platform/android/AlternateIcons.kt",
+    "fix": "Anchor generated root native directories and ship original Kotlin adapter",
+    "reproducedBeforeFix": true,
+    "focusedTests": {
+      "pass": 11,
+      "fail": 0
+    },
+    "fullNodeSuite": {
+      "pass": 827,
+      "fail": 0,
+      "skip": 0
+    },
+    "jsxSourceGuard": "Pass as part of full suite",
+    "expoCompatibility": "Pass offline; Expo warns offline validation is unreliable",
+    "prebuildNativeBuildAndWorkflowDispatch": "Not run",
+    "runtimeDeviceBrowserAcceptance": "Not run",
+    "versionChanged": false,
+    "dataMigration": false
   }
 }

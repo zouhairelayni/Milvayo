@@ -1,5 +1,7 @@
 ## v0.7.9 — Return to island notifications (2026-11-06)
 
+- Android CI packaging correction: restrict native-project ignore rules to root `/android/` and `/ios/`, and include the authored Kotlin icon adapter consumed by the prebuild plugin. Add a clean Git-package/plugin-copy regression so locally present but unshipped adapters fail tests. No version, dependency, storage or icon behavior change; no agent build.
+
 - Restored a top-aligned island: expanded for three seconds, shrink, hold compact for three seconds after the motion settles, then dismiss. Explicit sticky work remains visible; reading/reopening, Backup actions, replacement timers, cleanup and reduced motion remain supported.
 - Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
 
