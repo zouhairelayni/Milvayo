@@ -48,6 +48,8 @@ function screenHarness(file, store, extra = {}) {
   const m = { exports: {} };
   const req = id => {
     if (extra.mocks && Object.hasOwn(extra.mocks, id)) return extra.mocks[id];
+    if(id.endsWith('/BackSurface'))return {__esModule:true,default:'BackSurface'};
+    if(id.endsWith('/useBackNavigation'))return {useBackDismiss(){}};
     if (id === 'react') return hooks;
     if (id === 'react/jsx-runtime') return require(id);
     if (id === 'react-native') return { Pressable: 'Pressable', View: 'View', ScrollView: 'ScrollView', KeyboardAvoidingView:'KeyboardAvoidingView', Image: 'Image', Modal: 'Modal', Switch: 'Switch', Platform: { OS: extra.platform || 'web' }, PanResponder: { create: handlers => ({ panHandlers: handlers }) }, useWindowDimensions: () => ({ width: extra.width || 390 }) };

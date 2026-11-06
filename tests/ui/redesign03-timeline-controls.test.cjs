@@ -15,8 +15,8 @@ test('Timeline control inventory: Items, First task, Today, Critical path, Paren
   for (const callback of ['goFirst', 'goToday(true)', 'setShowItems(v=>!v)', "setTaskPanel('parents')", "setTaskPanel('schedule')", 'setShowCritical(v=>!v)', 'onCommit={bar.onCommit}', 'onPreview={bar.onPreview}', 'onLink={bar.onLink}', 'onClose={()=>setTaskPanel(null)}', 'onAccessibilityTap={() => onOpen(t.id)}']) assert.ok(s.includes(callback), callback);
   assert.match(s, /kind:'zoom', value:zoomFactor === 1 \? zoom : 'custom', onChange:chooseZoom/);
   const preset = s.slice(s.indexOf('  function chooseZoom(value)'), s.indexOf('  const zoomHeader'));
-  assert.match(preset, /timelineZoom.rebaseZoom/);
-  assert.match(preset, /pendingZoom.current = \{ scroll, canvasWidth: width \* span \}/);
+  assert.match(preset, /timelineZoom.focusDay/);
+  assert.match(preset, /pendingZoom.current = \{ scroll, canvasWidth: width \* span, focusDay \}/);
   assert.match(preset, /horizontalOffset.setValue\(scroll\)/);
   assert.match(preset, /setScrollXPaint\(scroll\)/);
   assert.match(preset, /setZoom\(value\); setZoomFactor\(1\)/);

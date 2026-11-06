@@ -1,0 +1,36 @@
+✔ all 19 menu entries still exist, in the same order, and each has exactly one home on the phone (12.79673ms)
+✔ feature parity matrix: where every old menu entry lives now (0.757077ms)
+✔ every reachable id is a registered screen, and the retained primary views sit in Home or Work (2.13273ms)
+✔ sections: Home, Work, Projects, More; Work holds Board, Timeline, List, Sprints in that order (0.6695ms)
+✔ swipe on the bar or the pill steps one neighbour, ignores short or vertical drags, stops at the ends (0.504423ms)
+✔ bottom bar: Home, Work, Create, Projects, More; swipe and stale-press guards are kept (1.074308ms)
+✔ view pill: reuses the shared Segmented control, swipes between views, ignores the tap a swipe ends in (0.969769ms)
+✔ header keeps every per-screen control: Tools, New sprint, New release, Timeline zoom, search (2.613385ms)
+✔ Create sheet: the + button opens New task, with Project and Release one tap away (3.967ms)
+✔ More: the rest of the old menu, workspace switcher, appearance cycle and desktop layout (1.577731ms)
+✔ reused, not rebuilt: island notice, board drag, timeline gestures and dependency lines are still wired (2.642308ms)
+✔ wide layout is untouched: sidebar with all 19 entries and the toolbar New task button (1.041077ms)
+✔ every app source parses and every JSX component root has an import or local binding (1982.23196ms)
+✔ brand keeps a named Milvayo Board mark and readable wordmark at compact and wide sizes (1017.264615ms)
+✔ explicitly sticky island work remains visible with an accessible dismissal control (95.436808ms)
+✔ notification expansion and Backup action stay accessible without dismissing the current workspace (78.189192ms)
+✔ notice motion uses opacity/translation and system reduced motion on both platforms (2.3225ms)
+✔ shared buttons expose names, disabled state, matching label/icon ink and generous touch targets (99.987154ms)
+✔ fields retain accessible labels, focus contrast, disabled state and inline editing callbacks (28.518999ms)
+✔ sheets support explicit close, Android Back, accessibility escape and top-only downward dismissal (84.651577ms)
+✔ phone sub-screen titles stay readable and Back/search controls keep their callbacks (47.738269ms)
+✔ timeline retains one pinned calendar and contextual actions above the single scrolling task canvas (1.238269ms)
+✔ retained screens freeze workspace subscriptions and share a single notice host with the tour (2.987923ms)
+✔ workspace history filters and expands bounded chunks without mutating stored entries (180.672808ms)
+✔ automation checks remain distinct callable actions in their contextual Run checks menu (144.965846ms)
+✔ every top phone header omits its screen title beside the hamburger/back control, while in-screen headings remain (533.594115ms)
+✔ List has no duplicate Add task action and retains its organize/filter controls (110.072ms)
+✔ New sprint is in the scrolling selector row, absent from the top header, and opens the existing creation form (110.835115ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4175.731189

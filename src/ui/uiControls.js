@@ -29,11 +29,11 @@ export function Chip({ label, active, onPress, color, quiet = false }) {
   );
 }
 
-export function Segmented({ options, value, onChange, fill }) {
+export function Segmented({ options, value, onChange, fill, wrap = true }) {
   const { c } = useTheme();
   const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   return (
-    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: c.surface, borderRadius: 24, padding: 4, gap: 4, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: 'wrap' }}>
+    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: c.surface, borderRadius: 24, padding: 4, gap: 4, alignSelf: fill ? 'stretch' : 'flex-start', flexWrap: wrap ? 'wrap' : 'nowrap' }}>
       {opts.map((o) => {
         const on = o.value === value;
         return (

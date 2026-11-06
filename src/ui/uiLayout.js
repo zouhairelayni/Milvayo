@@ -8,9 +8,12 @@ import InlineNotice from '../components/notice/InlineNotice';
 import EmptyArtwork from '../components/illustrations/EmptyArtwork';
 import Reveal from './Reveal';
 import {IconBtn} from './uiControls';
+import BackSurface from '../app/navigation/BackSurface';
+import {useBackDismiss} from '../app/navigation/useBackNavigation';
 
 // Bottom sheet on phones, right-hand drawer on wide screens.
 export function Sheet({ visible, onClose, title, children, footer, showNotice = true, compact = false }) {
+  useBackDismiss(visible,onClose);
   const { c, mode } = useTheme();
   const wide = useWide();
   const touch = useRef(null);
@@ -26,7 +29,7 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
   };
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} onShow={() => { scrollY.current=0; bodyRef.current?.scrollTo({y:0,animated:false}); }}>
-      <SafeAreaProvider style={{ flex: 1 }}>
+      <BackSurface><SafeAreaProvider style={{ flex: 1 }}>
       <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
       <KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':'height'} style={{flex:1}}><View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: compact && wide ? 'center' : 'flex-end', alignItems: compact && wide ? 'center' : undefined, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Dismiss ${title || 'sheet'}`} onPress={onClose} style={compact ? { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } : { flex: 1 }} />
@@ -61,7 +64,7 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
         </Reveal>
       </View></KeyboardAvoidingView>
       </SafeAreaView>
-      </SafeAreaProvider>
+      </SafeAreaProvider></BackSurface>
     </Modal>
   );
 }

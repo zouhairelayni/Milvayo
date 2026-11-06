@@ -137,8 +137,8 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
   const row = { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 60 };
   if (kind === 'hub') return null;
   if (kind === 'sub') return <View style={row}>
-    <IconBtn icon="chevron-left" label="Back to More" onPress={onBack} />
-    <T weight="600" size={17} style={{flex:1}} numberOfLines={1}>{title}</T>
+    <IconBtn icon="chevron-left" label="Go back" onPress={onBack} />
+    <View style={{flex:1}}/>
     <HeaderIcons controls={controls} />
   </View>;
   if (searching) return <View style={row}>
@@ -151,7 +151,7 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
   </View>;
   return <View style={row}>
     <ProjectSwitcher onPickProject={onPickProject} compact showProjectName={false} />
-    <T size={17} weight="600" style={{flex:1}} numberOfLines={1}>{title}</T>
+    <View style={{flex:1}}/>
     <IconBtn icon="search" label="Search tasks" onPress={() => setSearching(true)} />
     <HeaderIcons controls={controls} />
   </View>;

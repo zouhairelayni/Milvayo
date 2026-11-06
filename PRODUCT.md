@@ -43,3 +43,8 @@ Milvayo name and original Board mark remain. The user explicitly replaces the pr
 Named controls, sensible Android touch areas, readable type and contrast, screen-reader semantics, keyboard behavior on web, reduced-motion support, and no animation that blocks work.
 
 Latest explicit direction: premium neutral dark and AMOLED, with complete structural redesign and new real-data charts. Personal accents must not tint page backgrounds. The owner rejected the first visual pass as insufficient. Pinch-to-zoom is reported fixed in their own test; retain that implementation.
+
+
+## 0.7.1–0.7.9 follow-up
+
+The current source version is 0.7.9. The owner requested one themed cold-start morph/hold, palette-based icon backgrounds, cross-platform Back, Timeline Today refocus/pills, quieter top navigation, List/sprint creation placement and the timed island. Only top navigation screen-name text is removed; in-screen headings remain. Preserve the 0.7.0 visual system and model/storage constraints. Implementation was prepared on `work` without a new build or deployment. The owner subsequently authorized the 0.7.9 commit, push to `work` and merge into `main`; preserve both branches’ history. Current checks and device limitations: `docs/qa/release-079/ENGINEERING-REPORT.md`.

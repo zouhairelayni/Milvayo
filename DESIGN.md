@@ -297,3 +297,14 @@ Project cards expose Edit project through Project actions while retaining the in
 Performance refinement: keep date rail pages stable through day selection; compute portfolio/calendar facts from source data without repeated work. Failed bulk task status edits retain their selection so retry stays in context. Native Reveal cancels delayed work on unmount while retaining its appearance and reduced-motion settings. CPU-only evidence and device limits: `docs/qa/redesign-063/FOCUSED-PERFORMANCE-AUDIT.md`.
 
 First-run tour: retain the supplied Board/Timeline/release slides and the four Board/Sprints/Timeline/Blank starter choices. Use the original geometric TourArtwork family, existing Reveal/PressSurface, a centered maximum 520px flow, safe-area/keyboard handling, named Skip/Back and accessible selected/disabled/error states. Empty installs may auto-open; existing/recovered workspaces require More → Take the tour. Starters configure a new empty project atomically and never replace existing work. Keep the Island notice in the tour's accessible visual layer. Native runtime acceptance remains pending.
+
+
+## 0.7.1–0.7.9 interaction amendments
+
+Top navigation bars omit screen-name text; in-screen ScreenIntro and section/dialog titles remain. The mobile List relies on the dock for task creation; New sprint belongs to its scrolling selector row. Timeline options begins with one Days/Weeks/Months pill row that focuses Today.
+
+Cold start uses the existing Board geometry once, filled with the resolved selected accent, with a one-second final hold while storage restores concurrently. Native paths run on the UI thread. Keep status-bar contrast correct before the shell mounts, and do not replay branding on warm navigation/resume. Launcher icon backgrounds use only substitute palette tones; primary ink is confined to the flat Board mark.
+
+The top notification island expands for three seconds, morphs to compact, holds for three seconds after settling and exits. Animate the childless background size and text opacity; never scale the message text. Reduced motion keeps timing and meaningful state changes. Full reading and explicit sticky states remain usable, and stale timers must not dismiss new messages.
+
+Back uses bounded per-project/workspace history, dismisses the active layer first and reserves only the narrow iOS screen edge for navigation. Preserve interior Board/Timeline/chart/calendar gestures and retain Home as the root. See `docs/qa/release-079/ENGINEERING-REPORT.md` for exact validation and limits.

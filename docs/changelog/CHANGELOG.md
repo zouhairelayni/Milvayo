@@ -1,3 +1,48 @@
+## v0.7.9 — Return to island notifications (2026-11-06)
+
+- Restored a top-aligned island: expanded for three seconds, shrink, hold compact for three seconds after the motion settles, then dismiss. Explicit sticky work remains visible; reading/reopening, Backup actions, replacement timers, cleanup and reduced motion remain supported.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.8 — Create sprints from the selector row (2026-11-06)
+
+- Moved the plus-labelled New sprint control into the horizontal sprint list and removed its top-header action. Existing create/edit validation and frozen history remain.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.7 — One task-creation entry in mobile List (2026-11-06)
+
+- Removed List’s duplicate Add task action; the bottom navigation Create control remains. Filtering and task editing are unchanged.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.6 — Quiet top navigation headers (2026-11-06)
+
+- Removed screen-name text beside the hamburger and from top back headers. Owner clarified that in-screen headings must remain: restored ScreenIntro, Timeline schedule and onboarding headings; preserved section and popup titles.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.5 — Timeline preset pills (2026-11-06)
+
+- Added Days, Weeks and Months in one pill row at the top of Timeline options. It uses the shared preset handler and keeps the options popup open.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.4 — Focus Today when changing Timeline presets (2026-11-06)
+
+- Preset changes now center Today using the new density, including Weeks/Months back to Days. Rebase drawing, calendar and native scroll together; recompute the focus after layout. Preserve pinch focal anchoring, bounded canvas, task duration and dependency behavior.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.3 — Back navigation across platforms (2026-11-06)
+
+- Added bounded, project/workspace-scoped screen history with Android system Back, iOS single-finger edge Back and web browser Back/Forward. Active sheets/tours dismiss first; history skips unavailable tools and old project scopes. Preserve diagram, chart and horizontal-list gestures.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.2 — Palette-based icon backgrounds (2026-11-06)
+
+- Generated all 30 accent/appearance icon variants with substitute-palette background gradients and solid primary-color Board marks. Updated adaptive foreground/background layers, primary/legacy/PWA artwork and cache versions; preserve the 29-alias identity map and confirmed save-before-apply behavior. Use platform-neutral Milvayo restart copy without the Expo Go message. Native launcher assets require a future compatible installed binary; no build was run.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
+## v0.7.1 — One themed cold-start logo (2026-11-06)
+
+- Play the existing Board morph once in the selected resolved accent while workspace storage restores concurrently. Native paths animate on the UI thread; hold the finished mark one second, then reveal the hydrated workspace or its existing safe error screen. Do not replay on navigation, theme changes or resume; preserve reduced motion and cancel stale completion/timer callbacks.
+- Implementation, validation and device limits: `docs/qa/release-079/ENGINEERING-REPORT.md`.
+
 ## v0.7.0 — Premium redesign promoted to the main workspace (2026-11-06)
 
 - Promoted the approved redesign, first-run tour, interaction and stability fixes into the main Milvayo workspace. Replace source, tests and installed Expo/React Native dependencies together; delete obsolete application files and package remnants.

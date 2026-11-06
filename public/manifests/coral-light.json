@@ -1,29 +1,29 @@
 {
   "id": "/",
-  "name": "Milvayo \u2014 Engineering Workspace",
+  "name": "Milvayo — Engineering Workspace",
   "short_name": "Milvayo",
   "description": "Offline-first engineering planning, testing and release tracking",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F5EDED",
+  "background_color": "#FCF4F0",
   "theme_color": "#F5EDED",
   "orientation": "any",
   "icons": [
     {
-      "src": "/icons/theme/coral-light-192.png?v=060-themeicons",
+      "src": "/icons/theme/coral-light-192.png?v=072-gradients",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/theme/coral-light-512.png?v=060-themeicons",
+      "src": "/icons/theme/coral-light-512.png?v=072-gradients",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/theme/coral-light-maskable-512.png?v=060-themeicons",
+      "src": "/icons/theme/coral-light-maskable-512.png?v=072-gradients",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

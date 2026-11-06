@@ -10,6 +10,8 @@ import { Button, IconBtn, Input, Segmented, Sheet, T } from '../../ui/ui';
 import { DangerConfirm } from '../inline/CompactTools';
 import InlineNotice from '../notice/InlineNotice';
 import CreateProjectSheet from '../../screens/governance/CreateProjectSheet';
+import BackSurface from '../../app/navigation/BackSurface';
+import {useBackDismiss} from '../../app/navigation/useBackNavigation';
 
 // Wide-layout sidebar plus the project and workspace switchers the phone header and More screen reuse.
 export function Brand({ narrow = false, symbolOnly = false, compact = false, animated = false, active = false }) {
@@ -267,6 +269,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
   const [collapsed, setCollapsed] = useState(true);
   const [drawer, setDrawer] = useState(false);
   const [spaces, setSpaces] = useState(false);
+  useBackDismiss(drawer||spaces,()=>{setDrawer(false);setSpaces(false);});
   const compact = collapsed || width < 1120;
   return (
     <View style={{ width: compact ? 72 : 264, borderRightWidth: 1, borderRightColor: c.line, backgroundColor: c.surface, paddingTop: 20, paddingBottom: 12, paddingHorizontal: compact ? 8 : 14 }}>
@@ -292,6 +295,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
         </Pressable> : !compact ? <T size={11} muted>Milvayo</T> : <Feather name="command" size={16} color={c.faint} />}
       </View>
       <Modal visible={drawer || spaces} transparent animationType="fade" onRequestClose={() => { setDrawer(false); setSpaces(false); }}>
+        <BackSurface>
         <View style={{ flex: 1, flexDirection: 'row', backgroundColor: mode !== 'light' ? 'rgba(0,0,0,.66)' : 'rgba(21,20,18,.33)' }}>
           <View style={{ width: 360, maxWidth: '90%', backgroundColor: c.surface, overflow: 'hidden' }}>
             {drawer ? <ProjectDrawer inModal onClose={() => setDrawer(false)} onPick={(id, isNew) => { setDrawer(false); onPickProject(id, isNew); }} /> : null}
@@ -299,6 +303,7 @@ export function Sidebar({ nav, current, go, onPickProject, onAutoLayout }) {
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Close switcher" onPress={() => { setDrawer(false); setSpaces(false); }} style={{ flex: 1 }} />
         </View>
+        </BackSurface>
       </Modal>
     </View>
   );

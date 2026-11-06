@@ -370,8 +370,9 @@ export default function Timeline({ openTask }) {
     if (!Object.hasOwn(ZOOM, value)) return;
     zoomQueue.current.clear();
     const width = display.dayWidth(ZOOM[value], span);
-    const scroll = timelineZoom.rebaseZoom(w, width, k.scroll.x, span, viewportW);
-    pendingZoom.current = { scroll, canvasWidth: width * span };
+    const focusDay = daysBetween(START,TODAY);
+    const scroll = timelineZoom.focusDay(focusDay,width,span,viewportW);
+    pendingZoom.current = { scroll, canvasWidth: width * span, focusDay };
     // Rebase drawing and calendar immediately; native content-size acknowledgement follows.
     k.scroll.x = scroll;
     horizontalOffset.setValue(scroll);
@@ -380,7 +381,7 @@ export default function Timeline({ openTask }) {
     if (Math.abs(width - w) < 0.000001) settleZoom(true);
     diagnosticMonitor.recordAction(`timeline preset: ${value}`);
   }
-  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoomFactor === 1 ? zoom : 'custom', onChange:chooseZoom}), [zoom, zoomFactor, w, span, viewportW]);
+  const zoomHeader = useMemo(() => ({kind:'zoom', value:zoomFactor === 1 ? zoom : 'custom', onChange:chooseZoom}), [zoom, zoomFactor, w, span, viewportW, START, TODAY]);
   useHeaderActions('timeline', zoomHeader, screenActive);
   zoomCommit.current = result => {
     pendingZoom.current = { scroll: result.scroll, canvasWidth: result.width * span, started: result.started };
@@ -401,7 +402,7 @@ export default function Timeline({ openTask }) {
     const pending = pendingZoom.current;
     if (!pending || Math.abs(pending.canvasWidth - gridW) > 1) return;
     if (Number.isFinite(contentWidth) && Math.abs(contentWidth - pending.canvasWidth) > 1) return;
-    const offset = clamp(pending.scroll, 0, Math.max(0, gridW - viewportW));
+    const offset = Number.isFinite(pending.focusDay)?timelineZoom.focusDay(pending.focusDay,w,span,viewportW):clamp(pending.scroll, 0, Math.max(0, gridW - viewportW));
     k.scroll.x = offset;
     horizontalOffset.setValue(offset);
     chartRef.current?.scrollTo({ x: offset, animated: false });
@@ -742,7 +743,7 @@ export default function Timeline({ openTask }) {
         <View style={{flexDirection:'row',alignItems:'center',gap:8,paddingVertical:8}}>
           <View style={{flex:1,gap:2}}><T size={16} weight="600">Project schedule</T><T size={12} muted>{rows.length} scheduled · {zoomMode.toLowerCase()}</T></View>
           <Chip label="Today" quiet onPress={() => goToday(true)} />
-          <ActionMenu label="Timeline options" items={[
+          <ActionMenu label="Timeline options" header={<Segmented fill wrap={false} options={['Days','Weeks','Months']} value={zoomFactor===1?zoom:''} onChange={chooseZoom}/>} items={[
             {label:showItems?'Hide task names':'Show task names',icon:'sidebar',onPress:()=>setShowItems(v=>!v)},
             rows.length?{label:'Jump to first task',icon:'skip-back',onPress:goFirst}:null,
             {label:showCritical?'Hide critical path':'Show critical path',icon:'git-branch',onPress:()=>setShowCritical(v=>!v)},

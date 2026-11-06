@@ -13,9 +13,9 @@ function iconChoice(accent, mode) {
     mode: appearance,
     slug,
     nativeName: id === 'Coral' && appearance === 'dark' ? null : `${id}${appearance[0].toUpperCase()}${appearance.slice(1)}`,
-    manifest: `/manifests/${slug}.json?v=060-themeicons`,
-    favicon: `/icons/theme/${slug}-64.png?v=060-themeicons`,
-    appleTouch: `/icons/theme/${slug}-180.png?v=060-themeicons`,
+    manifest: `/manifests/${slug}.json?v=072-gradients`,
+    favicon: `/icons/theme/${slug}-64.png?v=072-gradients`,
+    appleTouch: `/icons/theme/${slug}-180.png?v=072-gradients`,
   };
 }
 module.exports = { ACCENTS, MODES, iconChoice };

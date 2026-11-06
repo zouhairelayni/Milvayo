@@ -24,8 +24,9 @@ const orderByDependency=(p,ids)=>{const chosen=new Set(ids),byId=new Map(p.tasks
  ids.forEach(id=>visit(id,new Set()));return out};
 const current=w=>w.projects.find(p=>p.id===w.selectedId);
 
-export function StoreProvider({children}){
+export function StoreProvider({children,onReady,loading}){
  const [ws,setWs]=useState(null),[fault,setFault]=useState(''),[ready,setReady]=useState(false);
+ useEffect(()=>{if(ready)onReady?.();},[ready,onReady]);
  const [notice,setNotice]=useState(null);
  const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});
  const currentRef=useRef(null),loaded=useRef(false),lastError=useRef('');
@@ -278,7 +279,7 @@ export function StoreProvider({children}){
  const projects=useMemo(()=>ws?ws.projects.map(p=>({id:p.id,name:p.name,release:p.version,tasks:p.tasks.length,current:p.id===ws.selectedId,archived:p.archived})):[],[ws]);
  const workspaceList=useMemo(()=>idx?{activeId:idx.activeId,items:idx.items}:null,[idx]);
  const context=useMemo(()=>({s:view,projects,workspace:ws,workspaceList,workspaceId:idx?.activeId,error:fault,notice,dismissNotice,...api}),[view,projects,ws,workspaceList,idx,fault,notice,dismissNotice,api]);
- if(!ready)return <View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><BoardMorph size={64}/><T weight="600">Opening your workspace</T><T muted size={13}>Projects and tasks stay on this device.</T></View>;
+ if(!ready)return loading!==undefined?loading:<View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><BoardMorph size={64}/><T weight="600">Opening your workspace</T><T muted size={13}>Projects and tasks stay on this device.</T></View>;
  if(!ws)return <View style={{flex:1,justifyContent:'center',padding:28,gap:12}}><T weight="600">Workspace data could not be opened safely</T><T>{fault}</T><T>Return to your last working release. Do not clear application storage.</T></View>;
  return <ActionsContext.Provider value={api}><StoreContext.Provider value={context}><View style={{flex:1}}>{children}</View></StoreContext.Provider></ActionsContext.Provider>;
 }

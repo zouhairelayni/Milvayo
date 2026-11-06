@@ -30,7 +30,7 @@ export function Sprints({ openTask }) {
   const [selectedId, setSelectedId] = useState('');
   const [formMode, setFormMode] = useState('');
   const screenActive = useScreenActive();
-  const sprintHeader = useMemo(() => ({actions:[{label:'New sprint',icon:'plus',onPress:()=>{setDraft(sprintDraft());setValidation('');setFormMode('create');}}]}),[]);
+  const sprintHeader = useMemo(() => ({actions:[]}),[]);
   useHeaderActions('sprints', sprintHeader, screenActive);
   const [draft, setDraft] = useState(() => sprintDraft());
   const [validation, setValidation] = useState('');
@@ -85,6 +85,7 @@ export function Sprints({ openTask }) {
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
       {s.sprints.map(sp => <Chip key={sp.id} label={`${sp.name} · ${sp.state}`} active={sp.id === selected?.id}
         onPress={() => { setSelectedId(sp.id); setConfirm(''); setBacklogLimit(25); }} />)}
+      <Button label="New sprint" icon="plus" variant="secondary" onPress={()=>startForm('create')}/>
     </ScrollView>
     {!selected ? <EmptyState kind="schedule" title="Make space for a focused iteration" description="Create a planned sprint, then choose the work it should contain." action={<Button label="Create first sprint" icon="plus" onPress={()=>startForm('create')}/>}/> : <>
       <Card style={{ gap: 12 }}>

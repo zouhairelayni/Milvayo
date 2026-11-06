@@ -37,6 +37,8 @@ import { SECTIONS, sectionOf, labelOf, viewsOf, navFor } from './navigation/sect
 import { useProjectTools } from '../store/useProjectTools';
 import { screenOn } from '../domain/projectTools.cjs';
 import Onboarding from '../screens/onboarding/Onboarding';
+import BackSurface from './navigation/BackSurface';
+import {useBackNavigation} from './navigation/useBackNavigation';
 import '../screens/onboarding/freshInstall';
 const { starterPlan, starterTools, validName } = require('../screens/onboarding/onboardingPlan.cjs');
 const { subscribeTour } = require('../screens/onboarding/tourEvents.cjs');
@@ -192,11 +194,13 @@ function Shell({}) {
   }, [screen]);
 
   const tabQueue = useRef(null);
+  const backSupport = useRef(null);
   const lastView = useRef({}); // section id -> last view opened there, so the bar button returns to it
-  const go = useCallback((k, source = 'screen or menu') => {
+  const go = useCallback((k, source = 'screen or menu', record = true) => {
     tabQueue.current?.clear();
     if (!SCREENS[k] || navigationRef.current.screen === k) return;
     const fromScreen = navigationRef.current.screen;
+    if(record)backSupport.current?.visit(k);
     diagnosticMonitor.recordAction(`navigation request: ${navigationRef.current.screen} -> ${k}; source=${source}`);
     intentRef.current.advance();
     navigationRef.current = { screen:k, at:Date.now() };
@@ -206,6 +210,7 @@ function Shell({}) {
     if (section.views.length) lastView.current[section.id] = k;
     setScreen(k);
   }, []);
+  backSupport.current=useBackNavigation({scope:projectId,screen,go,isAvailable:k=>!!SCREENS[k]&&screenOn(tools,k)});
   if (!tabQueue.current) tabQueue.current = require('./navigation/navigationQueue.cjs').createNavigationQueue(
     requestAnimationFrame, cancelAnimationFrame, k => go(k, 'bottom tab'));
   const requestTab = useCallback(k => tabQueue.current.request(k), []);
@@ -266,7 +271,6 @@ function Shell({}) {
   const sheet = <>{taskId ? <TaskSheet key={`${projectId}:${taskId}`} taskId={taskId} onClose={() => setTaskId(null)} /> : null}{creatingTask ? <NewTaskSheet onClose={()=>setCreatingTask(false)} onSave={saveNewTask}
     extra={<CreateMore onProject={() => { setCreatingTask(false); setCreatingProject(true); }} onRelease={tools.releases ? () => { setCreatingTask(false); setReleaseRequest(true); go('releases', 'create sheet'); } : undefined} />} /> : null}
     <CreateProjectSheet visible={creatingProject} onClose={() => setCreatingProject(false)} onCreated={id => pickProject(id, true)} /></>;
-  const barStyle = mode !== 'light' ? 'light' : 'dark';
   const controls = headerActions?.screen === screen ? headerActions.controls : null;
   const section = SECTIONS.find(x => x.id === sectionOf(screen));
   const views = viewsOf(section, tools);
@@ -275,8 +279,7 @@ function Shell({}) {
         topOffset={wide ? Math.max(20, insets.top + 16) : noticeTopOffset(insets, Platform.OS, NativeStatusBar.currentHeight)} />;
 
   return (
-    <View style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
-      <StatusBar style={barStyle} translucent={false} />
+    <BackSurface style={{ flex: 1, position: 'relative', backgroundColor: c.bg }}>
       <SafeAreaView edges={['top', 'bottom', 'left', 'right']} accessibilityElementsHidden={touring} importantForAccessibility={touring?'no-hide-descendants':'auto'} style={{ flex: 1, flexDirection: 'row', backgroundColor: c.bg }}>
         {wide ? <Sidebar nav={navFor(tools)} current={screen} go={go} onPickProject={pickProject}
           onAutoLayout={preference === 'desktop' ? () => setPreference('auto') : undefined} /> : null}
@@ -284,7 +287,7 @@ function Shell({}) {
           {wide ? <TopBar query={query} onQuery={onQuery} onNew={newTask} controls={controls}
             onPickProject={pickProject} showProjectName={screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'} /> :
             <PhoneHeader kind={section.id !== 'more' ? 'main' : screen === 'more' ? 'hub' : 'sub'} title={labelOf(screen)}
-              query={query} onQuery={onQuery} controls={controls} onPickProject={pickProject} onBack={() => go('more', 'back to More')} showProjectName={screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'} />}
+              query={query} onQuery={onQuery} controls={controls} onPickProject={pickProject} onBack={() => {if(!backSupport.current.back())go('more', 'back to More');}} showProjectName={screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'} />}
           {!wide && views.length > 1 ? <ViewPill views={views} current={screen} go={requestTab} /> : null}
           <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
           {!wide ? <TabBar tabs={TABS} current={section.id} go={requestSection} intent={intentRef.current} onCreate={newTask} /> : null}
@@ -293,18 +296,27 @@ function Shell({}) {
       </SafeAreaView>
       {touring?<Onboarding onSkip={()=>setTouring(false)} onFinish={finishTour}>{noticeLayer}</Onboarding>:noticeLayer}
 
-    </View>
+    </BackSurface>
   );
 }
 
 // The intro belongs to a cold app mount, not navigation or resuming from the background.
 function ColdStartGate() {
-  const { c, restored } = useTheme();
-  // Theme and workspace restore concurrently. Branding never gates hydration or interaction.
-  return <StoreProvider>{restored ? <Shell /> : <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-    <BoardMorph size={64} />
-    <T muted>Restoring appearance…</T>
-  </View>}</StoreProvider>;
+  const { c, restored, mode } = useTheme();
+  const barStyle = mode !== 'light' ? 'light' : 'dark';
+  const [workspaceReady,setWorkspaceReady]=useState(false),[finished,setFinished]=useState(false),[held,setHeld]=useState(false);
+  const workspaceLoaded=useCallback(()=>setWorkspaceReady(true),[]),finish=useCallback(()=>setFinished(true),[]);
+  useEffect(()=>{if(!finished)return;const timer=setTimeout(()=>setHeld(true),1000);return()=>clearTimeout(timer);},[finished]);
+  const opening=!restored||!workspaceReady||!held;
+  return <View style={{flex:1,backgroundColor:c.bg}}>
+    <StatusBar style={barStyle} translucent={false}/>
+    <View style={{flex:1}} accessibilityElementsHidden={opening} importantForAccessibility={opening?'no-hide-descendants':'auto'}>
+      <StoreProvider loading={null} onReady={workspaceLoaded}>{restored && held ? <Shell /> : null}</StoreProvider>
+    </View>
+    {opening?<View accessibilityRole="progressbar" accessibilityLabel="Opening Milvayo" style={{position:'absolute',top:0,right:0,bottom:0,left:0,backgroundColor:c.bg,alignItems:'center',justifyContent:'center'}}>
+      {restored?<BoardMorph size={108} solid active={!finished} onFinish={finish}/>:null}
+    </View>:null}
+  </View>;
 }
 
 export default function ModernApp({}) {

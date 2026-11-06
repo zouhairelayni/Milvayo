@@ -2,11 +2,12 @@
 'use strict';
 const { routes, outlines, windows, windowSamples } = require('./morphGeometry.cjs');
 const DURATION = 3700;
-const clamp = value => Math.min(1, Math.max(0, value));
-const fade = (from, to, t) => clamp((t - from) / (to - from));
-const easeOut = t => 1 - (1 - t) ** 3;
+const clamp = value => { 'worklet'; return Math.min(1, Math.max(0, value)); };
+const fade = (from, to, t) => { 'worklet'; return clamp((t - from) / (to - from)); };
+const easeOut = t => { 'worklet'; return 1 - (1 - t) ** 3; };
 // The original preview's precise cubic-bezier(.77,0,.175,1), solved for time.
 function easeInOut(t) {
+  'worklet';
   if (t <= 0) return 0;
   if (t >= 1) return 1;
   const cx = 2.31, bx = 3 * (.175 - .77) - cx, ax = 1 - cx - bx;
@@ -20,6 +21,7 @@ function easeInOut(t) {
   return (-2 * u + 3) * u * u;
 }
 function outlinePath(i, t) {
+  'worklet';
   const r = routes[i];
   const p = easeInOut(fade([.16, .20, .24][i], [.72, .76, .80][i], clamp(t)));
   if (p >= 1) return outlines[i];
@@ -30,10 +32,12 @@ function outlinePath(i, t) {
 }
 // Window timing, 3–2–1 across columns. No whole-logo opacity changes.
 function windowProgress(index, t) {
+  'worklet';
   const start = .81 + index * .03;
   return easeOut(fade(start, start + .027, clamp(t)));
 }
 function ribbonPath(i, t) {
+  'worklet';
   const base = outlinePath(i, t);
   if (t < .81) return base;
   let compound = base;

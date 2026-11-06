@@ -22,7 +22,7 @@ const PAGE_SIZE = Platform.OS === 'web' ? 80 : 20;
 const SORTS = { Due: { sort: 'due', descending: false }, Priority: { sort: 'priority', descending: true }, Progress: { sort: 'progress', descending: false }, Title: { sort: 'title', descending: false }, Manual: { sort: 'position', descending: false } };
 const LAYOUTS = ['List', 'Tree', 'By status', 'By stage'];
 
-export default function Tasks({ openTask, onNewTask, query = '', statusRequest = null }) {
+export default function Tasks({ openTask, query = '', statusRequest = null }) {
   const { c } = useTheme();
   const wide = useWide();
   // NP533_COLUMNS: actual viewport width, not desktop shell preference. Avoid columns overflowing portrait Web.
@@ -88,7 +88,7 @@ export default function Tasks({ openTask, onNewTask, query = '', statusRequest =
       title="Tasks"
       subtitle={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`}
     >
-      <ScreenIntro title="Task list" description={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`} action={<Button label="Add task" icon="plus" onPress={onNewTask}/>} />
+      <ScreenIntro title="Task list" description={`${list.length} of ${s.tasks.length} tasks${overall !== null ? ` · ${overall}% complete` : ''}`} />
       {dateBoards.length ? <DueSoon key={project.id} tasks={upcoming} onOpenTask={openTask} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <View style={{ flex: 1, minWidth: 200 }}>

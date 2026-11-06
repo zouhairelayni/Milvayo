@@ -1,6 +1,8 @@
 // /src/screens/onboarding/Onboarding.js
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BackHandler, KeyboardAvoidingView, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
+import BackSurface from '../../app/navigation/BackSurface';
+import {useBackDismiss} from '../../app/navigation/useBackNavigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../ui/theme/theme';
 import { Button, IconBtn, Input, ScreenIntro, T } from '../../ui/ui';
@@ -47,6 +49,7 @@ export default function Onboarding({ onSkip, onFinish, children }) {
     else if(slide>0)goSlide(slide-1);
     else onSkip();
   };
+  useBackDismiss(true,()=>back.current(),30);
   const settle=e=>{const x=e.nativeEvent.contentOffset.x;if(Number.isFinite(x))setSlide(Math.max(0,Math.min(SLIDES.length-1,Math.round(x/w))));};
   useLayoutEffect(()=>{clearTimeout(scrollTimer.current);if(step==='tour')pager.current?.scrollTo({x:slide*w,animated:false});},[step,w]);
   useEffect(()=>()=>clearTimeout(scrollTimer.current),[]);
@@ -71,7 +74,7 @@ export default function Onboarding({ onSkip, onFinish, children }) {
 
   return (
     <View ref={root} accessibilityViewIsModal onAccessibilityEscape={()=>back.current()} {...(Platform.OS==='web'?{role:'dialog','aria-modal':true,'aria-label':'Milvayo first-run tour'}:{})} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 20, backgroundColor: c.bg, alignItems: 'center' }}>
-      <KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':'height'} style={{flex:1,width:'100%',maxWidth:520}}>
+      <BackSurface style={{flex:1,width:'100%',maxWidth:520}}><KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':'height'} style={{flex:1,width:'100%',maxWidth:520}}>
       <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, minHeight: 60 }}>
           {step !== 'tour' ? <IconBtn icon="chevron-left" label="Back" onPress={()=>back.current()} /> : <View style={{ width: 44 }} />}
@@ -131,7 +134,7 @@ export default function Onboarding({ onSkip, onFinish, children }) {
           </ScrollView>
         ) : null}
       </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingView></BackSurface>
       {children}
     </View>
   );

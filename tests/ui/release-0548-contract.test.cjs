@@ -30,12 +30,12 @@ test('Timeline first focus waits for visible screen, not drag activity, and zoom
  assert.doesNotMatch(s,/actions=\{<Segmented options=\{\['Days'/);
 });
 
-test('Board and Tasks Tools and new Sprint are in header with no second page action',()=>{
+test('Board and Tasks keep header Tools; New sprint belongs to the scrolling sprint row',()=>{
  const board=source('src/screens/board/Board.js'),tasks=source('src/screens/tasks/Tasks.js'),sprint=source('src/screens/delivery/Delivery.js');
  assert.match(board,/useHeaderActions\('board', headerControls, active\)/);
  assert.match(tasks,/useHeaderActions\('tasks', headerControls, screenActive\)/);
  assert.match(sprint,/useHeaderActions\('sprints', sprintHeader, screenActive\)/);
- assert.match(sprint,/label:'New sprint'/);
+ assert.match(sprint,/<Button label="New sprint" icon="plus"/);
  assert.doesNotMatch(tasks,/label="New task" icon="plus"/);
 });
 

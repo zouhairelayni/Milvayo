@@ -8,8 +8,8 @@ const { DURATION, ribbonPath, windowProgress } = require('./morphMotion.cjs');
 
 
 // Approved three-ribbon no-flicker morph. Even-odd board cutouts avoid platform-sensitive SVG masks.
-export default function BoardMorph({ size = 42, speed = 1, active = false, onFinish }) {
-  const { accentPref } = useTheme();
+export default function BoardMorph({ size = 42, speed = 1, active = false, solid = false, onFinish }) {
+  const { accentPref, c } = useTheme();
   const ramps = data.palettes[accentPref] || data.palettes.Orange;
   const id = useId().replace(/[^A-Za-z0-9_-]/g, '');
   const [progress, setProgress] = useState(active ? 0 : 1);
@@ -42,7 +42,7 @@ export default function BoardMorph({ size = 42, speed = 1, active = false, onFin
     </Defs>
     <G>
       {/* Keep the middle diagonal above the right ribbon, matching the approved preview's layering. */}
-      {[0,2,1].map(i => <Path key={i} d={shapes[i]} fill={`url(#${id}-gradient-${i})`} fillRule="evenodd" />)}
+      {[0,2,1].map(i => <Path key={i} d={shapes[i]} fill={solid ? c.accent : `url(#${id}-gradient-${i})`} fillRule="evenodd" />)}
     </G>
   </Svg>;
 }

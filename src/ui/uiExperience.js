@@ -18,7 +18,7 @@ export function EmptyState({title,description,kind='work',action,compact=false})
 }
 
 // Confirmation is a state of this popup, never a jump back to its parent screen.
-export function ActionMenu({label='More actions',items,icon='more-horizontal'}){
+export function ActionMenu({label='More actions',items,icon='more-horizontal',header}){
  const {c}=useTheme();const[open,setOpen]=useState(false),[selectedLabel,setSelectedLabel]=useState(null);
  const[busy,setBusy]=useState(false),[error,setError]=useState(''),[feedback,setFeedback]=useState('');const pending=useRef(false);
  const selected=items.find(item=>item&&item.label===selectedLabel),confirmation=selected?.confirmation||{};
@@ -46,6 +46,7 @@ export function ActionMenu({label='More actions',items,icon='more-horizontal'}){
     <T size={15} style={{lineHeight:23}}>{confirmation.description||selected.description||'Confirm this change before continuing.'}</T>
     {error?<T accessibilityRole="alert" color={c.danger}>{error}</T>:null}
    </>:<>
+    {header}
     {feedback?<Feedback type="success" text={feedback}/>:null}
     {items.filter(Boolean).map(item=><Pressable key={item.label} disabled={item.disabled} accessibilityRole="button" accessibilityLabel={item.label}
      accessibilityState={{disabled:!!item.disabled}} onPress={()=>choose(item)}

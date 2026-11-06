@@ -11,12 +11,12 @@ async function main(){
  const click=async label=>{const p=await c.evaluate(`(()=>{const el=[...document.querySelectorAll('[aria-label]')].find(e=>e.getAttribute('aria-label')===${JSON.stringify(label)}&&e.getBoundingClientRect().width>0);if(!el)throw Error('Missing '+${JSON.stringify(label)});el.scrollIntoView({block:'nearest'});const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);await c.send('Input.dispatchMouseEvent',{type:'mousePressed',...p,button:'left',clickCount:1});await sleep(65);await c.send('Input.dispatchMouseEvent',{type:'mouseReleased',...p,button:'left',clickCount:1});await sleep(250);};
  const shot=async name=>fs.writeFileSync(path.join(out,phase+'-'+name+'.png'),Buffer.from((await c.send('Page.captureScreenshot',{format:'png'})).data,'base64'));
  const results=[];
- await shot('overview-mobile');await click('More');await click('Resources');await shot('resources-mobile');await click('Back to More');await click('Settings');await shot('settings-mobile');
+ await shot('overview-mobile');await click('More');await click('Resources');await shot('resources-mobile');await click('Go back');await click('Settings');await shot('settings-mobile');
  if(phase==='after'){
   await click('Work');await shot('board-mobile');await click('List');
   const taskLabel=await c.evaluate(`([...document.querySelectorAll('[aria-label]')].find(e=>e.getAttribute('aria-label').includes('priority')&&e.getBoundingClientRect().width>0))?.getAttribute('aria-label')`);
   if(taskLabel){await click(taskLabel);await shot('task-detail-mobile');await c.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await c.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await sleep(150);}
-  await click('More');await click('Costs');await shot('costs-mobile');await click('Back to More');await click('Automations');await shot('automations-mobile');
+  await click('More');await click('Costs');await shot('costs-mobile');await click('Go back');await click('Automations');await shot('automations-mobile');
  }
  await c.send('Emulation.setUserAgentOverride',{userAgent:'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 Chrome/156.0.0.0 Safari/537.36',userAgentMetadata:{brands:[],platform:'Linux',platformVersion:'',architecture:'arm',model:'',mobile:false}});
  await c.send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});await c.send('Page.reload',{ignoreCache:true});await sleep(2000);await click('Timeline');await shot('timeline-desktop');

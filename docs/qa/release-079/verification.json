@@ -1,0 +1,53 @@
+{
+  "release": "0.7.9",
+  "requestedVersionEntries": [
+    "0.7.1",
+    "0.7.2",
+    "0.7.3",
+    "0.7.4",
+    "0.7.5",
+    "0.7.6",
+    "0.7.7",
+    "0.7.8",
+    "0.7.9"
+  ],
+  "androidVersionCode": 79,
+  "iosBuildNumber": "79",
+  "verifiedAt": "2026-11-06T18:22:49.889162+00:00",
+  "branch": "work",
+  "fullNodeSuite": {
+    "pass": 826,
+    "fail": 0,
+    "skip": 0
+  },
+  "headerFollowup": {
+    "pass": 28,
+    "fail": 0
+  },
+  "source": {
+    "parsed": 203,
+    "nativeSourceTransforms": 25,
+    "workletSourceTransforms": {
+      "src/app/navigation/BackSurface.native.js": 1,
+      "src/components/brand/BoardMorph.native.js": 2,
+      "src/components/brand/morphMotion.cjs": 7,
+      "src/components/notice/NoticeMotion.native.js": 4
+    }
+  },
+  "iconVariants": 30,
+  "iconVisualEvidence": "icon-gallery.png \u2014 source artwork, not device screenshots",
+  "expoCompatibility": "Pass offline; Expo warns offline validation is unreliable",
+  "runtimeDeviceBrowserAcceptance": "Not run by agent",
+  "appBuilds": "Not run",
+  "newRuntimeDependencies": 0,
+  "dataMigration": false,
+  "redesignOrTemporaryProjectCopyCreated": false,
+  "rollbackCheckpoint": "5541a9b6ee611341de8fbda628a56cf7f5278a90",
+  "deployment": "Not run",
+  "gitDelivery": {
+    "authorization": "Owner explicitly requested commit, push work, then merge main after implementation validation",
+    "verification": "Resulting commit and merge are recorded in Git history; remote refs checked after publication",
+    "forcePush": false,
+    "versionTagOrBuildDispatch": false
+  }
+}

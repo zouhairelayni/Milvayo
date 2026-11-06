@@ -2,7 +2,7 @@
   "expo": {
     "name": "Milvayo",
     "slug": "milvayo",
-    "version": "0.7.0",
+    "version": "0.7.9",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#071328",
@@ -20,15 +20,16 @@
       "package": "com.milvayo.projects",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#071328",
-        "monochromeImage": "./assets/adaptive-monochrome.png"
+        "backgroundColor": "#18252D",
+        "monochromeImage": "./assets/adaptive-monochrome.png",
+        "backgroundImage": "./assets/adaptive-background.png"
       },
-      "versionCode": 70
+      "versionCode": 79
     },
     "ios": {
       "bundleIdentifier": "com.milvayo.projects",
       "icon": "./assets/icon.png",
-      "buildNumber": "70"
+      "buildNumber": "79"
     },
     "icon": "./assets/icon.png",
     "extra": {
@@ -47,7 +48,8 @@
             "ios": "./assets/theme-icons/aqua-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/aqua-light-foreground.png",
-              "backgroundColor": "#ECF1F5"
+              "backgroundColor": "#EFF7FA",
+              "backgroundImage": "./assets/theme-icons/aqua-light-background.png"
             }
           },
           {
@@ -55,7 +57,8 @@
             "ios": "./assets/theme-icons/aqua-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/aqua-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#071D24",
+              "backgroundImage": "./assets/theme-icons/aqua-dark-background.png"
             }
           },
           {
@@ -63,7 +66,8 @@
             "ios": "./assets/theme-icons/aqua-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/aqua-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/aqua-amoled-background.png"
             }
           },
           {
@@ -71,7 +75,8 @@
             "ios": "./assets/theme-icons/mint-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/mint-light-foreground.png",
-              "backgroundColor": "#EAF3EF"
+              "backgroundColor": "#F0F8F4",
+              "backgroundImage": "./assets/theme-icons/mint-light-background.png"
             }
           },
           {
@@ -79,7 +84,8 @@
             "ios": "./assets/theme-icons/mint-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/mint-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#061D17",
+              "backgroundImage": "./assets/theme-icons/mint-dark-background.png"
             }
           },
           {
@@ -87,7 +93,8 @@
             "ios": "./assets/theme-icons/mint-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/mint-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/mint-amoled-background.png"
             }
           },
           {
@@ -95,7 +102,8 @@
             "ios": "./assets/theme-icons/lime-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/lime-light-foreground.png",
-              "backgroundColor": "#EEF2EA"
+              "backgroundColor": "#F4F8ED",
+              "backgroundImage": "./assets/theme-icons/lime-light-background.png"
             }
           },
           {
@@ -103,7 +111,8 @@
             "ios": "./assets/theme-icons/lime-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/lime-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#13240F",
+              "backgroundImage": "./assets/theme-icons/lime-dark-background.png"
             }
           },
           {
@@ -111,7 +120,8 @@
             "ios": "./assets/theme-icons/lime-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/lime-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/lime-amoled-background.png"
             }
           },
           {
@@ -119,7 +129,8 @@
             "ios": "./assets/theme-icons/amber-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/amber-light-foreground.png",
-              "backgroundColor": "#F3F0EA"
+              "backgroundColor": "#FCF8EC",
+              "backgroundImage": "./assets/theme-icons/amber-light-background.png"
             }
           },
           {
@@ -127,7 +138,8 @@
             "ios": "./assets/theme-icons/amber-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/amber-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#211C11",
+              "backgroundImage": "./assets/theme-icons/amber-dark-background.png"
             }
           },
           {
@@ -135,7 +147,8 @@
             "ios": "./assets/theme-icons/amber-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/amber-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/amber-amoled-background.png"
             }
           },
           {
@@ -143,7 +156,8 @@
             "ios": "./assets/theme-icons/orange-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/orange-light-foreground.png",
-              "backgroundColor": "#F5F0EA"
+              "backgroundColor": "#F9F5ED",
+              "backgroundImage": "./assets/theme-icons/orange-light-background.png"
             }
           },
           {
@@ -151,7 +165,8 @@
             "ios": "./assets/theme-icons/orange-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/orange-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#111927",
+              "backgroundImage": "./assets/theme-icons/orange-dark-background.png"
             }
           },
           {
@@ -159,7 +174,8 @@
             "ios": "./assets/theme-icons/orange-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/orange-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/orange-amoled-background.png"
             }
           },
           {
@@ -167,7 +183,8 @@
             "ios": "./assets/theme-icons/coral-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/coral-light-foreground.png",
-              "backgroundColor": "#F5EDED"
+              "backgroundColor": "#FCF4F0",
+              "backgroundImage": "./assets/theme-icons/coral-light-background.png"
             }
           },
           {
@@ -175,7 +192,8 @@
             "ios": "./assets/theme-icons/coral-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/coral-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/coral-amoled-background.png"
             }
           },
           {
@@ -183,7 +201,8 @@
             "ios": "./assets/theme-icons/pink-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/pink-light-foreground.png",
-              "backgroundColor": "#F5EEF0"
+              "backgroundColor": "#FFF3F6",
+              "backgroundImage": "./assets/theme-icons/pink-light-background.png"
             }
           },
           {
@@ -191,7 +210,8 @@
             "ios": "./assets/theme-icons/pink-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/pink-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#27131F",
+              "backgroundImage": "./assets/theme-icons/pink-dark-background.png"
             }
           },
           {
@@ -199,7 +219,8 @@
             "ios": "./assets/theme-icons/pink-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/pink-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/pink-amoled-background.png"
             }
           },
           {
@@ -207,7 +228,8 @@
             "ios": "./assets/theme-icons/fuchsia-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/fuchsia-light-foreground.png",
-              "backgroundColor": "#F3EEF4"
+              "backgroundColor": "#FAF2FC",
+              "backgroundImage": "./assets/theme-icons/fuchsia-light-background.png"
             }
           },
           {
@@ -215,7 +237,8 @@
             "ios": "./assets/theme-icons/fuchsia-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/fuchsia-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#1E0E27",
+              "backgroundImage": "./assets/theme-icons/fuchsia-dark-background.png"
             }
           },
           {
@@ -223,7 +246,8 @@
             "ios": "./assets/theme-icons/fuchsia-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/fuchsia-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/fuchsia-amoled-background.png"
             }
           },
           {
@@ -231,7 +255,8 @@
             "ios": "./assets/theme-icons/violet-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/violet-light-foreground.png",
-              "backgroundColor": "#F0EEF6"
+              "backgroundColor": "#F8F2FC",
+              "backgroundImage": "./assets/theme-icons/violet-light-background.png"
             }
           },
           {
@@ -239,7 +264,8 @@
             "ios": "./assets/theme-icons/violet-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/violet-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#1B1127",
+              "backgroundImage": "./assets/theme-icons/violet-dark-background.png"
             }
           },
           {
@@ -247,7 +273,8 @@
             "ios": "./assets/theme-icons/violet-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/violet-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/violet-amoled-background.png"
             }
           },
           {
@@ -255,7 +282,8 @@
             "ios": "./assets/theme-icons/indigo-light-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/indigo-light-foreground.png",
-              "backgroundColor": "#EEEFF5"
+              "backgroundColor": "#F3F4F9",
+              "backgroundImage": "./assets/theme-icons/indigo-light-background.png"
             }
           },
           {
@@ -263,7 +291,8 @@
             "ios": "./assets/theme-icons/indigo-dark-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/indigo-dark-foreground.png",
-              "backgroundColor": "#071328"
+              "backgroundColor": "#12141F",
+              "backgroundImage": "./assets/theme-icons/indigo-dark-background.png"
             }
           },
           {
@@ -271,7 +300,8 @@
             "ios": "./assets/theme-icons/indigo-amoled-icon.png",
             "android": {
               "foregroundImage": "./assets/theme-icons/indigo-amoled-foreground.png",
-              "backgroundColor": "#000000"
+              "backgroundColor": "#000000",
+              "backgroundImage": "./assets/theme-icons/indigo-amoled-background.png"
             }
           }
         ]

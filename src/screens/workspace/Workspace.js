@@ -257,11 +257,11 @@ export function Settings({go, backupRequest}) {
         <Image source={iconPreview(accentPref, mode)} resizeMode="contain" style={{width:54,height:54,borderRadius:14}} accessibilityLabel={`${accentPref} ${mode} app icon preview`}/>
         <View style={{flex:1,gap:3}}>
           <T weight="600">App icon preview</T>
-          <T muted size={12}>Theme changes apply immediately inside the app. Apply the launcher icon separately when ready: Android may close the app. Expo Go cannot change its icon.</T>
+          <T muted size={12}>Theme changes apply immediately. Apply the app icon separately when you are ready to restart.</T>
         </View>
       </View>
       {Platform.OS !== 'web'?<Button label="Apply launcher icon" variant="secondary" onPress={()=>setIconConfirm(true)}/>:null}
-      {iconConfirm?<ConfirmSheet visible title="Apply launcher icon?" confirmLabel="Apply icon" description="Android may close Milvayo to refresh its launcher entry. Your work is saved first. Cancel to keep working; Expo Go cannot change its icon." onClose={()=>setIconConfirm(false)} onConfirm={()=>syncLauncherIcon(accentPref,mode,flush)}/>:null}
+      {iconConfirm?<ConfirmSheet visible title="Apply launcher icon?" confirmLabel="Apply icon" description="Your app Milvayo will restart to refresh its icon. Your work is saved first. Cancel to keep working." onClose={()=>setIconConfirm(false)} onConfirm={()=>syncLauncherIcon(accentPref,mode,flush)}/>:null}
       <AppearanceChoices value={pref} onChange={setPref} accent={accentPref}/>
       <View style={{borderTopWidth:1,borderColor:c.line,paddingTop:12,gap:12}}>
         <Button label={`Accent · ${accentPref}`} small icon="droplet" variant="secondary" onPress={()=>setColorsOpen(!colorsOpen)}/>

@@ -25,4 +25,9 @@ function rebaseZoom(width, nextWidth, scroll, span, viewportWidth) {
   const focal = viewportWidth / 2;
   return Math.max(0, Math.min(Math.max(0, canvas - viewportWidth), (previous + focal) * nextWidth / width - focal));
 }
-module.exports = { pinchZoom, previewWindow, rebaseZoom };
+function focusDay(index,width,span,viewportWidth){
+ if(![index,width,span,viewportWidth].every(Number.isFinite)||width<=0||span<=0||viewportWidth<0)return 0;
+ const day=Math.max(0,Math.min(span-1,index));
+ return Math.max(0,Math.min(Math.max(0,width*span-viewportWidth),(day+0.5)*width-viewportWidth/2));
+}
+module.exports = { pinchZoom, previewWindow, rebaseZoom, focusDay };

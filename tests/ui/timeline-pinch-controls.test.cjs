@@ -57,9 +57,12 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
   chart().props.onScroll({ nativeEvent: { contentOffset: { x: 1500 } } }); tree = render();
   h.headers.timeline.onChange('Months'); tree = render(); tree = render();
   assert.equal(options.width, 6);
-  assert.equal(scrolls.at(-1).x, 16, 'preset scroll rebases immediately without a user scroll or Today');
-  assert.equal(animated.at(-1), 16, 'calendar immediately matches the chart');
+  assert.equal(scrolls.at(-1).x, 0, 'Months focuses Today within the smaller canvas');
+  assert.equal(animated.at(-1), 0, 'calendar immediately matches the chart');
   chart().props.onContentSizeChange();
+  h.headers.timeline.onChange('Days'); tree = render(); tree = render();
+  assert.equal(scrolls.at(-1).x,333,'returning to Days centers Today, independent of the previous scroll');
+  assert.equal(animated.at(-1),333);
   assert.deepEqual(edits, []); assert.equal(JSON.stringify(project), saved);
   const imported = model.importProject(JSON.parse(saved));
   assert.deepEqual(imported.tasks, project.tasks);

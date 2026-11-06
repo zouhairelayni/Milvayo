@@ -1,0 +1,10 @@
+{
+  "parsed": 203,
+  "nativeSourceTransforms": 25,
+  "workletSourceTransforms": {
+    "src/app/navigation/BackSurface.native.js": 1,
+    "src/components/brand/BoardMorph.native.js": 2,
+    "src/components/brand/morphMotion.cjs": 7,
+    "src/components/notice/NoticeMotion.native.js": 4
+  }
+}

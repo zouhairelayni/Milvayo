@@ -114,7 +114,7 @@ test('header keeps every per-screen control: Tools, New sprint, New release, Tim
   assert.match(header, /accessibilityLabel="Search tasks"/);
   assert.match(header, /onQuery\(''\); setSearching\(false\)/); // closing search clears the filter it set
   assert.match(header, /<ProjectSwitcher onPickProject=\{onPickProject\} compact showProjectName=\{false\} \/>/);
-  assert.match(header, /label="Back to More"/);
+  assert.match(header, /label="Go back"/);
 });
 
 test('Create sheet: the + button opens New task, with Project and Release one tap away', () => {

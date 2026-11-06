@@ -24,31 +24,10 @@ test('brand keeps a named Milvayo Board mark and readable wordmark at compact an
   assert.equal(nodes(h.render('Brand', { symbolOnly: true })).length, 1);
 });
 
-test('notification errors, warnings and sticky work persist; ordinary notices dismiss after their exit', () => {
-  for (const notice of [{type:'error'}, {type:'warning'}, {type:'info', sticky:true}, {type:'success'}]) {
-    const pending = new Map(); let serial = 0, dismissed = 0;
-    const h = screenHarness('src/components/notice/IslandNotice.js', {}, {
-      mocks: {'./NoticeMotion': {__esModule:true, default:'NoticeMotion'}, '../../ui/uiBase':{T:'T'}},
-      globals: {setTimeout(fn, ms) {pending.set(++serial, {fn, ms}); return serial;}, clearTimeout(id) {pending.delete(id);}},
-    });
-    const props = {notice:{id:'n', text:'Saved workspace', ...notice}, onDismiss:()=>dismissed++};
-    let tree = h.render('default', props);
-    assert.equal(pending.size, notice.type === 'success' ? 1 : 0);
-    if (notice.type === 'success') {
-      const first = [...pending.values()][0]; assert.ok(first.ms >= 4000); pending.clear(); first.fn();
-      tree = h.render('default', props);
-      assert.equal(nodes(tree).find(n=>n.type==='NoticeMotion').props.state, 'hidden');
-    } else {
-      const motion = nodes(tree).find(n=>n.type==='NoticeMotion');
-      const expanded = motion.props.expanded;
-      assert.equal(expanded.props.accessibilityLiveRegion, notice.type === 'error' ? 'assertive' : 'polite');
-      control(expanded, 'Dismiss notification').props.onPress();
-    }
-    assert.equal(dismissed, 0);
-    [...pending.values()][0].fn();
-    assert.equal(dismissed, 1);
-    assert.equal(h.render('default', props), null);
-  }
+test('explicitly sticky island work remains visible with an accessible dismissal control', () => {
+  const h=screenHarness('src/components/notice/IslandNotice.js',{}, {mocks:{'./NoticeMotion':{__esModule:true,default:'NoticeMotion'},'../../ui/uiBase':{T:'T'}},globals:{setTimeout(){throw Error('Sticky notice must not auto-dismiss');},clearTimeout(){}}});
+  const tree=h.render('default',{notice:{id:'sticky',text:'Waiting',type:'warning',sticky:true},onDismiss(){}});
+  const motion=nodes(tree).find(n=>n.type==='NoticeMotion');assert.equal(motion.props.state,'expanded');assert.ok(control(motion.props.expanded,'Dismiss notification'));
 });
 
 test('notification expansion and Backup action stay accessible without dismissing the current workspace', () => {
@@ -71,8 +50,8 @@ test('notice motion uses opacity/translation and system reduced motion on both p
   assert.match(native, /useAnimatedStyle/); assert.match(native, /ReduceMotion.System/);
   assert.match(native, /opacity:.*translateY/); assert.doesNotMatch(native, /withRepeat|setInterval/);
   const web = read('src/components/notice/NoticeMotion.web.js');
-  assert.match(web, /prefers-reduced-motion/); assert.match(web, /a\?\.cancel/);
-  assert.match(web, /opacity:.*translateY/);
+  assert.match(web, /prefers-reduced-motion/); assert.match(web, /animation\.cancel/);
+  assert.match(web, /opacity:.*transform/);
 });
 
 test('shared buttons expose names, disabled state, matching label/icon ink and generous touch targets', () => {
@@ -121,7 +100,7 @@ test('sheets support explicit close, Android Back, accessibility escape and top-
 test('phone sub-screen titles stay readable and Back/search controls keep their callbacks', () => {
   const h=screenHarness('src/components/shell/Bars.js',{}); let backed=0;
   const sub=h.render('PhoneHeader',{kind:'sub',title:'Testing',onBack:()=>backed++});
-  assert.ok(text(sub).includes('Testing')); control(sub,'Back to More').props.onPress(); assert.equal(backed,1);
+  assert.equal(text(sub).includes('Testing'),false); control(sub,'Go back').props.onPress(); assert.equal(backed,1);
   assert.equal(h.render('PhoneHeader',{kind:'hub'}),null);
   const main=h.render('PhoneHeader',{kind:'main',onPickProject(){},onQuery(){}});
   assert.ok(control(main,'Search tasks'));

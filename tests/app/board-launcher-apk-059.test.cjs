@@ -19,7 +19,7 @@ function dimensions(file) {
 test('Coral Board with six actual card windows is the launcher default across platforms', () => {
   assert.equal(app.expo.icon, './assets/icon.png');
   assert.equal(app.expo.ios.icon,'./assets/icon.png');
-  assert.equal(app.expo.android.adaptiveIcon.backgroundColor,'#071328');
+  assert.equal(app.expo.android.adaptiveIcon.backgroundColor,'#18252D');
   assert.deepEqual(dimensions('assets/icon.png'),[1024,1024]);
   assert.deepEqual(dimensions('assets/adaptive-icon.png'),[1024,1024]);
   assert.deepEqual(dimensions('assets/adaptive-monochrome.png'),[1024,1024]);
