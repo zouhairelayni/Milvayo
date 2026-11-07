@@ -55,7 +55,7 @@ export function TopBar({ query, onQuery, onNew, onPickProject, controls, showPro
         backgroundColor: c.bg, borderWidth: 1, borderColor: c.line, borderRadius: radius.sm, paddingHorizontal: 12, height: 44 }}>
         <Feather name="search" size={16} color={c.muted} />
         <Input value={query} onChangeText={onQuery} accessibilityLabel="Search tasks" placeholder="Search tasks"
-          style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
+          style={{ flex: 1, minWidth: 0, flexShrink: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
       </View>
       <HeaderControls controls={controls} />
       <Button label="New task" icon="plus" small onPress={onNew} />
@@ -146,7 +146,7 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: c.line, borderRadius: radius.sm, paddingHorizontal: 12, height: 44 }}>
       <Feather name="search" size={16} color={c.muted} />
       <Input value={query} onChangeText={onQuery} autoFocus accessibilityLabel="Search tasks" placeholder="Search tasks"
-        style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
+        style={{ flex: 1, minWidth: 0, flexShrink: 1, backgroundColor: 'transparent', borderWidth: 0, paddingHorizontal: 0, height: 42, minHeight: 42, paddingVertical: 0 }} />
     </View>
     <IconBtn icon="x" label="Close search" onPress={() => { onQuery(''); setSearching(false); }} />
   </View>;

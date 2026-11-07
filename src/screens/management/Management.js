@@ -6,6 +6,7 @@ import {InlineCalendar,InlineDateField,Page,T,Button,Chip,EmptyState,Feedback,Me
 import {useStore} from '../../store/store';
 import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
+import CloudDiscussion from './CloudDiscussion';
 const model=require('../../domain/model.cjs');
 const today=localDay;
 const useProject=()=>{const {workspace}=useStore();return workspace.projects.find(p=>p.id===workspace.selectedId)};
@@ -106,7 +107,8 @@ export function Collaboration({openTask}){
  const p=useProject();const {s,addReminder,finishReminder,deleteReminder,deleteComment}=useStore();
  const [taskId,setTaskId]=useState(''),[date,setDate]=useState(today()),[note,setNote]=useState('');
  const [composing,setComposing]=useState(false),[view,setView]=useState('reminders');
- return <Page title="Keep work connected" subtitle="Comments and reminders for this project stay on this device. Cloud messaging and notifications are not connected." actions={<Button label="New reminder" icon="plus" onPress={()=>setComposing(true)}/>}>
+ return <Page title="Keep work connected" subtitle="Local comments and reminders, with cloud conversations when an emulator workspace is connected." actions={<Button label="New reminder" icon="plus" onPress={()=>setComposing(true)}/>}>
+  <CloudDiscussion project={p} openTask={openTask}/>
   <Segmented fill options={[{value:'reminders',label:'Reminders'},{value:'comments',label:'Comments'}]} value={view} onChange={setView}/>
   <Sheet visible={composing} title="New reminder" onClose={()=>setComposing(false)}>
    <FormSection title="Choose the work"><Dropdown options={s.tasks.map(t=>({value:t.id,label:t.title}))} value={taskId} onChange={setTaskId}/></FormSection>

@@ -1,0 +1,73 @@
+npm notice run milvayo@0.8.4 npx
+npm notice run 'expo' export --platform web --output-dir dist --max-workers 2
+Using src/app as the root directory for Expo Router.
+Starting Metro Bundler
+
+| (node:27983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:27983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Web Bundled 23980ms node_modules/expo/AppEntry.js (1283 modules)
+
+› Assets (49):
+assets/theme-icons/amber-amoled-icon.b02c0eeb71879b2cbd952c15866ee05a.png (47KB)
+assets/theme-icons/amber-dark-icon.3784e5419dbf0c7008941a93ebb1e560.png (35KB)
+assets/theme-icons/amber-light-icon.06b9e957afce297b8e40e8e7b9d7aec5.png (48KB)
+assets/theme-icons/aqua-amoled-icon.4e36f8c055029182b163f9a4c566caca.png (44KB)
+assets/theme-icons/aqua-dark-icon.c91fdf24a42f551721e21b04aa4664af.png (43KB)
+assets/theme-icons/aqua-light-icon.a2e019542ffdb4c948c857f44e4f1397.png (50KB)
+assets/theme-icons/coral-amoled-icon.657363a1b70836676b0d34c1e595b912.png (51KB)
+assets/theme-icons/coral-dark-icon.9e3bc3a5751d55c35b206198680f3788.png (45KB)
+assets/theme-icons/coral-light-icon.86b5d15dafb8dd02efc9b31ba19250eb.png (53KB)
+assets/theme-icons/fuchsia-amoled-icon.53573ffe77a64512ec61afcb5f3cf47b.png (48KB)
+assets/theme-icons/fuchsia-dark-icon.e8c2c75c1e19bb216f9194144ab21724.png (47KB)
+assets/theme-icons/fuchsia-light-icon.726acfd7fcaa3aa47bda0fc3d83285d1.png (49KB)
+assets/theme-icons/indigo-amoled-icon.8b38eda576cf0033f087d6958fcb190e.png (45KB)
+assets/theme-icons/indigo-dark-icon.79470979b1a227be0ffb2b81fb3fab20.png (43KB)
+assets/theme-icons/indigo-light-icon.a7ed40c711f0ba54a6000e4dc8286b61.png (53KB)
+assets/theme-icons/lime-amoled-icon.050d4ce6f99946dbeae14f94e2094780.png (43KB)
+assets/theme-icons/lime-dark-icon.7c78c928aad394a789d170c6ba9273b8.png (40KB)
+assets/theme-icons/lime-light-icon.e73c3bf4c3ba78a06142d67fc01a5486.png (48KB)
+assets/theme-icons/mint-amoled-icon.e2edd46188e4808c801cbae3d19cc679.png (45KB)
+assets/theme-icons/mint-dark-icon.52ea2ab6bedff8e70a3ab96b08653e48.png (37KB)
+assets/theme-icons/mint-light-icon.3d93f521ca52af7e717251da2aa6e4c4.png (49KB)
+assets/theme-icons/orange-amoled-icon.3e9d31b7d2d59d3d296384c97eebe90b.png (47KB)
+assets/theme-icons/orange-dark-icon.86f4994b7626effeaa2402fac9c26419.png (47KB)
+assets/theme-icons/orange-light-icon.a449a6b54bff7851e4a3e932b3fa0c34.png (53KB)
+assets/theme-icons/pink-amoled-icon.2e4899fb84bde70c316462d9002b174e.png (45KB)
+assets/theme-icons/pink-dark-icon.a3b390c7863fb273b80787d141c0ab87.png (45KB)
+assets/theme-icons/pink-light-icon.420dcfa460471370e59ef98d4b2d2617.png (46KB)
+assets/theme-icons/violet-amoled-icon.fee68bc6a1a582b55f4bef309954196e.png (48KB)
+assets/theme-icons/violet-dark-icon.5cf65e6fa9657981efc2d43b358d6dc9.png (43KB)
+assets/theme-icons/violet-light-icon.90adc5f55e051ff06e22ad9129927c09.png (51KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/AntDesign.3f78af31cca60105799838a1a7a59fbd.ttf (130KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Entypo.31b5ffea3daddc69dd01a1f3d6cf63c5.ttf (66KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/EvilIcons.140c53a7643ea949007aa9a282153849.ttf (13KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ca4b48e04dc1ce10bfbddb262c8b835f.ttf (56KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.b06871f281fee6b241d60582ae9369b9.ttf (166KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Brands.3b89dd103490708d19a95adcae52210e.ttf (134KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Regular.1f77739ca9ff2188b539c36f30ffa2be.ttf (34KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Solid.605ed7926cf39a2ad5ec2d1f9d391d3d.ttf (203KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Brands.56c8d80832e37783f12c05db7c8849e2.ttf (209KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Regular.370dd5af19f8364907b6e2c41f45dbbf.ttf (68KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Solid.adec7d6f310bc577f05e8fe06a5daccf.ttf (424KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Fontisto.b49ae8ab2dbccb02c4d11caaacf09eab.ttf (314KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Foundation.e20945d7c929279ef7a6f1db184a4470.ttf (57KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf (390KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf (1.3MB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.4e85bc9ebe07e0340c9c4fc2f6c38908.ttf (357KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Octicons.871378c6eab492a3e689a9385dc45a12.ttf (69KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/SimpleLineIcons.d2285965fe34b05465047401b8595dd0.ttf (54KB)
+node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Zocial.1681f34aaca71b8dfb70756bca331eb2.ttf (26KB)
+
+› web bundles (1):
+_expo/static/js/web/AppEntry-bb0d60d806fe160971b82ffd5d221224.js (4.5MB)
+
+› Files (3):
+favicon.ico (15KB)
+index.html (1.3KB)
+metadata.json (49B)
+
+Exported: dist
+
+Service worker cache stamped with 0.8.4

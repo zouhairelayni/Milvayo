@@ -10,6 +10,7 @@ import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/
 import { money, openHours } from '../../store/data';
 import DiagnosticsPanel from '../../diagnostics/DiagnosticsPanel';
 import Backup from './Backup';
+import CloudPanel from './CloudPanel';
 import { syncLauncherIcon } from '../../ui/theme/launcherIcon';
 const iconPreview = require('../../ui/theme/iconPreview.cjs');
 const operations = require('../../domain/operations.cjs');
@@ -249,7 +250,8 @@ export function Activity() {
 
 export function Settings({go, backupRequest}) {
  useRenderMetric('settings');
-  const { flush } = useStoreActions();
+  const { flush, cloudSession } = useStoreActions();
+  const cloudState=cloudSession?.().getState();
   const { c, pref, mode, setPref, accentPref, setAccent } = useTheme();
   const [colorsOpen,setColorsOpen]=useState(false),[iconConfirm,setIconConfirm]=useState(false);
   const [tab,setTab]=useState(backupRequest ? 'backup' : 'general');
@@ -284,6 +286,7 @@ export function Settings({go, backupRequest}) {
       </View>
     </Card>
     <Fold title="Local diagnostics" subtitle="Performance and crash evidence for this device"><DiagnosticsPanel /></Fold>
+    <Fold title="Firebase emulator" subtitle="Explicit cloud connection and administration" initial={!!(cloudState?.connected||cloudState?.busy)}><CloudPanel /></Fold>
 
     </>}
   </Page>;

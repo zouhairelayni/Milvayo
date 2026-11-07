@@ -18,6 +18,7 @@ import { Field, InlineDrop, CustomValueInput } from './TaskFields';
 import { Fold } from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
 import { descendants } from '../../domain/taskWorkflows.cjs';
+import {useCloudPresence} from '../../cloud/useCloudPresence';
 const NONE = new Set();
 
 // A new task is only created on explicit Save. Dismissing this sheet discards its draft.
@@ -48,6 +49,7 @@ export default function TaskSheet({ taskId, onClose }) {
   const [open, setOpen] = useState(null);
   const [detailTab,setDetailTab]=useState('activity');
   const [descriptionEditing, setDescriptionEditing] = useState(false);
+  const presence=useCloudPresence(workspace.selectedId,'task:'+taskId,descriptionEditing);
   const [descriptionDraft, setDescriptionDraft] = useState('');
   const [labelColorDraft, setLabelColorDraft] = useState(COLORS[0]);
   const [labelEditor, setLabelEditor] = useState(false);
@@ -130,6 +132,7 @@ export default function TaskSheet({ taskId, onClose }) {
 
   return (
     <Sheet visible={!!t} onClose={closeTask} title={t ? 'Task details' : ''} footer={footer} showNotice={false}>
+      {presence.viewers?<T muted size={12}>{presence.editing?'Another member is currently editing this task':`${presence.viewers} other member(s) viewing`}</T>:null}
       {t ? (
         <>
           <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontSize:24,fontWeight:'600',lineHeight:32,backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:4,minHeight:56}} />

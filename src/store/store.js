@@ -30,7 +30,7 @@ export function StoreProvider({children,onReady,loading}){
  const [notice,setNotice]=useState(null);
  const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});
  const currentRef=useRef(null),loaded=useRef(false),lastError=useRef('');
- const normalizer=useRef(null),writer=useRef(null);
+ const normalizer=useRef(null),writer=useRef(null),cloudRef=useRef(null);
  const [idx,setIdx]=useState(null),indexRef=useRef(null),swapping=useRef(false),epochRef=useRef(0);
  if(!normalizer.current)normalizer.current=model.createWorkspaceNormalizer();
  // A writer is bound to one storage key for its whole life, so a late save can only ever reach the workspace it was made for.
@@ -50,6 +50,7 @@ export function StoreProvider({children,onReady,loading}){
    diagnosticMonitor.recordStartup('storage read started');
    const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);
    const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());
+   await require('../cloud/lease.cjs').recoverCloudLease(AsyncStorage,index.activeId);
    const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);
    if(!active)return;
    diagnosticMonitor.recordAction(`startup storage read ${Date.now()-started}ms`);
@@ -68,6 +69,7 @@ export function StoreProvider({children,onReady,loading}){
   // Validate before mutating any in-memory or persistent state.
   const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));
   currentRef.current=safe;setWs(safe);
+  void cloudRef.current?.capture(safe).catch(e=>{setFault(`Cloud queue could not be saved: ${e.message}. Local work is retained; export a backup.`);});
   if(deferPersistence)writer.current.defer(safe);else void writer.current.enqueue(safe);
  };
  const trans=(fn,label,deferPersistence=false)=>{
@@ -113,12 +115,16 @@ export function StoreProvider({children,onReady,loading}){
    if(next){await AsyncStorage.setItem(key,JSON.stringify(next));wrote=true}
    else{const raw=await AsyncStorage.getItem(key);if(!raw)throw Error('That workspace has no saved data.');next=normalizer.current(JSON.parse(raw))}
    await saveIndex(nextIndex);
+   await cloudRef.current?.disconnect();
    epochRef.current+=1;writer.current=makeWriter(key);currentRef.current=next;
    setWs(next);setFault('');return true;
   }catch(e){if(wrote)AsyncStorage.removeItem(key).catch(()=>{});throw e}
   finally{loaded.current=true}
  });
+ if(!cloudRef.current)cloudRef.current=require('../cloud/session.cjs').createCloudSession({storage:AsyncStorage,getWorkspace:()=>currentRef.current,getLocalId:()=>indexRef.current?.activeId,
+  applyRemote:async(next,localId)=>{if(localId!==indexRef.current?.activeId)throw Error('Workspace changed during synchronization');put(next);const activeWriter=writer.current;if(!activeWriter||!(await activeWriter.flush()))throw Error('Cloud changes could not be saved locally');}});
  const api=useMemo(()=>({
+  cloudSession:()=>cloudRef.current,
   activeWorkspaceId:()=>indexRef.current?.activeId,
   switchWorkspace:async id=>{try{const cur=indexRef.current;return cur.activeId===id?true:await swapTo(workspaces.setActive(cur,id))}catch(e){notify(e.message,'error');return false}},
   createWorkspace:async name=>{try{

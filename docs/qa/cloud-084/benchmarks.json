@@ -1,0 +1,254 @@
+{
+  "generatedAt": "2026-11-07T20:30:50.263Z",
+  "environment": {
+    "platform": "linux",
+    "arch": "arm64",
+    "node": "v24.21.0",
+    "kernel": "6.17.0-PRoot-Distro",
+    "totalMemoryBytes": 11089383424,
+    "freeMemoryBytes": 2105040896
+  },
+  "method": "One process, bounded batches. Operation counts instrument service calls, not production bills. CPU and heap are process samples, not device UI frames or billed resources.",
+  "scenarios": [
+    {
+      "name": "A-solo",
+      "users": 1,
+      "tasks": 200,
+      "objects": 25,
+      "kind": "Synthetic host execution",
+      "executedTasks": 200,
+      "baseline": {
+        "documentWrites": 229,
+        "bytes": 139156,
+        "serializationMs": 2.788499999999999,
+        "heapDeltaBytes": 309600
+      },
+      "incremental": {
+        "changedRecords": 2,
+        "clientBytes": 2521,
+        "diffMs": 55.03619299999997,
+        "heapDeltaBytes": 2550248
+      },
+      "writeReductionPercent": 99.12663755458514,
+      "serverValidation": "Broad workspace validation reads are included separately in emulator metrics; client payload savings do not imply equivalent server-read savings",
+      "simulatedListenerFanout": 2
+    },
+    {
+      "name": "B-small-team",
+      "users": 15,
+      "tasks": 500,
+      "objects": 100,
+      "kind": "Synthetic host execution",
+      "executedTasks": 500,
+      "baseline": {
+        "documentWrites": 604,
+        "bytes": 355213,
+        "serializationMs": 3.700847000000067,
+        "heapDeltaBytes": 355952
+      },
+      "incremental": {
+        "changedRecords": 2,
+        "clientBytes": 2521,
+        "diffMs": 80.25380700000005,
+        "heapDeltaBytes": 3139280
+      },
+      "writeReductionPercent": 99.66887417218543,
+      "serverValidation": "Broad workspace validation reads are included separately in emulator metrics; client payload savings do not imply equivalent server-read savings",
+      "simulatedListenerFanout": 30
+    },
+    {
+      "name": "C-medium",
+      "users": 100,
+      "tasks": 2000,
+      "objects": 500,
+      "kind": "Synthetic host execution",
+      "executedTasks": 2000,
+      "baseline": {
+        "documentWrites": 2504,
+        "bytes": 1445967,
+        "serializationMs": 11.55096100000003,
+        "heapDeltaBytes": 1457368
+      },
+      "incremental": {
+        "changedRecords": 2,
+        "clientBytes": 2521,
+        "diffMs": 202.93292299999996,
+        "heapDeltaBytes": 27298464
+      },
+      "writeReductionPercent": 99.92012779552716,
+      "serverValidation": "Broad workspace validation reads are included separately in emulator metrics; client payload savings do not imply equivalent server-read savings",
+      "simulatedListenerFanout": 200
+    },
+    {
+      "name": "D-enterprise-bounded",
+      "users": 1000,
+      "tasks": 100000,
+      "objects": 1000,
+      "kind": "Bounded host execution plus operation extrapolation",
+      "executedTasks": 2000,
+      "baseline": {
+        "documentWrites": 3004,
+        "bytes": 1573847,
+        "serializationMs": 7.205153999999993,
+        "heapDeltaBytes": 1574616
+      },
+      "incremental": {
+        "changedRecords": 2,
+        "clientBytes": 2521,
+        "diffMs": 194.00880699999993,
+        "heapDeltaBytes": 20695672
+      },
+      "writeReductionPercent": 99.93342210386152,
+      "serverValidation": "Broad workspace validation reads are included separately in emulator metrics; client payload savings do not imply equivalent server-read savings",
+      "simulatedListenerFanout": 2000
+    }
+  ],
+  "worst": {
+    "name": "E-worst-case",
+    "kind": "Deterministic conflict simulation, not 100 real network sessions",
+    "contenders": 100,
+    "accepted": 1,
+    "conflicts": 99,
+    "missingChanges": 0,
+    "silentlyOverwritten": 0,
+    "offlineHoursModeled": 72,
+    "clockSkewPolicy": "Server sequence ordering; client timestamps do not resolve conflicts"
+  },
+  "queue": {
+    "mutations": 1000,
+    "durable": true,
+    "wallMs": 7642.75411,
+    "storedBytes": 3527018,
+    "largestRowBytes": 100000
+  },
+  "ideal": {
+    "name": "F-ideal",
+    "kind": "Measured emulator cold/warm/cache/summary pulls when emulator array is present",
+    "measured": true
+  },
+  "emulator": [
+    {
+      "name": "cold-hydration",
+      "documentReads": 132,
+      "bytes": 97653,
+      "recordCacheHit": false,
+      "clientRoundTripMs": 340.4821149999989
+    },
+    {
+      "name": "unchanged-warm-pull",
+      "documentReads": 3,
+      "bytes": 2,
+      "recordCacheHit": false,
+      "clientRoundTripMs": 129.87730799999918
+    },
+    {
+      "name": "cached-hydration",
+      "documentReads": 3,
+      "bytes": 97653,
+      "recordCacheHit": true,
+      "clientRoundTripMs": 130.13965400000052
+    },
+    {
+      "name": "task-commits",
+      "samples": [
+        {
+          "roundTripMs": 244.74580699999933,
+          "functionExecutionMs": 216.69096200000058,
+          "cpuMicroseconds": {
+            "user": 127817,
+            "system": 3873
+          },
+          "heapBytes": 139865128,
+          "documentReads": 135,
+          "documentWrites": 7
+        },
+        {
+          "roundTripMs": 251.52084600000126,
+          "functionExecutionMs": 177.3815390000018,
+          "cpuMicroseconds": {
+            "user": 101181,
+            "system": 7239
+          },
+          "heapBytes": 155413840,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 284.5414609999989,
+          "functionExecutionMs": 263.54057699999976,
+          "cpuMicroseconds": {
+            "user": 90265,
+            "system": 3572
+          },
+          "heapBytes": 170935656,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 301.1316539999989,
+          "functionExecutionMs": 278.695037999998,
+          "cpuMicroseconds": {
+            "user": 110665,
+            "system": 26226
+          },
+          "heapBytes": 127228760,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 136.67815399999927,
+          "functionExecutionMs": 116.25369199999841,
+          "cpuMicroseconds": {
+            "user": 61113,
+            "system": 11159
+          },
+          "heapBytes": 142735048,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 330.2835379999997,
+          "functionExecutionMs": 307.05692300000374,
+          "cpuMicroseconds": {
+            "user": 85487,
+            "system": 14380
+          },
+          "heapBytes": 158246848,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 566.8391149999989,
+          "functionExecutionMs": 539.8298849999992,
+          "cpuMicroseconds": {
+            "user": 94415,
+            "system": 5965
+          },
+          "heapBytes": 173733272,
+          "documentReads": 135,
+          "documentWrites": 6
+        },
+        {
+          "roundTripMs": 327.0888080000004,
+          "functionExecutionMs": 293.4451919999992,
+          "cpuMicroseconds": {
+            "user": 89633,
+            "system": 8160
+          },
+          "heapBytes": 130061696,
+          "documentReads": 135,
+          "documentWrites": 6
+        }
+      ],
+      "clientP50Ms": 284.5414609999989,
+      "clientP95Ms": 566.8391149999989,
+      "clientP99Ms": 566.8391149999989,
+      "functionP50Ms": 263.54057699999976
+    },
+    {
+      "name": "project-summary",
+      "documentReads": 4,
+      "clientRoundTripMs": 122.5861530000002
+    }
+  ]
+}

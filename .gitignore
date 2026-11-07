@@ -18,3 +18,8 @@ keystore.properties
 # Private Android signing credentials
 /credentials.json
 /credentials/
+
+# Synthetic emulator state and generated LAN binding only.
+/.emulator-data/
+/.firebase/
+/.firebase-emulator-local.json

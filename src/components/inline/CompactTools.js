@@ -16,7 +16,7 @@ export function Fold({title,subtitle,children,initial=false,actions,open,onToggl
  const expanded=open===undefined?inner:open,setExpanded=v=>{setInner(v);onToggle&&onToggle(v)};
  const Body=initial?View:Reveal;
  return <View style={{gap:expanded?16:0,borderRadius:16,backgroundColor:c.surface,borderWidth:1,borderColor:c.line,padding:16}}>
-  <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{expanded}} onPress={()=>setExpanded(!expanded)} style={{minHeight:48,flexDirection:'row',alignItems:'center',gap:12}}>
+  <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{expanded}} aria-expanded={Platform.OS==='web'?expanded:undefined} onPress={()=>setExpanded(!expanded)} style={{minHeight:48,flexDirection:'row',alignItems:'center',gap:12}}>
    <View style={{flex:1,gap:3}}><T weight="600" size={16}>{title}</T>{subtitle?<T muted size={12} numberOfLines={expanded?undefined:2}>{subtitle}</T>:null}</View>
    <DisclosureGlyph expanded={expanded} color={c.muted}/>
   </Pressable>

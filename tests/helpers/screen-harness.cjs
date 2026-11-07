@@ -50,6 +50,9 @@ function screenHarness(file, store, extra = {}) {
     if (extra.mocks && Object.hasOwn(extra.mocks, id)) return extra.mocks[id];
     if(id.endsWith('/BackSurface'))return {__esModule:true,default:'BackSurface'};
     if(id.endsWith('/useBackNavigation'))return {useBackDismiss(){}};
+    if(id.endsWith('/CloudDiscussion'))return {__esModule:true,default:'CloudDiscussion'};
+    if(id.endsWith('/CloudPanel'))return {__esModule:true,default:'CloudPanel'};
+    if(id.endsWith('/useCloudPresence'))return {useCloudPresence:()=>({viewers:0,editing:false})};
     if(id.endsWith('/useRenderMetric'))return {useRenderMetric(){}};
     if (id === 'react') return hooks;
     if (id === 'react/jsx-runtime') return require(id);

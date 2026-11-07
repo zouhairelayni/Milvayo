@@ -1,0 +1,5 @@
+scenario,tasks_executed,baseline_record_writes,incremental_changed_records,baseline_bytes,incremental_payload_bytes,write_reduction_percent
+A-solo,200,229,2,139156,2521,99.12663755458514
+B-small-team,500,604,2,355213,2521,99.66887417218543
+C-medium,2000,2504,2,1445967,2521,99.92012779552716
+D-enterprise-bounded,2000,3004,2,1573847,2521,99.93342210386152

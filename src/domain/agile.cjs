@@ -92,6 +92,33 @@ function reconcileProgress(before,after,at=atIso()){
  const b=after.tasks.filter(t=>t.sprintId===active.id).map(t=>`${t.id}:${t.status}`).sort().join('|');
  return a!==b?snapshot(after,active.id,at):after;
 }
+// Validate replacements with the same lifecycle rules as interactive commands.
+function validateLifecycleChange(before,after){
+ const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+ for(const previous of before.sprints||[]){
+  const next=(after.sprints||[]).find(s=>s.id===previous.id);
+  if(previous.state==='completed'&&(!next||!same(previous,next)))throw Error('Completed sprint history is frozen');
+  if(!next){if(previous.state!=='planned')throw Error('Only planned sprints may be deleted');continue;}
+  if(previous.state==='active'&&next.state==='planned'||previous.state==='planned'&&next.state==='completed')throw Error('Invalid sprint lifecycle transition');
+  if(previous.state!=='planned'&&['name','goal','start','end','startedAt'].some(k=>next[k]!==previous[k]))throw Error('Started sprint details are fixed');
+  if(previous.state==='planned'&&next.state==='planned'&&(!same(next.history,[])||next.startedAt||next.completedAt||next.taskIds.length))throw Error('Planned sprint has no historical progress');
+  if(previous.state==='planned'&&next.state==='active'){
+   const expected=startSprint(before,previous.id,next.startedAt).sprints.find(s=>s.id===previous.id);
+   if(!same(expected.history,next.history)||next.completedAt||next.taskIds.length)throw Error('Invalid initial sprint progress');
+  }
+  if(previous.state==='active'){
+   const history=next.history,offset=history.length===MAX_HISTORY&&previous.history.length===MAX_HISTORY&&same(previous.history.slice(1),history.slice(0,-1))?1:0;
+   if(!same(previous.history.slice(offset),history.slice(0,previous.history.length-offset)))throw Error('Sprint progress history cannot be rewritten');
+   if(history.length>previous.history.length+1)throw Error('Append only the current sprint progress');
+   if(next.state==='completed'){
+    const expected=finishSprint(before,previous.id,next.completedAt).sprints.find(s=>s.id===previous.id);
+    if(!same(expected.taskIds,next.taskIds)||!same(expected.history,next.history))throw Error('Invalid frozen sprint scope or history');
+   }else if(history.length>previous.history.length||offset){const expected=summary(after,next.id),last=history.at(-1);if(last.remaining!==expected.remaining||last.total!==expected.total)throw Error('Sprint progress does not match current scope');}
+  }
+ }
+ for(const next of after.sprints||[])if(!(before.sprints||[]).some(s=>s.id===next.id)&&next.state!=='planned')throw Error('New sprints begin in planning');
+ return true;
+}
 function burndown(project,id,today=localDay()){
  const s=find(project,id);if(s.state==='planned')return [];
  const events=s.history.slice().sort((a,b)=>a.at.localeCompare(b.at));if(!events.length)return [];
@@ -107,4 +134,4 @@ function burndown(project,id,today=localDay()){
  }
  return out;
 }
-module.exports={STATES,normalizeSprint,normalizeAgile,validateAgile,createSprint,updatePlannedSprint,assign,startSprint,finishSprint,deleteSprint,reconcileProgress,summary,burndown,snapshot};
+module.exports={STATES,normalizeSprint,normalizeAgile,validateAgile,validateLifecycleChange,createSprint,updatePlannedSprint,assign,startSprint,finishSprint,deleteSprint,reconcileProgress,summary,burndown,snapshot};

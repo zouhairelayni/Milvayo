@@ -1,0 +1,41 @@
+ M .gitignore
+ D docs/Milvayo-Handoffs/canvas.md
+ M docs/changelog/CHANGELOG.md
+ M firebase.json
+ M firestore.rules
+ D milvayo-first-run-tour.zip
+ M package-lock.json
+ M package.json
+ M src/components/inline/CompactTools.js
+ M src/components/shell/Bars.js
+ M src/domain/agile.cjs
+ M src/screens/canvas/CanvasEditor.js
+ M src/screens/management/Management.js
+ M src/screens/tasks/TaskSheet.js
+ M src/screens/workspace/Workspace.js
+ M src/store/store.js
+ M storage.rules
+ M tests/helpers/canvas-editor-harness.cjs
+ M tests/helpers/screen-harness.cjs
+?? .firebaserc
+?? "Milvayo v0.7.9.zip"
+?? database.rules.json
+?? "docs/Milvayo-Handoffs/canvas v1.0.md"
+?? "docs/Milvayo-Handoffs/canvas v2.0.md"
+?? "docs/Milvayo-Handoffs/canvas v2.1.md"
+?? "docs/Milvayo-Handoffs/canvas v2.2.md"
+?? "docs/Milvayo-Handoffs/firebase v1.0.md"
+?? docs/cloud/
+?? docs/instructions/firebase-emulator-084.md
+?? docs/qa/cloud-084/
+?? firestore.indexes.json
+?? src/cloud/
+?? src/domain/licensing.cjs
+?? src/screens/management/CloudDiscussion.js
+?? src/screens/workspace/CloudOrganization.js
+?? src/screens/workspace/CloudPanel.js
+?? src/screens/workspace/CloudPlatform.js
+?? src/screens/workspace/CloudRecovery.js
+?? tests/cloud/
+?? tests/helpers/cloud-browser.cjs
+?? tests/helpers/cloud-emulators.cjs

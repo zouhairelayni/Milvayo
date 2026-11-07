@@ -2,7 +2,37 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  // Closed until a dedicated Auth/Firestore design and emulator tests are accepted.
+  // Assumed schema: orgs/{org}/members/{uid} active:boolean, role:string;
+  // workspaces/{ws} state:string; grants/{uid} workspaceRole:string, projects:map.
+  // records/{key}: schema:int, projectId:string, sequence:int, revision:int,
+  // kind/id/boardId:string, data:map, order:number, deleted:bool.
+  // Durable writes require the independently authorized emulator function.
+  function signedIn() { return request.auth != null; }
+  function member(org) { return get(/databases/$(database)/documents/orgs/$(org)/members/$(request.auth.uid)).data; }
+  function active(org) { return signedIn() && member(org).active == true; }
+  function admin(org) { return active(org) && member(org).role in ['owner', 'admin']; }
+  function grant(org, ws) { return get(/databases/$(database)/documents/orgs/$(org)/workspaces/$(ws)/grants/$(request.auth.uid)).data; }
+  function ready(org, ws) { return get(/databases/$(database)/documents/orgs/$(org)/workspaces/$(ws)).data.state == 'active'; }
+  function reader(role) { return role in ['viewer', 'commenter', 'contributor', 'manager']; }
+  function canRead(org, ws, project) {
+   let g = grant(org, ws);
+   return active(org) && ready(org, ws) && (project != '' || !g.projects.values().hasAny(['none'])) &&
+    ((project in g.projects && reader(g.projects[project])) || (!(project in g.projects) && reader(g.workspaceRole)));
+  }
+  match /users/{uid} { allow read: if signedIn() && request.auth.uid == uid; }
+  match /platformRoles/{uid} { allow read: if signedIn() && request.auth.uid == uid; }
+  match /orgs/{org} {
+   allow read: if active(org);
+   match /members/{uid} { allow read: if active(org) && (request.auth.uid == uid || admin(org)); }
+   match /subscription/{id} { allow read: if active(org) && (admin(org) || member(org).role == 'billing'); }
+   match /workspaces/{ws} {
+    allow read: if admin(org);
+    match /grants/{uid} { allow read: if active(org) && (request.auth.uid == uid || admin(org)); }
+    match /records/{key} { allow read: if canRead(org, ws, resource.data.projectId); }
+    match /summaries/{project} { allow read: if canRead(org, ws, project); }
+    match /audit/{id} { allow read: if canRead(org, ws, resource.data.projectId) && grant(org, ws).workspaceRole == 'manager'; }
+   }
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

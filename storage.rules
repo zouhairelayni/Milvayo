@@ -2,7 +2,21 @@
 rules_version = '2';
 service firebase.storage {
  match /b/{bucket}/o {
-  // No cross-user file storage until authentication, ownership rules and limits exist.
+  // Assumed path: attachments/org/workspace/project/actor/file.
+  // Every operation rechecks active membership and scoped Firestore grants.
+  function allowed(org, ws, project, edit) {
+   let member = firestore.get(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid)).data;
+   let grant = firestore.get(/databases/(default)/documents/orgs/$(org)/workspaces/$(ws)/grants/$(request.auth.uid)).data;
+   let role = project in grant.projects ? grant.projects[project] : grant.workspaceRole;
+   return member.active == true && (edit ? role in ['contributor', 'manager'] : role in ['viewer', 'commenter', 'contributor', 'manager']);
+  }
+  match /attachments/{org}/{ws}/{project}/{uid}/{file} {
+   allow read: if request.auth != null && allowed(org, ws, project, false);
+   allow create, update: if request.auth != null && request.auth.uid == uid && allowed(org, ws, project, true)
+    && request.resource.size <= 5 * 1024 * 1024
+    && request.resource.contentType in ['image/png', 'image/jpeg', 'application/pdf', 'text/plain'];
+   allow delete: if request.auth != null && request.auth.uid == uid && allowed(org, ws, project, true);
+  }
   match /{allPaths=**} { allow read, write: if false; }
  }
 }

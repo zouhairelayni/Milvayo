@@ -1,0 +1,16 @@
+// /tests/cloud/archive-licensing.test.cjs
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),{sha256}=require('js-sha256');
+const L=require('../../src/domain/licensing.cjs'),A=require('../../src/cloud/archive.cjs'),S=require('../../src/cloud/schema.cjs'),{batches}=require('../../src/cloud/batches.cjs'),{generate}=require('../../src/cloud/tools/fixtures.cjs');
+test('resource allocations preserve unique global licenses and explicit caps',()=>{
+ const base={capacity:2,seats:['a'],allocations:{},allocationCaps:{project:1}},first=L.allocate(base,'b','project',true),second=L.allocate(first,'b','portfolio',true);assert.deepEqual(second.seats,['a','b']);assert.deepEqual(base.allocations,{});assert.throws(()=>L.allocate(second,'c','other',true),/capacity/);assert.throws(()=>L.allocate(second,'a','project',true),/cap/);assert.throws(()=>L.setCap(second,'project',0),/exceed/);assert.deepEqual(L.allocate(second,'b','project',false).seats,['a','b']);assert.deepEqual(L.allocate(second,'b','project',false).allocations.project,[]);
+});
+test('import batching respects UTF-8 request budgets, row counts and source order',()=>{
+ const rows=Array.from({length:250},(_,id)=>({id,text:'界😀'.repeat(900)})),result=[...batches(rows)];assert.deepEqual(result.flat(),rows);assert.ok(result.every(b=>b.length<=100&&Buffer.byteLength(S.stable(b))<=650000));assert.throws(()=>[...batches([{text:'界'.repeat(300000)}])],/budget/);assert.deepEqual([...batches([])],[]);
+});
+test('collaboration backup v2 validates integrity, references, sequence IDs and notification replay',()=>{
+ const records=S.pack(generate({tasks:1,objects:0})),projectId=records.find(r=>r.kind==='projects').projectId,hash=x=>sha256(S.stable(x)),threadId='task-task-0',taskId='task-0',message={id:'message-1',projectId,threadId,taskId,actor:'owner',body:'A message',sequence:1,at:123,mentions:[]};
+ const extras={messages:[{id:message.id,data:message}],conversations:[{id:hash([projectId,threadId]),data:{projectId,threadId,taskId,sequence:1}}],watchers:[{id:hash([projectId,threadId,'guest']),data:{projectId,threadId,taskId,uid:'guest'}}],notifications:[{id:hash([message.id,'guest']),data:{projectId,threadId,taskId,uid:'guest',messageId:message.id,read:false}}]};
+ assert.equal(A.validateExtras(extras,records),true);const backup={format:'milvayo.cloud.backup.v2',schema:1,records,extras,checksum:hash(records),dataChecksum:hash({records,extras})};const {verifyBackup}=require('../../src/cloud/recovery.cjs');assert.equal(verifyBackup(backup),backup);assert.equal(A.normalizeExtras(extras,'restorer').notifications[0].data.read,true);assert.equal(A.normalizeExtras(extras,'restorer').messages[0].data.restoredBy,'restorer');
+ const damaged=structuredClone(backup);damaged.extras.messages[0].data.body='tampered';assert.throws(()=>verifyBackup(damaged),/checksum/);const missing=structuredClone(extras);missing.conversations=[];assert.throws(()=>A.validateExtras(missing,records),/sequence/);const duplicate=structuredClone(extras);duplicate.messages.push(duplicate.messages[0]);assert.throws(()=>A.validateExtras(duplicate,records),/duplicate/);assert.throws(()=>A.validateExtras(extras,records.filter(r=>r.kind!=='tasks')),/task/);
+});

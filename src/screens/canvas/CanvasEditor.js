@@ -7,6 +7,7 @@ import { useStore } from '../../store/store';
 import { useBackDismiss } from '../../app/navigation/useBackNavigation';
 import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { diagnosticMonitor } from '../../diagnostics/monitor';
+import {useCloudPresence} from '../../cloud/useCloudPresence';
 import { wbsDelete } from '../../governance/pm';
 import CanvasSurface from '../../canvas/CanvasSurface';
 import CanvasExports from './CanvasExports';
@@ -50,6 +51,7 @@ export default function CanvasEditor({board,project,scope,onClose,go,openTask,op
  useEffect(()=>{diagnosticMonitor.recordAction(`canvas opened: ${board.objects.length} objects, ${board.connectors.length} connections`);},[]);
  const [brushWidth,setBrushWidth]=useState(3),[brushColor,setBrushColor]=useState(''),[erasing,setErasing]=useState(false),eraseBusy=useRef(false);
  const [inlineEdit,setInlineEdit]=useState(null),inlineRef=useRef(null);
+ const presence=useCloudPresence(project.id,'canvas:'+board.id,!!inlineEdit);
  const setInline=value=>{inlineRef.current=value;setInlineEdit(value);};
  const [activeComment,setActiveComment]=useState(''),[commentTarget,setCommentTarget]=useState(null),lastCommentPost=useRef(null),panelRef=useRef(panel),panelHistory=useRef([]);
  const parents={objects:'tools',selection:'objects',inspect:'selection',arrange:'selection',appearance:'inspect',color:'inspect',diagram:'inspect',node:'diagram',source:'add','project-diagram':'add',view:'tools',comments:'tools',export:'board',settings:'board',connector:''};
@@ -151,6 +153,7 @@ export default function CanvasEditor({board,project,scope,onClose,go,openTask,op
    {inlineEdit?<CanvasInlineEditor key={`${inlineEdit.id}:${inlineEdit.nodeId}`} edit={inlineEdit} pose={pose.current} viewport={viewport} onChange={value=>{if(inlineRef.current)inlineRef.current={...inlineRef.current,value};}} onDone={()=>finishInline()} onCancel={()=>finishInline(true)}/>:null}
    {comment&&commentMarker?<CanvasCommentBubble key={comment.id} thread={comment} {...commentMarker} camera={camera} viewport={viewport} onClose={()=>setActiveComment('')} onReply={value=>perform({type:'reply',id:comment.id,message:{id:model.id('message'),text:value,at:model.iso()}})} onResolve={()=>perform({type:'resolve',id:comment.id,resolved:!comment.resolvedAt})}/>:null}
    {mode==='comment'?<View pointerEvents="none" style={{position:'absolute',top:12,left:12,right:12}}><T>Tap where the comment belongs</T></View>:null}
+   {presence.viewers?<View pointerEvents="none" style={{position:'absolute',top:12,left:12,right:12}}><T muted size={12}>{presence.editing?'Another member is currently editing this Canvas':`${presence.viewers} other member(s) viewing`}</T></View>:null}
    {!draft.objects.length?<View pointerEvents="none" style={{position:'absolute',left:32,right:32,top:48,gap:8}}><T size={22} weight="500">Space for the next idea</T><T muted>Add a note, bring in a project source, or start drawing</T></View>:null}
    {!inlineEdit?<>
     <CanvasToolbar mode={mode} panel={panel} onTool={tool}/>

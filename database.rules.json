@@ -1,0 +1,19 @@
+{
+ "rules": {
+  ".read": false,
+  ".write": false,
+  "presence": {
+   "$org": { "$workspace": { "$project": {
+    ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
+    "$uid": { "$session": {
+     ".write": "auth != null && auth.uid == $uid && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
+     ".validate": "newData.hasChildren(['state','resource','expiresAt'])",
+     "state": {".validate":"newData.isString() && (newData.val() == 'viewing' || newData.val() == 'editing' || newData.val() == 'typing')"},
+     "resource": {".validate":"newData.isString() && newData.val().length <= 160"},
+     "expiresAt": {".validate":"newData.isNumber() && newData.val() > now && newData.val() <= now + 90000"},
+     "$other": {".validate":false}
+    }}
+   }}}
+  }
+ }
+}

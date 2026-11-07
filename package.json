@@ -8,7 +8,14 @@
     "web": "expo start --web",
     "build:web": "expo export --platform web --output-dir dist && node scripts/stamp-sw.cjs dist",
     "test": "node tests/run-all.cjs",
-    "deploy:hosting": "node scripts/deploy-hosting.cjs"
+    "deploy:hosting": "node scripts/deploy-hosting.cjs",
+    "emulators": "node src/cloud/tools/emulators.cjs start",
+    "test:cloud": "node src/cloud/tools/emulators.cjs test",
+    "test:cloud:running": "node src/cloud/tools/runTests.cjs",
+    "cloud:seed": "node src/cloud/tools/seed.cjs",
+    "cloud:benchmark": "node src/cloud/tools/benchmark.cjs",
+    "cloud:cost": "node src/cloud/tools/cost.cjs",
+    "cloud:export": "node src/cloud/tools/emulators.cjs export"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",
@@ -24,7 +31,8 @@
     "expo-sharing": "~58.0.22",
     "expo-status-bar": "~58.0.4",
     "expo-system-ui": "~58.0.7",
-    "fflate": "^0.8.2",
+    "fflate": "^0.8.3",
+    "firebase": "13.2.0",
     "js-sha256": "1.0.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -37,6 +45,12 @@
     "react-native-worklets": "0.13.0"
   },
   "devDependencies": {
-    "@react-native/metro-config": "^0.88.1"
+    "@firebase/rules-unit-testing": "6.0.0",
+    "@react-native/metro-config": "^0.88.1",
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
   }
 }

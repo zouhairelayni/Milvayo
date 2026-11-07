@@ -1,0 +1,227 @@
+{
+  "region": "us-central1",
+  "currency": "USD",
+  "asOf": "2026-11-07",
+  "functionGeneration": "v2 request-based Cloud Run; no minimum instances",
+  "notes": [
+    "Published rates checked 2026-11-07. Replace this complete table to select another region. No CUDs.",
+    "Daily Firestore quotas modeled as flat daily consumption; uneven bursts require per-day inputs.",
+    "Function compute uses Cloud Run request-based quotas, separately from the generic Firebase first-generation table.",
+    "Function internet transfer $0.12/GB is a configurable assumption from the generic Firebase table; destination and Cloud Run networking may differ.",
+    "Cloud Storage, IAM identity, App Check and auxiliary components remain unpriced until selected; positive unpriced usage cannot be called a complete total.",
+    "Managed backup/PITR/restore/clone allowances are zero.",
+    "Firestore storage/PITR/backup hourly prices normalized at 730 hours/month."
+  ],
+  "rates": {
+    "firestoreReads": {
+      "price": 3e-07,
+      "free": 50000,
+      "period": "day",
+      "unit": "document",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "firestoreWrites": {
+      "price": 9e-07,
+      "free": 20000,
+      "period": "day",
+      "unit": "document",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "firestoreDeletes": {
+      "price": 1e-07,
+      "free": 20000,
+      "period": "day",
+      "unit": "document",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "indexEntryReads": {
+      "price": 3e-07,
+      "free": 0,
+      "period": "month",
+      "unit": "1000-index-entry batch billed as read (supply batches, not entries)",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "ruleDependentReads": {
+      "price": 3e-07,
+      "free": 0,
+      "period": "month",
+      "unit": "document; avoid double counting firestoreReads",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "firestoreStorageGiB": {
+      "price": 0.14999967,
+      "free": 1,
+      "period": "month",
+      "unit": "GiB-month",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "firestoreEgressGiB": {
+      "price": 0.12,
+      "free": 10,
+      "period": "month",
+      "unit": "GiB; configurable destination assumption",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "backupGiB": {
+      "price": 0.030000080000000002,
+      "free": 0,
+      "period": "month",
+      "unit": "GiB-month",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "pitrGiB": {
+      "price": 0.14999967,
+      "free": 0,
+      "period": "month",
+      "unit": "GiB-month",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "restoreGiB": {
+      "price": 0.2,
+      "free": 0,
+      "period": "month",
+      "unit": "GiB restored",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "cloneGiB": {
+      "price": 0.2,
+      "free": 0,
+      "period": "month",
+      "unit": "GiB cloned",
+      "source": "https://cloud.google.com/firestore/pricing"
+    },
+    "functionRequests": {
+      "price": 4.0000000000000003e-07,
+      "free": 2000000.0,
+      "period": "month",
+      "unit": "request",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    "functionCpuSeconds": {
+      "price": 2.4e-05,
+      "free": 180000,
+      "period": "month",
+      "unit": "vCPU-second",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    "functionGiBSeconds": {
+      "price": 2.5e-06,
+      "free": 360000,
+      "period": "month",
+      "unit": "GiB-second",
+      "source": "https://cloud.google.com/run/pricing"
+    },
+    "functionEgressGiB": {
+      "price": 0.12,
+      "free": 5,
+      "period": "month",
+      "unit": "GB transfer assumption; key retained for compatibility",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "rtdbStorageGB": {
+      "price": 5,
+      "free": 1,
+      "period": "month",
+      "unit": "GB-month",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "rtdbDownloadGB": {
+      "price": 1,
+      "free": 0.36,
+      "period": "day",
+      "unit": "GB downloaded",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "hostingStorageGB": {
+      "price": 0.026,
+      "free": 10,
+      "period": "month",
+      "unit": "GB-month",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "hostingTransferGB": {
+      "price": 0.15,
+      "free": 0.36,
+      "period": "day",
+      "unit": "GB transfer",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "storageGB": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "storageUploads": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "storageDownloads": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "appCheckAssessments": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "secretAccesses": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "schedulerJobs": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "eventDeliveries": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "loggingGiB": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "cloudBuildMinutes": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "artifactStorageGB": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    },
+    "enterpriseIdentityMAU": {
+      "price": null,
+      "free": 0,
+      "period": "month",
+      "unit": "select service/region/provider before pricing",
+      "source": "https://firebase.google.com/pricing"
+    }
+  }
+}

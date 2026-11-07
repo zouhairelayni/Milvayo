@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-11-07T20:43:25.590Z",
+  "appVersion": "0.8.4",
+  "lockVersion": "0.8.4",
+  "lockRootVersion": "0.8.4",
+  "expoVersion": "0.8.4",
+  "androidBuild": 94,
+  "iosBuild": "94",
+  "firebase": "13.2.0",
+  "fflate": "^0.8.3",
+  "grpcOverride": "1.14.7",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 9,
+    "high": 0,
+    "critical": 0,
+    "total": 9
+  },
+  "notes": "Nine moderate findings remain in Expo and Google tooling transitive dependencies; no incompatible force-fix or Expo downgrade applied."
+}

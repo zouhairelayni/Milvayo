@@ -1,0 +1,77 @@
+npm notice run milvayo@0.8.4 test:cloud:running
+npm notice run node src/cloud/tools/runTests.cjs
+✔ platform role changes protect the final initialized owner and audit a permitted transfer (5.714ms)
+✔ resource allocations preserve unique global licenses and explicit caps (4.108423ms)
+✔ import batching respects UTF-8 request budgets, row counts and source order (408.643077ms)
+✔ collaboration backup v2 validates integrity, references, sequence IDs and notification replay (54.968923ms)
+▶ emulator conversations, organization administration, licenses and staged recovery
+  ✔ guests do not consume a seat or gain editing and organization permissions (1655.264115ms)
+  ✔ groups validate membership, department references and do not grant content (738.209153ms)
+  ✔ licenses count a person once across allocations and cap concurrency transactionally (42270.259047ms)
+  ✔ authenticated messages are idempotent, target authorized members and keep private notifications (1146.614768ms)
+  ✔ message history pages preserve ordering and incremental poll cursors (4221.463459ms)
+  ✔ revoked project grants remove mentions, notifications and watchers without leakage (511.662307ms)
+  ✔ large complete recovery keeps collaboration isolated until checksum activation (2209.441268ms)
+  ✔ platform operations and configuration remain separate from customer content (612.618115ms)
+✔ emulator conversations, organization administration, licenses and staged recovery (59109.496573ms)
+[2026-11-07T20:41:37.022Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490cd error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-07T20:41:37.107Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490ce error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-07T20:41:37.186Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490cf error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-07T20:41:37.245Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490d0 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-07T20:41:37.314Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490d1 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-07T20:41:37.393Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x28e490d2 error. Code: 7 Message: 7 PERMISSION_DENIED:
+false for 'create' @ L36, false for 'update' @ L36
+▶ emulator-backed authorization, incremental sync, recovery and collaboration
+  ✔ HTTP function and all client collections deny signed-out and cross-tenant access (1143.654883ms)
+  ✔ organization and platform administration do not automatically reveal customer content (280.495461ms)
+  ✔ scoped roles, explicit project denials and storage isolation are enforced (984.249615ms)
+  ✔ independent fields merge using server revisions; duplicate delivery has one effect (482.172345ms)
+  ✔ malformed fields, forged bases, dependency cycles and partial multi-record edits roll back (317.599115ms)
+  ✔ backup integrity, soft deletion, revision history and restore preserve domain references (436.283538ms)
+  ✔ invitation targeting, one-use acceptance and concurrent seat limits are transactional (1225.92146ms)
+  ✔ summary projections, mock billing signatures and concurrent grants retain authorization (3616.421844ms)
+  ✔ member revocation denies existing content and releases the seat without granting platform rights (257.843539ms)
+[2026-11-07T20:41:45.271Z]  @firebase/database: FIREBASE WARNING: set at /presence/personal-XvQG6s8FOj3f2CnOJN8jNuOaeJU6/main/sample-workspace/XvQG6s8FOj3f2CnOJN8jNuOaeJU6/bad failed: permission_denied
+[2026-11-07T20:41:45.280Z]  @firebase/database: FIREBASE WARNING: set at /acl/personal-XvQG6s8FOj3f2CnOJN8jNuOaeJU6 failed: permission_denied
+  ✔ Realtime Database protects rooms, multiple sessions and revocation independently (453.815769ms)
+✔ emulator-backed authorization, incremental sync, recovery and collaboration (10533.050262ms)
+✔ deterministic fixtures preserve large Canvas records and one-object updates (495.077077ms)
+✔ trusted mutation validation enforces workflow, verification, release and frozen sprint history (14.822076ms)
+✔ backup preview rejects corruption and missing references before an atomic restore (14.605154ms)
+✔ journal shards stay below Android row limits; interrupted commits keep the previous pointer (21.473423ms)
+✔ an interrupted borrowed cloud workspace returns to its untouched local source (3.600654ms)
+✔ journal chunks preserve emoji at UTF-16 boundaries through a native-like UTF-8 storage bridge (4.969231ms)
+✔ simulated payment signatures are verified and bounded without contacting a provider (9.972616ms)
+✔ cost model shares project read quotas and reports unpriced positive usage (8.105808ms)
+✔ queue persists offline edits and resumes after process termination without losing payloads (58.329884ms)
+✔ lost acknowledgements resend the exact durable payload and idempotency key (18.829077ms)
+✔ permanent conflict retains edits and stops ordered dependent operations (13.499423ms)
+✔ journal scopes separate hosts, users, organizations, cloud and local workspaces (0.907577ms)
+✔ conversation sends survive a lost acknowledgement and process restart with the same identity (12.879ms)
+✔ corrupt journals and failed disk writes cannot silently become a fresh queue (10.001538ms)
+✔ a permission reset removes revoked cached projects while retaining blocked edits for scoped recovery (23.10677ms)
+✔ canonical workspace and Canvas survive cloud and JSON/import round trips (55.8535ms)
+✔ one task edit changes one record; Canvas movement changes one element plus board metadata (11.964692ms)
+✔ same task IDs in independent projects remain isolated; unsafe payloads fail (16.399692ms)
+✔ independent fields merge; concurrent text/reorder/delete updates conflict (1.79027ms)
+✔ canonical validation rejects dependency corruption and unknown fields (14.105962ms)
+✔ roles cannot bridge inactive membership, project denials, or platform/organization boundaries (1.042769ms)
+✔ all cloud configuration fails closed outside the exact local demo project (3.2465ms)
+✔ opening remote work keeps the local source and disconnect restores it (77.237115ms)
+✔ borrowed workspace pending edits survive disconnect and are resumed before reconciliation (36.020116ms)
+✔ revocation stops synchronization and clears a borrowed local view (17.333077ms)
+✔ a workspace switch while authentication is pending cannot publish into the new local workspace (15.735039ms)
+✔ a failed journal write is visible and cannot discard borrowed edits on disconnect (22.648615ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 51
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73689.109601

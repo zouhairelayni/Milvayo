@@ -1,0 +1,6 @@
+npm notice run milvayo@0.8.4 cloud:export
+npm notice run node src/cloud/tools/emulators.cjs export
+i  Found running emulator hub for project demo-milvayo-083 at http://127.0.0.1:4400
+i  Creating export directory /mnt/Milvayo/.emulator-data/2026-11-07T23-34-46-552Z
+i  Exporting data to: /mnt/Milvayo/.emulator-data/2026-11-07T23-34-46-552Z
+✔  Export complete

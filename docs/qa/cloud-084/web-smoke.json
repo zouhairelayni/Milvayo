@@ -1,0 +1,28 @@
+{
+  "status": "Pass",
+  "runtime": "Actual Expo Metro Web application in headless Chromium, CI mode",
+  "checks": [
+    "Actual Web sign-in, borrowed hydration and incremental pull",
+    "Authorized organization membership/seat/audit dashboard",
+    "Authorized materialized summary",
+    "Separately authorized platform metadata",
+    "Actual worker telemetry and platform configuration controls",
+    "Authorized teams, departments and workspace directory",
+    "Actual Web durable message send, remote acknowledgement and watcher controls",
+    "Disconnect restores original local workspace"
+  ],
+  "layouts": [
+    {
+      "viewport": 390,
+      "documentWidth": 390,
+      "height": 844
+    },
+    {
+      "viewport": 1280,
+      "documentWidth": 1280,
+      "height": 900
+    }
+  ],
+  "fastRefresh": "Not run: PRoot watcher fails; CI mode disables watching",
+  "expoGo": "Not run: no physical device session"
+}
