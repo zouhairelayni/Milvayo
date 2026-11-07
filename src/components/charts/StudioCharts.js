@@ -17,7 +17,7 @@ export function StatusOrbit({series,onStatus,progress=0,caption='weighted progre
   <View accessibilityLabel={`${caption} ${Math.round(progress*100)} percent. ${total} total tasks.`} style={{width:172,height:172,alignItems:'center',justifyContent:'center'}}>
    <Svg width={172} height={172} viewBox="0 0 172 172" pointerEvents="none" style={{position:'absolute'}}>
     <Circle cx={86} cy={86} r={64} stroke={c.line} strokeWidth={13} fill="none"/>
-    {segments.map((seg,i)=>seg.length>0?<Circle key={i} cx={86} cy={86} r={64} rotation={-90} origin="86, 86" fill="none" stroke={colors[i]} strokeWidth={13} strokeLinecap="round" strokeDasharray={`${seg.length} ${2*Math.PI*64-seg.length}`} strokeDashoffset={-seg.offset}/>:null)}
+    {segments.map((seg,i)=>seg.length>0?<Circle key={i} cx={86} cy={86} r={64} transform="rotate(-90 86 86)" fill="none" stroke={colors[i]} strokeWidth={13} strokeLinecap="round" strokeDasharray={`${seg.length} ${2*Math.PI*64-seg.length}`} strokeDashoffset={-seg.offset}/>:null)}
     <Circle cx={86} cy={86} r={48} stroke={c.line} strokeWidth={1} strokeDasharray="1 7" fill="none"/>
    </Svg>
    <T size={38} weight="600">{Math.round(progress*100)}<T size={17} muted>%</T></T><T size={11} muted>{caption}</T>
@@ -88,7 +88,7 @@ export function StageTrack({items}){
 export function CompletionArc({value=0,label='Complete',size=100,color}){
  const{c}=useTheme();const r=34,length=2*Math.PI*r*.75,v=Math.min(1,Math.max(0,Number.isFinite(value)?value:0));
  return <View accessibilityLabel={`${label}, ${Math.round(v*100)} percent`} style={{width:size,height:size,alignItems:'center',justifyContent:'center'}}>
-  <Svg width={size} height={size} viewBox="0 0 100 100" pointerEvents="none" style={{position:'absolute'}}><Circle cx={50} cy={50} r={r} rotation={135} origin="50, 50" fill="none" stroke={c.line} strokeWidth={6} strokeDasharray={`${length} ${2*Math.PI*r-length}`} strokeLinecap="round"/>{v>0?<Circle cx={50} cy={50} r={r} rotation={135} origin="50, 50" fill="none" stroke={color||c.accent} strokeWidth={6} strokeDasharray={`${length*v} ${2*Math.PI*r-length*v}`} strokeLinecap="round"/>:null}</Svg>
+  <Svg width={size} height={size} viewBox="0 0 100 100" pointerEvents="none" style={{position:'absolute'}}><Circle cx={50} cy={50} r={r} transform="rotate(135 50 50)" fill="none" stroke={c.line} strokeWidth={6} strokeDasharray={`${length} ${2*Math.PI*r-length}`} strokeLinecap="round"/>{v>0?<Circle cx={50} cy={50} r={r} transform="rotate(135 50 50)" fill="none" stroke={color||c.accent} strokeWidth={6} strokeDasharray={`${length*v} ${2*Math.PI*r-length*v}`} strokeLinecap="round"/>:null}</Svg>
   <T size={Math.round(size*.21)} weight="600">{Math.round(v*100)}%</T><T size={10} muted>{label}</T>
  </View>;
 }

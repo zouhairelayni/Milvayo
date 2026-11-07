@@ -1,3 +1,9 @@
+## v0.8.4 — Web chart rotation correction (2026-11-07)
+
+- Fix WebShape console errors in Projects, project details, Resources and Reports by replacing chart rotation/origin props with explicit SVG rotations around the same centers. Preserve arc geometry, colors, readings, legend actions and diagnostic logging.
+- Add regression coverage through the installed SVG Web renderer, React DOM and native transform parser, including empty/zero/full/non-finite values and theme variants. No dependency, Metro, model, data or import change; no migration.
+- Synchronize package/lock/Expo at 0.8.4 and Android/iOS 94. QA and reversible update instructions: `docs/qa/release-084/REPORT.md` and `docs/instructions/release-084.md`. Owner authorized a local commit on `work` and explicitly prohibited pushing. Physical acceptance remains pending; no main merge.
+
 ## v0.8.3 — Canvas stability and interaction repair (2026-11-07)
 
 - Keep one authoritative geometry ledger through drag/resize release, delayed React commits and revision acknowledgements. Reject stale gesture bases, retain final positions through old native closures and keep connectors attached. Commit once per gesture; preserve existing save-conflict recovery and undo history.
