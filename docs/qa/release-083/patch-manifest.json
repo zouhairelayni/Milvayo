@@ -1,0 +1,706 @@
+{
+  "baseline": "Uncommitted 0.8.2; temporary snapshot /tmp/milvayo-083-before",
+  "purpose": "Review/rollback, not a staging whitelist. Retain uncommitted 0.8.2 prerequisites.",
+  "files": [
+    {
+      "status": "M",
+      "path": "app.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/changelog/CHANGELOG.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/instructions/release-083.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/CONTROLS.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/PATCH-FILES.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/PLAN.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/REPORT.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/benchmark-after.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/benchmark-before.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/dependency-check.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/full-tests.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/gallery.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/native-hook-audit.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/native-warning-check.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/patch-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/performance-after.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/performance-before.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshot-capture.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshot-final-followup.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshot-pan.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshot-tree-final.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/add-844-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/before-properties-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/comment-bubble.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/comment-dots.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/connector-style.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/coverage.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/delete-connection.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/drawing-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/group-arrange.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/group-selected.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/linked-wbs-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-color.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-comments.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-export.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-inspect.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-objects.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-settings.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-source.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-tools.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/menu-view.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/multi-selection.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/properties-844.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/roadmap-desktop.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/selected-1440-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/selected-360-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/selected-390-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/selected-390-light.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/selected-430-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/source-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/source-844.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/tree-layout.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/screenshots/workspace-390-dark.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-audit.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-check.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-1440-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-360-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-390-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-390-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-430-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/add-844-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/blank-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/blank-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/comment-bubble.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/comment-dots.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/connector-style.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/context-note.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/delete-connection.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/drawing-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/drawing-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/editor-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/editor-landscape.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/editor-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/editor-small-phone.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/group-arrange.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/group-selected.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/inline-note.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/library-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/library-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/linked-wbs-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-add.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-appearance.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-arrange.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-board.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-color.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-comments.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-export.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-inspect.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-objects.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-select.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-selection.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-settings.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-source.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-tools.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/menu-view.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/multi-selection.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/overview.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/properties-1440.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/properties-844.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/roadmap-desktop.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-1440-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-360-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-390-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-390-light.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-430-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-844-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/selected-large-font.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/source-1440.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/source-844.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/tree-layout.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/workspace-1440-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/workspace-360-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/workspace-390-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/workspace-430-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/source-review/workspace-844-dark.html"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/release-083/verification.json"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/CanvasCommentDot.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/CanvasCommentDot.native.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/CanvasCommentOverlay.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/CanvasCommentOverlay.native.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/CanvasComments.js"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/CanvasDrawing.js"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/CanvasObjectGroup.js"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/CanvasObjectGroup.native.js"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/CanvasSurface.native.js"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/CanvasSurface.web.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/comments.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/connectionGeometry.cjs"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/connections.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/interaction.cjs"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/roadmap.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/routing.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/canvas/scene.js"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/transform.cjs"
+    },
+    {
+      "status": "A",
+      "path": "src/canvas/visibility.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/canvas.cjs"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/canvasGroups.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/governance/DiagramExports.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/AddToCanvas.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasBrushPalette.js"
+    },
+    {
+      "status": "A",
+      "path": "src/screens/canvas/CanvasCommentBubble.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasContextToolbar.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasEditor.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasExports.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasItemList.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasLibrary.js"
+    },
+    {
+      "status": "A",
+      "path": "src/screens/canvas/CanvasPanButtons.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasPopover.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasSources.js"
+    },
+    {
+      "status": "A",
+      "path": "src/screens/canvas/CanvasSvgButton.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasSwatches.js"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/canvas/CanvasToolbar.js"
+    },
+    {
+      "status": "M",
+      "path": "src/store/latestWriter.cjs"
+    },
+    {
+      "status": "M",
+      "path": "src/store/store.js"
+    },
+    {
+      "status": "A",
+      "path": "tests/domain/canvas-groups.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/domain/canvas-line-colors.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/gestures/canvas-comments.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/gestures/canvas-curves.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/gestures/canvas-routing.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/gestures/canvas-surface.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/gestures/canvas-transform.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/gestures/canvas-visibility.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/gestures/canvas-worklet-runtime.test.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/governance/canvas-roadmap.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/helpers/canvas-editor-harness.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/helpers/canvas-stability-benchmark.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/helpers/release-083-review.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/helpers/release-083-screenshots.cjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/store/canvas-deferred-save.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/ui/canvas-editor.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/ui/canvas-toolbar.test.cjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/ui/diagram-preview-export.test.cjs"
+    }
+  ]
+}

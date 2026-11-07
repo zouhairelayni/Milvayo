@@ -19,6 +19,7 @@ const clean = (value, length = 450) => {
 };
 const warningKind = args => {
   const message = args.filter(x => typeof x === 'string').join(' ');
+  if (/Cannot record touch (?:move|end) without a touch start/.test(message)) return 'touch-history-mismatch';
   if (/Reanimated.*Reading from|Reading from.*component render/.test(message)) return 'reanimated-render-read';
   if (/non-boolean attribute.*accessible|accessible.*non-boolean attribute/.test(message)) return 'svg-accessibility-prop';
   if (/pointerEvents.*deprecated/.test(message)) return 'web-pointer-events-deprecation';

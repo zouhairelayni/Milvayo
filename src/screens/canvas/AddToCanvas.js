@@ -9,7 +9,7 @@ export default function AddToCanvas({source}){
  const {workspace,saveCanvas,flush}=useStore(),project=workspace.projects.find(p=>p.id===workspace.selectedId);
  const [open,setOpen]=useState(false),[title,setTitle]=useState('Project canvas'),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
  const running=useRef(false),pendingPlacement=useRef(null);
- const link={...source,sourceId:source.sourceId||(['roadmap','project'].includes(source.sourceType)?project.id:''),projectId:project.id,mode:'live'};
+ const link={...source,sourceId:source.sourceId||(['roadmap','project'].includes(source.sourceType)?project.id:''),projectId:project.id,mode:'live',...(['wbs','taskDiagram'].includes(source.sourceType)&&(source.view||'tree')==='tree'?{view:'tree',direction:'right'}:{})};
  const place=async board=>{
   if(running.current)return;running.current=true;setBusy(true);setMessage('');
   try{
@@ -18,7 +18,7 @@ export default function AddToCanvas({source}){
    const now=model.iso(),isNew=!board;
    let target=board||canvas.createBoard({id:model.id('canvas'),projectId:project.id,title:title.trim(),now});
    let object=canvas.createObject({id:model.id('object'),boardId:target.id,type:'linked',sourceLink:link,x:target.objects.length?Math.max(...target.objects.map(o=>o.x+o.width))+32:0,y:0,now,...(data.kind==='diagram'?{width:800,height:480}:data.kind==='roadmap'?{width:800,height:Math.max(240,Math.min(20000,80+data.tasks.length*44))}:{width:280,height:200})});
-   if(data.kind==='diagram'){const {objectScene}=require('../../canvas/scene'),layout=objectScene(object,project,JSON.stringify(['add-to-canvas',project.id])).scene,factor=Math.min(1,20000/layout.width,20000/layout.height);object={...object,width:Math.max(40,layout.width*factor),height:Math.max(32,layout.height*factor)};}
+   if(data.kind==='diagram'||data.kind==='roadmap'){const {objectScene}=require('../../canvas/scene'),layout=objectScene(object,project,JSON.stringify(['add-to-canvas',project.id])).scene,factor=Math.min(1,20000/layout.width,20000/layout.height);object={...object,width:Math.max(40,layout.width*factor),height:Math.max(32,layout.height*factor)};}
    if(isNew){target=canvas.normalizeBoard({...target,objects:[object]},project.id);if(!saveCanvas(target,null))throw Error('Canvas could not be saved');}
    else{const next=canvas.changeBoard(target,{type:'add',objects:[object]},now);if(!saveCanvas(next,target.revision))throw Error('Canvas changed; reopen the picker and retry');}
    pendingPlacement.current={id:target.id,title:target.title};if(!await flush())throw Error('Local save failed. Keep this picker open and retry.');pendingPlacement.current=null;setMessage(`Added to ${target.title}`);

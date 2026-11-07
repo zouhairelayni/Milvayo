@@ -16,9 +16,9 @@ export default function CanvasObjectGroup({ object, objectScale = 1, pose, drag,
  });
  return <Group transform={`translate(${object.x},${object.y})`} animatedProps={props}>{typeof children==='function'?children(localPose):children}</Group>;
 }
-export function CanvasEdge({ a,b,drag,color,style,objects,label,initialGeometry }) {
+export function CanvasEdge({ a,b,drag,color,style,objects,label,initialGeometry,active }) {
  const initial=useMemo(()=>{if(initialGeometry)return initialGeometry;const d=connectorPath(a,b,null,style,objects);return {d,at:label?pathLabel(d):{x:0,y:0},bounds:pathBounds(d)};},[a,b,style,objects,label,initialGeometry]);
- const geometry=useDerivedValue(()=>{const moving=drag.get();if(!routeAffected(a.id,b.id,moving,initial.bounds))return initial;const d=connectorPath(a,b,moving,style,objects);return {d,at:label?pathLabel(d):{x:0,y:0}};});
+ const geometry=useDerivedValue(()=>{const moving=drag.get();if(!moving)return initial;const from=previewBox(a,moving),to=previewBox(b,moving);if(style==='elbow'?!routeAffected(a.id,b.id,moving,initial.bounds):from.x===a.x&&from.y===a.y&&from.width===a.width&&from.height===a.height&&to.x===b.x&&to.y===b.y&&to.width===b.width&&to.height===b.height)return initial;const d=connectorPath(a,b,moving,style,objects);return {d,at:label?pathLabel(d):{x:0,y:0}};});
  const props=useAnimatedProps(()=>({d:geometry.get().d})),text=useAnimatedProps(()=>({...geometry.get().at,opacity:geometry.get().d?1:0}));
- return <><Edge animatedProps={props} d={initial.d} stroke={color} strokeWidth={1.6} fill="none"/>{label?<Label animatedProps={text} textAnchor="middle" fill={color} fontSize={12}>{label}</Label>:null}</>;
+ return <><Edge animatedProps={props} d={initial.d} stroke={color} strokeWidth={active?2.4:1.6} fill="none"/>{label?<Label animatedProps={text} textAnchor="middle" fill={color} fontSize={12}>{label}</Label>:null}</>;
 }

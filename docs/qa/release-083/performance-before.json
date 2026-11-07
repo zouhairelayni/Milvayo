@@ -1,0 +1,404 @@
+{
+  "phase": "before",
+  "scope": "Identical deterministic mixed boards; host Node pure functions/scene projections only. Not React commit, disk IO or native FPS/heap.",
+  "node": "v24.21.0",
+  "cases": [
+    {
+      "objects": 0,
+      "connectors": 0,
+      "initialProjectionMs": 0.004152999999860185,
+      "cachedProjection": {
+        "samples": 5,
+        "p50Ms": 0.0029999999997016857,
+        "p95Ms": 0.04038399999990361
+      },
+      "routing": {
+        "samples": 3,
+        "p50Ms": 0.0030389999992621597,
+        "p95Ms": 0.04203800000050251
+      },
+      "missingRoutes": 0,
+      "dragConnected": {
+        "samples": 5,
+        "p50Ms": 0.0011539999995875405,
+        "p95Ms": 0.06734599999981583
+      },
+      "dragPreview": {
+        "samples": 5,
+        "p50Ms": 0.0017689999995127437,
+        "p95Ms": 0.03999999999996362
+      },
+      "resize": {
+        "samples": 5,
+        "p50Ms": 0.0018069999996441766,
+        "p95Ms": 0.03369199999997363
+      },
+      "hitTesting": {
+        "samples": 5,
+        "p50Ms": 0.004807999999684398,
+        "p95Ms": 0.178845999999794
+      },
+      "pan": {
+        "samples": 5,
+        "p50Ms": 0.008461999999781256,
+        "p95Ms": 0.05850000000009459
+      },
+      "pinch": {
+        "samples": 5,
+        "p50Ms": 0.006999999999607098,
+        "p95Ms": 0.13073100000019622
+      },
+      "moveCommit": {
+        "samples": 5,
+        "p50Ms": 0.001269000000320375,
+        "p95Ms": 0.05038500000046042
+      },
+      "connectionCreation": {
+        "samples": 5,
+        "p50Ms": 0.001307999999880849,
+        "p95Ms": 0.039539000000331725
+      },
+      "undoRedo": {
+        "samples": 5,
+        "p50Ms": 0.10342300000047544,
+        "p95Ms": 0.7461150000008274
+      },
+      "serialization": {
+        "samples": 5,
+        "p50Ms": 0.006499999999505235,
+        "p95Ms": 0.11126899999999296
+      },
+      "reopen": {
+        "samples": 5,
+        "p50Ms": 0.06442299999980605,
+        "p95Ms": 0.13407699999970646
+      },
+      "changedScenes": 0,
+      "layoutCalculations": {},
+      "reactRenderCounts": "Not run: no mounted React runtime",
+      "reactCommitTimings": "Not run",
+      "diskAutosave": "Not run: serialization measured separately",
+      "nativeGestureJSWork": "Not run: source/lifecycle tests report scheduling counts"
+    },
+    {
+      "objects": 25,
+      "connectors": 23,
+      "initialProjectionMs": 8.950616000000082,
+      "cachedProjection": {
+        "samples": 5,
+        "p50Ms": 0.052999999999883585,
+        "p95Ms": 0.23896200000035606
+      },
+      "routing": {
+        "samples": 3,
+        "p50Ms": 3.879461999999876,
+        "p95Ms": 4.064846000000216
+      },
+      "missingRoutes": 0,
+      "dragConnected": {
+        "samples": 5,
+        "p50Ms": 0.1210769999997865,
+        "p95Ms": 0.3004609999998138
+      },
+      "dragPreview": {
+        "samples": 5,
+        "p50Ms": 0.0039999999999054126,
+        "p95Ms": 0.006154000000606175
+      },
+      "resize": {
+        "samples": 5,
+        "p50Ms": 0.01623100000051636,
+        "p95Ms": 0.35434599999916827
+      },
+      "hitTesting": {
+        "samples": 5,
+        "p50Ms": 0.007423000000017055,
+        "p95Ms": 0.07611499999984517
+      },
+      "pan": {
+        "samples": 5,
+        "p50Ms": 0.00311500000043452,
+        "p95Ms": 0.011345999999321066
+      },
+      "pinch": {
+        "samples": 5,
+        "p50Ms": 0.007731000000603672,
+        "p95Ms": 0.019769000000451342
+      },
+      "moveCommit": {
+        "samples": 5,
+        "p50Ms": 0.19234599999981583,
+        "p95Ms": 0.34219299999949726
+      },
+      "connectionCreation": {
+        "samples": 5,
+        "p50Ms": 0.13665399999990768,
+        "p95Ms": 0.2293839999992997
+      },
+      "undoRedo": {
+        "samples": 5,
+        "p50Ms": 0.5388080000002446,
+        "p95Ms": 4.902922999999646
+      },
+      "serialization": {
+        "samples": 5,
+        "p50Ms": 0.04838500000005297,
+        "p95Ms": 0.13476900000023306
+      },
+      "reopen": {
+        "samples": 5,
+        "p50Ms": 0.497653999999784,
+        "p95Ms": 1.3845380000002478
+      },
+      "changedScenes": 1,
+      "layoutCalculations": {
+        "hierarchy": 1,
+        "tree": 1
+      },
+      "reactRenderCounts": "Not run: no mounted React runtime",
+      "reactCommitTimings": "Not run",
+      "diskAutosave": "Not run: serialization measured separately",
+      "nativeGestureJSWork": "Not run: source/lifecycle tests report scheduling counts"
+    },
+    {
+      "objects": 100,
+      "connectors": 80,
+      "initialProjectionMs": 2.133423000000221,
+      "cachedProjection": {
+        "samples": 5,
+        "p50Ms": 0.08757699999932811,
+        "p95Ms": 0.26892299999963143
+      },
+      "routing": {
+        "samples": 3,
+        "p50Ms": 8.885424000000057,
+        "p95Ms": 11.643731000000116
+      },
+      "missingRoutes": 0,
+      "dragConnected": {
+        "samples": 5,
+        "p50Ms": 0.05900000000019645,
+        "p95Ms": 0.08288399999946705
+      },
+      "dragPreview": {
+        "samples": 5,
+        "p50Ms": 0.0010389999997642008,
+        "p95Ms": 0.002462000000377884
+      },
+      "resize": {
+        "samples": 5,
+        "p50Ms": 0.007577000000310363,
+        "p95Ms": 0.02230799999961164
+      },
+      "hitTesting": {
+        "samples": 5,
+        "p50Ms": 0.008731000000807398,
+        "p95Ms": 0.035692000000381086
+      },
+      "pan": {
+        "samples": 5,
+        "p50Ms": 0.0011540000004970352,
+        "p95Ms": 0.004500000000007276
+      },
+      "pinch": {
+        "samples": 5,
+        "p50Ms": 0.0013849999995727558,
+        "p95Ms": 0.012693000000581378
+      },
+      "moveCommit": {
+        "samples": 5,
+        "p50Ms": 0.40607600000021193,
+        "p95Ms": 0.5248460000002524
+      },
+      "connectionCreation": {
+        "samples": 5,
+        "p50Ms": 0.22092299999985698,
+        "p95Ms": 0.29188499999963824
+      },
+      "undoRedo": {
+        "samples": 5,
+        "p50Ms": 0.9798850000006496,
+        "p95Ms": 1.6936150000001362
+      },
+      "serialization": {
+        "samples": 5,
+        "p50Ms": 0.10096200000043609,
+        "p95Ms": 0.3375770000002376
+      },
+      "reopen": {
+        "samples": 5,
+        "p50Ms": 0.6153079999994588,
+        "p95Ms": 0.8341920000002574
+      },
+      "changedScenes": 1,
+      "layoutCalculations": {
+        "hierarchy": 2,
+        "tree": 2
+      },
+      "reactRenderCounts": "Not run: no mounted React runtime",
+      "reactCommitTimings": "Not run",
+      "diskAutosave": "Not run: serialization measured separately",
+      "nativeGestureJSWork": "Not run: source/lifecycle tests report scheduling counts"
+    },
+    {
+      "objects": 250,
+      "connectors": 80,
+      "initialProjectionMs": 2.4255000000002838,
+      "cachedProjection": {
+        "samples": 5,
+        "p50Ms": 0.0973839999996926,
+        "p95Ms": 0.27615400000013324
+      },
+      "routing": {
+        "samples": 3,
+        "p50Ms": 8.79784699999982,
+        "p95Ms": 10.482115000000704
+      },
+      "missingRoutes": 0,
+      "dragConnected": {
+        "samples": 5,
+        "p50Ms": 0.06649999999990541,
+        "p95Ms": 0.2969229999998788
+      },
+      "dragPreview": {
+        "samples": 5,
+        "p50Ms": 0.0006929999999556458,
+        "p95Ms": 0.0019230000007155468
+      },
+      "resize": {
+        "samples": 5,
+        "p50Ms": 0.0008850000003803871,
+        "p95Ms": 0.0049619999999777065
+      },
+      "hitTesting": {
+        "samples": 5,
+        "p50Ms": 0.013346000000638014,
+        "p95Ms": 0.15765300000020943
+      },
+      "pan": {
+        "samples": 5,
+        "p50Ms": 0.0007690000002185116,
+        "p95Ms": 0.0018069999996441766
+      },
+      "pinch": {
+        "samples": 5,
+        "p50Ms": 0.0009229999996023253,
+        "p95Ms": 0.0026150000003326568
+      },
+      "moveCommit": {
+        "samples": 5,
+        "p50Ms": 0.3725000000004002,
+        "p95Ms": 0.5859609999997701
+      },
+      "connectionCreation": {
+        "samples": 5,
+        "p50Ms": 0.33580800000072486,
+        "p95Ms": 0.3501159999996162
+      },
+      "undoRedo": {
+        "samples": 5,
+        "p50Ms": 1.782615000000078,
+        "p95Ms": 2.032999999999447
+      },
+      "serialization": {
+        "samples": 5,
+        "p50Ms": 0.19069200000012643,
+        "p95Ms": 1.3284229999999297
+      },
+      "reopen": {
+        "samples": 5,
+        "p50Ms": 1.1708470000003217,
+        "p95Ms": 1.288539000000128
+      },
+      "changedScenes": 1,
+      "layoutCalculations": {
+        "hierarchy": 3,
+        "tree": 3
+      },
+      "reactRenderCounts": "Not run: no mounted React runtime",
+      "reactCommitTimings": "Not run",
+      "diskAutosave": "Not run: serialization measured separately",
+      "nativeGestureJSWork": "Not run: source/lifecycle tests report scheduling counts"
+    },
+    {
+      "objects": 500,
+      "connectors": 80,
+      "initialProjectionMs": 3.1333080000003974,
+      "cachedProjection": {
+        "samples": 5,
+        "p50Ms": 0.07849999999962165,
+        "p95Ms": 0.09422999999969761
+      },
+      "routing": {
+        "samples": 3,
+        "p50Ms": 14.905845999999656,
+        "p95Ms": 20.362191999999595
+      },
+      "missingRoutes": 0,
+      "dragConnected": {
+        "samples": 5,
+        "p50Ms": 0.07692299999962415,
+        "p95Ms": 0.09315400000014051
+      },
+      "dragPreview": {
+        "samples": 5,
+        "p50Ms": 0.0006929999999556458,
+        "p95Ms": 0.0018460000001141452
+      },
+      "resize": {
+        "samples": 5,
+        "p50Ms": 0.0008460000008199131,
+        "p95Ms": 0.003845999999612104
+      },
+      "hitTesting": {
+        "samples": 5,
+        "p50Ms": 0.002462000000377884,
+        "p95Ms": 0.005961000000752392
+      },
+      "pan": {
+        "samples": 5,
+        "p50Ms": 0.0006929999999556458,
+        "p95Ms": 0.0014999999993960955
+      },
+      "pinch": {
+        "samples": 5,
+        "p50Ms": 0.0008850000003803871,
+        "p95Ms": 0.0027310000004945323
+      },
+      "moveCommit": {
+        "samples": 5,
+        "p50Ms": 0.6701160000002346,
+        "p95Ms": 0.9431920000006357
+      },
+      "connectionCreation": {
+        "samples": 5,
+        "p50Ms": 0.4941149999995105,
+        "p95Ms": 0.6416920000001483
+      },
+      "undoRedo": {
+        "samples": 5,
+        "p50Ms": 3.112576999999874,
+        "p95Ms": 3.5579229999993913
+      },
+      "serialization": {
+        "samples": 5,
+        "p50Ms": 0.3451919999997699,
+        "p95Ms": 0.4930389999999534
+      },
+      "reopen": {
+        "samples": 5,
+        "p50Ms": 2.11746199999925,
+        "p95Ms": 4.3006920000007085
+      },
+      "changedScenes": 1,
+      "layoutCalculations": {
+        "hierarchy": 4,
+        "tree": 4
+      },
+      "reactRenderCounts": "Not run: no mounted React runtime",
+      "reactCommitTimings": "Not run",
+      "diskAutosave": "Not run: serialization measured separately",
+      "nativeGestureJSWork": "Not run: source/lifecycle tests report scheduling counts"
+    }
+  ]
+}

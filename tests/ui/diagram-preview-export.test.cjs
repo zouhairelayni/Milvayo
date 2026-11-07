@@ -74,3 +74,7 @@ test('native export completion announces politely without unsupported status rol
   assert.equal(feedback.props.accessibilityLiveRegion,native?'polite':undefined);assert.equal(feedback.props.role,native?undefined:'status');
  }
 });
+
+test('Canvas inline export exposes real format operations without a nested Sheet and closes through its host',async()=>{
+ const downloads=[],s=exportHarness({download:async(...args)=>{downloads.push(args);return true;}});let closed=0;s.props.inline=true;s.props.onClose=()=>closed++;let tree=s.render();assert.equal(nodes(tree).some(n=>n.type==='Sheet'||n.type==='IconBtn'),false);await control(tree,'SVG').props.onPress();tree=s.render();assert.equal(downloads[0][2],'image/svg+xml');assert.match(text(tree),/Export prepared/);control(tree,'Done').props.onPress();assert.equal(closed,1);s.h.unmount();
+});

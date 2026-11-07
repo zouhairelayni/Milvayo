@@ -1,0 +1,49 @@
+{
+  "release": "0.8.3",
+  "branch": "work",
+  "head": "0676538",
+  "baseline": "Uncommitted 0.8.2",
+  "tests": {
+    "status": "Pass",
+    "passed": 982,
+    "failed": 0,
+    "skipped": 0
+  },
+  "sourceSyntaxBindingsWorkletOrder": {
+    "status": "Pass",
+    "modules": 277
+  },
+  "nativeDependencyArrayWarning": {
+    "sourceCorrection": "Pass; camera reaction now has two arguments",
+    "regression": "Pass; native hook argument count and compiled lifecycle tests",
+    "nativeSharedArrayDependencies": 0,
+    "physicalReloadConfirmation": "Not run"
+  },
+  "expoCompatibility": "Pass; dependencies are up to date",
+  "versionSynchronization": {
+    "status": "Pass",
+    "android": 93,
+    "ios": "93"
+  },
+  "headlessScreenshots": {
+    "status": "Pass",
+    "captures": 30,
+    "scope": "Static actual-JSX RN Web projections; no live interaction"
+  },
+  "diffWhitespace": "Pass",
+  "liveWebExpoGoFastRefresh": "Not run by agent",
+  "nativeFPSHeap250And500ObjectUsability": "Not run",
+  "agentTemporaryProcesses": "Capture processes exited; no agent server launched",
+  "existingUserServers": "Preserved",
+  "dependenciesAdded": false,
+  "schemaMigration": false,
+  "optionalMetadata": "Validated connector colors; older versions may discard them on save",
+  "pushed": false,
+  "committedAtVerification": false,
+  "checkpointAuthorization": {
+    "request": "stage and commit v0.8.3",
+    "scope": "Local work checkpoint including uncommitted 0.8.2 prerequisites",
+    "physicalAcceptance": "Remains pending as recorded",
+    "pushAuthorized": false
+  }
+}

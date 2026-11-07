@@ -1,0 +1,14 @@
+✔ native Canvas previews hundreds of drag updates without JS writes, commits once, cancels safely and keeps pinch focal point (2318.898883ms)
+✔ browser Canvas uses the SVG WebShape DOM ref, commits at release and removes listeners (227.141ms)
+✔ native context overlay reads the shared camera/drag directly rather than subscribing React to gesture frames (29.487193ms)
+✔ compiled native connector preview executes captured helpers while drawing, targeting, resizing and cancelling (5969.968765ms)
+✔ compiled selection overlay follows shared camera and live object previews without JS callbacks (771.701115ms)
+✔ compiled native transform ledger holds absolute positions across delayed revision handoffs (597.937539ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8253.810417

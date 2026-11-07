@@ -1,0 +1,6 @@
+// /tests/gestures/canvas-comments.test.cjs
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),{commentColor,commentGeometry,commentPosition,hitComment,commentBubbleAnchor}=require('../../src/canvas/comments.cjs'),{beginTransform}=require('../../src/canvas/transform.cjs');
+test('colored comment dots use stable identities, fixed screen hit targets and follow grouped object geometry',()=>{
+ assert.ok(new Set(['a','b','c','d'].map(commentColor)).size>1);assert.equal(commentColor('a'),commentColor('a'));const object={id:'a',x:20,y:40,width:200,height:100},threads=[{id:'t',objectId:'a',x:0,y:0},{id:'p',x:100,y:300}],markers=commentGeometry(threads,[object]),drag={...beginTransform(null,[object],0,'move',['a']),dx:80,dy:30};assert.deepEqual(commentPosition(markers[0].anchor,object,drag),{x:312,y:82});for(const scale of [.18,.4,1,2.5]){const pose={scale,x:0,y:0},p=commentPosition(markers[0].anchor,object,drag);assert.equal(hitComment(markers,p.x*scale+12,p.y*scale,pose,drag),'t');assert.equal(hitComment(markers,9999,9999,pose,drag),'');const at=commentBubbleAnchor(markers[0].anchor,object,pose,drag,{width:360,height:600},240);assert.ok(at.x>=12&&at.x+at.width<=348);assert.ok(at.y>=12&&at.y+240<=588);}
+});

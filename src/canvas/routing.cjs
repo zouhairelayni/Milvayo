@@ -3,6 +3,8 @@
 // Canvas has free placement, unlike Timeline's fixed rows. Use its port/stub,
 // clearance and bend-cost principles with a bounded search around actual boxes.
 function ports(o){'worklet';return [{x:o.x,y:o.y+o.height/2,dx:-1,dy:0},{x:o.x+o.width/2,y:o.y,dx:0,dy:-1},{x:o.x+o.width,y:o.y+o.height/2,dx:1,dy:0},{x:o.x+o.width/2,y:o.y+o.height,dx:0,dy:1}];}
+function facingPorts(a,b){'worklet';const dx=b.x+b.width/2-a.x-a.width/2,dy=b.y+b.height/2-a.y-a.height/2,horizontal=Math.abs(dx)>=Math.abs(dy),forward=horizontal?dx>=0:dy>=0;return horizontal?{p:{x:a.x+(forward?a.width:0),y:a.y+a.height/2},q:{x:b.x+(forward?0:b.width),y:b.y+b.height/2},horizontal,sign:forward?1:-1}:{p:{x:a.x+a.width/2,y:a.y+(forward?a.height:0)},q:{x:b.x+b.width/2,y:b.y+(forward?0:b.height)},horizontal,sign:forward?1:-1};}
+function curvePath(a,b){'worklet';const {p,q,horizontal,sign}=facingPorts(a,b),reach=Math.max(24,Math.abs(horizontal?q.x-p.x:q.y-p.y)/2);return horizontal?`M ${p.x} ${p.y} C ${p.x+sign*reach} ${p.y}, ${q.x-sign*reach} ${q.y}, ${q.x} ${q.y}`:`M ${p.x} ${p.y} C ${p.x} ${p.y+sign*reach}, ${q.x} ${q.y-sign*reach}, ${q.x} ${q.y}`;}
 function simplify(points){'worklet';const out=[];for(let i=0;i<points.length;i++){const p=points[i],last=out[out.length-1];if(last&&last.x===p.x&&last.y===p.y)continue;out.push({x:p.x,y:p.y});while(out.length>=3){const a=out[out.length-3],b=out[out.length-2],c=out[out.length-1];if(a.x===b.x&&b.x===c.x&&(b.y-a.y)*(c.y-b.y)>=0||a.y===b.y&&b.y===c.y&&(b.x-a.x)*(c.x-b.x)>=0)out.splice(out.length-2,1);else break;}}return out;}
 function pathCost(points){'worklet';let cost=Math.max(0,points.length-2)*8;for(let i=1;i<points.length;i++)cost+=Math.abs(points[i].x-points[i-1].x)+Math.abs(points[i].y-points[i-1].y);return cost;}
 function blocker(a,b,boxes){'worklet';for(let i=0;i<boxes.length;i++){const r=boxes[i];if(a.x===b.x?a.x>r.left&&a.x<r.right&&Math.max(a.y,b.y)>r.top&&Math.min(a.y,b.y)<r.bottom:a.y>r.top&&a.y<r.bottom&&Math.max(a.x,b.x)>r.left&&Math.min(a.x,b.x)<r.right)return r;}return null;}
@@ -57,4 +59,4 @@ function routeAffected(from,to,drag,bounds){
  'worklet';if(!drag)return false;if(drag.ids.indexOf(from)>=0||drag.ids.indexOf(to)>=0||!bounds||!drag.boxes)return true;
  for(let i=0;i<drag.boxes.length;i++){const o=drag.boxes[i],left=drag.kind==='resize'?o.x:Math.min(o.x,o.x+drag.dx),top=drag.kind==='resize'?o.y:Math.min(o.y,o.y+drag.dy),right=Math.max(o.x+o.width,o.x+o.width+drag.dx),bottom=Math.max(o.y+o.height,o.y+o.height+drag.dy);if(right+24>=bounds.left&&left-24<=bounds.right&&bottom+24>=bounds.top&&top-24<=bounds.bottom)return true;}return false;
 }
-module.exports={ports,routeConnector,routePath,styledPath,pathSamples,pathLabel,pathBounds,routeAffected};
+module.exports={ports,facingPorts,curvePath,routeConnector,routePath,styledPath,pathSamples,pathLabel,pathBounds,routeAffected};

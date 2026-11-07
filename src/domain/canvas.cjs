@@ -3,6 +3,7 @@
 const {tooBig}=require('../store/importFiles.cjs');
 const {validateWbs}=require('./governanceCore.cjs');
 const {validDay}=require('./calendar.cjs');
+const {groupObjects,resizeMembers,checkBases,alignLeft}=require('./canvasGroups.cjs');
 const validatedBoards=new WeakSet(),validatedObjects=new WeakSet();
 const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
 const VERSION=1, LOCAL_OWNER='local-device', MAX_BYTES=2*1024*1024;
@@ -54,10 +55,10 @@ function normalizeBoard(raw,projectId){
  if(raw.projectId!==projectId||raw.ownerId!==LOCAL_OWNER||(raw.grants||[]).length)throw Error('Canvas is local/private; authenticated sharing is unavailable');
  const board={id:key(raw.id),projectId,ownerId:LOCAL_OWNER,schemaVersion:VERSION,title:text(raw.title,180,'board title',true),revision:number(raw.revision,0,1e9,'board revision'),createdAt:stamp(raw.createdAt),updatedAt:stamp(raw.updatedAt),archivedAt:raw.archivedAt?stamp(raw.archivedAt):null,viewport:viewport(raw.viewport),objects:[],connectors:[],threads:[],grants:[]};
  board.objects=list(raw.objects,1000,'Canvas objects').map(o=>object(o,board.id,projectId));unique(board.objects,'object');
- const ids=new Set(board.objects.map(o=>o.id));
- board.objects.forEach(o=>{if(o.groupId&&(!ids.has(o.groupId)||o.groupId===o.id||board.objects.find(x=>x.id===o.groupId).type!=='frame'))throw Error('Missing Canvas frame');});
- for(const o of board.objects){let at=o;const seen=new Set();while(at.groupId){if(seen.has(at.id))throw Error('Circular Canvas group');seen.add(at.id);at=board.objects.find(x=>x.id===at.groupId);}}
- board.connectors=list(raw.connectors,2000,'Canvas connectors').map(e=>{if(!ids.has(e.from)||!ids.has(e.to)||e.from===e.to)throw Error('Missing Canvas connector endpoint');return {id:key(e.id),from:e.from,to:e.to,label:text(e.label||'',200,'connection label'),style:['curve','straight','elbow'].includes(e.style)?e.style:'curve',arrow:e.arrow!==false};});unique(board.connectors,'connector');
+ const byId=new Map(board.objects.map(o=>[o.id,o])),ids=new Set(byId.keys());
+ board.objects.forEach(o=>{if(o.groupId&&(!ids.has(o.groupId)||o.groupId===o.id||byId.get(o.groupId).type!=='frame'))throw Error('Missing Canvas frame');});
+ for(const o of board.objects){let at=o;const seen=new Set();while(at.groupId){if(seen.has(at.id))throw Error('Circular Canvas group');seen.add(at.id);at=byId.get(at.groupId);}}
+ board.connectors=list(raw.connectors,2000,'Canvas connectors').map(e=>{if(!ids.has(e.from)||!ids.has(e.to)||e.from===e.to)throw Error('Missing Canvas connector endpoint');if(e.color!==undefined&&e.color!==''&&(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color)))throw Error('Invalid connection color');return {id:key(e.id),from:e.from,to:e.to,label:text(e.label||'',200,'connection label'),style:['curve','straight','elbow'].includes(e.style)?e.style:'curve',arrow:e.arrow!==false,...(e.color?{color:e.color}:{})};});unique(board.connectors,'connector');
  board.threads=list(raw.threads,1000,'Canvas comments').map(t=>{
   if(t.objectId&&!ids.has(t.objectId))throw Error('Missing comment anchor');
   return {id:key(t.id),objectId:t.objectId||'',x:number(t.x??0,-1e6,1e6,'comment x'),y:number(t.y??0,-1e6,1e6,'comment y'),resolvedAt:t.resolvedAt?stamp(t.resolvedAt):null,messages:list(t.messages,100,'comment replies').map(m=>({id:key(m.id),authorId:LOCAL_OWNER,text:text(m.text,4000,'comment',true),at:stamp(m.at)}))};
@@ -81,11 +82,14 @@ function changeBoard(board,command,now,actor=LOCAL_OWNER){
  const editable=id=>{const value=find(id);if(value.locked)throw Error('Unlock the object before editing');return value;};
  switch(command.type){
   case 'add':next.objects=[...board.objects,...command.objects];break;
-  case 'patch':{const old=editable(command.id),patch={...command.patch};if(old.type==='draw'&&('width' in patch||'height' in patch)&&!('points' in patch))patch.points=old.points.map(p=>({x:p.x*(patch.width??old.width)/old.width,y:p.y*(patch.height??old.height)/old.height}));next.objects=board.objects.map(o=>o.id===command.id?{...o,...patch,id:o.id,boardId:board.id,type:o.type,createdAt:o.createdAt,updatedAt:now}:o);break;}
+  case 'patch':{const old=editable(command.id),patch={...command.patch};checkBases(board.objects,command.bases);if(old.type==='draw'&&('width' in patch||'height' in patch)&&!('points' in patch))patch.points=old.points.map(p=>({x:p.x*(patch.width??old.width)/old.width,y:p.y*(patch.height??old.height)/old.height}));const objects=old.type==='frame'&&('width' in patch||'height' in patch)?resizeMembers(board.objects,old,patch.width??old.width,patch.height??old.height,now):board.objects;next.objects=objects.map(o=>o.id===command.id?{...o,...patch,id:o.id,boardId:board.id,type:o.type,createdAt:o.createdAt,updatedAt:now}:o);break;}
+  case 'group':next.objects=groupObjects(board.objects,command.ids,command.frame);break;
+  case 'align':next.objects=alignLeft(board.objects,command.ids,now);break;
   case 'lock':find(command.id);next.objects=board.objects.map(o=>o.id===command.id?{...o,locked:command.locked===true,updatedAt:now}:o);break;
   case 'ungroup':{const target=editable(command.id);const affected=board.objects.filter(o=>o.id===target.id&&o.groupId||o.groupId===target.id);affected.forEach(o=>editable(o.id));const ids=new Set(affected.map(o=>o.id));next.objects=board.objects.map(o=>ids.has(o.id)?{...o,groupId:'',updatedAt:now}:o);break;}
   case 'layer':{const target=editable(command.id),others=[...board.objects].filter(o=>o.id!==target.id).sort((a,b)=>a.zIndex-b.zIndex),ordered=command.front?[...others,target]:[target,...others];next.objects=ordered.map((o,zIndex)=>o.zIndex===zIndex?o:{...o,zIndex,updatedAt:now});break;}
   case 'move':{
+   checkBases(board.objects,command.bases);
    chosen.forEach(editable);let grew=true;while(grew){grew=false;board.objects.forEach(o=>{if(chosen.has(o.groupId)&&!chosen.has(o.id)){chosen.add(o.id);grew=true;}});}chosen.forEach(editable);
    next.objects=board.objects.map(o=>chosen.has(o.id)?{...o,x:o.x+command.dx,y:o.y+command.dy,updatedAt:now}:o);break;
   }

@@ -13,12 +13,12 @@ function structuredCSV(board,project){
  }
  const quote=value=>{const text=String(value??''),safe=/^[=+\-@\t\r]/.test(text)?"'"+text:text;return '"'+safe.replace(/"/g,'""')+'"';};return rows.length?['source_type,source_id,title,detail_1,detail_2,detail_3,detail_4',...rows.map(row=>row.map(quote).join(','))].join('\n'):null;
 }
-export default function CanvasExports({board,project,scope}){
- const [requested,setRequested]=useState(false),[message,setMessage]=useState('');
- const scene=useMemo(()=>requested?exportScene(board,project,scope):null,[requested,board,project,scope]);
- const csv=useMemo(()=>requested?structuredCSV(board,project):null,[requested,board,project]);
+export default function CanvasExports({board,project,scope,onClose}){
+ const [message,setMessage]=useState('');
+ const scene=useMemo(()=>exportScene(board,project,scope),[board,project,scope]);
+ const csv=useMemo(()=>structuredCSV(board,project),[board,project]);
  return <View style={{gap:8}}><View style={{flexDirection:'row',flexWrap:'wrap',gap:8,alignItems:'center'}}>
-  <DiagramExports scene={scene} name={board.title} kind="outline" fileKind="canvas" subject="canvas" onOpen={()=>setRequested(true)} getCSV={csv?()=>csv:undefined}/>
   <Button label="Board backup" icon="download" variant="secondary" onPress={async()=>{setMessage(await downloadText(`${board.id}.json`,exportBoard(board),'application/json')?'Board backup prepared':'Backup could not be exported');}}/>
- </View>{message?<T accessibilityLiveRegion="polite">{message}</T>:null}</View>;
+ </View>
+ <DiagramExports scene={scene} name={board.title} kind="outline" fileKind="canvas" subject="canvas" inline onClose={onClose} getCSV={csv?()=>csv:undefined}/>{message?<T accessibilityLiveRegion="polite">{message}</T>:null}</View>;
 }

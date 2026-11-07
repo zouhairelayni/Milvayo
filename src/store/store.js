@@ -64,20 +64,20 @@ export function StoreProvider({children,onReady,loading}){
    if(!raw)void writer.current.enqueue(loadedWorkspace);
    if(!rawIndex||index!==parsed)AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(index)).catch(()=>{}); // the list is rebuilt from the saved keys if this write is lost
  })().catch(e=>{if(active){setFault(`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify('Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false}},[]);
- const put=(next)=>{
+ const put=(next,deferPersistence=false)=>{
   // Validate before mutating any in-memory or persistent state.
   const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));
   currentRef.current=safe;setWs(safe);
-  void writer.current.enqueue(safe);
+  if(deferPersistence)writer.current.defer(safe);else void writer.current.enqueue(safe);
  };
- const trans=(fn,label)=>{
+ const trans=(fn,label,deferPersistence=false)=>{
   lastError.current='';
   if(!loaded.current||!currentRef.current){lastError.current='The workspace is still loading. Try again in a moment.';return false}
   try{const prev=currentRef.current;let next=diagnosticMonitor.measureWork('workspace mutation',()=>fn(prev));if(next===prev)return true;
    // Snapshots are whole copies of earlier workspaces. Check on every edit, not only when snapshots change: ordinary edits grow the live data too.
    // shortcut: one extra JSON pass per edit, fine for a few MB; check only every Nth edit if edits start to lag.
    {const fitted=diagnosticMonitor.measureWork('recovery budget check',()=>backupBudget.fitBackups(next));if(fitted.trimmed){next=fitted.workspace;notify('Older recovery snapshots were removed to keep the workspace within device storage limits.','info')}}
-   put(activity(next,label));setFault('');if(/(?:Moved .+ to (?:Done|Validation)|Bulk moved|Created automation|Saved automation|Created task|Created sprint)/i.test(label))notify(label,'success');return true}
+   put(activity(next,label),deferPersistence);setFault('');if(/(?:Moved .+ to (?:Done|Validation)|Bulk moved|Created automation|Saved automation|Created task|Created sprint)/i.test(label))notify(label,'success');return true}
   catch(e){lastError.current=e.message||String(e);setFault(lastError.current);notify(lastError.current,'error');return false}
  };
  const projectChange=(fn,label)=>trans(w=>{
@@ -256,7 +256,7 @@ export function StoreProvider({children,onReady,loading}){
   removeTime:id=>safeMutation(p=>model.operations.removeTime(p,id),'Removed time entry'),
   saveCanvasViewport:(id,pose,revision)=>safeMutation(p=>require('../domain/canvas.cjs').saveViewport(p,id,pose,revision),'Saved Canvas view'),
   deleteCanvas:(id,revision)=>trans(w=>require('./canvasStorage.cjs').deleteCanvas(w,id,revision,model.workspaceSnapshot(w,'Before deleting archived canvas')),'Deleted archived canvas'),
-  saveCanvas:(board,expectedRevision)=>trans(w=>require('./canvasStorage.cjs').saveCanvas(w,board,expectedRevision),`Saved canvas ${board.title}`),
+  saveCanvas:(board,expectedRevision)=>trans(w=>require('./canvasStorage.cjs').saveCanvas(w,board,expectedRevision),`Saved canvas ${board.title}`,true),
   setGovernance:(key,value,label)=>projectChange(p=>({...p,governance:{...p.governance,[key]:value}}),label||`Updated governance ${key}`),
   setGovernanceDocValue:(key,field,value)=>projectChange(p=>{const doc=p.governance.docs[key]||{status:'Not started',values:{}};return {...p,governance:{...p.governance,docs:{...p.governance.docs,[key]:{...doc,values:{...doc.values,[field]:value}}}}}},`Updated ${key} document`),
   setGovernanceDocStatus:(key,status)=>projectChange(p=>{const doc=p.governance.docs[key]||{values:{}};return {...p,governance:{...p.governance,docs:{...p.governance.docs,[key]:{...doc,status}}}}},`Updated ${key} status`),

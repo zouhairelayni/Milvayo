@@ -33,6 +33,7 @@ export function HeaderControls({controls}) {
 
 function CanvasHeader({controls}) {
  const {c}=useTheme(),[sideWidth,setSideWidth]=useState(96);
+ if(controls.chrome)return controls.chrome;
  return <View style={{flexDirection:'row',alignItems:'center',paddingHorizontal:12,paddingVertical:8,minHeight:60,backgroundColor:c.bg}}>
   <View style={{width:sideWidth,alignItems:'flex-start'}}><IconBtn icon="chevron-left" label="Go back" onPress={controls.onBack}/></View>
   <T size={18} weight="600" numberOfLines={2} style={{flex:1,minWidth:0,textAlign:'center'}}>{controls.title}</T>

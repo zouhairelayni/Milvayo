@@ -3,6 +3,7 @@
 const fs=require('node:fs'),{performance}=require('node:perf_hooks'),{load}=require('./diagram-harness.cjs'),{setup}=require('./canvas-editor-harness.cjs');
 const model=require('../../src/domain/model.cjs'),canvas=require('../../src/domain/canvas.cjs'),{diagramCache}=require('../../src/governance/diagramCache.cjs'),{hitObject,resizeBox,previewBox}=require('../../src/canvas/interaction.cjs');
 const pm=load('src/governance/pm.js',{'./data':{labourCosts:()=>[],money:String}}),scene=load('src/canvas/scene.js',{'../governance/pm':pm});
+const {selectionAnchor}=require('../../src/canvas/presentation.cjs');
 function sample(fn,n=30){const values=[];for(let i=0;i<n;i++){const at=performance.now();fn();values.push(performance.now()-at);}values.sort((a,b)=>a-b);return {samples:n,p50Ms:values[Math.floor(n*.5)],p95Ms:values[Math.min(n-1,Math.floor(n*.95))]};}
 const now='2026-11-07T04:00:00.000Z',cases=[];
 for(const count of [40,200]){
@@ -15,4 +16,5 @@ const editor=setup(),initialStart=performance.now();editor.render();const initia
 for(let i=0;i<20;i++)editor.add();
 let which=false;const callbacks={initialEditorHarnessRenderMs:initialEditor,toolSwitchAndHarnessRender:sample(()=>{editor.tool(which?'draw':'select');which=!which;editor.render();}),objectSelectionAndHarnessRender:sample(()=>{editor.part('Surface').onSelect(editor.board.objects[0].id);editor.render();})};editor.h.unmount();
 const report={measurement:'Host Node only. Scene geometry, pure previews and serialization; editor hook/callback harness excludes child rendering, actual React scheduling, disk IO, GPU and Android frame pacing. No native FPS/latency claim.',node:process.version,cases,callbacks,heapObservation:{hostHeapUsedBytes:process.memoryUsage().heapUsed,nativeHeap:'Not run',leakTrend:'Not measured; one bounded run is not a memory-leak test'}};
-fs.writeFileSync('docs/qa/release-081/host-measurements.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+report.contextPlacement=sample(()=>selectionAnchor([{id:'n',x:80,y:180,width:280,height:144}],{scale:.8,x:32,y:-20},{kind:'move',ids:['n'],dx:15,dy:20},{width:390,height:787},266,84),1000);
+fs.writeFileSync((process.argv[2]||'docs/qa/release-081')+'/host-measurements.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));

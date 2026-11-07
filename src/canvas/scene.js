@@ -1,6 +1,7 @@
 // /src/canvas/scene.js
 import { buildTree, flattenTree } from '../governance/pm';
 const {pathLabel}=require('./routing.cjs');
+const {roadmapScene}=require('./roadmap.cjs');
 const { sceneFor } = require('../governance/diagramScene.cjs');
 const { diagramCache, diagramRevision } = require('../governance/diagramCache.cjs');
 const { createSourceResolver } = require('./sources.cjs');
@@ -24,10 +25,7 @@ export function objectScene(object,project,scope){
  if(object.type==='diagram'||source?.kind==='diagram'){
   scene=object.type==='diagram'?diagram(object.nodes,object.text||'Brainstorm',object.diagramType,object.direction,`canvas:${scope}:${object.id}`):diagram(source.nodes,source.title,object.sourceLink.view,object.sourceLink.direction,scope);
  }else if(source?.kind==='roadmap'){
-  const tasks=source.tasks,dates=tasks.flatMap(t=>[t.start,t.due].filter(Boolean)).sort(),start=dates[0],end=dates.at(-1),span=start?Math.max(1,(Date.parse(end)-Date.parse(start))/86400000+1):1;
-  const items=[rect(0,0,800,Math.max(160,80+tasks.length*44)),line(20,28,source.title,18,'ink','600'),line(20,52,`${start||'No scheduled tasks'}${end?' → '+end:''}`,12,'muted')];
-  tasks.forEach((t,i)=>{const x=220+((Date.parse(t.start||t.due)-Date.parse(start))/86400000)/span*540,w=Math.max(8,((Date.parse(t.due||t.start)-Date.parse(t.start||t.due))/86400000+1)/span*540),y=76+i*44;items.push(line(20,y+17,t.title.length>25?t.title.slice(0,24)+'…':t.title,12),rect(x,y,w,24,t.status==='Done'?'#2F9E6B':'surface','muted',4),line(x+4,y+16,t.milestone?'◆':'',11));});
-  scene={width:800,height:Math.max(160,80+tasks.length*44),items};
+  scene=roadmapScene(source);
  }else if(object.type==='draw'){
   scene={width:object.width,height:object.height,items:object.points.length?[{t:'path',d:object.points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' '),stroke:object.color||'ink',sw:object.strokeWidth||2}]:[]};
  }else{
@@ -46,7 +44,7 @@ function transformItem(item,x,y,scale){
 // Flatten only for explicit complete-board export, with path translations resolved structurally.
 export function exportScene(board,project,scope){
  const bounds=objectBounds(board.objects),items=[],byId=new Map(board.objects.map(o=>[o.id,o])),shifted=board.objects.map(o=>({...o,x:o.x-bounds.x,y:o.y-bounds.y}));
- for(const edge of board.connectors){const a=byId.get(edge.from),b=byId.get(edge.to);if(a&&b){const d=connectorPath({...a,x:a.x-bounds.x,y:a.y-bounds.y},{...b,x:b.x-bounds.x,y:b.y-bounds.y},null,edge.style,shifted);items.push({t:'path',d,stroke:'muted',sw:1.6});if(edge.label&&d){const at=pathLabel(d);items.push({...line(at.x,at.y,edge.label,12,'muted'),anchor:'middle'});}}}
+ for(const edge of board.connectors){const a=byId.get(edge.from),b=byId.get(edge.to);if(a&&b){const d=connectorPath({...a,x:a.x-bounds.x,y:a.y-bounds.y},{...b,x:b.x-bounds.x,y:b.y-bounds.y},null,edge.style,shifted);items.push({t:'path',d,stroke:edge.color||'muted',sw:1.6});if(edge.label&&d){const at=pathLabel(d);items.push({...line(at.x,at.y,edge.label,12,edge.color||'muted'),anchor:'middle'});}}}
 
  for(const object of [...board.objects].sort((a,b)=>a.zIndex-b.zIndex)){
   const {scene,scale}=objectScene(object,project,scope),x=object.x-bounds.x,y=object.y-bounds.y;

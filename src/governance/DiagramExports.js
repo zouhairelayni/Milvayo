@@ -19,14 +19,14 @@ function CaptureSource({ scene, job }) {
   </View>;
 }
 
-export default function DiagramExports({ scene, getCSV, name, kind, subject = 'work structure', fileKind = 'wbs', onOpen }) {
+export default function DiagramExports({ scene, getCSV, name, kind, subject = 'work structure', fileKind = 'wbs', onOpen, inline = false, onClose }) {
   const { c } = useTheme();
   const [open, setOpen] = useState(false), [quality, setQuality] = useState('2'), [background, setBackground] = useState('opaque');
   const [busy, setBusy] = useState(false), [feedback, setFeedback] = useState(''), [error, setError] = useState(''), [job, setJob] = useState(null);
   const running = useRef(false), epoch = useRef(0), controller = useRef(null);
   const cancel = useCallback(() => { epoch.current++; controller.current?.abort(); running.current = false; }, []);
   useEffect(() => { setBusy(false); setJob(null); return () => cancel(); }, [scene, cancel]);
-  const close = () => { cancel(); setBusy(false); setJob(null); setOpen(false); };
+  const close = () => { cancel(); setBusy(false); setJob(null); setOpen(false); onClose?.(); };
   const plan = scene ? pngPlan(scene, Number(quality), Platform.OS) : null;
   const run = async format => {
     if (running.current) return;
@@ -53,12 +53,8 @@ export default function DiagramExports({ scene, getCSV, name, kind, subject = 'w
     } catch (failure) { if (isCurrent()) setError(failure.message || 'Export failed. Try SVG or CSV.'); }
     finally { if (isCurrent()) { running.current = false; setBusy(false); setJob(null); } }
   };
-  return <>
-    <IconBtn label={`Export ${subject}`} icon="download" onPress={() => { setError(''); setFeedback(''); onOpen?.(); setOpen(true); }}/>
-    <Sheet visible={open} compact title={`Export ${subject}`} onClose={close} footer={<>
-      <Button label={busy ? 'Cancel export' : 'Done'} variant="secondary" onPress={close}/><View style={{flex:1}}/>
-      {job ? <CaptureSource scene={scene} job={job}/> : null}
-    </>}>
+  const footer=<><Button label={busy ? 'Cancel export' : 'Done'} variant="secondary" onPress={close}/><View style={{flex:1}}/>{job ? <CaptureSource scene={scene} job={job}/> : null}</>;
+  const content=<>
       <T muted size={13}>Export the complete structure, including work outside the viewport.</T>
       {scene ? <View style={{gap:16}}>
         <View style={{gap:8}}><T size={12} weight="600">PNG quality</T>
@@ -77,6 +73,10 @@ export default function DiagramExports({ scene, getCSV, name, kind, subject = 'w
       {busy ? <T accessibilityRole="progressbar" muted>Preparing export…</T> : null}
       {error ? <T accessibilityRole="alert" color={c.danger}>{error}</T> : null}
       {feedback ? <T {...(Platform.OS === 'web' ? { role: 'status' } : { accessibilityLiveRegion: 'polite' })} color={c.success || c.accentText}>{feedback}</T> : null}
-    </Sheet>
+      {inline?<View style={{flexDirection:'row',alignItems:'center',gap:8}}>{footer}</View>:null}
+  </>;
+  return inline?content:<>
+    <IconBtn label={`Export ${subject}`} icon="download" onPress={() => { setError(''); setFeedback(''); onOpen?.(); setOpen(true); }}/>
+    <Sheet visible={open} compact title={`Export ${subject}`} onClose={close} footer={footer}>{content}</Sheet>
   </>;
 }

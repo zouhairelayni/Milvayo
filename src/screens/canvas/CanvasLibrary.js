@@ -13,6 +13,7 @@ function template(board,kind,project,now){
  if(kind==='strategy')objects=[make('card','Goal',0,0),make('card','Options',280,0),make('card','Next decision',560,0)];
  if(kind==='risks')objects=project.governance.risks.map((risk,i)=>make('linked','',i%3*312,Math.floor(i/3)*224,{sourceLink:{sourceType:'risk',sourceId:risk.id,projectId:project.id,mode:'live'},width:280,height:200}));
  if(kind==='roadmap')objects=[make('linked','',0,0,{sourceLink:{sourceType:'roadmap',sourceId:project.id,projectId:project.id,mode:'live'},width:800,height:Math.max(240,Math.min(20000,80+project.tasks.filter(t=>t.start||t.due).length*44))})];
+ if(kind==='roadmap'){const {roadmapScene}=require('../../canvas/roadmap.cjs'),{readSource}=require('../../canvas/sources.cjs');objects=objects.map(o=>{const layout=roadmapScene(readSource(project,o.sourceLink)),scale=Math.min(1,20000/layout.width,20000/layout.height);return {...o,width:layout.width*scale,height:layout.height*scale};});}
  if(kind==='brainstorm')objects=objects.map((o,i)=>i?{...o,groupId:objects[0].id}:o);
  return canvas.normalizeBoard({...board,objects},project.id);
 }

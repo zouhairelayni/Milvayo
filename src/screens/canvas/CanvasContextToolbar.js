@@ -1,22 +1,23 @@
 // /src/screens/canvas/CanvasContextToolbar.js
-import {View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useBackDismiss} from '../../app/navigation/useBackNavigation';
 import {CanvasTool,CanvasToolGroup} from './CanvasToolbar';
+import CanvasSvgButton from './CanvasSvgButton';
 import CanvasSwatches from './CanvasSwatches';
-export default function CanvasContextToolbar({object,count,onEdit,onColor,onDuplicate,onConnect,onMore,onGroup,onDelete,onLayout,onSource,sourceAvailable,onWidth}){
- const insets=useSafeAreaInsets();
- if(!object)return null;
- const diagram=object.type==='diagram'||['wbs','taskDiagram'].includes(object.sourceLink?.sourceType),colors=!diagram&&object.type!=='frame';
- return <View pointerEvents="box-none" style={{position:'absolute',left:12,right:12,bottom:Math.max(12,insets.bottom)+72,alignItems:'center'}}>
-  <CanvasToolGroup style={{flexDirection:'column',alignItems:'stretch',maxWidth:'100%'}}>
-   <View style={{flexDirection:'row',justifyContent:'center',gap:4}}>
-    {count>1?<><CanvasTool label="Group" icon="layers" onPress={onGroup} disabled={object.locked}/><CanvasTool label="Delete" icon="trash-2" onPress={onDelete} disabled={object.locked}/></>:<>
-     {object.type==='linked'?<CanvasTool label="Source" icon="external-link" onPress={onSource} disabled={!sourceAvailable}/>:object.type==='draw'?<CanvasTool label="Width" icon="sliders" onPress={onWidth} disabled={object.locked}/>:<CanvasTool label="Edit" icon="edit-3" onPress={onEdit} disabled={object.locked}/>}
-     {diagram?<CanvasTool label="Layout" icon="git-branch" onPress={onLayout} disabled={object.locked}/>:null}
+import CanvasSelectionOverlay from '../../canvas/CanvasSelectionOverlay';
+export default function CanvasContextToolbar({object,edge,count,boxes,camera,viewport,bottom,appearance,onAppearance,onCloseAppearance,onEdit,onColor,onDuplicate,onMore,onGroup,onAlign,onFit,onLayout,onSource,sourceAvailable,onWidth,onArrange,onDelete,onStyle,groupDisabled=false,alignDisabled=false}){
+ useBackDismiss(appearance,onCloseAppearance,30);
+ if(!object&&!edge)return null;
+ const diagram=object?.type==='diagram'||['wbs','taskDiagram'].includes(object?.sourceLink?.sourceType),extent=appearance?326:edge?162:266;
+ const action=(label,icon,onPress,disabled=false)=><CanvasTool key={label} label={label} icon={icon} caption={false} onPress={onPress} disabled={disabled}/>;
+ return <CanvasSelectionOverlay boxes={boxes} camera={camera} viewport={viewport} extent={extent} bottom={bottom}>
+  <CanvasToolGroup style={{borderRadius:12,justifyContent:'center'}}>
+   {appearance?<><CanvasSwatches value={object?.color||''} disabled={object?.locked} onChange={onColor}/>{action('Close color palette','x',onCloseAppearance)}</>:edge?<><CanvasSvgButton label="Style" kind="style" onPress={onStyle}/><CanvasSvgButton label="Fit" kind="fit" onPress={onFit}/><CanvasSvgButton label="Delete" kind="delete" onPress={onDelete}/></>:<>
+    {count>1?<>{action('Group','layers',onGroup,groupDisabled)}{action('Align left','align-left',onAlign,alignDisabled)}</>:<>
+     {object.type==='linked'?action('Open source','external-link',onSource,!sourceAvailable):object.type==='draw'?action('Stroke width','sliders',onWidth,object.locked):action(object.type==='frame'?'Rename frame':'Edit','edit-3',onEdit,object.locked)}
+     {diagram?action('Diagram properties','git-branch',onLayout,object.locked):object.type==='frame'?action('Arrange','move',onArrange,object.locked):action('Color','droplet',onAppearance,object.locked)}
     </>}
-    <CanvasTool label="Duplicate" icon="copy" onPress={onDuplicate}/><CanvasTool label="Connect" icon="git-merge" onPress={onConnect}/><CanvasTool label="More" icon="more-horizontal" onPress={onMore}/>
-   </View>
-   {colors&&count===1?<View style={{alignItems:'center'}}><CanvasSwatches value={object.color} disabled={object.locked} onChange={onColor}/></View>:null}
+    {action('Duplicate','copy',onDuplicate)}{action('Fit selection','maximize',onFit)}{action('Object properties','more-horizontal',onMore)}
+   </>}
   </CanvasToolGroup>
- </View>;
+ </CanvasSelectionOverlay>;
 }

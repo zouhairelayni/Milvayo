@@ -1,0 +1,12 @@
+// /src/canvas/transform.cjs
+'use strict';
+const {previewBox}=require('./interaction.cjs');
+function geometryIndex(objects){'worklet';const base={};for(let i=0;i<objects.length;i++){const o=objects[i];base['$'+o.id]={id:o.id,x:o.x,y:o.y,width:o.width,height:o.height,type:o.type,...(o.sourceLink?{sourceLink:o.sourceLink}:{})};}return base;}
+// One shared geometry ledger outlives old React/worklet closures during a commit.
+function reconcileGeometry(state,objects,revision){'worklet';if(state&&revision<state.revision)return state;const base=geometryIndex(objects);if(!state||state.kind==='settled')return {kind:'settled',base,revision,ids:[],operation:state?.operation||0};let acknowledged=!!state.pending;for(let i=0;i<state.ids.length;i++){const id=state.ids[i],o=base['$'+id],target=state.base['$'+id]&&previewBox(state.base['$'+id],state);if(!o||!target||Math.abs(o.x-target.x)>1e-6||Math.abs(o.y-target.y)>1e-6||Math.abs(o.width-target.width)>1e-6||Math.abs(o.height-target.height)>1e-6)acknowledged=false;}
+ if(acknowledged||state.pending&&state.ackRevision!=null&&revision>=state.ackRevision)return {kind:'settled',base,revision,ids:[],operation:state?.operation||0};for(let i=0;i<state.ids.length;i++){const id=state.ids[i];if(state.base['$'+id])base['$'+id]=state.base['$'+id];}return {...state,base,revision};}
+function beginTransform(state,objects,revision,kind,ids,id){'worklet';const projected=objects.map(o=>previewBox(o,state)),base=geometryIndex(projected),boxes=ids.map(key=>base['$'+key]).filter(Boolean),affected={};for(let i=0;i<ids.length;i++)affected['$'+ids[i]]=true;return {kind,ids,id,base,boxes,affected,revision,operation:(state?.operation||0)+1,pending:false,dx:0,dy:0};}
+function cancelTransform(state,rollback=false){'worklet';return state?{kind:'settled',base:state.pending&&!rollback?geometryIndex(Object.values(state.base).map(o=>previewBox(o,state))):state.base,revision:state.revision,ids:[],operation:state.operation||0}:null;}
+function acknowledgeTransform(state,operation,revision,accepted){'worklet';if(!state||state.operation!==operation||state.kind==='settled')return state;return accepted?{...state,ackRevision:revision}:cancelTransform(state,true);}
+function transformCommand(state){'worklet';const base={};for(let i=0;i<state.ids.length;i++){const key='$'+state.ids[i];base[key]=state.base[key];}return {...state,base};}
+module.exports={geometryIndex,reconcileGeometry,beginTransform,cancelTransform,acknowledgeTransform,transformCommand};

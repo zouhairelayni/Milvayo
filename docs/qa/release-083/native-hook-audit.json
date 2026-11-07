@@ -1,0 +1,9 @@
+{
+  "sourceSyntax": {
+    "status": "Pass",
+    "modules": 277
+  },
+  "nativeAndSharedArrayDependencies": [],
+  "status": "Pass",
+  "scope": "Repository Reanimated hook calls; dependency packages and device runtime acceptance are separate."
+}

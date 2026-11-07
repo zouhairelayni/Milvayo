@@ -1,0 +1,245 @@
+{
+  "scope": "Actual JSX projected through a static RN Web fixture. Effects, measured viewport and modal placement adapted. Not live Canvas or native acceptance.",
+  "cases": [
+    {
+      "name": "workspace-390-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-390-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-inspect",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-color",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "connector-style",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "drawing-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "multi-selection",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "group-selected",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "group-arrange",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-source",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-objects",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "delete-connection",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-tools",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "comment-dots",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "comment-bubble",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-comments",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-export",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-settings",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-view",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "linked-wbs-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "tree-layout",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-390-light",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-360-dark",
+      "width": 360,
+      "height": 800,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-430-dark",
+      "width": 430,
+      "height": 932,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "source-844",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "properties-844",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-844-dark",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-1440-dark",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "source-1440",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "roadmap-desktop",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    }
+  ]
+}

@@ -9,8 +9,8 @@ test('connectors choose closest facing left, top, right and bottom edges',()=>{
 });
 test('routes avoid intervening boxes, follow live moves/resizes and remain editable on detours',()=>{
  const b={...a,id:'b',x:300},block={...a,id:'block',x:140,y:-80,width:120,height:240},objects=[a,b,block],points=routedPoints(a,b,null,objects);assert.ok(points.length>2);clear(points,objects);assert.ok(points.some(p=>p.y<block.y||p.y>block.y+block.height));
- const edge={id:'e',from:'a',to:'b',style:'curve'},p=points[1],q=points[2];assert.equal(hitConnector([edge],objects,(p.x+q.x)/2,(p.y+q.y)/2,{scale:1,x:0,y:0}).id,'e');
- const drag={kind:'move',ids:['block'],dx:0,dy:400};assert.notEqual(connectorPath(a,b,null,'curve',objects),connectorPath(a,b,drag,'curve',objects));
+ const edge={id:'e',from:'a',to:'b',style:'elbow'},p=points[1],q=points[2];assert.equal(hitConnector([edge],objects,(p.x+q.x)/2,(p.y+q.y)/2,{scale:1,x:0,y:0}).id,'e');
+ const drag={kind:'move',ids:['block'],dx:0,dy:400};assert.equal(connectorPath(a,b,null,'curve',objects),connectorPath(a,b,drag,'curve',objects),'unrelated obstacles cannot change a custom S-curve');
  const next=routedPoints(a,b,{kind:'resize',id:'a',ids:['a'],dx:20,dy:10},objects);clear(next,[{...a,width:120,height:90},b,block]);
  assert.deepEqual(routeConnector(a,{...a,id:'overlap',x:10,y:10,width:20,height:20},[a,{...a,id:'overlap',x:10,y:10,width:20,height:20}]),[],'contained endpoints must not draw through their interiors');
 });

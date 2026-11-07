@@ -1,0 +1,39 @@
+{
+  "release": "0.8.2",
+  "baseCommit": "0676538",
+  "branch": "work",
+  "testResult": {
+    "status": "Pass",
+    "passed": 957,
+    "failed": 0,
+    "skipped": 0
+  },
+  "sourceResult": {
+    "status": "Pass",
+    "modules": 263,
+    "syntax": "Pass",
+    "bindings": "Pass",
+    "importsAndFolders": "Pass in npm test",
+    "compiledWorklets": "Pass in npm test"
+  },
+  "dependencyCompatibility": "Pass; dependencies are up to date",
+  "versionSynchronization": {
+    "status": "Pass",
+    "android": 92,
+    "ios": "92"
+  },
+  "headlessCompositionScreenshots": {
+    "status": "Pass",
+    "captures": 32,
+    "liveInteraction": false
+  },
+  "diffWhitespace": "Pass",
+  "physicalAndroidWarningResolution": "Not run",
+  "liveWebExpoGoFastRefresh": "Not run",
+  "nativeFPSHeap": "Not run",
+  "schemaMigration": false,
+  "dependenciesAdded": false,
+  "committed": false,
+  "pushed": false,
+  "temporaryProcesses": "Agent screenshot processes exited; no agent server started. Existing user Termux Expo process preserved."
+}
