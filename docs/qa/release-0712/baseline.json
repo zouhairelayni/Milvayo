@@ -1,0 +1,39 @@
+{
+  "kind": "Node host selected-layout and direct JSX generation microbenchmark, 15 calls/type; no device/render commit measurement",
+  "node": "v24.18.0",
+  "cases": {
+    "tree": {
+      "nodes": 500,
+      "primitives": 1999,
+      "width": 61618,
+      "height": 474,
+      "layoutMedianMs": 4.279077000000143,
+      "jsxGenerationMedianMs": 24.076154000000315,
+      "layoutCalculations": 15,
+      "svgGenerations": 15,
+      "nativeBitmapRgbaBytesAtDensity3": 1051449552
+    },
+    "fishbone": {
+      "nodes": 500,
+      "primitives": 1006,
+      "width": 1103,
+      "height": 7572,
+      "layoutMedianMs": 1.7137299999999414,
+      "jsxGenerationMedianMs": 11.534653999999591,
+      "layoutCalculations": 15,
+      "svgGenerations": 15,
+      "nativeBitmapRgbaBytesAtDensity3": 300668976
+    },
+    "mind": {
+      "nodes": 500,
+      "primitives": 1499,
+      "width": 1496.8,
+      "height": 8540,
+      "layoutMedianMs": 2.8710769999997865,
+      "jsxGenerationMedianMs": 16.6277699999996,
+      "layoutCalculations": 15,
+      "svgGenerations": 15,
+      "nativeBitmapRgbaBytesAtDensity3": 460237680
+    }
+  }
+}

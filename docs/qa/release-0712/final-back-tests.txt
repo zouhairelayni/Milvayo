@@ -1,0 +1,23 @@
+✔ screen history bounds memory, skips disabled tools, truncates forward branches and isolates project/workspace scope (3.507731ms)
+✔ back dispatcher closes highest priority/latest layer before its root and cleans subscriptions (2.601769ms)
+✔ browser Back and Forward restore the actual screen history and disposal removes its listener (1.574077ms)
+✔ browser Back dismisses one nested layer per gesture, without navigating the page behind it (0.697654ms)
+✔ a busy modal consumes repeated browser Back; manual close plus page navigation skips closed modal entries (0.813269ms)
+✔ browser entries from a previous project cannot restore that project after scope reset (0.431424ms)
+✔ browser Back skips a disabled tool and aligns its history entry with the usable destination (0.412961ms)
+✔ closing a project switcher during scope change does not queue a stale browser pop into the new project (0.397924ms)
+✔ blocked browser History writes degrade safely instead of throwing from a modal effect (1.0185ms)
+✔ Android system Back uses the current screen stack and returns false at Home; hook cleanup removes its listener (585.169653ms)
+✔ iOS back is edge-only, single-finger and commits on a distance or velocity threshold; canceled/vertical motion is ignored (65.249231ms)
+✔ full-screen preview retains geometry, offers accessible compact controls, respects measured space and inspects current work elements (153.886154ms)
+✔ export menu serializes only on demand, stays open after success/failure and supports PNG quality/background options (53.114269ms)
+✔ PNG cancellation and duplicate taps never trigger late saving or resurrect dismissed UI (41.279385ms)
+✔ native export mounts its separate bounded source only on demand and captures once after layout, then releases it (61.985615ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1578.105998

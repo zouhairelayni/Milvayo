@@ -321,3 +321,11 @@ The Board ribbon begins with a named icon-only plus opening one sheet with New b
 Planning & delivery is always available beside Activity & files in the task sheet. Keep the legacy Advanced tasks preference import-compatible but omit it from Manage tools. List search and organization belong in the top header; saved views synchronize their search text there. Timeline preset pills belong in Timeline options, with no duplicate next to header search.
 
 Due soon has three visible, scalable rows and a trailing scroll hint when more exist. Additional rows mount in response to scrolling; keep the established upcoming-date eligibility without a thirty-item truncation. Place the accessible icon-only sprint plus first in the scrolling selector. Source-rendered mobile review and runtime limits: `docs/qa/release-0711/ENGINEERING-REPORT.md`.
+
+## 0.7.12 work-structure preview
+
+Keep Tree, Fishbone and Mind map as precise content-rich moments. A compact Expand icon opens a full-screen neutral canvas with the existing branch semantics. Top chrome names the diagram/project, supplies pan alternatives, exports and Close. A small floating bar offers Fit, Reset and zoom buttons; respect safe areas and measured viewport space. Center fitting content; retain vector label quality while zooming. Inspect a selected work element in the standard sheet, with its full name, owner, rolled-up hours and current description. WBS nodes remain distinct from tasks.
+
+Use existing short press/reveal treatments with reduced motion. Pinch and pan drive only a viewport-sized native SVG camera on the UI thread; no per-frame React updates, full-scene bitmap or modifications to Timeline. Preserve embedded pose on close, and render only the active diagram. Cache calculated geometry and reusable primitives within explicit limits; do not keep all native diagrams mounted.
+
+Exports use a compact shared sheet. State full-image dimensions, quality and background. Retain context after success or failure, support cancellation, and explain large-image reduction. SVG is the unrestricted vector option; PNG is sized to the platform's explicit raster memory budget. CSV uses current structured WBS data. Source/visual/device limits: `docs/qa/release-0712/ENGINEERING-REPORT.md`.

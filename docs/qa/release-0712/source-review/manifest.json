@@ -1,0 +1,112 @@
+[
+  {
+    "file": "preview-tree-320.html",
+    "width": 320,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-tree-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-tree-1440.html",
+    "width": 1440,
+    "height": 900,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-fishbone-320.html",
+    "width": 320,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-fishbone-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-fishbone-1440.html",
+    "width": 1440,
+    "height": 900,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-mind-320.html",
+    "width": 320,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-mind-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "preview-mind-1440.html",
+    "width": 1440,
+    "height": 900,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "exports-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  },
+  {
+    "file": "embedded-tree-390.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static JSX with inert effects/handlers; modal content projected in place and viewport given a static fit transform; not live Expo or native acceptance."
+  }
+]

@@ -1,0 +1,14 @@
+✔ the project root holds no code files except the Expo entry App.js (8.081192ms)
+✔ src has no loose code files, and tests/ has no loose code files except run-all.cjs (1.621577ms)
+✔ every test is a *.test.cjs inside a tests/<group>/ folder (1.086154ms)
+✔ every code file starts with a comment holding its own /path (214.013539ms)
+✔ every relative import and require in App.js, src, tests and scripts points to a real file (797.742731ms)
+✔ every app source parses and every JSX component root has an import or local binding (1762.248345ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2599.169806

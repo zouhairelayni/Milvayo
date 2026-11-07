@@ -133,7 +133,7 @@ function ProjectGovernance({back,tab,setTab}){
   </>:null}
   {tab!=='overview'&&!special?<DocView docKey={tab}/>:null}
   {special==='budget'?<BudgetView/>:null}
-  {special==='wbs'?<PmWbs/>:null}
+  {special==='wbs'?<PmWbs key={p.id}/>:null}
   {special==='risks'?<PmRisks/>:null}
  </View>
 }

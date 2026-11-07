@@ -6,9 +6,9 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { scheduleOnRN } from 'react-native-worklets';
 const { constrainPose, pinchPose } = require('./diagramZoom.cjs');
 
-export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom, children }) {
+export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom, onPose, initialPose, renderViewport, children }) {
   const { width, height, contentWidth, contentHeight } = bounds;
-  const initial = constrainPose({ scale: initialScale, x: 0, y: 0 }, bounds);
+  const initial = constrainPose(initialPose || { scale: initialScale, x: 0, y: 0 }, bounds);
   const [committedScale, setCommittedScale] = useState(initial.scale);
   const pose = useSharedValue(initial);
   const start = useSharedValue(initial);
@@ -19,14 +19,15 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
   const needsLift = useSharedValue(false);
   const panStarted = useSharedValue(false);
   const panStart = useSharedValue(initial);
-  const callback = useRef(onZoom);
-  callback.current = onZoom;
-  const reportZoom = useCallback(value => { if (!Number.isFinite(value)) return; setCommittedScale(value); callback.current?.(value); }, []);
+  const callback = useRef({onZoom,onPose});
+  callback.current = {onZoom,onPose};
+  const reportZoom = useCallback(value => { if (!Number.isFinite(value.scale)) return; setCommittedScale(value.scale); callback.current.onZoom?.(value.scale); callback.current.onPose?.(value); }, []);
+  const reportPose = useCallback(value => callback.current.onPose?.(value), []);
 
   // A completed pinch reports its scale without resetting its focal translation.
   // Only an explicit preset, orientation/scene change or viewport resize resets it.
   useEffect(() => {
-    const next = constrainPose({ scale: initialScale, x: 0, y: 0 }, { width, height, contentWidth, contentHeight });
+    const next = constrainPose(initialPose || { scale: initialScale, x: 0, y: 0 }, bounds);
     pose.value = next; setCommittedScale(next.scale);
     pinching.value = false; needsLift.value = false; panStarted.value = false;
   }, [resetKey, width, height, contentWidth, contentHeight]);
@@ -47,10 +48,10 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
         factor.value = e.scale > 0 ? e.scale : 1; pointers.value = e.numberOfPointers;
         return;
       }
-      pose.value = pinchPose(start.value, e.scale / factor.value, anchor.value, { x: e.focalX, y: e.focalY }, { width, height, contentWidth, contentHeight });
+      pose.value = pinchPose(start.value, e.scale / factor.value, anchor.value, { x: e.focalX, y: e.focalY }, bounds);
     },
     onFinalize: () => {
-      if (pinching.value) scheduleOnRN(reportZoom, pose.value.scale);
+      if (pinching.value) scheduleOnRN(reportZoom, pose.value);
       pinching.value = false;
     },
     onTouchesUp: e => { if (e.numberOfTouches === 0) needsLift.value = false; },
@@ -59,19 +60,20 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
   // RNGH 3.3 validates tuple endpoints synchronously in render. Pass numbers, never shared values.
   // React synchronizes only at pinch completion; live visual tracking stays entirely on the UI runtime.
   const tall = contentHeight * committedScale > height;
+  const freePan = tall || bounds.fullScreen;
   const canPan = contentWidth * committedScale > width || tall;
   const pan = usePanGesture({
     enabled: canPan, maxPointers: 1, activeOffsetX: [-6, 6],
-    activeOffsetY: tall ? [-6, 6] : [-1000000, 1000000], failOffsetY: tall ? [-1000000, 1000000] : [-8, 8],
+    activeOffsetY: freePan ? [-6, 6] : [-1000000, 1000000], failOffsetY: freePan ? [-1000000, 1000000] : [-8, 8],
     onActivate: () => {
       panStarted.value = !needsLift.value && !pinching.value;
       panStart.value = pose.value;
     },
     onUpdate: e => {
       if (!panStarted.value || needsLift.value || pinching.value || e.numberOfPointers !== 1) return;
-      pose.value = constrainPose({ scale: pose.value.scale, x: panStart.value.x + e.translationX, y: panStart.value.y + e.translationY }, { width, height, contentWidth, contentHeight });
+      pose.value = constrainPose({ scale: pose.value.scale, x: panStart.value.x + e.translationX, y: panStart.value.y + e.translationY }, bounds);
     },
-    onFinalize: () => { panStarted.value = false; },
+    onFinalize: () => { if(panStarted.value) scheduleOnRN(reportPose, pose.value); panStarted.value = false; },
     onTouchesUp: e => { if (e.numberOfTouches === 0) needsLift.value = false; },
     onTouchesCancel: () => { needsLift.value = false; },
   });
@@ -80,9 +82,9 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
   return (
     <GestureDetector gesture={gesture}>
       <View collapsable={false} accessibilityLabel="Work breakdown diagram. Pinch to zoom, drag to pan" style={{ width, height, overflow: 'hidden' }}>
-        <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: contentWidth, height: contentHeight, transformOrigin: 'top left' }, transform]}>
+        {renderViewport ? renderViewport(pose,width,height) : <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: contentWidth, height: contentHeight, transformOrigin: 'top left' }, transform]}>
           {children}
-        </Animated.View>
+        </Animated.View>}
       </View>
     </GestureDetector>
   );

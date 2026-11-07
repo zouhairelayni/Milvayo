@@ -5,11 +5,11 @@ const { constrainPose, pinchPose } = require('./diagramZoom.cjs');
 
 // Web: keep SVG children static and transform only their containing DOM node.
 // Touch ownership is local to this diagram; browser zoom elsewhere is untouched.
-export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom, children }) {
+export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom, onPose, initialPose, children }) {
   const surface = useRef(null), stage = useRef(null);
   const current = useRef(null), session = useRef(null), mouse = useRef(null);
   const latest = useRef(null);
-  latest.current = { bounds, onZoom };
+  latest.current = { bounds, onZoom, onPose };
   const { width, height, contentWidth, contentHeight } = bounds;
   useEffect(() => {
     const host = surface.current, drawing = stage.current;
@@ -18,9 +18,9 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
       current.current = next;
       drawing.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
       // Let a one-finger vertical swipe scroll the page when the diagram fits.
-      host.style.touchAction = latest.current.bounds.contentHeight * next.scale > latest.current.bounds.height ? 'none' : 'pan-y';
+      host.style.touchAction = latest.current.bounds.contentHeight * next.scale > latest.current.bounds.height || latest.current.bounds.fullScreen ? 'none' : 'pan-y';
     };
-    paint(constrainPose({ scale: initialScale, x: 0, y: 0 }, bounds));
+    paint(constrainPose(initialPose || { scale: initialScale, x: 0, y: 0 }, bounds));
     session.current = null; mouse.current = null;
     const point = t => {
       const rect = host.getBoundingClientRect();
@@ -49,31 +49,31 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
         if (s.distance > 0) paint(pinchPose(s.start, p.distance / s.distance, s.focal, p.focal, b));
       } else if (s.kind === 'pan' && e.touches.length === 1) {
         const p = point(e.touches[0]), dx = p.x - s.point.x, dy = p.y - s.point.y;
-        if (b.contentHeight * current.current.scale <= b.height && Math.abs(dy) > Math.abs(dx)) return;
+        if (!b.fullScreen && b.contentHeight * current.current.scale <= b.height && Math.abs(dy) > Math.abs(dx)) return;
         const next = constrainPose({ scale: s.start.scale, x: s.start.x + dx, y: s.start.y + dy }, b);
         if (next.x !== current.current.x || next.y !== current.current.y) { e.preventDefault(); paint(next); }
       }
     };
     const endTouch = e => {
       if (session.current?.kind === 'pinch') {
-        latest.current.onZoom?.(current.current.scale);
+        latest.current.onZoom?.(current.current.scale); latest.current.onPose?.(current.current);
         if (e.touches.length >= 2) { beginPinch(e.touches); return; }
         // A remaining finger must lift before a new pan starts.
         session.current = e.touches.length ? { kind: 'wait' } : null;
-      } else if (!e.touches.length) session.current = null;
+      } else if (!e.touches.length) { latest.current.onPose?.(current.current); session.current = null; }
     };
     const cancelTouch = () => {
-      if (session.current?.kind === 'pinch') latest.current.onZoom?.(current.current.scale);
+      if (session.current?.kind === 'pinch') latest.current.onZoom?.(current.current.scale); latest.current.onPose?.(current.current);
       session.current = null;
     };
     const wheel = e => {
       const b = latest.current.bounds;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? b.height : 1;
-      if (e.ctrlKey) {
+      if (e.ctrlKey || (b.fullScreen && !e.shiftKey && !e.deltaX)) {
         e.preventDefault();
         const focal = point(e);
         paint(pinchPose(current.current, Math.exp(-e.deltaY * unit * 0.01), focal, focal, b));
-        latest.current.onZoom?.(current.current.scale);
+        latest.current.onZoom?.(current.current.scale); latest.current.onPose?.(current.current);
       } else {
         const next = constrainPose({ scale: current.current.scale, x: current.current.x - (e.shiftKey ? e.deltaY : e.deltaX) * unit, y: current.current.y - (e.shiftKey ? 0 : e.deltaY) * unit }, b);
         if (next.x !== current.current.x || next.y !== current.current.y) { e.preventDefault(); paint(next); }
@@ -92,7 +92,7 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
     };
     const endMouse = e => {
       if (mouse.current?.id === e.pointerId) {
-        mouse.current = null;
+        latest.current.onPose?.(current.current); mouse.current = null;
         if (host.hasPointerCapture(e.pointerId)) host.releasePointerCapture(e.pointerId);
       }
     };

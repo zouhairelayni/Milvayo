@@ -1,22 +1,26 @@
 // /src/screens/governance/pm/PmWbs.js
 // Work breakdown structure: build it as an outline, then see it as a tree, fishbone or mind map.
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { ActionMenu, ActionRow, EmptyState, MetricStrip, Button, Card, Input, Segmented, SectionTitle, T, downloadText, useWide } from '../../../ui/ui';
+import { ActionMenu, ActionRow, EmptyState, MetricStrip, IconBtn, Button, Card, Input, Segmented, SectionTitle, T, useWide } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import {
   PHASES, WBS_ROOT, buildTree, canIndent, canOutdent, flattenTree, pid, wbsAddChild, wbsAddSibling, wbsCSV, wbsDelete,
   wbsIndent, wbsMove, wbsOutdent, wbsUpdate,
 } from '../../../governance/pm';
-import { BRANCH, Scene, sceneFor, sceneToSvg } from '../../../governance/wbsviews';
+import { BRANCH, Scene, sceneFor } from '../../../governance/wbsviews';
 import { DocHeader } from './PmDocs';
 import { Field, NumInput, OwnerPick } from './pmui';
 import MarkdownField from '../../../components/inline/MarkdownField';
 import DiagramViewport from '../../../gestures/DiagramViewport';
 
-const slug = (n) => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
+import DiagramPreview from '../../../governance/DiagramPreview';
+import DiagramExports from '../../../governance/DiagramExports';
+import { diagnosticMonitor } from '../../../diagnostics/monitor';
+import { useRenderMetric } from '../../../diagnostics/useRenderMetric';
+const { diagramCache, diagramRevision, diagramView } = require('../../../governance/diagramCache.cjs');
 
 const TEMPLATES = {
   deliverables: ['Project management', 'Design', 'Build', 'Test', 'Launch'],
@@ -82,13 +86,23 @@ function OutlineRow({ n, open, onOpen, nodes, save, select }) {
 export default function PmWbs() {
   const { c } = useTheme();
   const wide = useWide();
-  const { s, setPm } = useStore();
+  useRenderMetric('projects/wbs');
+  const { s, setPm, currentId, workspaceId } = useStore();
+  const scope = JSON.stringify([workspaceId || 'local', currentId || 'project']);
+  const remembered = useMemo(() => diagramView(scope), [scope]);
   const nodes = s.pm.wbs;
-  const tree = useMemo(() => buildTree(nodes, s.project.name), [nodes, s.project.name]);
-  const rows = useMemo(() => flattenTree(tree), [tree]);
-  const [view, setView] = useState('outline');
-  const [dir, setDir] = useState('down');
-  const [zoom, setZoom] = useState('1');
+  const revision = useMemo(() => diagramRevision(nodes, s.project.name), [nodes, s.project.name]);
+  const {tree, rows} = useMemo(() => diagramCache.get([scope, 'hierarchy', revision.full], () => {
+    const tree = buildTree(nodes.map(n => ({id:n.id,parent:n.parent,name:n.name,hours:n.hours})), s.project.name);
+    return {tree, rows: flattenTree(tree)};
+  }, value => value.rows.length * 768).value, [scope, revision.full]);
+  const [view, updateView] = useState(remembered.view);
+  const [dir, updateDir] = useState(remembered.dir);
+  const [zoom, updateZoom] = useState(remembered.zoom);
+  const setView = value => { remembered.view = value; updateView(value); const next=remembered.zooms[`${value}:${dir}`]||'fit';remembered.zoom=next;updateZoom(next); };
+  const setDir = value => { remembered.dir = value; updateDir(value); const next=remembered.zooms[`${view}:${value}`]||'fit';remembered.zoom=next;updateZoom(next); };
+  const setZoom = value => { remembered.zoom = value; remembered.zooms[`${view}:${dir}`]=value; updateZoom(value); };
+  const [expanded, setExpanded] = useState(false);
   const [zoomRequest, setZoomRequest] = useState(0);
   const [sel, setSel] = useState(null);
 
@@ -102,10 +116,26 @@ export default function PmWbs() {
     setPm('wbs', [...nodes, ...kids], 'Started the WBS from a template');
   };
 
-  const scene = useMemo(() => (view === 'outline' ? null : sceneFor(view, tree, dir)), [view, tree, dir]);
+  const sceneRevision = view === 'tree' && dir === 'down' ? revision.full : revision.structure;
+  const {scene, sceneError} = useMemo(() => {
+    if(view === 'outline' || empty) return {scene:null,sceneError:''};
+    try {
+      const entry = diagnosticMonitor.measureWork(`diagram/${view}/lookup`, () => diagramCache.get([scope, view, sceneRevision, view === 'tree' ? dir : ''],
+        () => diagnosticMonitor.measureWork(`diagram/${view}/layout`, () => sceneFor(view, tree, dir)),
+        value => value.items.length * 1024 + JSON.stringify(value).length * 2));
+      const stats = diagramCache.stats();
+      diagnosticMonitor.recordAction(`diagram ${view}: ${entry.hit?'cache hit':'calculated'}; ${entry.value.items.length} primitives; ${entry.ms.toFixed(1)}ms; cache ${stats.entries} entries/${stats.estimatedBytes} estimated bytes`);
+      return {scene:entry.value,sceneError:''};
+    } catch(error) { return {scene:null,sceneError:error.message || 'Could not lay out this diagram. Try Outline.'}; }
+  }, [scope, view, dir, sceneRevision, empty]);
+  useEffect(() => { if (!scene) setExpanded(false); }, [scene]);
   const diagram = useMemo(() => scene ? <Scene scene={scene} /> : null, [scene]);
   const scale = zoom === 'fit' ? 'fit' : Number(zoom);
-  const chooseZoom = value => { setZoom(value); setZoomRequest(n => n + 1); };
+  const poseKey = `${view}:${dir}`;
+  const storedPose = remembered.poses[poseKey];
+  const initialPose = storedPose?.revision === sceneRevision ? storedPose.pose : null;
+  const chooseZoom = value => { delete remembered.poses[poseKey]; setZoom(value); setZoomRequest(n => n + 1); };
+  const getCSV = useCallback(() => wbsCSV(buildTree(nodes, s.project.name)), [nodes, s.project.name]);
 
   return (
     <View style={{ gap: 14 }}>
@@ -129,27 +159,25 @@ export default function PmWbs() {
         </Card>
       ) : null}
 
+      {sceneError ? <Card><T accessibilityRole="alert" color={c.danger}>{sceneError}</T><T muted size={12}>Your structure is unchanged. Return to Outline to inspect it.</T></Card> : null}
       {scene && !empty ? (
         <Card style={{ gap: 12 }} pad={14}>
           <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             {view === 'tree' ? <View style={{ flexShrink: 0 }}><Segmented options={[{ value: 'down', label: 'Top-down' }, { value: 'right', label: 'Left to right' }]} value={dir} onChange={setDir} /></View> : null}
             <View style={{ flexShrink: 0 }}><Segmented options={[{ value: 'fit', label: 'Fit' }, { value: '1', label: '100%' }, { value: '1.5', label: '150%' }]} value={zoom} onChange={chooseZoom} /></View>
           </ScrollView>
+          <View style={{alignItems:'flex-end'}}><IconBtn label="Expand diagram" icon="maximize-2" onPress={()=>setExpanded(true)}/></View>
           <View style={{ width: '100%' }}>
-            <DiagramViewport scene={scene} scale={scale} resetKey={`${view}:${dir}:${zoomRequest}`} onZoom={value => setZoom(String(value))}>
+            {expanded ? <View style={{height:Math.min(440,scene.height)}}/> : <DiagramViewport scene={scene} scale={scale} initialPose={initialPose} fitAll resetKey={`${view}:${dir}:${zoomRequest}`} onZoom={value => setZoom(String(value))} onPose={pose=>{remembered.poses[poseKey]={revision:sceneRevision,pose};}}>
               {diagram}
-            </DiagramViewport>
+            </DiagramViewport>}
           </View>
           <T size={12} muted>Pinch to zoom, drag to pan. Read only. Edit the structure in Outline.</T>
         </Card>
       ) : null}
 
-      {!empty ? (
-        <View style={{alignItems:'flex-end'}}><ActionMenu label="Export work structure" icon="download" items={[
-          view!=='outline'&&scene?{label:'Diagram as SVG',icon:'image',onPress:()=>downloadText(`${slug(s.project.name)}-wbs-${view}.svg`,sceneToSvg(scene,c),'image/svg+xml')}:null,
-          {label:'Outline as CSV',icon:'file-text',onPress:()=>downloadText(`${slug(s.project.name)}-wbs.csv`,wbsCSV(tree),'text/csv')},
-        ]}/></View>
-      ) : null}
+      {!empty ? <View style={{alignItems:'flex-end'}}><DiagramExports scene={scene} name={s.project.name} kind={view} getCSV={getCSV}/></View> : null}
+      {expanded && scene ? <DiagramPreview scene={scene} name={s.project.name} kind={view} nodes={nodes} rows={rows} getCSV={getCSV} onClose={()=>setExpanded(false)}/> : null}
     </View>
   );
 }

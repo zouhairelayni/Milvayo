@@ -1,3 +1,11 @@
+## v0.7.12 — Cached project diagrams, full-screen preview and image export (2026-11-07)
+
+- Generate only the selected WBS diagram. Reuse bounded semantic-revision hierarchy, scene and primitive caches across Tree/Fishbone/Mind map switches and remounts, isolated by workspace/project and layout. Invalidate on displayed data; owner/note/task/budget changes do not rebuild vectors. Retain per-view zoom/pose without persisting UI state to backups.
+- Replace native full-scene SVG bitmaps with viewport-sized, UI-thread viewBox cameras. Preserve embedded page-scroll handoff and all Timeline gesture code. Add bounded layout/cache/primitive diagnostics and render probes.
+- Add compact Expand controls and full-screen inspection: pinch, wheel/trackpad zoom, drag, Fit, Reset, zoom buttons and menu pan alternatives. Keep safe-area chrome, semantic colors and reduced-motion-aware controls; close restores embedded context. Inspect WBS work elements without inventing task associations.
+- Export complete SVG, PNG and CSV on demand. SVG keeps vector paths/text and full-name metadata; PNG offers 2×/4×, theme/transparent background, explicit dimensions and platform pixel budgets. Web downloads; native shares a validated PNG with bounded temporary-file retention. Report dimension reduction on large diagrams and recommend SVG for unrestricted vector detail.
+- Synchronize package/lock/Expo 0.7.12, Android versionCode 82 / iOS buildNumber 82. No new packages, data migration or agent builds. Owner subsequently authorized main source and commit/push only to work. QA and limits: `docs/qa/release-0712/ENGINEERING-REPORT.md`.
+
 ## v0.7.11 — Focused creation, planning and navigation controls (2026-11-06)
 
 - Board’s left-hand plus opens one sheet for a new board or a list in the current board. Remove the vertical Add list control. Board tools exposes confirmed deletion; tasks move safely to Main and Main remains protected.

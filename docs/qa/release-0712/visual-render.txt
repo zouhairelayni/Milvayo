@@ -1,0 +1,1 @@
+Rendered 11 static source fixtures and PNG browser harness

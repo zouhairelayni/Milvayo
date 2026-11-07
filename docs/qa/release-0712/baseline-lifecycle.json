@@ -1,0 +1,39 @@
+{
+  "sourceCheckpoint": "074a734",
+  "kind": "Original component executed with deterministic memo hooks; not native React commits",
+  "trace": [
+    {
+      "view": "outline",
+      "calculations": {
+        "tree": 0,
+        "fishbone": 0,
+        "mind": 0
+      }
+    },
+    {
+      "view": "tree",
+      "calculations": {
+        "tree": 1,
+        "fishbone": 0,
+        "mind": 0
+      }
+    },
+    {
+      "view": "fishbone",
+      "calculations": {
+        "tree": 1,
+        "fishbone": 1,
+        "mind": 0
+      }
+    },
+    {
+      "view": "tree",
+      "calculations": {
+        "tree": 2,
+        "fishbone": 1,
+        "mind": 0
+      }
+    }
+  ],
+  "normalRenderFileExports": 0
+}

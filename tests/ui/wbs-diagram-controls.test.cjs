@@ -6,15 +6,16 @@ const { load } = require('../helpers/diagram-harness.cjs');
 const { screenHarness, nodes, control, text } = require('../helpers/screen-harness.cjs');
 const model = require('../../src/domain/model.cjs');
 const pm = load('src/governance/pm.js', { './data': { labourCosts: () => [], money: String } });
-const scenes = load('src/governance/wbsviews.js', { 'react-native-svg': { __esModule: true, default: 'Svg', Path: 'Path', Rect: 'Rect', Text: 'SvgText' }, '../ui/theme/theme': { font: 'System', useTheme: () => ({ c: {} }) } });
+const scenes = {...require('../../src/governance/diagramScene.cjs'), Scene:'Scene'};
+let serial=0;
 const fixture = () => [{ id: 'w0', parent: null, name: '', hours: 0 }, { id: 'w1', parent: 'w0', name: 'Design', hours: 12 }, { id: 'w2', parent: 'w0', name: 'Build', hours: 20 }];
 
 function setup(wide = false, initial = fixture()) {
   const calls = [], downloads = [], s = { project: { name: 'Studio & team' }, pm: { wbs: initial } };
-  const store = { s, setPm(key, value) { calls.push([key, value]); s.pm[key] = value; } };
+  const store = { s, currentId:'fixture-'+(++serial), workspaceId:'tests', setPm(key, value) { calls.push([key, value]); s.pm[key] = value; } };
   const h = screenHarness('src/screens/governance/pm/PmWbs.js', {}, { wide, mocks: {
     '../../../governance/store': { useStore: () => store }, '../../../governance/pm': pm,
-    '../../../governance/wbsviews': scenes, './PmDocs': { DocHeader: 'DocHeader' },
+    '../../../governance/diagramCache.cjs':require('../../src/governance/diagramCache.cjs'), '../../../governance/wbsviews': scenes, '../../../governance/DiagramPreview':{__esModule:true,default:'DiagramPreview'}, '../../../governance/DiagramExports':{__esModule:true,default:'DiagramExports'}, '../../../diagnostics/monitor':{diagnosticMonitor:{measureWork:(_n,fn)=>fn(),recordAction(){}}}, './PmDocs': { DocHeader: 'DocHeader' },
     './pmui': { Field: 'Field', NumInput: 'NumInput', OwnerPick: 'OwnerPick' }, '../../../gestures/DiagramViewport': { __esModule: true, default: 'DiagramViewport' },
     '../../../ui/ui': new Proxy({ useWide: () => wide, downloadText: (...args) => downloads.push(args) }, { get: (o, k) => o[k] || k }),
   } });
@@ -53,11 +54,11 @@ test('WBS diagram inventory: Tree/directions, Fishbone, Mind map, Fit/100%/150%,
       assert.deepEqual(Array.from(toolbarControls[0].props.options, o => o.label), ['Top-down', 'Left to right']);
       toolbarControls[0].props.onChange('right'); tree = h.render(); assert.match(viewport(tree).props.resetKey, /tree:right:/);
     }
-    const exports=nodes(tree).find(n=>n.type==='ActionMenu'&&n.props.label==='Export work structure');
-    exports.props.items.find(x=>x?.label==='Diagram as SVG').onPress();
-    const svg = downloads.at(-1); assert.equal(svg[2], 'image/svg+xml');
-    assert.ok(svg[1].includes(`width="${viewport(tree).props.scene.width}"`)); assert.ok(svg[1].includes('Studio &amp; team'));
-    exports.props.items.find(x=>x?.label==='Outline as CSV').onPress(); assert.equal(downloads.at(-1)[2], 'text/csv'); assert.ok(downloads.at(-1)[1].includes('Design'));
+    const exports=nodes(tree).find(n=>n.type==='DiagramExports');
+    assert.equal(exports.props.scene,viewport(tree).props.scene);
+    const svg=scenes.sceneToSvg(exports.props.scene,{});assert.ok(svg.includes(`width="${viewport(tree).props.scene.width}"`));assert.ok(svg.includes('Studio &amp; team'));
+    assert.ok(exports.props.getCSV().includes('Design'));
+
   }
   assert.deepEqual(calls, []); assert.equal(JSON.stringify(s.pm.wbs), before);
   const p = model.makeProject({ name: 'Studio', governance: { wbs: s.pm.wbs } });

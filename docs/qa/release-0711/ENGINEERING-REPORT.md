@@ -1,6 +1,6 @@
 # Milvayo 0.7.11 — creation and control cleanup
 
-The preceding performance repair is recorded as **0.7.10**. Current package, lockfile and Expo version are **0.7.11**, Android versionCode **81**, iOS buildNumber **81**. Applied in place on `work`; no Git tag, commit, push, merge, dependency addition, build, prebuild, Gradle, EAS or Playwright. Owner ZIP changes and the earlier uncommitted performance work are preserved.
+The preceding performance repair is recorded as **0.7.10**. Current package, lockfile and Expo version are **0.7.11**, Android versionCode **81**, iOS buildNumber **81**. Original handoff: applied in place on `work`; no Git tag, commit, push, merge, dependency addition, build, prebuild, Gradle, EAS or Playwright. The owner subsequently authorized committing/pushing this completed checkpoint only to `work`: `074a734`. Owner ZIP changes and the earlier uncommitted performance work are preserved.
 
 ## Skills and review
 

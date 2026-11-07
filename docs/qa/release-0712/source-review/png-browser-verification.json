@@ -1,0 +1,140 @@
+[
+  {
+    "kind": "tree",
+    "quality": 2,
+    "transparent": false,
+    "width": 1884,
+    "height": 564,
+    "cornerAlpha": 255,
+    "bytes": 84378,
+    "plan": {
+      "width": 1884,
+      "height": 564,
+      "scale": 2,
+      "requestedScale": 2,
+      "limited": false,
+      "pixels": 1062576,
+      "rgbaBytes": 4250304,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-tree-2x.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  },
+  {
+    "kind": "tree",
+    "quality": 4,
+    "transparent": true,
+    "width": 3768,
+    "height": 1128,
+    "cornerAlpha": 0,
+    "bytes": 210769,
+    "plan": {
+      "width": 3768,
+      "height": 1128,
+      "scale": 4,
+      "requestedScale": 4,
+      "limited": false,
+      "pixels": 4250304,
+      "rgbaBytes": 17001216,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-tree-4x-transparent.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  },
+  {
+    "kind": "fishbone",
+    "quality": 2,
+    "transparent": false,
+    "width": 1529,
+    "height": 456,
+    "cornerAlpha": 255,
+    "bytes": 79247,
+    "plan": {
+      "width": 1529,
+      "height": 456,
+      "scale": 2,
+      "requestedScale": 2,
+      "limited": false,
+      "pixels": 697224,
+      "rgbaBytes": 2788896,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-fishbone-2x.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  },
+  {
+    "kind": "fishbone",
+    "quality": 4,
+    "transparent": true,
+    "width": 3058,
+    "height": 912,
+    "cornerAlpha": 0,
+    "bytes": 193192,
+    "plan": {
+      "width": 3058,
+      "height": 912,
+      "scale": 4,
+      "requestedScale": 4,
+      "limited": false,
+      "pixels": 2788896,
+      "rgbaBytes": 11155584,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-fishbone-4x-transparent.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  },
+  {
+    "kind": "mind",
+    "quality": 2,
+    "transparent": false,
+    "width": 1937,
+    "height": 352,
+    "cornerAlpha": 255,
+    "bytes": 94121,
+    "plan": {
+      "width": 1937,
+      "height": 352,
+      "scale": 2,
+      "requestedScale": 2,
+      "limited": false,
+      "pixels": 681824,
+      "rgbaBytes": 2727296,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-mind-2x.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  },
+  {
+    "kind": "mind",
+    "quality": 4,
+    "transparent": true,
+    "width": 3875,
+    "height": 704,
+    "cornerAlpha": 0,
+    "bytes": 222915,
+    "plan": {
+      "width": 3875,
+      "height": 704,
+      "scale": 4,
+      "requestedScale": 4,
+      "limited": false,
+      "pixels": 2728000,
+      "rgbaBytes": 10912000,
+      "maxPixels": 12582912,
+      "maxSide": 8192
+    },
+    "status": "Pass",
+    "file": "export-mind-4x-transparent.png",
+    "browser": "Chromium actual source PNG adapter; isolated single-export fixture, not live Expo"
+  }
+]

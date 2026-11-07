@@ -1,0 +1,31 @@
+{
+  "parsed": 214,
+  "nativeFiles": 27,
+  "sharedWorkletModules": 2,
+  "worklets": {
+    "src/app/navigation/BackSurface.native.js": 1,
+    "src/board/boardMotion.native.js": 1,
+    "src/components/brand/BoardMorph.native.js": 2,
+    "src/components/charts/Column.native.js": 1,
+    "src/components/charts/TracePath.native.js": 1,
+    "src/components/inline/DisclosureGlyph.native.js": 1,
+    "src/components/notice/NoticeMotion.native.js": 4,
+    "src/components/shell/DrawerMotion.native.js": 1,
+    "src/components/shell/NavIcon.native.js": 1,
+    "src/gestures/DiagramGesture.native.js": 11,
+    "src/gestures/TimelineGestureHost.native.js": 1,
+    "src/gestures/TimelinePinch.native.js": 5,
+    "src/gestures/TimelineScrollView.native.js": 1,
+    "src/gestures/gesture.native.js": 5,
+    "src/gestures/gestureSurface.native.js": 2,
+    "src/governance/DiagramSvg.native.js": 1,
+    "src/ui/FillMotion.native.js": 1,
+    "src/ui/PressSurface.native.js": 1,
+    "src/ui/Reveal.native.js": 1,
+    "src/ui/ScreenPresence.native.js": 1,
+    "src/components/brand/morphMotion.cjs": 7,
+    "src/gestures/diagramZoom.cjs": 3
+  },
+  "build": false,
+  "androidRuntime": false
+}
