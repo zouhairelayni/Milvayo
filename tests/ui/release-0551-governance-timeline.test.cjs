@@ -46,9 +46,9 @@ test('Other long-form planning editors reuse the same Markdown source/preview pa
 
 test('Shared sheets reset prior scroll position when opened again',()=>{
   const src=read('src/ui/uiLayout.js');
-  assert.match(src,/onShow=\{\(\) => \{ scrollY\.current=0; bodyRef\.current\?\.scrollTo\(\{y:0,animated:false\}\); \}\}/);
-  assert.match(src,/<ScrollView ref=\{bodyRef\}/);
-  assert.match(src,/onTouchStart=\{startSwipe\} onTouchEnd=\{finishSwipe\}/);
+  assert.match(src,/onShow=\{\(\) => \{ scrollY\.current=0; bodyRef\.current\?\.scrollTo\?\.\(\{y:0,animated:false\}\); \}\}/);
+  assert.match(src,/<Body ref=\{bodyRef\}/);
+  assert.match(src,/onTouchStart=\{scrollable\?startSwipe:undefined\} onTouchEnd=\{scrollable\?finishSwipe:undefined\}/);
 });
 
 test('v0.5.51 ships one cumulative changelog, QA and matching application versions',()=>{

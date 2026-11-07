@@ -1,0 +1,110 @@
+{
+  "measurement": "Host Node only. Scene geometry, pure previews and serialization; editor hook/callback harness excludes child rendering, actual React scheduling, disk IO, GPU and Android frame pacing. No native FPS/latency claim.",
+  "node": "v24.21.0",
+  "cases": [
+    {
+      "objects": 41,
+      "wbsNodes": 40,
+      "initialProjectionMs": 7.901230000000396,
+      "cachedProjection": {
+        "samples": 30,
+        "p50Ms": 0.036692000000130065,
+        "p95Ms": 0.16726999999991676
+      },
+      "layoutCalculationsBefore": {
+        "hierarchy": 1,
+        "tree": 1
+      },
+      "layoutCalculationsAfter": {
+        "hierarchy": 1,
+        "tree": 1
+      },
+      "colorChange": {
+        "changedSceneIdentities": 1,
+        "retainedSceneIdentities": 40
+      },
+      "selectionHitTest": {
+        "samples": 30,
+        "p50Ms": 0.006808000000091852,
+        "p95Ms": 0.1022689999999784
+      },
+      "dragPreview": {
+        "samples": 30,
+        "p50Ms": 0.0016160000000127184,
+        "p95Ms": 0.020152999999936583
+      },
+      "resizePreview": {
+        "samples": 30,
+        "p50Ms": 0.001576999999997497,
+        "p95Ms": 0.01246099999980288
+      },
+      "backupSerialization": {
+        "samples": 30,
+        "p50Ms": 0.042422999999871536,
+        "p95Ms": 0.3896929999996246
+      },
+      "backupBytes": 10004
+    },
+    {
+      "objects": 201,
+      "wbsNodes": 200,
+      "initialProjectionMs": 4.273384999999962,
+      "cachedProjection": {
+        "samples": 30,
+        "p50Ms": 0.11149999999997817,
+        "p95Ms": 0.22580800000014278
+      },
+      "layoutCalculationsBefore": {
+        "hierarchy": 2,
+        "tree": 2
+      },
+      "layoutCalculationsAfter": {
+        "hierarchy": 2,
+        "tree": 2
+      },
+      "colorChange": {
+        "changedSceneIdentities": 1,
+        "retainedSceneIdentities": 200
+      },
+      "selectionHitTest": {
+        "samples": 30,
+        "p50Ms": 0.004192999999759195,
+        "p95Ms": 0.00884600000017599
+      },
+      "dragPreview": {
+        "samples": 30,
+        "p50Ms": 0.0013469999998960702,
+        "p95Ms": 0.0016160000000127184
+      },
+      "resizePreview": {
+        "samples": 30,
+        "p50Ms": 0.0013080000003355963,
+        "p95Ms": 0.0014620000001741573
+      },
+      "backupSerialization": {
+        "samples": 30,
+        "p50Ms": 0.175347000000329,
+        "p95Ms": 0.22792299999991883
+      },
+      "backupBytes": 47892
+    }
+  ],
+  "callbacks": {
+    "initialEditorHarnessRenderMs": 0.40488500000037675,
+    "toolSwitchAndHarnessRender": {
+      "samples": 30,
+      "p50Ms": 0.3753849999998238,
+      "p95Ms": 0.6658840000000055
+    },
+    "objectSelectionAndHarnessRender": {
+      "samples": 30,
+      "p50Ms": 0.3952689999996437,
+      "p95Ms": 1.1021160000000236
+    }
+  },
+  "heapObservation": {
+    "hostHeapUsedBytes": 50395136,
+    "nativeHeap": "Not run",
+    "leakTrend": "Not measured; one bounded run is not a memory-leak test"
+  }
+}

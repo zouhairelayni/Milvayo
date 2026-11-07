@@ -1,0 +1,57 @@
+npm notice run milvayo@0.8.0 npx
+npm notice run 'expo' start --localhost --port 8081
+Starting project at /mnt/Milvayo
+Using src/app as the root directory for Expo Router.
+ ERROR  An unknown error occurred while installing React Native DevTools. Details:
+
+spawn /mnt/Milvayo/node_modules/fb-dotslash/bin/linux-musl.aarch64/dotslash EACCES
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+
+Logs for your project will appear below.
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:1415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Web Bundled 26529ms node_modules/expo/AppEntry.js (1279 modules)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"}
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web Bundled 284ms node_modules/expo/AppEntry.js (1 module)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"}
+Development-level warnings: ON.
+Performance optimizations: OFF.
+Web  ERROR
+
+Code: monitor.js
+[0m [90m  97 |[39m   originalError [33m=[39m console[33m.[39merror[33m;[39m
+ [90m  98 |[39m   console[33m.[39mwarn [33m=[39m ([33m...[39margs)[33m=>[39m{[36mtry[39m{state[33m.[39mwarnings[33m++[39m[33m;[39m[36mconst[39m kind[33m=[39mcore[33m.[39mwarningKind(args)[33m;[39mstate[33m.[39mwarningKinds[kind][33m=[39m(state[33m.[39mwarningKinds[kind][33m||[39m[35m0[39m)[33m+[39m[35m1[39m[33m;[39m[36mif[39m(state[33m.[39mwarnings [33m<=[39m [35m15[39m)core[33m.[39maddEvent(state[33m,[39m[32m'warning'[39m[33m,[39m[32m'console.warn (message withheld for privacy)'[39m)[33m;[39mpushSave()[33m;[39m}[36mcatch[39m{} originalWarn([33m...[39margs)[33m;[39m}[33m;[39m
+[31m[1m>[22m[39m[90m  99 |[39m   console[33m.[39merror [33m=[39m ([33m...[39margs)[33m=>[39m{[36mtry[39m{state[33m.[39merrors[33m++[39m[33m;[39m[36mif[39m(state[33m.[39merrors [33m<=[39m [35m15[39m)core[33m.[39maddEvent(state[33m,[39m[32m'console error'[39m[33m,[39m[32m'console.error (message withheld for privacy)'[39m)[33m;[39mpushSave([36mtrue[39m)[33m;[39mnotify()[33m;[39m}[36mcatch[39m{} originalError([33m...[39margs)[33m;[39m}[33m;[39m
+ [90m     |[39m                                                                                                                                                                                             [31m[1m^[22m[39m
+ [90m 100 |[39m
+ [90m 101 |[39m   [36mconst[39m onAppState[33m=[39mstatus[33m=>[39m{
+ [90m 102 |[39m     isActive [33m=[39m status [33m===[39m [32m'active'[39m[33m;[39m[0m
+Call Stack
+  console.error (src/diagnostics/monitor.js:99:189)
+  render (node_modules/react-native-svg/lib/module/web/WebShape.js:74:25)
+  TourArtwork (src/components/illustrations/TourArtwork.js:50:5)
+  SLIDES.map$argument_0 (src/screens/onboarding/Onboarding.js:92:17)
+  Onboarding (src/screens/onboarding/Onboarding.js:90:21)
+  Shell (src/app/ModernApp.js:301:30)
+  ColdStartGate (src/app/ModernApp.js:332:75)
+  ModernApp (src/app/ModernApp.js:343:36)
+  App (src/app/App.js:6:54)

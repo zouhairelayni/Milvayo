@@ -31,8 +31,8 @@ export function objectScene(object,project,scope){
  }else if(object.type==='draw'){
   scene={width:object.width,height:object.height,items:object.points.length?[{t:'path',d:object.points.map((p,i)=>`${i?'L':'M'} ${p.x} ${p.y}`).join(' '),stroke:object.color||'ink',sw:object.strokeWidth||2}]:[]};
  }else{
-  const width=object.width,height=object.height,fill=object.type==='frame'?'none':object.color||'surface',ink=object.type==='frame'||object.type==='text'?'ink':inkFor(object.color),max=Math.max(6,Math.floor((width-32)/7.8));
-  const lines=wrapped(source?source.title:object.text,max),items=object.type==='text'?[]:[rect(0,0,width,height,fill,source&&!source.available?'danger':'muted',object.type==='shape'?4:12)];
+  const width=object.width,height=object.height,fill=object.type==='frame'?'none':object.color||'surface',ink=object.type==='text'?object.color||'ink':object.type==='frame'?'ink':inkFor(object.color),max=Math.max(6,Math.floor((width-32)/7.8));
+  const lines=wrapped(source?source.title:object.text,max),items=object.type==='text'?[]:[rect(0,0,width,height,fill,source&&!source.available?'danger':object.type==='frame'?object.color||'muted':'muted',object.type==='shape'?4:12)];
   const limit=Math.max(1,Math.floor((height-40)/22));
   lines.slice(0,limit).forEach((s,i)=>items.push(line(16,28+i*22,s+(i===limit-1&&lines.length>limit?'…':''),object.type==='text'?16:14,ink,i===0?'500':'400')));
   if(source){const meta=object.sourceLink.mode==='snapshot'?`Snapshot · ${object.sourceLink.capturedAt.slice(0,10)}`:'Live project link';items.push(line(16,height-12,meta,10,object.color?ink:'muted'));source.lines.slice(0,Math.max(0,limit-lines.length-1)).forEach((s,i)=>items.push(line(16,28+(lines.length+i+1)*22,s.length>max?s.slice(0,max-1)+'…':s,12,ink)));}

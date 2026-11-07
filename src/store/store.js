@@ -158,7 +158,7 @@ export function StoreProvider({children,onReady,loading}){
     const names=[];
     const ok=trans(w=>{
       if(w.projects.length+created.length>30)throw Error('Workspace project limit (30)');
-      const seen=new Set(w.projects.map(p=>p.id));const imported=created.map(p=>{let id=p.id;if(seen.has(id))id=model.id('project');seen.add(id);names.push(p.name);return {...p,id,archived:false}});
+      const seen=new Set(w.projects.map(p=>p.id));const imported=created.map(p=>{let id=p.id;if(seen.has(id))id=model.id('project');seen.add(id);names.push(p.name);return {...p,id,archived:false,canvases:require('../domain/canvas.cjs').rehomeBoards(p.canvases,id)}});
       return {...w,selectedId:imported.at(-1).id,projects:[...w.projects,...imported],backups:[model.workspaceSnapshot(w,'Before importing projects'),...w.backups].slice(0,12)};
     },`Imported ${created.length} project(s)`);
     return ok?{ok:true,names}:{ok:false,error:lastError.current||'Import failed; no projects were replaced.'};

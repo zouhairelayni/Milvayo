@@ -1,0 +1,165 @@
+{
+  "scope": "Headless Chromium screenshots of actual-JSX static RN Web projections. Effects, viewport measurements and modal placement adapted by the fixture harness. Not native or live Canvas acceptance.",
+  "cases": [
+    {
+      "name": "workspace-360-dark",
+      "width": 360,
+      "height": 800,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-360-dark",
+      "width": 360,
+      "height": 800,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-360-dark",
+      "width": 360,
+      "height": 800,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "workspace-390-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-390-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-390-dark",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "workspace-844-dark",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-844-dark",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-844-dark",
+      "width": 844,
+      "height": 390,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "workspace-1440-dark",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-1440-dark",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-1440-dark",
+      "width": 1440,
+      "height": 900,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "editor-light",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-390-light",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "add-390-light",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-drawing",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-source",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "menu-tools",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "inline-note",
+      "width": 390,
+      "height": 844,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    },
+    {
+      "name": "selected-large-font",
+      "width": 360,
+      "height": 800,
+      "exitCode": 0,
+      "error": null,
+      "captured": true
+    }
+  ]
+}

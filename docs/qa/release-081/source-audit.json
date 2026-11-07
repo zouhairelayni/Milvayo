@@ -1,0 +1,75 @@
+{
+  "scope": "All src JS/CJS bindings/imports and eager module-level worklet dependency order; dynamic platform acceptance remains separate",
+  "files": 252,
+  "unboundIdentifiers": [],
+  "unusedImports": [],
+  "compatibilityImports": [
+    {
+      "file": "src/app/AppGestureRoot.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/app/AppGestureRoot.web.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/board/boardMotion.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/board/boardMotion.web.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/components/inline/InlineEditor.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/components/inline/InlineEditor.web.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/components/shell/DrawerMotion.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/components/shell/DrawerMotion.web.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/gestures/TimelineGestureHost.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/gestures/TimelineGestureHost.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/gestures/gestureSurface.native.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/gestures/gestureSurface.web.js",
+      "line": 2,
+      "name": "React"
+    },
+    {
+      "file": "src/store/store.js",
+      "line": 4,
+      "name": "React"
+    }
+  ],
+  "compatibilityNote": "Default React imports are retained for existing classic JSX test transforms.",
+  "forwardWorkletCaptures": []
+}

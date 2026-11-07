@@ -1,3 +1,12 @@
+## v0.8.1 — Canvas UX 2.0 and application audit (2026-11-07)
+
+- Replace the collapsing Canvas pill with a persistent Select/Add/Draw/Connect/More dock, direct undo/redo, a grouped anchored Add menu, contextual editing/duplicate/connect/group actions and immediate visual color swatches. Keep advanced inspectors for configuration, complete-board export, comments, object arrangement and board management.
+- Add accessible surface multi-selection, fit selection and keyboard tool shortcuts. Keep saved viewport restoration, direct dragging/resizing/double-tap editing, native UI-thread previews and Web SVG transforms. Open large newly inserted diagrams at a readable content-based scale while explicit Fit still includes all content.
+- Search/filter and virtualize all project-source matches; remove the fifty-result cutoff. Preserve live versus snapshot source behavior. Give text and frame colors a visible effect.
+- Fix clipboard paste overwriting concurrent edits, selection changes losing inline text, and drag selection collapsing existing multi-selection. Repair project-template copies and duplicate-ID project imports containing Canvas boards; rebind live sources to the copied project while retaining snapshot origins.
+- Audit Canvas controls and all application screen groups. Retain stable Timeline, frozen sprint history, startup N-to-Board animation, local recovery and secure-sharing restrictions. Remove obsolete pill animation/timer code; add deterministic integration/round-trip regressions and measured host benchmarks. No new dependencies or schema migration.
+- Synchronize package/lock/Expo at 0.8.1, Android/iOS 91. Validation, screenshots, audit matrices, remaining native acceptance and reversible update instructions: `docs/qa/release-081/REPORT.md` and `docs/instructions/release-081.md`. No native builds, commit, push, merge or deployment.
+
 ## v0.8.0 — Linked project Canvas (2026-11-07)
 
 - Add More → Project tools → Canvas: project library, blank/brainstorm/strategy/risk/roadmap templates, rename/duplicate/archive, archived deletion with existing recovery snapshots, and validated board import/export.

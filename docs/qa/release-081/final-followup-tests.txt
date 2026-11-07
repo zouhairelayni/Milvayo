@@ -1,0 +1,28 @@
+✔ persistent tools switch directly, note insertion takes two actions and does not open an inspector (370.200692ms)
+✔ direct editing saves one transaction, cancellation leaves content intact and undo/redo persists (253.526384ms)
+✔ save failure prevents leaving, retry preserves the board and viewport is restored (212.207346ms)
+✔ resize/connector actions, label/style/delete and source task integrity (191.349115ms)
+✔ Connect mode connects two objects; multiple selection groups and duplicate preserves the group (212.396769ms)
+✔ direct swatches update one object, undo restores color and canonical sources remain unchanged (258.102499ms)
+✔ project diagrams retain live/snapshot behavior, readable framing and real layout changes (193.101307ms)
+✔ drawing brush width/color, eraser, undo and independent diagrams remain functional (201.206653ms)
+✔ clipboard paste merges with the latest board when an edit occurs while clipboard IO is pending (167.121693ms)
+✔ selection change commits inline text rather than dropping the edit (228.146615ms)
+✔ comments, replies, resolve/reopen, rename and unavailable sharing have real persistent handlers (222.579269ms)
+✔ arrangement, lock/unlock, ungroup and layer controls affect the selected objects (198.309115ms)
+✔ phone and desktop Canvas title stays centered between equal measured control slots (1018.633345ms)
+✔ tools switch without sheets, multi-selection toggles deterministically and unknown tools preserve mode (4.163193ms)
+✔ readable opening and explicit fit serve different bounds, including empty and oversized scenes (1.168654ms)
+✔ dock exposes five direct controls, safe-area placement and undo/redo disable states (844.764038ms)
+✔ swatches expose actual colors and an accessible checked state in both themes (77.704692ms)
+✔ source filtering virtualizes all matches beyond fifty and uses unique scoped roadmap keys (53.988692ms)
+✔ a virtualized source sheet owns its scrolling and does not dismiss when the list is swiped (189.148961ms)
+✔ a wide diagram opens on its actual root rather than an empty corner of its container (0.615115ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4755.787881

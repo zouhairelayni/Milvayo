@@ -1,7 +1,7 @@
 // /tests/helpers/canvas-global-audit.cjs
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),parser=require('@babel/parser'),traverse=require('@babel/traverse').default;
-const root=path.resolve(__dirname,'../..'),out=path.join(root,'docs/qa/release-080');
+const root=path.resolve(__dirname,'../..'),out=path.resolve(process.argv[2]||path.join(root,'docs/qa/release-080'));
 const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]),files=walk(path.join(root,'src')).filter(f=>/\.(js|cjs)$/.test(f));
 const globals=new Set([...Object.getOwnPropertyNames(globalThis),'window','document','navigator','requestAnimationFrame','cancelAnimationFrame','Image','FileReader','File','Blob','URL','localStorage','sessionStorage','alert','confirm','CSS','__DEV__','require','module','exports','__dirname','global','HermesInternal','ResizeObserver','IntersectionObserver','Worker']);
 const unknown=[],unusedImports=[],forwardWorklets=[];

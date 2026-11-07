@@ -1,0 +1,5 @@
+{
+  "status": "Pass",
+  "modules": 252,
+  "parser": "installed @babel/parser with JSX; syntax only, not native runtime acceptance"
+}

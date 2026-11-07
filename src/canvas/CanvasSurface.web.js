@@ -36,6 +36,7 @@ export default function CanvasSurface(props){
    if(s.kind==='pinch')return;s.dx=(p.x-s.point.x)/s.start.scale;s.dy=(p.y-s.point.y)/s.start.scale;
    if(s.kind==='pan')paint({...s.start,x:s.start.x+p.x-s.point.x,y:s.start.y+p.y-s.point.y});
    if(s.kind==='move'||s.kind==='resize'){
+    if(s.kind==='move'&&!s.selectionReported){s.selectionReported=true;if(!current.current.selected.includes(s.hit.id))current.current.onSelect(s.hit.id);}
     const b=current.current.board,d={kind:s.kind,id:s.resize?.id,ids:s.ids,boxes:s.boxes,dx:s.dx,dy:s.dy};for(const o of b.objects)if(s.kind==='resize'?o.id===s.resize.id:s.ids.includes(o.id)){const next=previewBox(o,d);node.querySelector(`#${CSS.escape('canvas-object-'+o.id)}`)?.setAttribute('transform',`translate(${next.x},${next.y}) scale(${next.width/o.width},${next.height/o.height})`);}
     for(let index=0;index<b.connectors.length;index++){const edge=b.connectors[index],a=current.current.byId.get(edge.from),other=current.current.byId.get(edge.to);if(a&&other&&routeAffected(edge.from,edge.to,d,current.current.routes[index]?.bounds))paintEdge(edge,connectorPath(a,other,d,edge.style,b.objects));}
    }

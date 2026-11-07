@@ -1,0 +1,31 @@
+// /tests/ui/canvas-toolbar.test.cjs
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),{load}=require('../helpers/diagram-harness.cjs'),{lifecycleHarness}=require('../helpers/lifecycle-harness.cjs'),{nodes}=require('../helpers/screen-harness.cjs');
+const {COLORS,selectObject,changeTool,readablePose,sourceKey}=require('../../src/canvas/editorTools.cjs'),{fitPose}=require('../../src/canvas/interaction.cjs');
+const theme={useTheme:()=>({c:{ink:'#fff',surface:'#111',surfaceAlt:'#222',line:'#333',selection:'#555',onSelection:'#fff',accentText:'#E98B7E',muted:'#999'}})};
+const mocks=h=>({react:h.hooks,'react-native':{View:'View',FlatList:'List',ScrollView:'Scroll',useWindowDimensions:()=>({width:360,height:800,fontScale:1})},'@expo/vector-icons':{Feather:'Icon'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:24})},'../../ui/PressSurface':{__esModule:true,default:'Press'},'../../ui/uiBase':{T:'T'},'../../ui/ui':new Proxy({},{get:(_,k)=>k}),'../../ui/theme/theme':theme});
+test('tools switch without sheets, multi-selection toggles deterministically and unknown tools preserve mode',()=>{
+ for(const mode of ['select','pan','draw','erase','connect','multi'])assert.deepEqual(changeTool('select',mode),{mode,panel:''});assert.deepEqual(changeTool('draw','add'),{mode:'draw',panel:'add'});assert.equal(changeTool('draw','unknown').mode,'draw');assert.deepEqual(selectObject(['a'],'b',true),['a','b']);assert.deepEqual(selectObject(['a','b'],'a',true),['b']);assert.deepEqual(selectObject(['a'],'',true),[]);assert.deepEqual(selectObject(['a','b'],'a'),['a']);
+});
+test('readable opening and explicit fit serve different bounds, including empty and oversized scenes',()=>{
+ for(const objects of [[],[{x:-500,y:200,width:20000,height:15000}]]){const pose=readablePose(objects,{width:360,height:500});assert.ok(pose.scale>=.6);for(const v of Object.values(pose))assert.ok(Number.isFinite(v));}const o=[{x:0,y:0,width:2000,height:1000}];assert.ok(fitPose(o,{width:360,height:500}).scale<.6);assert.equal(readablePose(o,{width:1440,height:900}).scale,fitPose(o,{width:1440,height:900}).scale);
+});
+test('dock exposes five direct controls, safe-area placement and undo/redo disable states',()=>{
+ const h=lifecycleHarness(),mod=load('src/screens/canvas/CanvasToolbar.js',mocks(h)),calls=[];const tree=h.render(mod.default,{mode:'draw',panel:'',onTool:value=>calls.push(value),canUndo:false,canRedo:true,onUndo(){},onRedo(){}}),buttons=nodes(tree).filter(n=>n.type===mod.CanvasTool);assert.equal(buttons.length,7);for(const label of ['Select','Add','Draw','Connect','More']){const b=buttons.find(n=>n.props.label===label);assert.ok(b);b.props.onPress();}assert.deepEqual(calls,['select','add','draw','connect','more']);assert.equal(buttons.find(n=>n.props.label==='Draw').props.active,true);assert.equal(buttons.find(n=>n.props.label==='Undo').props.disabled,true);assert.equal(buttons.find(n=>n.props.label==='Redo').props.disabled,false);assert.equal(tree.props.children[0].props.style.bottom,24);h.unmount();
+});
+test('swatches expose actual colors and an accessible checked state in both themes',()=>{
+ for(const ink of ['#fff','#111']){const h=lifecycleHarness(),m=mocks(h);m['../../ui/theme/theme']={useTheme:()=>({c:{...theme.useTheme().c,ink}})};const mod=load('src/screens/canvas/CanvasSwatches.js',m),changes=[],tree=h.render(mod.default,{value:'#83D8B4',onChange:v=>changes.push(v)}),buttons=nodes(tree).filter(n=>n.type==='Press');assert.equal(buttons.length,COLORS.length);assert.equal(buttons.find(n=>n.props.accessibilityLabel==='Sage').props.accessibilityState.checked,true);buttons.find(n=>n.props.accessibilityLabel==='Blue').props.onPress();assert.deepEqual(changes,['#80A7EF']);assert.ok(nodes(tree).some(n=>n.props.style?.backgroundColor==='#80A7EF'));h.unmount();}
+});
+test('source filtering virtualizes all matches beyond fifty and uses unique scoped roadmap keys',()=>{
+ const h=lifecycleHarness(),mod=load('src/screens/canvas/CanvasSources.js',{...mocks(h),'./CanvasMenuRow':{__esModule:true,default:'Row'}}),options=[...Array.from({length:220},(_,i)=>({sourceType:'task',sourceId:'t'+i,title:'Task '+i})),{sourceType:'risk',sourceId:'r',title:'Risk'},{sourceType:'roadmap',sourceId:'p',title:'All'},{sourceType:'roadmap',sourceId:'p',scopeType:'milestones',title:'Milestones'}],props={options,query:'',onQuery(){},onSnapshot(){},onInsert(){}};
+ let tree=h.render(mod.default,props),list=()=>nodes(tree).find(n=>n.type==='List');assert.equal(list().props.data.length,223);assert.equal(new Set(list().props.data.map(sourceKey)).size,223);assert.equal(list().props.initialNumToRender,8);const filters=()=>nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='artifact'));filters().props.onChange('artifact');tree=h.render(mod.default,props);assert.equal(list().props.data.length,1);assert.equal(list().props.data[0].sourceType,'risk');filters().props.onChange('task');tree=h.render(mod.default,props);assert.equal(list().props.data.length,220);h.unmount();
+});
+
+test('a virtualized source sheet owns its scrolling and does not dismiss when the list is swiped',()=>{
+ const {screenHarness}=require('../helpers/screen-harness.cjs'),h=screenHarness('src/ui/uiLayout.js',{});let closed=0;
+ const tree=h.render('Sheet',{visible:true,title:'Sources',compact:true,scrollable:false,onClose:()=>closed++}),panel=nodes(tree).find(n=>n.props.onAccessibilityEscape),body=nodes(tree).find(n=>n.props.ref&&n.type==='View');assert.equal(nodes(tree).some(n=>n.type==='ScrollView'),false);assert.equal(panel.props.onTouchStart,undefined);body.props.ref.current={};assert.doesNotThrow(()=>tree.props.onShow());assert.equal(closed,0);panel.props.onAccessibilityEscape();assert.equal(closed,1);
+});
+
+test('a wide diagram opens on its actual root rather than an empty corner of its container',()=>{
+ const o={x:-100,y:50,width:12000,height:6000},value={scale:1,scene:{items:[{t:'rect',nodeId:'w0',x:5900,y:16,w:140,h:58}]}},pose=readablePose([o],{width:360,height:600},value),root=value.scene.items[0];assert.ok(pose.scale>=.85);assert.equal(Math.round((o.y+root.y)*pose.scale+pose.y),80);const screenX=(o.x+root.x)*pose.scale+pose.x;assert.ok(screenX>=0&&screenX+root.w*pose.scale<=360);
+});

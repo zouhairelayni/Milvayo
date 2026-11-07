@@ -1,0 +1,10 @@
+{
+  "text": "\uf18b\n\uf170\n\uf17d\n\uf144\n\uf11b\n\uf127\n\uf161\n\uf12d\n\uf21b\n\uf1ec\n\uf1d6\n\uf20a\n\uf19d\n\uf15a\n\uf170\n\uf18b\n\uf178\n\uf150\n\uf1bd\n\uf100\n\uf123\n\uf1d3\n\uf145\n\uf19c\n\uf1d0\n\uf1c0\nNew task\nNorthstar Studio\nSaturday, Nov 7 \u00b7 Workspace overview\n\uf1c0\nNew task\nNext seven days\nSa\n31\nSu\n1\nMo\n2\nTu\n3\nWe\n4\nTh\n5\nFr\n6\nSa\n7\nSu\n8\nMo\n9\nTu\n10\nWe\n11\nTh\n12\nFr\n13\nSa\n14\nSu\n15\nMo\n16\nTu\n17\nWe\n18\nTh\n19\nFr\n20\nProject pulse\n9 tasks\n9\nproject tasks\n22%\nweighted progress\n3\n2\n2\n2\nBacklog\nIn progress\nValidation\nDone\n\uf102\nNeeds attention\n0\n\uf130\n\uf127\nNext due\n0\n\uf130\nDue schedule\nTasks due over the next seven days\n0\n1\nS\nS\nM\nT\nW\nT\nF\nDue\nDone tasks due\nRelease readiness\nFoundation v0.1\n\uf117\nOpen releases\n\uf137\nRelease main SHA recorded\n\uf137\nLinked tasks completed and verified\n\uf137\nAll linked tasks have merge checkpoints\n\uf137\nAcceptance checks passed with evidence\n\uf12c\nNo incomplete dependency prerequisites\nYour focus\n\uf117\nAll tasks\n\uf117\nImplement workspace snapshots\nIn progress\n \u00b7 Solo operator\n\uf117\nCheck document permissions and data integrity\nValidation\n \u00b7 Solo operator\n\uf117\nAdd testing evidence timeline\nBacklog\n \u00b7 Solo operator\n\uf117\nDocument integration test gates\nBacklog\n \u00b7 Solo operator\n\uf117\nImplement restore rehearsal\nValidation\n \u00b7 Solo operator\nDelivery stages\nDevelopment\n4\nTesting\n4\nProduction\n1\n\uf1d6\nEvidence matters\n3 of 5 acceptance checks passed\n\uf117\nSkip\nPlan on a board\nMove cards between stages and keep every task in view\nSee the schedule\nBars, dependencies and today on one timeline\nShip with checks\nGate each release on acceptance checks you can verify\nNext",
+  "width": 500,
+  "height": 701,
+  "scope": "Read-only DOM observation before screenshot metrics override; live app reached first-run tour. Canvas runtime interactions not exercised.",
+  "screenshotViewport": {
+    "width": 390,
+    "height": 844
+  }
+}

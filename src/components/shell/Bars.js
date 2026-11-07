@@ -35,7 +35,7 @@ function CanvasHeader({controls}) {
  const {c}=useTheme(),[sideWidth,setSideWidth]=useState(96);
  return <View style={{flexDirection:'row',alignItems:'center',paddingHorizontal:12,paddingVertical:8,minHeight:60,backgroundColor:c.bg}}>
   <View style={{width:sideWidth,alignItems:'flex-start'}}><IconBtn icon="chevron-left" label="Go back" onPress={controls.onBack}/></View>
-  <T size={18} weight="600" numberOfLines={1} style={{flex:1,minWidth:0,textAlign:'center'}}>{controls.title}</T>
+  <T size={18} weight="600" numberOfLines={2} style={{flex:1,minWidth:0,textAlign:'center'}}>{controls.title}</T>
   <View style={{width:sideWidth,alignItems:'flex-end'}}><View onLayout={e=>{const width=Math.max(44,Math.ceil(e.nativeEvent.layout.width));setSideWidth(old=>old===width?old:width);}} style={{flexDirection:'row',alignSelf:'flex-end'}}>{controls.trailing}</View></View>
  </View>;
 }

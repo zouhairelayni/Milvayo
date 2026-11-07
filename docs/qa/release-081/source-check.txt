@@ -1,0 +1,7 @@
+{
+  "files": 252,
+  "unboundIdentifiers": [],
+  "unusedImports": [],
+  "compatibilityImports": 13,
+  "forwardWorkletCaptures": []
+}

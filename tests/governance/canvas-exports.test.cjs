@@ -20,3 +20,8 @@ test('linked WBS uses canonical orientation-aware geometry and source updates wh
  const edited=model.makeProject({...p,governance:{...p.governance,wbs:p.governance.wbs.map(n=>n.id==='w1'?{...n,name:'Changed scope'}:n)}});assert.notEqual(scene.objectScene(o,edited,'scope').scene,first.scene);
  const frozen=canvas.normalizeBoard({...b,objects:[{...raw,sourceLink:captureSource(p,link,now)}]},p.id).objects[0];assert.ok(scene.objectScene(frozen,edited,'scope').scene.items.some(i=>i.s==='Scope'));
 });
+
+test('text color and frame border choices affect exported geometry, while unrelated object scenes retain identity',()=>{
+ const p=model.makeProject({id:'p'}),board=canvas.createBoard({id:'b',projectId:'p',now});const objects=['text','frame','note'].map((type,i)=>canvas.createObject({id:type,type,boardId:board.id,text:'Choice '+type,x:i*280,color:'#80A7EF',now}));const b=canvas.normalizeBoard({...board,objects},p.id),before=b.objects.map(o=>scene.objectScene(o,p,'colors'));
+ assert.ok(before[0].scene.items.some(i=>i.t==='text'&&i.fill==='#80A7EF'));assert.equal(before[1].scene.items[0].stroke,'#80A7EF');const next=canvas.changeBoard(b,{type:'patch',id:'text',patch:{color:'#E98B7E'}},now);assert.equal(scene.objectScene(next.objects[1],p,'colors'),before[1]);assert.equal(scene.objectScene(next.objects[2],p,'colors'),before[2]);assert.ok(sceneToSvg(scene.exportScene(next,p,'colors'),{ink:'#fff',surface:'#111',muted:'#999'}).includes('#E98B7E'));
+});

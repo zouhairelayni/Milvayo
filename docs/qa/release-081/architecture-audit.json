@@ -1,0 +1,140 @@
+{
+  "scope": "Static source graph, including lazy requires and platform alternatives; not runtime or native memory profiling",
+  "modules": 252,
+  "emptyUIHandlers": [
+    {
+      "file": "src/diagnostics/DiagnosticsPanel.js",
+      "line": 46,
+      "handler": "onChangeText"
+    },
+    {
+      "file": "src/screens/governance/pm/PmRisks.js",
+      "line": 153,
+      "handler": "onToggle"
+    },
+    {
+      "file": "src/screens/workspace/Backup.js",
+      "line": 211,
+      "handler": "onChange"
+    }
+  ],
+  "emptyCatches": [
+    {
+      "file": "src/diagnostics/monitor.js",
+      "line": 38
+    },
+    {
+      "file": "src/diagnostics/monitor.js",
+      "line": 92
+    },
+    {
+      "file": "src/diagnostics/monitor.js",
+      "line": 98
+    },
+    {
+      "file": "src/diagnostics/monitor.js",
+      "line": 99
+    },
+    {
+      "file": "src/diagnostics/monitor.js",
+      "line": 137
+    },
+    {
+      "file": "src/domain/governanceCore.cjs",
+      "line": 25
+    },
+    {
+      "file": "src/governance/diagramPng.native.js",
+      "line": 48
+    },
+    {
+      "file": "src/governance/diagramPng.native.js",
+      "line": 49
+    },
+    {
+      "file": "src/store/backupJobCore.cjs",
+      "line": 78
+    },
+    {
+      "file": "src/store/readyBackupFiles.js",
+      "line": 49
+    },
+    {
+      "file": "src/store/readyBackupFiles.js",
+      "line": 52
+    },
+    {
+      "file": "src/store/readyBackupFiles.js",
+      "line": 81
+    },
+    {
+      "file": "src/ui/uiBase.js",
+      "line": 25
+    }
+  ],
+  "staticDependencyCycles": [],
+  "largestModules": [
+    {
+      "file": "src/screens/timeline/Timeline.js",
+      "lines": 1004
+    },
+    {
+      "file": "src/screens/board/Board.js",
+      "lines": 691
+    },
+    {
+      "file": "src/timeline/gantt.cjs",
+      "lines": 373
+    },
+    {
+      "file": "src/governance/pm.js",
+      "lines": 360
+    },
+    {
+      "file": "src/screens/tasks/TaskSheet.js",
+      "lines": 356
+    },
+    {
+      "file": "src/app/ModernApp.js",
+      "lines": 346
+    },
+    {
+      "file": "src/components/shell/Menus.js",
+      "lines": 343
+    },
+    {
+      "file": "src/screens/delivery/Delivery.js",
+      "lines": 313
+    },
+    {
+      "file": "src/store/store.js",
+      "lines": 302
+    },
+    {
+      "file": "src/screens/workspace/Workspace.js",
+      "lines": 291
+    },
+    {
+      "file": "src/screens/workspace/Backup.js",
+      "lines": 283
+    },
+    {
+      "file": "src/governance/diagramScene.cjs",
+      "lines": 273
+    },
+    {
+      "file": "src/board/boardGesture.native.js",
+      "lines": 259
+    },
+    {
+      "file": "src/screens/tasks/Tasks.js",
+      "lines": 227
+    },
+    {
+      "file": "src/screens/canvas/CanvasEditor.js",
+      "lines": 225
+    }
+  ],
+  "typeScriptFiles": [],
+  "tsconfigPresent": false
+}

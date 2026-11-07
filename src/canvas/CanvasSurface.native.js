@@ -52,7 +52,7 @@ export default function CanvasSurface({board,project,scope,selected,mode,initial
    else if(resize){kind.value='resize';drag.value={kind:'resize',id:resize.id,ids:[resize.id],boxes:[{x:resize.x,y:resize.y,width:resize.width,height:resize.height}],dx:0,dy:0};}
    else if(mode==='draw'||mode==='erase'){kind.value=mode;stroke.value=[worldPoint(e.x,e.y,pose.value)];}
    else if(mode==='select'&&hit&&!hit.locked){const ids=movingIds(objects,selected.indexOf(hit.id)>=0?selected:[hit.id]);let locked=false;for(let i=0;i<objects.length;i++)if(ids.indexOf(objects[i].id)>=0&&objects[i].locked)locked=true;
-    if(!locked){kind.value='move';drag.value={kind:'move',ids,boxes:objects.filter(o=>ids.indexOf(o.id)>=0).map(o=>({x:o.x,y:o.y,width:o.width,height:o.height})),dx:0,dy:0};scheduleOnRN(select,hit.id);}else kind.value='pan';
+    if(!locked){kind.value='move';drag.value={kind:'move',ids,boxes:objects.filter(o=>ids.indexOf(o.id)>=0).map(o=>({x:o.x,y:o.y,width:o.width,height:o.height})),dx:0,dy:0};if(selected.indexOf(hit.id)<0)scheduleOnRN(select,hit.id);}else kind.value='pan';
    }else kind.value='pan';
   },
   onUpdate:e=>{if(wait.value||pinching.value||e.numberOfPointers!==1)return;

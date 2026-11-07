@@ -1,0 +1,18 @@
+{
+  "tests": 945,
+  "passed": 945,
+  "failed": 0,
+  "skipped": 0,
+  "version": "0.8.1",
+  "androidVersionCode": 91,
+  "iosBuildNumber": "91",
+  "branch": "work",
+  "screenshots": 20,
+  "nativeRuntime": "Not run",
+  "fastRefresh": "Not run",
+  "liveWeb": "Limited startup/tour smoke; unresolved SVG/TourArtwork console error in saved log; Canvas interactions Not run",
+  "committed": true,
+  "pushed": false,
+  "deployed": false,
+  "checkpointAuthorization": "Owner explicitly requested stage and commit 0.8.1; physical-device gates remain Not run. Actual SHA is recorded by Git history."
+}

@@ -67,6 +67,11 @@ function normalizeBoard(raw,projectId){
  freeze(board);validatedBoards.add(board);return board;
 }
 function normalizeBoards(raw,projectId){const all=list(raw??[],50,'Canvas boards').map(b=>normalizeBoard(b,projectId));unique(all,'board');return all;}
+// A whole-project copy carries its sources with it; standalone board import retains its stricter cross-project checks.
+function rehomeBoards(boards,projectId,taskIds){return (boards||[]).map(board=>normalizeBoard({...board,projectId,objects:board.objects.map(o=>{
+ if(!o.sourceLink)return o;const link=o.sourceLink;
+ return {...o,sourceLink:{...link,projectId,...(link.mode==='snapshot'?{originProjectId:link.originProjectId||link.projectId}:link.sourceType==='task'&&taskIds?{sourceId:taskIds.get(link.sourceId)||link.sourceId}:['project','roadmap','taskDiagram'].includes(link.sourceType)?{sourceId:projectId}:{})}};
+ })},projectId));}
 function createBoard({id,projectId,title='Untitled canvas',now}){return normalizeBoard({id,projectId,title,ownerId:LOCAL_OWNER,schemaVersion:1,revision:0,createdAt:now,updatedAt:now,archivedAt:null,viewport:{x:32,y:32,scale:1},objects:[],connectors:[],threads:[]},projectId);}
 function createObject({id,boardId,type='note',x=0,y=0,text:body='',now,...extra}){return {id,boardId,type,x,y,width:240,height:144,zIndex:0,locked:false,groupId:'',text:body,createdAt:now,updatedAt:now,...extra};}
 function assertAccess(board,projectId,actor=LOCAL_OWNER){if(board.projectId!==projectId||board.ownerId!==actor||actor!==LOCAL_OWNER)throw Error('Canvas access unavailable');}
@@ -78,6 +83,8 @@ function changeBoard(board,command,now,actor=LOCAL_OWNER){
   case 'add':next.objects=[...board.objects,...command.objects];break;
   case 'patch':{const old=editable(command.id),patch={...command.patch};if(old.type==='draw'&&('width' in patch||'height' in patch)&&!('points' in patch))patch.points=old.points.map(p=>({x:p.x*(patch.width??old.width)/old.width,y:p.y*(patch.height??old.height)/old.height}));next.objects=board.objects.map(o=>o.id===command.id?{...o,...patch,id:o.id,boardId:board.id,type:o.type,createdAt:o.createdAt,updatedAt:now}:o);break;}
   case 'lock':find(command.id);next.objects=board.objects.map(o=>o.id===command.id?{...o,locked:command.locked===true,updatedAt:now}:o);break;
+  case 'ungroup':{const target=editable(command.id);const affected=board.objects.filter(o=>o.id===target.id&&o.groupId||o.groupId===target.id);affected.forEach(o=>editable(o.id));const ids=new Set(affected.map(o=>o.id));next.objects=board.objects.map(o=>ids.has(o.id)?{...o,groupId:'',updatedAt:now}:o);break;}
+  case 'layer':{const target=editable(command.id),others=[...board.objects].filter(o=>o.id!==target.id).sort((a,b)=>a.zIndex-b.zIndex),ordered=command.front?[...others,target]:[target,...others];next.objects=ordered.map((o,zIndex)=>o.zIndex===zIndex?o:{...o,zIndex,updatedAt:now});break;}
   case 'move':{
    chosen.forEach(editable);let grew=true;while(grew){grew=false;board.objects.forEach(o=>{if(chosen.has(o.groupId)&&!chosen.has(o.id)){chosen.add(o.id);grew=true;}});}chosen.forEach(editable);
    next.objects=board.objects.map(o=>chosen.has(o.id)?{...o,x:o.x+command.dx,y:o.y+command.dy,updatedAt:now}:o);break;
@@ -123,4 +130,4 @@ function selectionBoard(board,ids){
 }
 function exportBoard(board){return JSON.stringify({format:'milvayo.canvas.v1',board:normalizeBoard(board,board.projectId)});}
 function importBoard(text,options){if(typeof text!=='string'||tooBig(text,MAX_BYTES+10000))throw Error('Canvas import exceeds 2 MB');const raw=JSON.parse(text.replace(/^\uFEFF/,''));if(raw.format!=='milvayo.canvas.v1')throw Error('Unsupported Canvas backup');return duplicateBoard(raw.board,options);}
-module.exports={VERSION,LOCAL_OWNER,MAX_BYTES,TYPES,SOURCE_TYPES,normalizeBoard,normalizeBoards,createBoard,createObject,assertAccess,changeBoard,contentOf,saveBoard,saveViewport,deleteBoard,duplicateBoard,exportBoard,importBoard,selectionBoard,viewport,projection};
+module.exports={VERSION,LOCAL_OWNER,MAX_BYTES,TYPES,SOURCE_TYPES,normalizeBoard,normalizeBoards,rehomeBoards,createBoard,createObject,assertAccess,changeBoard,contentOf,saveBoard,saveViewport,deleteBoard,duplicateBoard,exportBoard,importBoard,selectionBoard,viewport,projection};

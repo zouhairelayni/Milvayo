@@ -1,0 +1,18 @@
+// /tests/helpers/canvas-v2-benchmark.cjs
+'use strict';
+const fs=require('node:fs'),{performance}=require('node:perf_hooks'),{load}=require('./diagram-harness.cjs'),{setup}=require('./canvas-editor-harness.cjs');
+const model=require('../../src/domain/model.cjs'),canvas=require('../../src/domain/canvas.cjs'),{diagramCache}=require('../../src/governance/diagramCache.cjs'),{hitObject,resizeBox,previewBox}=require('../../src/canvas/interaction.cjs');
+const pm=load('src/governance/pm.js',{'./data':{labourCosts:()=>[],money:String}}),scene=load('src/canvas/scene.js',{'../governance/pm':pm});
+function sample(fn,n=30){const values=[];for(let i=0;i<n;i++){const at=performance.now();fn();values.push(performance.now()-at);}values.sort((a,b)=>a-b);return {samples:n,p50Ms:values[Math.floor(n*.5)],p95Ms:values[Math.min(n-1,Math.floor(n*.95))]};}
+const now='2026-11-07T04:00:00.000Z',cases=[];
+for(const count of [40,200]){
+ const project=model.makeProject({id:'p'+count,governance:{wbs:Array.from({length:count},(_,i)=>({id:'w'+i,parent:i?'w'+Math.floor((i-1)/5):null,name:'Work '+i,hours:1}))}}),base=canvas.createBoard({id:'b'+count,projectId:project.id,now}),board=canvas.changeBoard(base,{type:'add',objects:[...Array.from({length:count},(_,i)=>canvas.createObject({id:'n'+i,boardId:base.id,text:'Decision '+i,x:i%10*280,y:Math.floor(i/10)*180,now})),canvas.createObject({id:'wbs',boardId:base.id,type:'linked',sourceLink:{projectId:project.id,sourceType:'wbs',sourceId:'w0',mode:'live',view:'tree'},width:1200,height:600,now})]},now),scope='v2-bench:'+count;
+ const start=performance.now(),before=board.objects.map(o=>scene.objectScene(o,project,scope)),initial=performance.now()-start,cacheBefore=diagramCache.stats();
+ const reopened=sample(()=>board.objects.forEach(o=>scene.objectScene(o,project,scope))),cacheAfter=diagramCache.stats(),colored=canvas.changeBoard(board,{type:'patch',id:'n0',patch:{color:'#83D8B4'}},now),after=colored.objects.map(o=>scene.objectScene(o,project,scope));
+ cases.push({objects:board.objects.length,wbsNodes:count,initialProjectionMs:initial,cachedProjection:reopened,layoutCalculationsBefore:cacheBefore.calculations,layoutCalculationsAfter:cacheAfter.calculations,colorChange:{changedSceneIdentities:after.filter((value,i)=>value!==before[i]).length,retainedSceneIdentities:after.filter((value,i)=>value===before[i]).length},selectionHitTest:sample(()=>hitObject(board.objects,80,80,{scale:1,x:0,y:0})),dragPreview:sample(()=>previewBox(board.objects[0],{kind:'move',ids:['n0'],dx:8,dy:8})),resizePreview:sample(()=>resizeBox(board.objects[0],8,8)),backupSerialization:sample(()=>canvas.exportBoard(board)),backupBytes:Buffer.byteLength(canvas.exportBoard(board))});
+}
+const editor=setup(),initialStart=performance.now();editor.render();const initialEditor=performance.now()-initialStart;
+for(let i=0;i<20;i++)editor.add();
+let which=false;const callbacks={initialEditorHarnessRenderMs:initialEditor,toolSwitchAndHarnessRender:sample(()=>{editor.tool(which?'draw':'select');which=!which;editor.render();}),objectSelectionAndHarnessRender:sample(()=>{editor.part('Surface').onSelect(editor.board.objects[0].id);editor.render();})};editor.h.unmount();
+const report={measurement:'Host Node only. Scene geometry, pure previews and serialization; editor hook/callback harness excludes child rendering, actual React scheduling, disk IO, GPU and Android frame pacing. No native FPS/latency claim.',node:process.version,cases,callbacks,heapObservation:{hostHeapUsedBytes:process.memoryUsage().heapUsed,nativeHeap:'Not run',leakTrend:'Not measured; one bounded run is not a memory-leak test'}};
+fs.writeFileSync('docs/qa/release-081/host-measurements.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));

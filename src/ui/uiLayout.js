@@ -12,12 +12,13 @@ import BackSurface from '../app/navigation/BackSurface';
 import {useBackDismiss} from '../app/navigation/useBackNavigation';
 
 // Bottom sheet on phones, right-hand drawer on wide screens.
-export function Sheet({ visible, onClose, title, children, footer, showNotice = true, compact = false }) {
+export function Sheet({ visible, onClose, title, children, footer, showNotice = true, compact = false, scrollable = true }) {
   useBackDismiss(visible,onClose);
   const { c, mode } = useTheme();
   const wide = useWide();
   const touch = useRef(null);
   const bodyRef = useRef(null);
+  const Body = scrollable ? ScrollView : View;
   const scrollY = useRef(0);
   const startSwipe = e => { const t=e.nativeEvent.touches?.[0]; touch.current=t?{x:t.pageX,y:t.pageY,scrollY:scrollY.current}:null; };
   const finishSwipe = e => {
@@ -28,12 +29,12 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
     if (dy>110 && dy>Math.abs(dx)*1.4) onClose();
   };
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} onShow={() => { scrollY.current=0; bodyRef.current?.scrollTo({y:0,animated:false}); }}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} onShow={() => { scrollY.current=0; bodyRef.current?.scrollTo?.({y:0,animated:false}); }}>
       <BackSurface><SafeAreaProvider style={{ flex: 1 }}>
       <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
       <KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':'height'} style={{flex:1}}><View style={{ flex: 1, flexDirection: wide ? 'row' : 'column', justifyContent: compact && wide ? 'center' : 'flex-end', alignItems: compact && wide ? 'center' : undefined, backgroundColor: mode !== 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(27,25,21,0.35)' }}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Dismiss ${title || 'sheet'}`} onPress={onClose} style={compact ? { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } : { flex: 1 }} />
-        <Reveal onTouchStart={startSwipe} onTouchEnd={finishSwipe} accessibilityViewIsModal onAccessibilityEscape={onClose}
+        <Reveal onTouchStart={scrollable?startSwipe:undefined} onTouchEnd={scrollable?finishSwipe:undefined} accessibilityViewIsModal onAccessibilityEscape={onClose}
           {...(Platform.OS === 'web' ? { role: 'dialog', 'aria-modal': true, 'aria-label': title || 'Dialog' } : {})}
           style={{
             width: compact && wide ? 420 : wide ? 560 : '100%',
@@ -52,12 +53,12 @@ export function Sheet({ visible, onClose, title, children, footer, showNotice = 
           }}
         >
           <View style={{alignItems:'center',paddingTop:9,paddingBottom:7}}><View accessibilityLabel="Swipe down to dismiss" style={{width:38,height:5,borderRadius:3,backgroundColor:c.faint,opacity:.65}} /></View>
-          <View style={{paddingHorizontal:20,paddingBottom:12,flexDirection:'row',alignItems:'center',gap:12}}>
+          <View onTouchStart={!scrollable?startSwipe:undefined} onTouchEnd={!scrollable?finishSwipe:undefined} style={{paddingHorizontal:20,paddingBottom:12,flexDirection:'row',alignItems:'center',gap:12}}>
             <T size={20} weight="600" accessibilityRole="header" style={{flex:1}}>{title}</T>
             <IconBtn icon="x" label={`Close ${title || 'sheet'}`} onPress={onClose}/>
           </View>
           {showNotice ? <View style={{ paddingHorizontal: 20, paddingTop: 8 }}><InlineNotice /></View> : null}
-          <ScrollView ref={bodyRef} style={compact ? { flexGrow: 0, flexShrink: 1 } : undefined} keyboardShouldPersistTaps="handled" scrollEventThrottle={16} onScroll={e=>{scrollY.current=e.nativeEvent.contentOffset.y;}} contentContainerStyle={{ padding: 20, paddingTop: 8, gap: 20, paddingBottom: 32 }}>{children}</ScrollView>
+          <Body ref={bodyRef} {...(scrollable ? {style:compact?{flexGrow:0,flexShrink:1}:undefined,keyboardShouldPersistTaps:'handled',scrollEventThrottle:16,onScroll:e=>{scrollY.current=e.nativeEvent.contentOffset.y;},contentContainerStyle:{padding:20,paddingTop:8,gap:20,paddingBottom:32}} : {style:{padding:20,paddingTop:8,paddingBottom:20,flexShrink:1}})}>{children}</Body>
           {footer ? (
             <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: c.line, flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>{footer}</View>
           ) : null}
