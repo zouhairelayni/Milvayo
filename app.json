@@ -2,7 +2,7 @@
   "expo": {
     "name": "Milvayo",
     "slug": "milvayo",
-    "version": "0.7.12",
+    "version": "0.7.13",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#071328",
@@ -24,12 +24,12 @@
         "monochromeImage": "./assets/adaptive-monochrome.png",
         "backgroundImage": "./assets/adaptive-background.png"
       },
-      "versionCode": 82
+      "versionCode": 83
     },
     "ios": {
       "bundleIdentifier": "com.milvayo.projects",
       "icon": "./assets/icon.png",
-      "buildNumber": "82"
+      "buildNumber": "83"
     },
     "icon": "./assets/icon.png",
     "extra": {

@@ -60,6 +60,7 @@ function treeScene(tree, dir = 'down') {
     return down ? { x: P + p.slot * (W + GX), y: P + p.d * (H + GY) } : { x: P + p.d * (W + GX), y: P + p.slot * (H + GY) };
   };
   const items = [];
+  const batches = [];
   const nodes = [];
   const visit = (n) => {
     nodes.push(n);
@@ -67,6 +68,7 @@ function treeScene(tree, dir = 'down') {
   };
   visit(tree);
 
+  const edgeIndexes = [];
   nodes.forEach((n) => {
     const a = at(n);
     n.children.forEach((ch) => {
@@ -74,10 +76,14 @@ function treeScene(tree, dir = 'down') {
       const d = down
         ? `M ${a.x + W / 2} ${a.y + H} V ${a.y + H + GY / 2} H ${b.x + W / 2} V ${b.y}`
         : `M ${a.x + W} ${a.y + H / 2} H ${a.x + W + GX / 2} V ${b.y + H / 2} H ${b.x}`;
+      const index = items.length;
       items.push(path(d, branchColor(ch), 1.6));
+      edgeIndexes.push(index);
     });
   });
+  const tiles = new Map();
   nodes.forEach((n) => {
+    const first = items.length;
     const { x, y } = at(n);
     const col = branchColor(n);
     const root = n.level === 0;
@@ -93,8 +99,18 @@ function treeScene(tree, dir = 'down') {
       const txt = n.code ? `${n.code}  ${n.name}` : n.name;
       items.push(label(x + 10, y + H / 2 + 4, clip(txt, Math.floor((W - 20) / 6.4)), 11.5, ink, solid ? '600' : '500', 'start'));
     }
+    const key = `${Math.floor(x / 768)}:${Math.floor(y / 512)}`;
+    let tile = tiles.get(key);
+    if (!tile) { tile = { indexes: [], bounds: { x: x - 4, y: y - 4, width: W + 8, height: H + 8 } }; tiles.set(key, tile); }
+    const right = Math.max(tile.bounds.x + tile.bounds.width, x + W + 4), bottom = Math.max(tile.bounds.y + tile.bounds.height, y + H + 4);
+    tile.bounds.x = Math.min(tile.bounds.x, x - 4); tile.bounds.y = Math.min(tile.bounds.y, y - 4);
+    tile.bounds.width = right - tile.bounds.x; tile.bounds.height = bottom - tile.bounds.y;
+    for (let i = first; i < items.length; i++) tile.indexes.push(i);
   });
+  if (edgeIndexes.length) batches.push({ indexes: edgeIndexes, bounds: { x: 0, y: 0, width: P * 2 + leaves * (W + GX) + (maxDepth + 1) * (W + GX), height: P * 2 + leaves * (H + GY) + (maxDepth + 1) * (H + GY) } });
+  batches.push(...tiles.values());
   return {
+    batches,
     width: down ? P * 2 + leaves * (W + GX) - GX : P * 2 + (maxDepth + 1) * (W + GX) - GX,
     height: down ? P * 2 + (maxDepth + 1) * (H + GY) - GY : P * 2 + leaves * (H + GY) - GY,
     items,

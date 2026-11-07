@@ -177,7 +177,7 @@ export default function PmWbs() {
       ) : null}
 
       {!empty ? <View style={{alignItems:'flex-end'}}><DiagramExports scene={scene} name={s.project.name} kind={view} getCSV={getCSV}/></View> : null}
-      {expanded && scene ? <DiagramPreview scene={scene} name={s.project.name} kind={view} nodes={nodes} rows={rows} getCSV={getCSV} onClose={()=>setExpanded(false)}/> : null}
+      {expanded && scene ? <DiagramPreview scene={scene} name={s.project.name} kind={view} direction={dir} onDirectionChange={setDir} nodes={nodes} rows={rows} getCSV={getCSV} onClose={()=>setExpanded(false)}/> : null}
     </View>
   );
 }

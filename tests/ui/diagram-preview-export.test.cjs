@@ -11,23 +11,25 @@ test('full-screen preview retains geometry, offers accessible compact controls, 
  const h=lifecycleHarness(),raw=fixture().map(n=>({...n,owner:'Owner',note:'Read the full specification'})),root=pm.buildTree(raw,'Studio'),rows=pm.flattenTree(root),scene=sceneFor('tree',root,'down');
  const priorities=[];let closed=0;
  const mod=load('src/governance/DiagramPreview.js',{
-  react:h.hooks,'react-native':{Modal:'Modal',View:'View',useWindowDimensions:()=>({width:320,height:844})},
+  react:h.hooks,'react-native':{Modal:'Modal',ScrollView:'ScrollView',View:'View',useWindowDimensions:()=>({width:320,height:844})},
   'react-native-safe-area-context':{SafeAreaProvider:'SafeAreaProvider',SafeAreaView:'SafeAreaView',useSafeAreaInsets:()=>({top:0,bottom:0,left:0,right:0})},
   'react-native-gesture-handler':{GestureHandlerRootView:'GestureHandlerRootView'},'../ui/ui':UI,'../ui/theme/theme':{useTheme:()=>({c:colors})},
   '../app/navigation/useBackNavigation':{useBackDismiss:(_v,_close,priority)=>priorities.push(priority)},'../app/navigation/BackSurface':{__esModule:true,default:'BackSurface'},
   '../ui/Reveal':{__esModule:true,default:'Reveal'},'../gestures/DiagramViewport':{__esModule:true,default:'DiagramViewport'},
   './wbsviews':{Scene:'Scene'},'./DiagramExports':{__esModule:true,default:'DiagramExports'},
  });
- const props={scene,name:'Studio',kind:'tree',nodes:raw,rows,getCSV:()=>'',onClose:()=>closed++},render=()=>h.render(mod.default,props);
+ const props={scene,name:'Studio',kind:'tree',nodes:raw,rows,getCSV:()=>'',direction:'down',onDirectionChange:value=>{props.direction=value;props.scene=sceneFor('tree',root,value);},onClose:()=>closed++},render=()=>h.render(mod.default,props);
  let tree=render();const viewport=()=>nodes(tree).find(n=>n.type==='DiagramViewport');
  assert.equal(viewport().props.scene,scene);assert.equal(viewport().props.fullScreen,true);assert.equal(viewport().props.scale,'fit');assert.ok(priorities.every(p=>p===20),'standard sheet priority preserves latest-layer ordering above parent sheets');
  for(const label of ['Fit diagram to screen','Reset diagram zoom','Zoom out diagram','Zoom in diagram','Close diagram preview'])assert.ok(control(tree,label),label);
  control(tree,'Reset diagram zoom').props.onPress();tree=render();assert.equal(viewport().props.scale,1);control(tree,'Zoom in diagram').props.onPress();tree=render();assert.equal(viewport().props.scale,1.25);
  viewport().props.onPose({scale:2,x:-200,y:-30});viewport().props.onZoom(2);tree=render();control(tree,'Zoom out diagram').props.onPress();tree=render();assert.equal(viewport().props.scale,1.6);
  control(tree,'Fit diagram to screen').props.onPress();tree=render();assert.equal(viewport().props.scale,'fit');
+ const direction=nodes(tree).find(n=>n.type==='Segmented');assert.equal(direction.props.value,'down');
+ direction.props.onChange('right');tree=render();assert.equal(viewport().props.scale,'fit');assert.notEqual(viewport().props.scene,scene);assert.match(viewport().props.resetKey,/right/);
  const body=nodes(tree).find(n=>n.props.onLayout);body.props.onLayout({nativeEvent:{layout:{width:280,height:500}}});tree=render();assert.equal(viewport().props.viewportHeight,500);
  viewport().props.children.props.onSelect('w1');tree=render();const sheet=nodes(tree).find(n=>n.type==='Sheet');assert.equal(sheet.props.visible,true);assert.equal(sheet.props.title,'Design');assert.match(text(sheet),/Owner/);assert.match(text(sheet),/Read the full specification/);
- sheet.props.onClose();tree=render();assert.equal(nodes(tree).some(n=>n.type==='Sheet'),false);control(tree,'Close diagram preview').props.onPress();assert.equal(closed,1);assert.equal(props.scene,scene);
+ sheet.props.onClose();tree=render();assert.equal(nodes(tree).some(n=>n.type==='Sheet'),false);control(tree,'Close diagram preview').props.onPress();assert.equal(closed,1);assert.equal(props.direction,'right');
 });
 
 function exportHarness({native=false,rasterize=async()=>new Blob(['png']),save=async()=>{},download=async()=>true}={}){
@@ -61,4 +63,14 @@ test('native export mounts its separate bounded source only on demand and captur
  const child=lifecycleHarness(),m=load('src/governance/DiagramExports.js',{...s.mocks,react:child.hooks},['CaptureSource'],{AbortController});
  const drawing=child.render(m.__test.CaptureSource,source.props),svg=nodes(drawing).find(n=>n.type==='Scene');svg.props.svgRef.current={toDataURL(){}};
  svg.props.onReady();svg.props.onReady();await pending;tree=s.render();assert.equal(rasterCalls,1);assert.equal(saves,1);assert.equal(nodes(tree).some(n=>typeof n.type==='function'&&n.type.name==='CaptureSource'),false);
+});
+
+test('native export completion announces politely without unsupported status roles; web retains status semantics',async()=>{
+ for(const native of [true,false]){
+  const s=exportHarness({native});let tree=s.render();control(tree,'Export work structure').props.onPress();tree=s.render();
+  await control(tree,'CSV').props.onPress();tree=s.render();
+  const feedback=nodes(tree).find(n=>n.type==='T'&&n.props.children==='Export prepared');assert.ok(feedback);
+  assert.equal(feedback.props.accessibilityRole,undefined);
+  assert.equal(feedback.props.accessibilityLiveRegion,native?'polite':undefined);assert.equal(feedback.props.role,native?undefined:'status');
+ }
 });

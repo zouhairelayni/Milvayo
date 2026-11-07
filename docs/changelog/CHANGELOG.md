@@ -1,3 +1,10 @@
+## v0.7.13 — Tree draw work, full-screen orientation and export feedback (2026-11-07)
+
+- Partition cached Tree primitives into stable spatial batches. Native camera worklets hide offscreen batches using display, preserving vectors, node inspection, complete exports and bounded viewport bitmaps. Add sampled UI frame-interval diagnostics at gesture completion; no per-frame React updates or JS reporting.
+- Share embedded Tree orientation with full-screen controls. Switching stays in the preview and fits the selected cached scene.
+- Repair native export completion: use polite live-region feedback, retaining web status semantics. Preserve failure/cancellation behavior.
+- Synchronize package/lock/Expo at 0.7.13, Android/iOS 83. No data migration or dependencies. Automated evidence and pending device acceptance: `docs/qa/release-0713/REPORT.md`.
+
 ## v0.7.12 — Cached project diagrams, full-screen preview and image export (2026-11-07)
 
 - Generate only the selected WBS diagram. Reuse bounded semantic-revision hierarchy, scene and primitive caches across Tree/Fishbone/Mind map switches and remounts, isolated by workspace/project and layout. Invalidate on displayed data; owner/note/task/budget changes do not rebuild vectors. Retain per-view zoom/pose without persisting UI state to backups.

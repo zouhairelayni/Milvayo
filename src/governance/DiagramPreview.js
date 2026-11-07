@@ -1,9 +1,9 @@
 // /src/governance/DiagramPreview.js
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Modal, View, useWindowDimensions } from 'react-native';
+import { Modal, ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ActionMenu, IconBtn, Sheet, T } from '../ui/ui';
+import { ActionMenu, IconBtn, Segmented, Sheet, T } from '../ui/ui';
 import { useTheme } from '../ui/theme/theme';
 import { useBackDismiss } from '../app/navigation/useBackNavigation';
 import BackSurface from '../app/navigation/BackSurface';
@@ -13,7 +13,7 @@ import { Scene } from './wbsviews';
 import DiagramExports from './DiagramExports';
 const { fitScale, constrainPose, pinchPose } = require('../gestures/diagramZoom.cjs');
 
-export default function DiagramPreview({ scene, name, kind, nodes, rows, getCSV, onClose }) {
+export default function DiagramPreview({ scene, name, kind, nodes, rows, getCSV, direction, onDirectionChange, onClose }) {
   const { c } = useTheme(), size = useWindowDimensions(), insets = useSafeAreaInsets();
   const [zoom, setZoom] = useState('fit'), [request, setRequest] = useState(0), [initialPose, setInitialPose] = useState(null), [selected, setSelected] = useState(null);
   const [measured, setMeasured] = useState(null);
@@ -47,12 +47,16 @@ export default function DiagramPreview({ scene, name, kind, nodes, rows, getCSV,
           <DiagramExports scene={scene} name={name} kind={kind} getCSV={getCSV}/>
           <IconBtn icon="x" label="Close diagram preview" onPress={onClose}/>
         </View>
+        {kind === 'tree' && onDirectionChange ? <ScrollView horizontal style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+          <Segmented options={[{ value: 'down', label: 'Top-down' }, { value: 'right', label: 'Left to right' }]} value={direction}
+            onChange={value => { if (value !== direction) { preset('fit'); setSelected(null); onDirectionChange(value); } }}/>
+        </ScrollView> : null}
         <View style={{ flex: 1, overflow: 'hidden' }} onLayout={event => {
           const {width, height} = event.nativeEvent.layout;
           if(width > 0 && height > 0 && (width !== measured?.width || height !== measured?.height)) setMeasured({width, height});
         }}>
           <DiagramViewport scene={scene} scale={zoom === 'fit' ? 'fit' : Number(zoom)} fullScreen viewportHeight={height}
-            initialPose={lastPose.current || initialPose} resetKey={`preview:${kind}:${request}`} onZoom={value => setZoom(String(value))} onPose={value => { lastPose.current = value; }}>
+            initialPose={lastPose.current || initialPose} resetKey={`preview:${kind}:${direction || ''}:${request}`} onZoom={value => setZoom(String(value))} onPose={value => { lastPose.current = value; }}>
             {diagram}
           </DiagramViewport>
           <Reveal distance={4} duration={150} style={{ position: 'absolute', bottom: 16, alignSelf: 'center', maxWidth: '96%' }}>

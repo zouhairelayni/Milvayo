@@ -76,7 +76,7 @@ export default function DiagramExports({ scene, getCSV, name, kind }) {
       </View></View>
       {busy ? <T accessibilityRole="progressbar" muted>Preparing export…</T> : null}
       {error ? <T accessibilityRole="alert" color={c.danger}>{error}</T> : null}
-      {feedback ? <T accessibilityRole="status" color={c.success || c.accentText}>{feedback}</T> : null}
+      {feedback ? <T {...(Platform.OS === 'web' ? { role: 'status' } : { accessibilityLiveRegion: 'polite' })} color={c.success || c.accentText}>{feedback}</T> : null}
     </Sheet>
   </>;
 }

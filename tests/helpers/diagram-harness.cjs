@@ -54,7 +54,9 @@ function gestureHarness(file, host, drawing, exportName = 'default') {
       },
       useDerivedValue: fn => ({ get value() { return fn(); } }),
       useAnimatedStyle: fn => fn,
+      useFrameCallback: () => {},
     },
+    '../diagnostics/monitor':{diagnosticMonitor:{recordAction(){}}},
     'react-native-worklets': { scheduleOnRN: (fn, ...args) => fn(...args) },
   }, [], {requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id)})[exportName];
   const bindRefs = tree => {

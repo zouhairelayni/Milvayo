@@ -1,0 +1,123 @@
+{
+  "measurement": "Host Node layout/cache and modeled native draw eligibility, not device frame time or FPS",
+  "node": "v24.21.0",
+  "viewport": {
+    "width": 390,
+    "height": 440
+  },
+  "pose": {
+    "scale": 1,
+    "x": 0,
+    "y": 0
+  },
+  "results": [
+    {
+      "nodes": 40,
+      "direction": "down",
+      "firstLookupMs": 4.79553900000019,
+      "cachedLookupSamplesMs": [
+        0.06046199999991586,
+        0.00776899999982561,
+        0.00957700000026307,
+        0.004575999999815394
+      ],
+      "primitives": 159,
+      "textBeforeCulling": 80,
+      "textAfterCulling": 12,
+      "batches": 8,
+      "cache": {
+        "hits": 5,
+        "misses": 1,
+        "evictions": 0,
+        "calculations": {
+          "tree": 1
+        },
+        "entries": 1,
+        "estimatedBytes": 38560,
+        "maxEntries": 12,
+        "maxBytes": 8388608
+      }
+    },
+    {
+      "nodes": 40,
+      "direction": "right",
+      "firstLookupMs": 0.608346999999867,
+      "cachedLookupSamplesMs": [
+        0.013193000000228494,
+        0.0052690000002257875,
+        0.0036159999999654246,
+        0.003306999999949767
+      ],
+      "primitives": 119,
+      "textBeforeCulling": 40,
+      "textAfterCulling": 15,
+      "batches": 4,
+      "cache": {
+        "hits": 5,
+        "misses": 1,
+        "evictions": 0,
+        "calculations": {
+          "tree": 1
+        },
+        "entries": 1,
+        "estimatedBytes": 29024,
+        "maxEntries": 12,
+        "maxBytes": 8388608
+      }
+    },
+    {
+      "nodes": 250,
+      "direction": "down",
+      "firstLookupMs": 6.0383459999998195,
+      "cachedLookupSamplesMs": [
+        0.029808000000230095,
+        0.005999999999858119,
+        0.004269000000022061,
+        0.0038079999999354186
+      ],
+      "primitives": 999,
+      "textBeforeCulling": 500,
+      "textAfterCulling": 12,
+      "batches": 41,
+      "cache": {
+        "hits": 5,
+        "misses": 1,
+        "evictions": 0,
+        "calculations": {
+          "tree": 1
+        },
+        "entries": 1,
+        "estimatedBytes": 239946,
+        "maxEntries": 12,
+        "maxBytes": 8388608
+      }
+    },
+    {
+      "nodes": 250,
+      "direction": "right",
+      "firstLookupMs": 7.023731000000225,
+      "cachedLookupSamplesMs": [
+        0.06500000000005457,
+        0.00676900000007663,
+        0.0038079999999354186,
+        0.003153999999994994
+      ],
+      "primitives": 749,
+      "textBeforeCulling": 250,
+      "textAfterCulling": 0,
+      "batches": 28,
+      "cache": {
+        "hits": 5,
+        "misses": 1,
+        "evictions": 0,
+        "calculations": {
+          "tree": 1
+        },
+        "entries": 1,
+        "estimatedBytes": 181944,
+        "maxEntries": 12,
+        "maxBytes": 8388608
+      }
+    }
+  ]
+}

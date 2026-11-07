@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { diagnosticMonitor } from '../diagnostics/monitor';
 const { constrainPose, pinchPose } = require('./diagramZoom.cjs');
 
 export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom, onPose, initialPose, renderViewport, children }) {
@@ -19,6 +20,13 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
   const needsLift = useSharedValue(false);
   const panStarted = useSharedValue(false);
   const panStart = useSharedValue(initial);
+  const frames = useSharedValue({ count: 0, max: 0, slow: 0 });
+  useFrameCallback(frame => {
+    if (!(panStarted.value || pinching.value) || frame.timeSincePreviousFrame == null) return;
+    const gap = frame.timeSincePreviousFrame, old = frames.value;
+    frames.value = { count: old.count + 1, max: Math.max(old.max, gap), slow: old.slow + (gap > 32 ? 1 : 0) };
+  });
+  const reportFrames = useCallback(sample => diagnosticMonitor.recordAction(`diagram UI frame intervals: ${sample.count} samples; max ${sample.max.toFixed(1)}ms; over32ms ${sample.slow}; not native FPS`), []);
   const callback = useRef({onZoom,onPose});
   callback.current = {onZoom,onPose};
   const reportZoom = useCallback(value => { if (!Number.isFinite(value.scale)) return; setCommittedScale(value.scale); callback.current.onZoom?.(value.scale); callback.current.onPose?.(value); }, []);
@@ -34,6 +42,7 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
 
   const pinch = usePinchGesture({
     onActivate: e => {
+      frames.value = { count: 0, max: 0, slow: 0 };
       start.value = pose.value;
       anchor.value = { x: e.focalX, y: e.focalY };
       factor.value = e.scale > 0 ? e.scale : 1;
@@ -51,7 +60,7 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
       pose.value = pinchPose(start.value, e.scale / factor.value, anchor.value, { x: e.focalX, y: e.focalY }, bounds);
     },
     onFinalize: () => {
-      if (pinching.value) scheduleOnRN(reportZoom, pose.value);
+      if (pinching.value) { scheduleOnRN(reportZoom, pose.value); scheduleOnRN(reportFrames, frames.value); }
       pinching.value = false;
     },
     onTouchesUp: e => { if (e.numberOfTouches === 0) needsLift.value = false; },
@@ -67,13 +76,14 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
     activeOffsetY: freePan ? [-6, 6] : [-1000000, 1000000], failOffsetY: freePan ? [-1000000, 1000000] : [-8, 8],
     onActivate: () => {
       panStarted.value = !needsLift.value && !pinching.value;
+      if (panStarted.value) frames.value = { count: 0, max: 0, slow: 0 };
       panStart.value = pose.value;
     },
     onUpdate: e => {
       if (!panStarted.value || needsLift.value || pinching.value || e.numberOfPointers !== 1) return;
       pose.value = constrainPose({ scale: pose.value.scale, x: panStart.value.x + e.translationX, y: panStart.value.y + e.translationY }, bounds);
     },
-    onFinalize: () => { if(panStarted.value) scheduleOnRN(reportPose, pose.value); panStarted.value = false; },
+    onFinalize: () => { if(panStarted.value) { scheduleOnRN(reportPose, pose.value); scheduleOnRN(reportFrames, frames.value); } panStarted.value = false; },
     onTouchesUp: e => { if (e.numberOfTouches === 0) needsLift.value = false; },
     onTouchesCancel: () => { needsLift.value = false; },
   });

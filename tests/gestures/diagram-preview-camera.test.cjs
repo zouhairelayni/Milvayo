@@ -12,7 +12,8 @@ test('full-screen Fit contains an entire very wide tree and centers spare space 
 });
 test('native camera uses only viewport bitmap dimensions and UI animated viewBox values, never scene-size views',()=>{
  let camera;const mod=load('src/governance/DiagramSvg.native.js',{
-  'react-native-svg':{__esModule:true,default:'Svg'},
+  react:{Children:require('react').Children,useMemo:fn=>fn()},
+  'react-native-svg':{__esModule:true,default:'Svg',G:'G'},
   'react-native-reanimated':{__esModule:true,default:{createAnimatedComponent:()=> 'AnimatedSvg'},useAnimatedProps:fn=>{camera=fn;return fn();}},
  },['CameraSvg']);
  const shared={value:{scale:2,x:-100,y:-50},get(){return this.value;}},children='cached vector nodes';
@@ -38,4 +39,15 @@ test('web full-screen wheel zoom and mouse pan preserve pose; embedded scroll ha
  let prevented=false;handlers.get('wheel')({deltaX:0,deltaY:-10,clientX:120,clientY:120,preventDefault(){prevented=true;}});
  assert.equal(prevented,true);assert.ok(reports.at(-1).scale>1);const pose=reports.at(-1);
  h.cleanup();assert.equal(handlers.size,0);h.render({bounds,initialScale:1,initialPose:pose,resetKey:'return'});assert.match(stage.style.transform,/scale\(1\.105/);h.cleanup();
+});
+test('native Tree batch display follows the live camera without remounting children or using opacity bitmaps',()=>{
+ let update;const mod=load('src/governance/DiagramSvg.native.js',{
+  react:{Children:require('react').Children,useMemo:fn=>fn()},'react-native-svg':{__esModule:true,default:'Svg',G:'G'},
+  'react-native-reanimated':{__esModule:true,default:{createAnimatedComponent:component=>'Animated'+component},useAnimatedProps:fn=>{update=fn;return fn();}},
+ },['CameraBatch']);
+ const pose={value:{scale:1,x:0,y:0},get(){return this.value;}};
+ const child={cached:true},tree=mod.__test.CameraBatch({bounds:{x:2000,y:0,width:140,height:58},pose,viewport:{width:390,height:440},children:child});
+ assert.equal(tree.props.children,child);assert.equal(update().display,'none');assert.equal(update().opacity,undefined);
+ pose.value={scale:1,x:-1900,y:0};assert.equal(update().display,'inline');
+ pose.value={scale:.1,x:0,y:0};assert.equal(update().display,'inline');
 });
