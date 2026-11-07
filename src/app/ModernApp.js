@@ -5,7 +5,7 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '../ui/theme/theme';
 import { StoreProvider, StoreFreeze, useStore, useStoreActions } from '../store/store';
-import { LayoutProvider, T, useLayoutPreference, useWide } from '../ui/ui';
+import { LayoutProvider, useLayoutPreference, useWide } from '../ui/ui';
 import { Sidebar } from '../components/shell/Menus';
 import { TopBar, TabBar, PhoneHeader, ViewPill } from '../components/shell/Bars';
 import CreateMore from '../components/shell/CreateMore';
@@ -82,6 +82,7 @@ const SCREENS = {
   activity: Activity,
   settings: Settings,
   more: More,
+  canvas: function CanvasRoute(props) { const Canvas = require('../screens/canvas/CanvasLibrary').default; return <Canvas {...props}/>; },
 };
 
 // Phone bottom bar: Home, Work, Projects, More (plus the centre Create button). Each section's views sit in the pill under the header.
@@ -231,10 +232,10 @@ function Shell({ launching = false }) {
   }, [switchProject, go]);
   // "Open project" from Portfolios / Programs: select the project, then show its governance detail in Projects.
   const [projectRequest, setProjectRequest] = useState(null);
-  const openProject = useCallback((id) => {
+  const openProject = useCallback((id, docKey) => {
     if (!switchProject(id)) return;
     setTaskId(null);
-    setProjectRequest(id);
+    setProjectRequest(docKey ? { id, docKey } : id);
     go('projects');
   }, [switchProject, go]);
   const clearProjectRequest = useCallback(() => setProjectRequest(null), []);
@@ -293,7 +294,7 @@ function Shell({ launching = false }) {
               query={query} onQuery={onQuery} controls={controls} onPickProject={pickProject} onBack={() => {if(!backSupport.current.back())go('more', 'back to More');}} showProjectName={screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'} />}
           {!wide && views.length > 1 ? <ViewPill views={views} current={screen} go={requestTab} /> : null}
           <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
-          {!wide ? <TabBar tabs={TABS} current={section.id} go={requestSection} intent={intentRef.current} onCreate={newTask} /> : null}
+          {!wide && !controls?.canvas ? <TabBar tabs={TABS} current={section.id} go={requestSection} intent={intentRef.current} onCreate={newTask} /> : null}
         </View>
         {sheet}
       </SafeAreaView>

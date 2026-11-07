@@ -1,0 +1,42 @@
+{
+  "npm test": {
+    "result": "Pass",
+    "tests": 927,
+    "failed": 0
+  },
+  "npx expo install --check": {
+    "result": "Pass",
+    "detail": "Dependencies are up to date"
+  },
+  "JSX/import/path checks": {
+    "result": "Pass",
+    "detail": "Included in full suite"
+  },
+  "compiled native worklet closures": {
+    "result": "Pass",
+    "detail": "Expo transform plus simulated UI closures; not actual Hermes runtime"
+  },
+  "native source transforms": {
+    "result": "Pass",
+    "files": 38,
+    "detail": "Offline only; separate native-source-transforms.json"
+  },
+  "headless Chromium source fixtures": {
+    "result": "Pass",
+    "fixtures": 19,
+    "detail": "Static RN Web projection; not live Expo"
+  },
+  "live Expo/Web and physical performance": {
+    "result": "Not run",
+    "detail": "Owner prohibits builds and agent-started Expo servers"
+  },
+  "remote sharing": {
+    "result": "Not run",
+    "detail": "Unavailable backend; invitation controls disabled; release dependency"
+  },
+  "git_checkpoint_authorization": {
+    "requested": true,
+    "target": "origin/work",
+    "scope": "Commit/push v0.8.0 only; Git records actual outcome. No tag, deployment or main merge."
+  }
+}

@@ -7,7 +7,7 @@ function diagramPaintHarness(){
  const mod=load('src/governance/wbsviews.js',{
   react:{...h.hooks,memo:fn=>fn,cloneElement:React.cloneElement},
   'react-native-svg':{Path:'Path',Rect:'Rect',Text:'SvgText'},
-  '../ui/theme/theme':{font:'System',useTheme:()=>({c:colors})},'./DiagramSvg':{__esModule:true,default:'DiagramSvg'},
+  '../ui/theme/theme':{font:'System',useTheme:()=>({c:colors})},'./DiagramBatches':{__esModule:true,default:'DiagramBatches'},'./DiagramSvg':{__esModule:true,default:'DiagramSvg'},
   '../diagnostics/useRenderMetric':{useRenderMetric:()=>renders++},
   '../diagnostics/monitor':{diagnosticMonitor:{measureWork:(_n,fn)=>fn(),recordAction(){}}},
  });

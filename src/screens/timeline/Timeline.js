@@ -1,7 +1,8 @@
 // /src/screens/timeline/Timeline.js
+import AddToCanvas from '../canvas/AddToCanvas';
 import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Animated, Dimensions, Platform, Pressable, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { ActionMenu, Button, Card, Chip, Page, Segmented, Sheet, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
@@ -744,7 +745,7 @@ export default function Timeline({ openTask }) {
         <View style={{flexDirection:'row',alignItems:'center',gap:8,paddingVertical:8}}>
           <View style={{flex:1,gap:2}}><T size={16} weight="600">Project schedule</T><T size={12} muted>{rows.length} scheduled · {zoomMode.toLowerCase()}</T></View>
           <Chip label="Today" quiet onPress={() => goToday(true)} />
-          <ActionMenu label="Timeline options" header={<Segmented fill wrap={false} options={['Days','Weeks','Months']} value={zoomFactor===1?zoom:''} onChange={chooseZoom}/>} items={[
+          <ActionMenu label="Timeline options" header={<View style={{gap:8}}><Segmented fill wrap={false} options={['Days','Weeks','Months']} value={zoomFactor===1?zoom:''} onChange={chooseZoom}/><AddToCanvas source={{sourceType:'roadmap',sourceId:s.project.id}}/></View>} items={[
             {label:showItems?'Hide task names':'Show task names',icon:'sidebar',onPress:()=>setShowItems(v=>!v)},
             rows.length?{label:'Jump to first task',icon:'skip-back',onPress:goFirst}:null,
             {label:showCritical?'Hide critical path':'Show critical path',icon:'git-branch',onPress:()=>setShowCritical(v=>!v)},

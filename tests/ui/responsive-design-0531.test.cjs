@@ -23,7 +23,7 @@ test('viewport adaptation does not fork cached pages or remount a new shell', ()
   const app = read('src/app/ModernApp.js');
   assert.doesNotMatch(app, /if \(wide\) \{\s*return/);
   assert.match(app, /\{page\}/);
-  assert.match(app, /!wide \? <TabBar/);
+  assert.match(app, /!wide && !controls\?\.canvas \? <TabBar/);
   assert.match(app, /<StoreFreeze frozen=\{!active\}>/);
 });
 test('all screens inherit a fluid page frame and shared tokenized controls', () => {

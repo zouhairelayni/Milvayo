@@ -3,17 +3,18 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
+import AddToCanvas from '../canvas/AddToCanvas';
 import PressSurface from '../../ui/PressSurface';
 import TaskMarkdown from '../../components/inline/TaskMarkdown';
 import MarkdownField from '../../components/inline/MarkdownField';
 import TaskLabels from '../../components/inline/TaskLabels';
 import { COLORS, textColor } from '../../ui/labelPalette.cjs';
-import { InlineDateRange, ActionMenu, FormSection, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
+import { InlineDateRange, ActionMenu, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';
 import { useStore } from '../../store/store';
-import { useTheme, PRIORITY_COLOR, STATUS_COLOR, serif } from '../../ui/theme/theme';
+import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';
 import InlineNotice from '../../components/notice/InlineNotice';
-import { Field, InlineDrop, DateField, CustomValueInput } from './TaskFields';
+import { Field, InlineDrop, CustomValueInput } from './TaskFields';
 import { Fold } from '../../components/inline/CompactTools';
 import { localDay } from '../../utils/localDay.cjs';
 import { descendants } from '../../domain/taskWorkflows.cjs';
@@ -132,6 +133,7 @@ export default function TaskSheet({ taskId, onClose }) {
       {t ? (
         <>
           <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontSize:24,fontWeight:'600',lineHeight:32,backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:4,minHeight:56}} />
+          <AddToCanvas source={{sourceType:'task',sourceId:t.id}}/>
           <View style={{gap:10}}>
             <T size={16} weight="700">Description</T>
             {descriptionEditing?<Card pad={12} style={{gap:10}}>

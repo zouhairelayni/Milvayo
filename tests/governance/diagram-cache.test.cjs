@@ -4,7 +4,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const {createDiagramCache,diagramRevision,diagramView}=require('../../src/governance/diagramCache.cjs');
 const {wbsHarness,fixture}=require('../helpers/wbs-harness.cjs');
 const {nodes,control}=require('../helpers/screen-harness.cjs');
-const select=tree=>nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='outline'));
+const select = tree => nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='tree')) || nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='outline'));
 const viewport=tree=>nodes(tree).find(n=>n.type==='DiagramViewport');
 
 test('only selected layout is generated; switching back and remounting reuses geometry and view state without export work',()=>{

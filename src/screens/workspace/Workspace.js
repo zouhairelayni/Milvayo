@@ -1,10 +1,10 @@
 // /src/screens/workspace/Workspace.js
 import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import {Feather} from '@expo/vector-icons';
-import { Platform, Image, Pressable, ScrollView, Switch, View } from 'react-native';
+import { Platform, Image, Pressable, Switch, View } from 'react-native';
 import {Fold,EditRow,Labeled,Pick,Dropdown,DangerConfirm} from '../../components/inline/CompactTools';
 import {useState,useEffect,useMemo} from 'react';
-import { InlineDateField, ActionRow, ActionMenu, AppearanceChoices, ConfirmSheet, EmptyState, Feedback, FormSection, MetricStrip, Input, ScreenIntro, Avatar, Bar, Button, Card, Cell, Empty, Grid, Page, Pill, Chip, Sheet, SectionTitle, Segmented, Stat, T, useWide, downloadText } from '../../ui/ui';
+import { InlineDateField, ActionRow, AppearanceChoices, ConfirmSheet, EmptyState, Feedback, MetricStrip, Input, ScreenIntro, Avatar, Button, Card, Page, Pill, Sheet, SectionTitle, Segmented, T, useWide, downloadText } from '../../ui/ui';
 import { useStore, useStoreActions } from '../../store/store';
 import { useTheme, ACCENTS, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
 import { money, openHours } from '../../store/data';

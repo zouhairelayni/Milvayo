@@ -21,7 +21,7 @@ function setup(wide = false, initial = fixture()) {
   } });
   return { h, calls, downloads, s };
 }
-const selector = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(o => o.value === 'outline'));
+const selector = tree => nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='tree')) || nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='outline'));
 const viewport = tree => nodes(tree).find(n => n.type === 'DiagramViewport');
 const zoomControl = tree => nodes(tree).find(n => n.type === 'Segmented' && n.props.options.some(o => o.value === 'fit'));
 
@@ -90,4 +90,9 @@ test('WBS Outline control inventory and empty starters remain available; empty d
   selector(tree).props.onChange('mind'); tree = empty.h.render(); assert.equal(viewport(tree), undefined); assert.equal(control(tree, 'Export diagram (SVG)'), undefined);
   starter.props.primary.props.onPress(); assert.equal(empty.s.pm.wbs.length, 2);
   assert.ok(text(empty.h.render()).includes('Pinch to zoom'));
+});
+test('WBS exposes only Outline and Diagram; the inner icon-and-label selector preserves all three 100% views',()=>{
+ const {h}=setup();let tree=h.render();const top=nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='outline'));
+ assert.deepEqual(Array.from(top.props.options,o=>o.label),['Outline','Diagram']);top.props.onChange('diagram');tree=h.render();
+ for(const kind of ['tree','fishbone','mind']){const choose=nodes(tree).find(n=>n.type==='Segmented'&&n.props.options.some(o=>o.value==='tree'));assert.ok(choose.props.options.every(o=>o.icon));choose.props.onChange(kind);tree=h.render();assert.equal(viewport(tree).props.scale,1);}
 });

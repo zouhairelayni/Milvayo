@@ -3,7 +3,7 @@ import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import {useMemo,useState} from 'react';
 import {Pressable,View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
-import {EmptyState,ScreenIntro,Button,Card,Page,SectionTitle,Sheet,T,useWide} from '../../ui/ui';
+import { EmptyState, ScreenIntro, Button, Page, Sheet, T, useWide } from '../../ui/ui';
 import {WorkloadBalance,ScheduleColumns,StageTrack} from '../../components/charts/StudioCharts';
 import DateRail from '../../ui/DateRail';
 import Reveal from '../../ui/Reveal';

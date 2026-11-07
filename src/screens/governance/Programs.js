@@ -2,7 +2,7 @@
 import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { EmptyState, FormSection, MetricStrip, ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
+import { EmptyState, FormSection, ScreenIntro, Bar, Card, Button, Chip, Page, Sheet, T } from '../../ui/ui';
 import { EditRow, Labeled, Pick, DangerConfirm } from '../../components/inline/CompactTools';
 import { useTheme } from '../../ui/theme/theme';
 import { useStore } from '../../store/store';

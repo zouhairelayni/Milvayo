@@ -18,6 +18,7 @@ test('native camera uses only viewport bitmap dimensions and UI animated viewBox
  },['CameraSvg']);
  const shared={value:{scale:2,x:-100,y:-50},get(){return this.value;}},children='cached vector nodes';
  const tree=mod.__test.CameraSvg({scene:{width:61618,height:474},viewport:{width:320,height:600},pose:shared,children});
+ assert.equal(tree.props.viewBox,undefined);assert.equal(tree.props.vbWidth,320);assert.equal(tree.props.vbHeight,600);assert.equal(tree.props.align,'xMinYMin');
  assert.equal(tree.props.width,320);assert.equal(tree.props.height,600);assert.equal(tree.props.children,children);
  assert.deepEqual(JSON.parse(JSON.stringify(camera())),{minX:50,minY:25,vbWidth:160,vbHeight:300});
  shared.value={scale:4,x:-160,y:0};assert.equal(camera().vbWidth,80);assert.equal(camera().minX,40);
@@ -50,4 +51,13 @@ test('native Tree batch display follows the live camera without remounting child
  assert.equal(tree.props.children,child);assert.equal(update().display,'none');assert.equal(update().opacity,undefined);
  pose.value={scale:1,x:-1900,y:0};assert.equal(update().display,'inline');
  pose.value={scale:.1,x:0,y:0};assert.equal(update().display,'inline');
+});
+
+test('first native camera size follows explicit 100%/150%/Fit pose, independent of scene aspect ratio',()=>{
+ const mod=load('src/governance/DiagramSvg.native.js',{react:{Children:require('react').Children,useMemo:fn=>fn()},'react-native-svg':{__esModule:true,default:'Svg',G:'G'},'react-native-reanimated':{__esModule:true,default:{createAnimatedComponent:()=> 'AnimatedSvg'},useAnimatedProps:fn=>fn()}},['CameraSvg']);
+ for(const scale of [1,1.5,.25]){
+  const initial={scale,x:-60,y:24},pose={get:()=>initial};const tree=mod.__test.CameraSvg({scene:{width:60000,height:500},viewport:{width:390,height:440},cameraInitial:initial,pose,children:[]});
+  assert.equal(tree.props.viewBox,undefined);assert.equal(tree.props.minX,-initial.x/scale);assert.equal(tree.props.vbWidth,390/scale);assert.equal(tree.props.vbHeight,440/scale);
+  assert.ok(Math.abs(tree.props.vbWidth/tree.props.vbHeight-390/440)<1e-12);
+ }
 });

@@ -20,13 +20,13 @@ test('full-screen preview retains geometry, offers accessible compact controls, 
  });
  const props={scene,name:'Studio',kind:'tree',nodes:raw,rows,getCSV:()=>'',direction:'down',onDirectionChange:value=>{props.direction=value;props.scene=sceneFor('tree',root,value);},onClose:()=>closed++},render=()=>h.render(mod.default,props);
  let tree=render();const viewport=()=>nodes(tree).find(n=>n.type==='DiagramViewport');
- assert.equal(viewport().props.scene,scene);assert.equal(viewport().props.fullScreen,true);assert.equal(viewport().props.scale,'fit');assert.ok(priorities.every(p=>p===20),'standard sheet priority preserves latest-layer ordering above parent sheets');
+ assert.equal(viewport().props.scene,scene);assert.equal(viewport().props.fullScreen,true);assert.equal(viewport().props.scale,1);assert.ok(priorities.every(p=>p===20),'standard sheet priority preserves latest-layer ordering above parent sheets');
  for(const label of ['Fit diagram to screen','Reset diagram zoom','Zoom out diagram','Zoom in diagram','Close diagram preview'])assert.ok(control(tree,label),label);
  control(tree,'Reset diagram zoom').props.onPress();tree=render();assert.equal(viewport().props.scale,1);control(tree,'Zoom in diagram').props.onPress();tree=render();assert.equal(viewport().props.scale,1.25);
  viewport().props.onPose({scale:2,x:-200,y:-30});viewport().props.onZoom(2);tree=render();control(tree,'Zoom out diagram').props.onPress();tree=render();assert.equal(viewport().props.scale,1.6);
  control(tree,'Fit diagram to screen').props.onPress();tree=render();assert.equal(viewport().props.scale,'fit');
  const direction=nodes(tree).find(n=>n.type==='Segmented');assert.equal(direction.props.value,'down');
- direction.props.onChange('right');tree=render();assert.equal(viewport().props.scale,'fit');assert.notEqual(viewport().props.scene,scene);assert.match(viewport().props.resetKey,/right/);
+ direction.props.onChange('right');tree=render();assert.equal(viewport().props.scale,1);assert.notEqual(viewport().props.scene,scene);assert.match(viewport().props.resetKey,/right/);
  const body=nodes(tree).find(n=>n.props.onLayout);body.props.onLayout({nativeEvent:{layout:{width:280,height:500}}});tree=render();assert.equal(viewport().props.viewportHeight,500);
  viewport().props.children.props.onSelect('w1');tree=render();const sheet=nodes(tree).find(n=>n.type==='Sheet');assert.equal(sheet.props.visible,true);assert.equal(sheet.props.title,'Design');assert.match(text(sheet),/Owner/);assert.match(text(sheet),/Read the full specification/);
  sheet.props.onClose();tree=render();assert.equal(nodes(tree).some(n=>n.type==='Sheet'),false);control(tree,'Close diagram preview').props.onPress();assert.equal(closed,1);assert.equal(props.direction,'right');

@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { ActionMenu, ActionRow, EmptyState, MetricStrip, IconBtn, Button, Card, Input, Segmented, SectionTitle, T, useWide } from '../../../ui/ui';
+import { ActionRow, EmptyState, MetricStrip, IconBtn, Button, Card, Input, Segmented, T, useWide } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
 import { useTheme } from '../../../ui/theme/theme';
 import {
@@ -16,6 +16,7 @@ import { Field, NumInput, OwnerPick } from './pmui';
 import MarkdownField from '../../../components/inline/MarkdownField';
 import DiagramViewport from '../../../gestures/DiagramViewport';
 
+import DiagramKindIcon from '../../../governance/DiagramKindIcon';
 import DiagramPreview from '../../../governance/DiagramPreview';
 import DiagramExports from '../../../governance/DiagramExports';
 import { diagnosticMonitor } from '../../../diagnostics/monitor';
@@ -99,8 +100,8 @@ export default function PmWbs() {
   const [view, updateView] = useState(remembered.view);
   const [dir, updateDir] = useState(remembered.dir);
   const [zoom, updateZoom] = useState(remembered.zoom);
-  const setView = value => { remembered.view = value; updateView(value); const next=remembered.zooms[`${value}:${dir}`]||'fit';remembered.zoom=next;updateZoom(next); };
-  const setDir = value => { remembered.dir = value; updateDir(value); const next=remembered.zooms[`${view}:${value}`]||'fit';remembered.zoom=next;updateZoom(next); };
+  const setView = value => { remembered.view = value; if(value!=='outline')remembered.diagramKind=value; updateView(value); const next=remembered.zooms[`${value}:${dir}`]||'1';remembered.zoom=next;updateZoom(next); };
+  const setDir = value => { remembered.dir = value; updateDir(value); const next=remembered.zooms[`${view}:${value}`]||'1';remembered.zoom=next;updateZoom(next); };
   const setZoom = value => { remembered.zoom = value; remembered.zooms[`${view}:${dir}`]=value; updateZoom(value); };
   const [expanded, setExpanded] = useState(false);
   const [zoomRequest, setZoomRequest] = useState(0);
@@ -143,7 +144,8 @@ export default function PmWbs() {
 
       <MetricStrip items={[{label:'Elements',value:rows.length-1},{label:'Work packages',value:leaves},{label:'Levels',value:depth},{label:'Estimated hours',value:tree.hours}]}/>
 
-      <Segmented fill options={[{ value: 'outline', label: 'Outline' }, { value: 'tree', label: 'Tree' }, { value: 'fishbone', label: 'Fishbone' }, { value: 'mind', label: 'Mind map' }]} value={view} onChange={setView} />
+      <Segmented fill options={[{ value: 'outline', label: 'Outline' }, { value: 'diagram', label: 'Diagram' }]} value={view === 'outline' ? 'outline' : 'diagram'} onChange={value => setView(value === 'outline' ? 'outline' : remembered.diagramKind || 'tree')} />
+      {view !== 'outline' ? <Segmented options={[{value:'tree',label:'Tree'},{value:'fishbone',label:'Fishbone'},{value:'mind',label:'Mind map'}].map(option=>({...option,icon:<DiagramKindIcon kind={option.value} color={view===option.value?c.bg:c.muted}/>}))} value={view} onChange={setView}/> : null}
 
       {empty ? (
         <EmptyState title="Give the work a structure" description="Start with one deliverable, then break it into smaller work packages."

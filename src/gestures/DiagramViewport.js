@@ -8,7 +8,7 @@ export default function DiagramViewport({ scene, scale, resetKey, onZoom, onPose
   const [width, setWidth] = useState(0);
   const height = viewportHeight || Math.min(440, scene.height);
   const bounds = { width, height, contentWidth: scene.width, contentHeight: scene.height, ...((fullScreen || fitAll) ? { minScale: Math.max(0.00001, Math.min(0.25, (width - 4) / scene.width, height / scene.height)), fullScreen, center: fullScreen } : {}) };
-  const renderViewport = useCallback((pose, w, h) => cloneElement(children, { pose, viewport: { width: w, height: h } }), [children]);
+  const renderViewport = useCallback((pose, w, h, cameraInitial) => cloneElement(children, { pose, cameraInitial, viewport: { width: w, height: h } }), [children]);
   return (
     <View onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ width: '100%', height, overflow: 'hidden' }}>
       {width > 0 ? (

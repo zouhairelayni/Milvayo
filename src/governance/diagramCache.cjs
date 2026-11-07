@@ -47,7 +47,7 @@ function createDiagramCache({ maxEntries = 12, maxBytes = 8 * 1024 * 1024, now =
 const diagramCache = createDiagramCache();
 const views = new Map();
 function diagramView(scope) {
-  const value = views.get(scope) || { view: 'outline', dir: 'down', zoom: 'fit', poses: {}, zooms: {} };
+  const value = views.get(scope) || { view: 'outline', dir: 'down', zoom: '1', poses: {}, zooms: {} };
   views.delete(scope); views.set(scope, value);
   while (views.size > 12) views.delete(views.keys().next().value);
   return value;

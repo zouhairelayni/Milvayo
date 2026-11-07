@@ -1,0 +1,157 @@
+{
+  "kind": "Offline Expo native source/worklet transforms only. No bundle, build or device execution.",
+  "files": [
+    {
+      "file": "src/app/AppGestureRoot.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/app/navigation/BackSurface.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/board/boardGesture.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/board/boardMotion.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/canvas/CanvasObjectGroup.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/canvas/CanvasSurface.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/canvas/interaction.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/canvas/routing.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/brand/BoardMorph.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/brand/morphMotion.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/charts/Column.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/charts/TracePath.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/inline/DisclosureGlyph.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/inline/InlineEditor.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/loading/SkeletonMotionSurface.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/notice/NoticeMotion.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/shell/DrawerMotion.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/components/shell/NavIcon.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/diagnostics/nativeExit.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/DiagramGesture.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/TimelineGestureHost.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/TimelinePinch.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/TimelineScrollView.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/diagramZoom.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/gesture.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/gestures/gestureSurface.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/governance/DiagramBatches.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/governance/DiagramSvg.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/governance/diagramPng.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/governance/diagramVisibility.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/screens/canvas/CanvasPillMotion.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/timeline/timelineZoom.cjs",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/CountValue.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/FillMotion.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/PressSurface.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/Reveal.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/ScreenPresence.native.js",
+      "result": "Pass"
+    },
+    {
+      "file": "src/ui/theme/launcherIcon.native.js",
+      "result": "Pass"
+    }
+  ]
+}

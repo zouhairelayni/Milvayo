@@ -1,6 +1,6 @@
 // /src/components/shell/Bars.js
 import { useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { radius, useTheme } from '../../ui/theme/theme';
 import { Button, IconBtn, Input, Segmented, T } from '../../ui/ui';
@@ -31,10 +31,20 @@ export function HeaderControls({controls}) {
   </ScrollView>;
 }
 
+function CanvasHeader({controls}) {
+ const {c}=useTheme(),[sideWidth,setSideWidth]=useState(96);
+ return <View style={{flexDirection:'row',alignItems:'center',paddingHorizontal:12,paddingVertical:8,minHeight:60,backgroundColor:c.bg}}>
+  <View style={{width:sideWidth,alignItems:'flex-start'}}><IconBtn icon="chevron-left" label="Go back" onPress={controls.onBack}/></View>
+  <T size={18} weight="600" numberOfLines={1} style={{flex:1,minWidth:0,textAlign:'center'}}>{controls.title}</T>
+  <View style={{width:sideWidth,alignItems:'flex-end'}}><View onLayout={e=>{const width=Math.max(44,Math.ceil(e.nativeEvent.layout.width));setSideWidth(old=>old===width?old:width);}} style={{flexDirection:'row',alignSelf:'flex-end'}}>{controls.trailing}</View></View>
+ </View>;
+}
+
 export function TopBar({ query, onQuery, onNew, onPickProject, controls, showProjectName = true }) {
   const { c } = useTheme();
   const { width } = useWindowDimensions();
   const compact = width < 1120;
+  if(controls?.canvas)return <CanvasHeader controls={controls}/>;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: compact ? 8 : 12, paddingHorizontal: compact ? 16 : 28,
       minHeight: compact ? 64 : 72, paddingVertical: compact ? 10 : 14,
@@ -124,6 +134,7 @@ export function PhoneHeader({ kind, title, query, onQuery, controls, onPickProje
   const { c } = useTheme();
   const [searching, setSearching] = useState(false);
   const row = { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 60 };
+  if(controls?.canvas)return <CanvasHeader controls={controls}/>;
   if (kind === 'hub') return null;
   if (kind === 'sub') return <View style={row}>
     <IconBtn icon="chevron-left" label="Go back" onPress={onBack} />

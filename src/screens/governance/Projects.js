@@ -24,9 +24,9 @@ export function Projects({embedded=false,projectRequest=null,onProjectRequestHan
  const wide=useWide();
  const {projects,workspace,workspaceId}=useStore();
  const open=useMemo(()=>workspace.projects.filter(p=>!p.archived),[workspace.projects]);
- const [detail,setDetail]=useState(projectRequest),[tab,setTab]=useState('overview');
+ const [detail,setDetail]=useState(projectRequest?.id||projectRequest),[tab,setTab]=useState(projectRequest?.docKey||'overview');
  // Opened from a portfolio or program: show that project's governance detail.
- useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest);setTab('overview');onProjectRequestHandled?.()},[projectRequest]);
+ useEffect(()=>{if(!projectRequest)return;setDetail(projectRequest?.id||projectRequest);setTab(projectRequest?.docKey||'overview');onProjectRequestHandled?.()},[projectRequest]);
  const [creating,setCreating]=useState(false);
  const [query,setQuery]=useState(''),[limit,setLimit]=useState(20);
  const deferredQuery=useDeferredValue(query),needle=deferredQuery.trim().toLowerCase();

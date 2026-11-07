@@ -2,9 +2,9 @@
 import {useState} from 'react';
 import {Platform,Pressable,View} from 'react-native';
 import {Feather} from '@expo/vector-icons';
-import {Card,Input,T,Button,Chip,Sheet,ConfirmSheet} from '../../ui/ui';
+import { Input, T, Button, Chip, Sheet, ConfirmSheet } from '../../ui/ui';
 import Reveal from '../../ui/Reveal';
-import {radius,useTheme} from '../../ui/theme/theme';
+import { useTheme } from '../../ui/theme/theme';
 import DisclosureGlyph from './DisclosureGlyph';
 import MarkdownField from './MarkdownField';
 

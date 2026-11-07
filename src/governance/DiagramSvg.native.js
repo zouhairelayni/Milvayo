@@ -12,7 +12,9 @@ function CameraBatch({ bounds, viewport, pose, children }) {
   return <AnimatedGroup animatedProps={visible}>{children}</AnimatedGroup>;
 }
 
-function CameraSvg({ scene, viewport, pose, children, svgRef }) {
+function CameraSvg({ scene, viewport, pose, cameraInitial = { scale: 1, x: 0, y: 0 }, children, svgRef }) {
+  // Svg extracts viewBox AFTER forwarded props, overwriting initial animated camera fields.
+  // Supply native camera fields directly so the first render and later zooms have the same aspect.
   // Native SVG consumes minX/minY/vbWidth/vbHeight directly. No enormous scene-size bitmap,
   // JS frame callbacks, re-rendered labels, or Timeline gesture changes.
   const groups = useMemo(() => {
@@ -26,11 +28,12 @@ function CameraSvg({ scene, viewport, pose, children, svgRef }) {
     const p = pose.get();
     return { minX: -p.x / p.scale, minY: -p.y / p.scale, vbWidth: viewport.width / p.scale, vbHeight: viewport.height / p.scale };
   });
-  return <AnimatedSvg ref={svgRef} width={viewport.width} height={viewport.height} viewBox={`0 0 ${scene.width} ${scene.height}`} animatedProps={camera} preserveAspectRatio="xMinYMin meet">{groups}</AnimatedSvg>;
+  return <AnimatedSvg ref={svgRef} width={viewport.width} height={viewport.height} minX={-cameraInitial.x / cameraInitial.scale} minY={-cameraInitial.y / cameraInitial.scale}
+    vbWidth={viewport.width / cameraInitial.scale} vbHeight={viewport.height / cameraInitial.scale} align="xMinYMin" meetOrSlice={0} animatedProps={camera}>{groups}</AnimatedSvg>;
 }
 
-export default function DiagramSvg({ scene, scale = 1, viewport, pose, svgRef, children, onReady }) {
-  if (viewport && pose) return <CameraSvg scene={scene} viewport={viewport} pose={pose} svgRef={svgRef}>{children}</CameraSvg>;
+export default function DiagramSvg({ scene, scale = 1, viewport, pose, cameraInitial, svgRef, children, onReady }) {
+  if (viewport && pose) return <CameraSvg scene={scene} viewport={viewport} pose={pose} cameraInitial={cameraInitial} svgRef={svgRef}>{children}</CameraSvg>;
   // Only the on-demand export surface uses this path. Its physical size is bounded too;
   // toDataURL's target dimensions rasterize the complete viewBox independently of the camera.
   const factor = Math.min(scale, 512 / scene.width, 512 / scene.height);

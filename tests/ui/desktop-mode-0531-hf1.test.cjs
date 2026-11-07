@@ -34,7 +34,7 @@ test('wide shell shows sidebar and toolbar, phone shell retains bottom tabs; ove
   assert.match(app, /<LayoutProvider>/);
   assert.match(app, /\{wide \? <Sidebar/);
   assert.match(app, /\{wide \? <TopBar/);
-  assert.match(app, /!wide \? <TabBar/);
+  assert.match(app, /!wide && !controls\?\.canvas \? <TabBar/);
   assert.match(app, /onDesktopLayout|onAutoLayout/);
   assert.match(menu, /accessibilityLabel="Return to automatic layout"/);
   const more = read('src/screens/more/More.js'); // the phone's way to the desktop layout

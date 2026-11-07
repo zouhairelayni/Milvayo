@@ -3,7 +3,7 @@ import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { radius, useTheme } from '../../ui/theme/theme';
+import { useTheme } from '../../ui/theme/theme';
 import { Input, ScreenIntro, T, useLayoutPreference } from '../../ui/ui';
 import { WorkspaceSwitcher } from '../../components/shell/Menus';
 import { moreGroups } from '../../app/navigation/sections.cjs';

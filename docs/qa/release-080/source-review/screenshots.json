@@ -1,0 +1,23 @@
+{
+  "kind": "Headless Chromium static actual-JSX projections; no Expo runtime",
+  "images": [
+    {
+      "file": "overview.png",
+      "width": 1560,
+      "height": 2532,
+      "content": "Library, small phone, dark/light editor, expanded pill and grouped menus"
+    },
+    {
+      "file": "responsive.png",
+      "width": 1760,
+      "height": 1290,
+      "content": "1440 desktop roadmap, 320 small phone and 844 landscape canvas"
+    },
+    {
+      "file": "inline-note.png",
+      "width": 390,
+      "height": 844,
+      "content": "Text field inside the note, with no popup or native acceptance claim"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { cloneElement, memo, useMemo } from 'react';
 import { Path, Rect, Text as SvgText } from 'react-native-svg';
 import { font, useTheme } from '../ui/theme/theme';
 import DiagramSvg from './DiagramSvg';
+import DiagramBatches from './DiagramBatches';
 import { useRenderMetric } from '../diagnostics/useRenderMetric';
 import { diagnosticMonitor } from '../diagnostics/monitor';
 export { BRANCH, treeScene, fishboneScene, mindScene, sceneFor, sceneToSvg } from './diagramScene.cjs';
@@ -24,7 +25,7 @@ function painted(scene, c) {
   counts.generations++; diagnosticMonitor.recordAction(`diagram SVG primitives generated: ${scene.items.length}`); paint.set(scene, { colors, children }); return children;
 }
 
-export const Scene = memo(function Scene({ scene, scale = 1, viewport, pose, svgRef, onSelect, background = false, onReady }) {
+export const Scene = memo(function Scene({ scene, scale = 1, viewport, pose, cameraInitial, svgRef, onSelect, background = false, bare = false, onReady }) {
   useRenderMetric('projects/wbs/svg');
   const { c } = useTheme();
   const base = useMemo(() => diagnosticMonitor.measureWork('diagram/svg-primitives', () => painted(scene, c)), [scene, c.ink, c.bg, c.surface, c.muted]);
@@ -32,7 +33,8 @@ export const Scene = memo(function Scene({ scene, scale = 1, viewport, pose, svg
     const id = scene.items[i].nodeId;
     return id ? cloneElement(element, { onPress: () => onSelect(id), accessibilityLabel: `Inspect ${scene.items[i].nodeName || id}`, accessible: true }) : element;
   }) : base, [base, scene, onSelect]);
-  return <DiagramSvg scene={scene} scale={scale} viewport={viewport} pose={pose} svgRef={svgRef} onReady={onReady}>
+  if (bare) return <DiagramBatches scene={scene} pose={pose} viewport={viewport}>{children}</DiagramBatches>;
+  return <DiagramSvg scene={scene} scale={scale} viewport={viewport} pose={pose} cameraInitial={cameraInitial} svgRef={svgRef} onReady={onReady}>
     {background ? <Rect x={0} y={0} width={scene.width} height={scene.height} fill={c.bg}/> : null}
     {children}
   </DiagramSvg>;

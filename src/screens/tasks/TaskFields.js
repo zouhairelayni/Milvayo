@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import InlineEditor from '../../components/inline/InlineEditor';
 import { Button, InlineDateField, Input, T } from '../../ui/ui';
 import { useTheme } from '../../ui/theme/theme';
-import { dayNumber } from '../../timeline/gantt.cjs';
+import '../../timeline/gantt.cjs';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 export const Field = ({ label, children }) => (

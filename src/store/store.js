@@ -2,7 +2,7 @@
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import BoardMorph from '../components/brand/BoardMorph';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { View, ActivityIndicator, AppState, Platform } from 'react-native';
+import { View, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { T } from '../ui/uiBase';
 const model=require('../domain/model.cjs');
@@ -254,6 +254,9 @@ export function StoreProvider({children,onReady,loading}){
   deleteResource:id=>safeMutation(p=>model.operations.deleteResource(p,id),'Removed contributor'),
   logTime:data=>safeMutation(p=>model.operations.logTime(p,data),'Logged work time'),
   removeTime:id=>safeMutation(p=>model.operations.removeTime(p,id),'Removed time entry'),
+  saveCanvasViewport:(id,pose,revision)=>safeMutation(p=>require('../domain/canvas.cjs').saveViewport(p,id,pose,revision),'Saved Canvas view'),
+  deleteCanvas:(id,revision)=>trans(w=>require('./canvasStorage.cjs').deleteCanvas(w,id,revision,model.workspaceSnapshot(w,'Before deleting archived canvas')),'Deleted archived canvas'),
+  saveCanvas:(board,expectedRevision)=>trans(w=>require('./canvasStorage.cjs').saveCanvas(w,board,expectedRevision),`Saved canvas ${board.title}`),
   setGovernance:(key,value,label)=>projectChange(p=>({...p,governance:{...p.governance,[key]:value}}),label||`Updated governance ${key}`),
   setGovernanceDocValue:(key,field,value)=>projectChange(p=>{const doc=p.governance.docs[key]||{status:'Not started',values:{}};return {...p,governance:{...p.governance,docs:{...p.governance.docs,[key]:{...doc,values:{...doc.values,[field]:value}}}}}},`Updated ${key} document`),
   setGovernanceDocStatus:(key,status)=>projectChange(p=>{const doc=p.governance.docs[key]||{values:{}};return {...p,governance:{...p.governance,docs:{...p.governance.docs,[key]:{...doc,status}}}}},`Updated ${key} status`),

@@ -1,0 +1,72 @@
+{
+  "measurement": "Host Node projection/cache/export costs only, excluding app navigation, React/native mount, GPU, IO and device FPS",
+  "node": "v24.21.0",
+  "cases": [
+    {
+      "objects": 41,
+      "wbsNodes": 40,
+      "firstProjectionMs": 8.742884000000231,
+      "repeatedProjection": {
+        "samples": 25,
+        "p50Ms": 0.057999999999992724,
+        "p95Ms": 0.21773099999973056
+      },
+      "layoutCalculationsBefore": {
+        "hierarchy": 1,
+        "tree": 1
+      },
+      "layoutCalculationsAfter": {
+        "hierarchy": 1,
+        "tree": 1
+      },
+      "export": {
+        "ms": 5.48869200000081,
+        "width": 2808,
+        "height": 732,
+        "primitives": 240,
+        "svgBytes": 41296
+      },
+      "boardBackupBytes": 10324
+    },
+    {
+      "objects": 201,
+      "wbsNodes": 200,
+      "firstProjectionMs": 5.339922999999544,
+      "repeatedProjection": {
+        "samples": 25,
+        "p50Ms": 0.10084600000027422,
+        "p95Ms": 0.23280799999974988
+      },
+      "layoutCalculationsBefore": {
+        "hierarchy": 2,
+        "tree": 2
+      },
+      "layoutCalculationsAfter": {
+        "hierarchy": 2,
+        "tree": 2
+      },
+      "export": {
+        "ms": 5.754884999999376,
+        "width": 2808,
+        "height": 3612,
+        "primitives": 1200,
+        "svgBytes": 207996
+      },
+      "boardBackupBytes": 49492
+    }
+  ],
+  "diagramCache": {
+    "hits": 0,
+    "misses": 4,
+    "evictions": 0,
+    "calculations": {
+      "hierarchy": 2,
+      "tree": 2
+    },
+    "entries": 4,
+    "estimatedBytes": 1444100,
+    "maxEntries": 12,
+    "maxBytes": 8388608
+  },
+  "hostHeapUsedBytes": 27269664
+}

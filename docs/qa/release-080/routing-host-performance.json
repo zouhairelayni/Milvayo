@@ -1,0 +1,65 @@
+{
+  "dragCheck": {
+    "objects": 200,
+    "connectors": 12,
+    "case": "Move a distant unconnected note",
+    "before": {
+      "routesRebuilt": 12,
+      "samples": 7,
+      "p50Ms": 1.5821150000000443,
+      "p95Ms": 2.3453470000000607
+    },
+    "after": {
+      "routesRebuilt": 0,
+      "samples": 7,
+      "p50Ms": 0.007537999999954081,
+      "p95Ms": 0.012000000000057298
+    }
+  },
+  "gesturePayload": {
+    "beforeBytes": 535891,
+    "afterBytes": 13891,
+    "note": "Serialized geometry projection only; no claim about actual native heap."
+  },
+  "measurement": "Host Node geometry and isolated lookup comparison; no Expo runtime, native FPS or device acceptance claim",
+  "node": "v24.21.0",
+  "routing": [
+    {
+      "objects": 40,
+      "connectors": 12,
+      "generatePaths": {
+        "samples": 7,
+        "p50Ms": 2.498385000000013,
+        "p95Ms": 14.929192
+      },
+      "unroutable": 0
+    },
+    {
+      "objects": 200,
+      "connectors": 12,
+      "generatePaths": {
+        "samples": 7,
+        "p50Ms": 3.7338080000000105,
+        "p95Ms": 6.853806999999989
+      },
+      "unroutable": 0
+    }
+  ],
+  "lookup": {
+    "objects": 1000,
+    "connectors": 2000,
+    "before": {
+      "comparisons": 2002000,
+      "samples": 7,
+      "p50Ms": 28.013500000000022,
+      "p95Ms": 30.378615999999965
+    },
+    "after": {
+      "lookups": 4000,
+      "samples": 7,
+      "p50Ms": 0.17449999999996635,
+      "p95Ms": 0.5425000000000182
+    },
+    "note": "Isolated endpoint lookup only; index built once per object-array revision. Not total frame/mount time."
+  }
+}

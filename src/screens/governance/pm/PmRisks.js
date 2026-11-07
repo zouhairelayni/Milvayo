@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Button, Card, Cell, Chip, Grid, Input, Segmented, SectionTitle, Stat, T, EmptyState, MetricStrip } from '../../../ui/ui';
+import { Button, Card, Chip, Input, Segmented, SectionTitle, T, EmptyState, MetricStrip } from '../../../ui/ui';
 import { DangerConfirm } from '../../../components/inline/CompactTools';
 import MarkdownField from '../../../components/inline/MarkdownField';
 const {buttonInk} = require('../../../ui/theme/themePalette.cjs');

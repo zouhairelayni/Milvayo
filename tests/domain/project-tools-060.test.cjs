@@ -67,11 +67,11 @@ test('navigation follows the switches: pill, More and the wide sidebar', () => {
   const work = nav.SECTIONS.find(s => s.id === 'work');
   assert.deepEqual(ids(nav.viewsOf(work, pt.allOn())), ['board', 'timeline', 'tasks', 'sprints']);
   assert.deepEqual(ids(nav.viewsOf(work, { ...pt.allOn(), sprints: false })), ['board', 'timeline', 'tasks']);
-  assert.deepEqual(ids(nav.moreGroups(pt.LEAN).find(g => g.group === 'Project tools').items), ['scheduling', 'releases', 'testing', 'activity']);
+  assert.deepEqual(ids(nav.moreGroups(pt.LEAN).find(g => g.group === 'Project tools').items), ['scheduling', 'canvas', 'releases', 'testing', 'activity']);
   const none = Object.fromEntries(pt.IDS.map(id => [id, false]));
   const groups = nav.moreGroups(none);
   assert.deepEqual(groups.map(g => g.group), ['Project tools', 'App']); // the group stays, so Manage tools is always reachable
-  assert.deepEqual(ids(groups[0].items), ['scheduling']);
+  assert.deepEqual(ids(groups[0].items), ['scheduling','canvas']);
   const side = nav.navFor({ ...pt.allOn(), costs: false }).flatMap(g => ids(g.items));
   assert.ok(!side.includes('costs') && side.includes('resources'));
 });
@@ -81,11 +81,11 @@ test('with every tool on, all 19 entries are reachable; switching any tool off a
     ...nav.SECTIONS.flatMap(s => ids(nav.viewsOf(s, tools))),
     ...nav.moreGroups(tools).flatMap(g => ids(g.items)),
   ]);
-  assert.equal(reach(pt.allOn()).size, 19);
+  assert.equal(reach(pt.allOn()).size, 20);
   for (const id of pt.IDS) {
     const off = pt.setTool(pt.allOn(), id, false);
-    assert.equal(reach(off).size, pt.SCREEN_IDS.includes(id) ? 18 : 19, id);
-    assert.equal(reach(pt.setTool(off, id, true)).size, 19, id);
+    assert.equal(reach(off).size, pt.SCREEN_IDS.includes(id) ? 19 : 20, id);
+    assert.equal(reach(pt.setTool(off, id, true)).size, 20, id);
   }
 });
 

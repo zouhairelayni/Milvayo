@@ -23,21 +23,21 @@ const homes = () => {
 
 test('all 19 menu entries still exist, in the same order, and each has exactly one home on the phone', () => {
   const ids = nav.NAV.flatMap(g => g.items.map(([k]) => k));
-  assert.deepEqual(ids, [
+  assert.deepEqual(ids.filter(id=>id!=='canvas'), [
     'overview', 'board', 'timeline', 'scheduling', 'tasks', 'sprints', 'releases', 'testing', 'resources', 'collaboration', 'costs',
     'projects', 'portfolios', 'programs', 'automations', 'reports', 'activity', 'specifications', 'settings']);
   assert.equal(new Set(MENU_BEFORE).size, 19);
   const seen = [...nav.SECTIONS.flatMap(s => s.views.map(([k]) => k)), ...nav.moreGroups().flatMap(g => g.items.map(([k]) => k))];
   assert.equal(new Set(seen).size, seen.length, 'an entry is listed in two places');
   for (const id of MENU_BEFORE) assert.ok(homes().has(id), `${id} has no home`);
-  assert.equal(homes().size, 19);
+  assert.equal(homes().size, 20);assert.equal(homes().get('canvas'),'more: Project tools');
 });
 
 test('feature parity matrix: where every old menu entry lives now', () => {
   const expected = {
     overview: 'home pill', board: 'work pill', tasks: 'work pill', timeline: 'work pill', sprints: 'work pill',
     projects: 'projects pill', portfolios: 'projects pill', programs: 'projects pill',
-    scheduling: 'more: Project tools', settings: 'more: App',
+    scheduling: 'more: Project tools', canvas:'more: Project tools', settings: 'more: App',
     releases: 'more: Project tools', testing: 'more: Project tools', resources: 'more: Project tools', collaboration: 'more: Project tools',
     costs: 'more: Project tools', automations: 'more: Project tools', reports: 'more: Project tools', activity: 'more: Project tools',
     specifications: 'more: Project tools',

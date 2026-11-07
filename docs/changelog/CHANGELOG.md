@@ -1,3 +1,14 @@
+## v0.8.0 — Linked project Canvas (2026-11-07)
+
+- Add More → Project tools → Canvas: project library, blank/brainstorm/strategy/risk/roadmap templates, rename/duplicate/archive, archived deletion with existing recovery snapshots, and validated board import/export.
+- Add a centered Canvas-only header, preserve library navigation while hiding it inside a mobile board, and use a visibly translucent idle pill with grouped menus. Add a mobile-first editor with one compact toolbar and grouped menus, native/web pan/pinch/zoom, notes/text/shapes/cards/frames/freehand/local diagrams, multi-selection, grouping, alignment, locking/layers, undo/redo and transaction-based autosave/retry.
+- Add four-side obstacle-aware S-curve, straight and elbow connections, subtle diagram outlines and fitted layout containers; brush width/color and an undoable drawing eraser; in-place focused note/node editing. Double-tap/double-click elements or lines to edit; explicit delete actions and undo. Keep connector geometry attached during previews. Canvas-only geometry never reschedules or reparents canonical work.
+- Add canonical task/WBS/risk/stakeholder/document/sprint/project/roadmap links and frozen snapshots, source navigation, source-screen Add to Canvas, persistent comment threads, complete-board SVG/PNG and structured selection CSV.
+- Keep boards private/local and sharing disabled: this source has no authenticated backend. Normalize an additive, bounded Canvas schema through the existing workspace persistence/recovery paths. Older releases discard Canvas fields on save; export backups before rollback.
+- Consolidate WBS to Outline | Diagram with original icon-and-label selectors. Owner requested 100% initial zoom and confirmed the initial squeezed Tree repair: native camera fields now avoid a conflicting scene-sized viewBox on first mount. Owner also confirms the export accessibility crash is fixed.
+- Audit fixes: correct compiled native connector dependency capture; preserve the 500-work-element WBS plus synthesized root across saves; keep drawing-heavy backups importable; retain cross-project snapshot origins; bound undo memory; share route/picking geometry and reduce native payloads; index endpoints and batch Web wheel reporting; remove 42 unused named imports.
+- Synchronize package/lock/Expo 0.8.0, Android/iOS 90. No new dependencies, builds or Expo servers. Owner authorized the 0.8.0 commit and push to work; no main merge, tag or deployment. Device/runtime and sharing release gates: `docs/qa/release-080/REPORT.md`.
+
 ## v0.7.14 — Structural loading states (2026-11-07)
 
 - Replace first-visit shell preparation text with bounded Board, Timeline, Tasks and Sprints skeleton compositions using existing theme surfaces and dimensions.

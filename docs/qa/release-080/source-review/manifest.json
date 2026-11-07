@@ -1,0 +1,192 @@
+[
+  {
+    "file": "library-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "blank-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "editor-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "library-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "blank-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "editor-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "linked-wbs-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "roadmap-desktop.html",
+    "width": 1440,
+    "height": 900,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "editor-landscape.html",
+    "width": 844,
+    "height": 390,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "editor-small-phone.html",
+    "width": 320,
+    "height": 640,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "pill-expanded.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-tools.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-add.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-modes.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-drawing.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-inspect.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-arrange.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "menu-appearance.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  },
+  {
+    "file": "inline-note.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted",
+    "note": "Static actual JSX; inert effects, simulated measured Canvas viewport. Not live Expo, Android or gesture acceptance."
+  }
+]

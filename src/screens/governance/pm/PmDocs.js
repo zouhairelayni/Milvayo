@@ -3,13 +3,14 @@
 
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Bar, Button, Card, Cell, Grid, Input, Pill, SectionTitle, Segmented, Stat, T, MetricStrip, FormSection, Feedback } from '../../../ui/ui';
+import { Bar, Button, Card, Grid, Input, Pill, SectionTitle, Segmented, T, MetricStrip } from '../../../ui/ui';
 import { useStore } from '../../../governance/store';
-import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../../ui/theme/theme';
+import { useTheme, STATUS_COLOR } from '../../../ui/theme/theme';
 import { money } from '../../../governance/data';
 import { DOC_BY_KEY, DOC_COLOR, DOC_STATUS, budgetOf, docOf, docProgress, financeOf } from '../../../governance/pm';
 import { Field, ListEditor, MiniBtn, NumInput, Row, TableEditor } from './pmui';
 import {Dropdown} from '../../../components/inline/CompactTools';
+import AddToCanvas from '../../canvas/AddToCanvas';
 import MarkdownField from '../../../components/inline/MarkdownField';
 
 // Title, what the document is for, its status and how much of the template has content.
@@ -24,6 +25,7 @@ export function DocHeader({ docKey }) {
         <T size={24} weight="600" accessibilityRole="header">{def.title}</T>
         <T size={13} muted>{def.blurb}</T>
       </View>
+      <AddToCanvas source={{sourceType:docKey==='wbs'?'wbs':docKey==='risks'?'risk':'document',sourceId:docKey==='wbs'?'w0':docKey==='risks'?'register':docKey}}/>
       <Field label="Status">
         <Segmented fill options={DOC_STATUS} value={doc.status} onChange={(v) => setDocStatus(docKey, v, def.title)} />
       </Field>

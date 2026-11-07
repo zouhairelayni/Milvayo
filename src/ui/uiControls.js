@@ -46,7 +46,7 @@ export function Segmented({ options, value, onChange, fill, wrap = true }) {
             accessibilityState={{checked:on}}
             style={({ pressed }) => ({ flex: fill ? 1 : undefined, minWidth: 0, alignItems: 'center', paddingHorizontal: 8, paddingVertical: 8, borderRadius: 20, minHeight: 40, justifyContent: 'center', backgroundColor: on ? c.ink : pressed ? c.elevated : 'transparent', opacity: pressed ? 0.75 : 1 })}
           >
-            <T size={13} weight={on ? '500' : '400'} color={on ? c.bg : c.muted}>{o.label}</T>
+            {o.icon ? <View style={{flexDirection:'row',alignItems:'center',gap:6}}>{o.icon}<T size={13} weight={on ? '500' : '400'} color={on ? c.bg : c.muted}>{o.label}</T></View> : <T size={13} weight={on ? '500' : '400'} color={on ? c.bg : c.muted}>{o.label}</T>}
           </Pressable>
         );
       })}

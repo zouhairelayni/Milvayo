@@ -36,7 +36,7 @@ test('Timeline pinch commits display density and focal scroll only; presets, pin
   const chart = () => nodes(tree).find(n => n.type === 'AnimatedScrollView');
   chart().props.ref.current = { scrollTo: v => scrolls.push(v) };
   chart().props.onLayout({ nativeEvent: { layout: { width: 320 } } }); tree = render();
-  const presets = () => nodes(tree).find(n => n.type === 'ActionMenu' && n.props.label === 'Timeline options').props.header.props;
+  const presets = () => nodes(nodes(tree).find(n => n.type === 'ActionMenu' && n.props.label === 'Timeline options').props.header).find(n=>n.type==='Segmented').props;
   assert.equal(h.headers.timeline, null); assert.equal(presets().value, 'Days'); assert.equal(options.width, 34);
   options.onStart(); tree = render(); assert.equal(chart().props.scrollEnabled, true, 'native scroll recognizer stays enabled during pinch');
   options.onCommit(68, 400); options.onEnd(); tree = render(); tree = render();

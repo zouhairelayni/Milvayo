@@ -92,7 +92,7 @@ export default function DiagramGesture({ bounds, initialScale, resetKey, onZoom,
   return (
     <GestureDetector gesture={gesture}>
       <View collapsable={false} accessibilityLabel="Work breakdown diagram. Pinch to zoom, drag to pan" style={{ width, height, overflow: 'hidden' }}>
-        {renderViewport ? renderViewport(pose,width,height) : <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: contentWidth, height: contentHeight, transformOrigin: 'top left' }, transform]}>
+        {renderViewport ? renderViewport(pose,width,height,initial) : <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: contentWidth, height: contentHeight, transformOrigin: 'top left' }, transform]}>
           {children}
         </Animated.View>}
       </View>

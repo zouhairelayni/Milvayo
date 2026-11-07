@@ -74,6 +74,8 @@ function screenHarness(file, store, extra = {}) {
     if (id.endsWith('/CompactTools')) return { Fold: 'Fold', EditRow: 'EditRow', Labeled: 'Labeled', DangerConfirm: 'DangerConfirm', Dropdown:'Dropdown' };
     if (id.endsWith('/charts')) return { BurnChart: 'BurnChart' };
     if (id === './DrawerMotion' || id.endsWith('/BoardMorph') || id.endsWith('/InlineNotice') || id.endsWith('/CreateProjectSheet')) return id.split('/').at(-1);
+    if (id.endsWith('/AddToCanvas'))return {__esModule:true,default:'AddToCanvas'};
+    if (id.endsWith('/DiagramKindIcon'))return {__esModule:true,default:'DiagramKindIcon'};
     if (id === './NavIcon')return {__esModule:true,default:'NavIcon'};
     if (id === './Menus') return { ProjectSwitcher: 'ProjectSwitcher' };
     if (id.endsWith('/diagnostics/monitor')) return { diagnosticMonitor: { recordAction() {} } };

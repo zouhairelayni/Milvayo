@@ -1,6 +1,6 @@
 // /src/components/shell/Menus.js
 import { useState } from 'react';
-import { Image, Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import DrawerMotion from './DrawerMotion';
 import BoardMorph from '../brand/BoardMorph';

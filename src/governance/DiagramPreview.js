@@ -15,7 +15,7 @@ const { fitScale, constrainPose, pinchPose } = require('../gestures/diagramZoom.
 
 export default function DiagramPreview({ scene, name, kind, nodes, rows, getCSV, direction, onDirectionChange, onClose }) {
   const { c } = useTheme(), size = useWindowDimensions(), insets = useSafeAreaInsets();
-  const [zoom, setZoom] = useState('fit'), [request, setRequest] = useState(0), [initialPose, setInitialPose] = useState(null), [selected, setSelected] = useState(null);
+  const [zoom, setZoom] = useState('1'), [request, setRequest] = useState(0), [initialPose, setInitialPose] = useState(null), [selected, setSelected] = useState(null);
   const [measured, setMeasured] = useState(null);
   const lastPose = useRef(null);
   useBackDismiss(true, onClose, 20);
@@ -49,7 +49,7 @@ export default function DiagramPreview({ scene, name, kind, nodes, rows, getCSV,
         </View>
         {kind === 'tree' && onDirectionChange ? <ScrollView horizontal style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}>
           <Segmented options={[{ value: 'down', label: 'Top-down' }, { value: 'right', label: 'Left to right' }]} value={direction}
-            onChange={value => { if (value !== direction) { preset('fit'); setSelected(null); onDirectionChange(value); } }}/>
+            onChange={value => { if (value !== direction) { preset('1'); setSelected(null); onDirectionChange(value); } }}/>
         </ScrollView> : null}
         <View style={{ flex: 1, overflow: 'hidden' }} onLayout={event => {
           const {width, height} = event.nativeEvent.layout;

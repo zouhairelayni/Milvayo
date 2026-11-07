@@ -10,7 +10,10 @@ function normalizeGovernance(raw){
  const phase=['Initiating','Planning','Executing','Monitoring and controlling','Closing'].includes(info.phase)?info.phase:'Initiating';
  const budget=r.budget&&typeof r.budget==='object'&&!Array.isArray(r.budget)?r.budget:{};
  const capped=a=>Array.isArray(a)?a.slice(0,500):[];
- const wbs=capped(r.wbs).map(x=>({id:safeText(x?.id,100),parent:x?.parent===null?null:safeText(x?.parent,100),name:safeText(x?.name,300),owner:safeText(x?.owner,120),hours:Math.max(0,finite(x?.hours)),note:safeText(x?.note,2000)})).filter(x=>x.id);
+ const wbsInput=Array.isArray(r.wbs)?r.wbs:[];
+ // A synthesized root must not cause the last real work element to vanish on the next save.
+ if(wbsInput.length>(wbsInput.some(n=>n?.id==='w0')?501:500))throw Error('WBS supports up to 500 work elements plus the project root');
+ const wbs=wbsInput.map(x=>({id:safeText(x?.id,100),parent:x?.parent===null?null:safeText(x?.parent,100),name:safeText(x?.name,300),owner:safeText(x?.owner,120),hours:Math.max(0,finite(x?.hours)),note:safeText(x?.note,2000)})).filter(x=>x.id);
  if(!wbs.some(x=>x.id==='w0'))wbs.unshift({id:'w0',parent:null,name:'',owner:'',hours:0,note:''});
  validateWbs(wbs);
  const risks=capped(r.risks).map(x=>({id:safeText(x?.id,120),title:safeText(x?.title,300),category:safeText(x?.category,80),type:x?.type==='Opportunity'?'Opportunity':'Threat',prob:Math.max(1,Math.min(5,Math.round(finite(x?.prob)||1))),impact:Math.max(1,Math.min(5,Math.round(finite(x?.impact)||1))),strategy:safeText(x?.strategy,80),response:safeText(x?.response,2000),owner:safeText(x?.owner,150),status:safeText(x?.status,80)||'Open'}));

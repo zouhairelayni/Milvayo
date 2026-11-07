@@ -1,10 +1,11 @@
 // /src/screens/delivery/Delivery.js
+import AddToCanvas from '../canvas/AddToCanvas';
 import { useRenderMetric } from '../../diagnostics/useRenderMetric';
 import { useEffect, useMemo, useState } from 'react';
 import {EditRow,Labeled,DangerConfirm,Fold} from '../../components/inline/CompactTools';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { IconBtn, InlineDateRange, ConfirmSheet, EmptyState, ActionRow, FormSection, Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
+import { IconBtn, InlineDateRange, ConfirmSheet, EmptyState, FormSection, Bar, ScreenIntro, Button, Card, Chip, Empty, Input, Sheet, Page, Pill, SectionTitle, Segmented, T, useWide } from '../../ui/ui';
 import { useStore, useScreenActive } from '../../store/store';
 import { useHeaderActions } from '../../components/shell/HeaderActions';
 import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';
@@ -104,6 +105,7 @@ export function Sprints({ openTask }) {
         </View> : <T size={13} muted>No goal specified for this sprint.</T>}
         <Bar value={selectedCount ? historyDone / selectedCount : 0} height={6} />
         <T size={12} muted>{historyDone} of {selectedCount} completed · {Math.max(0, selectedCount - historyDone)} unfinished</T>
+        <AddToCanvas source={{sourceType:'sprint',sourceId:selected.id}}/>
         <EditRow title="Manage sprint" summary={canManage ? 'Start, edit or delete this planned sprint' : selected.state === 'active' ? 'Complete this sprint and freeze its history' : 'Completed sprint history is read-only'}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {canManage ? <>

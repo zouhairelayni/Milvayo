@@ -18,6 +18,7 @@ function wbsHarness({nodes=fixture(),cache=caching.createDiagramCache(),scope='t
   '../../../governance/store':{useStore:()=>store},'../../../governance/pm':pm,'../../../governance/wbsviews':views,
   '../../../governance/diagramCache.cjs':{...caching,diagramCache:cache},
   '../../../governance/DiagramPreview':{__esModule:true,default:'DiagramPreview'},'../../../governance/DiagramExports':{__esModule:true,default:'DiagramExports'},
+  '../../../governance/DiagramKindIcon':{__esModule:true,default:'DiagramKindIcon'},
   './PmDocs':{DocHeader:'DocHeader'},'./pmui':{Field:'Field',NumInput:'NumInput',OwnerPick:'OwnerPick'},
   '../../../components/inline/MarkdownField':{__esModule:true,default:'MarkdownField'},
   '../../../gestures/DiagramViewport':{__esModule:true,default:'DiagramViewport'},

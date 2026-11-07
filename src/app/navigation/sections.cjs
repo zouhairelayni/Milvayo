@@ -14,6 +14,7 @@ const NAV = [
       ['board', 'Board', 'columns'],
       ['timeline', 'Timeline', 'bar-chart-2'],
       ['scheduling', 'Scheduling', 'calendar'],
+      ['canvas', 'Canvas', 'edit-3'],
       ['tasks', 'Tasks', 'check-square'],
     ],
   },
@@ -81,9 +82,9 @@ function moreGroups(tools) {
   const inSection = new Set(SECTIONS.flatMap(s => s.views.map(([k]) => k)));
   const flat = NAV.flatMap(g => g.items).filter(([k]) => !inSection.has(k));
   const tool = projectTools.IDS.map(id => flat.find(([k]) => k === id)).filter(Boolean).filter(([k]) => projectTools.screenOn(tools, k));
-  const named = new Set([...projectTools.IDS, 'scheduling', 'settings']);
+  const named = new Set([...projectTools.IDS, 'scheduling', 'canvas', 'settings']);
   return [
-    { group: 'Project tools', items: [...flat.filter(([k]) => k === 'scheduling'), ...tool] },
+    { group: 'Project tools', items: [...flat.filter(([k]) => k === 'scheduling' || k === 'canvas'), ...tool] },
     { group: 'App', items: flat.filter(([k]) => k === 'settings') },
     { group: 'More', items: flat.filter(([k]) => !named.has(k)) },
   ].filter(g => g.items.length || g.group === 'Project tools');
