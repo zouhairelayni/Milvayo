@@ -1,0 +1,92 @@
+[
+  {
+    "file": "board-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "timeline-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "tasks-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "sprints-light.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "light",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "board-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "timeline-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "tasks-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "sprints-dark.html",
+    "width": 390,
+    "height": 844,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "board-landscape.html",
+    "width": 844,
+    "height": 390,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  },
+  {
+    "file": "timeline-desktop.html",
+    "width": 1440,
+    "height": 900,
+    "sourceRendered": true,
+    "expoRuntime": false,
+    "mode": "dark",
+    "sourceData": "model.createWorkspace() bundled sample; never persisted"
+  }
+]

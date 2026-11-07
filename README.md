@@ -1,6 +1,6 @@
-# Milvayo 0.7.13
+# Milvayo 0.7.14
 
-Independent, local-first project management for Android, iOS and Web/PWA, using React Native and Expo SDK 58. The approved premium redesign is now the main application. Android versionCode and iOS buildNumber are 83.
+Independent, local-first project management for Android, iOS and Web/PWA, using React Native and Expo SDK 58. The approved premium redesign is now the main application. Android versionCode and iOS buildNumber are 84.
 
 The app includes Board and Timeline planning, tasks, sprint history, releases, workspace/project management, charts, inline calendars and a first-run tour. More → Take the tour replays onboarding. Theme changes remain separate from optional launcher-icon changes.
 

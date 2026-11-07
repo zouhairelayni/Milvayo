@@ -1,3 +1,10 @@
+## v0.7.14 — Structural loading states (2026-11-07)
+
+- Replace first-visit shell preparation text with bounded Board, Timeline, Tasks and Sprints skeleton compositions using existing theme surfaces and dimensions.
+- Replace the forced two-frame first-mount wait with interruptible React preparation. Immediate and retained content has no minimum loading hold; hidden cached content keeps its identity. Add a pure snapshot-readiness adapter for future loading/error/offline integrations.
+- Use one UI-thread native pulse / browser Web Animation per visible skeleton, with dynamic reduced-motion support, inert accessibility and explicit cleanup.
+- Synchronize package/lock/Expo 0.7.14, Android/iOS 84; no dependencies or migration. Evidence: `docs/qa/release-0714/REPORT.md`. No builds or Expo server; physical acceptance pending.
+
 ## v0.7.13 — Tree draw work, full-screen orientation and export feedback (2026-11-07)
 
 - Partition cached Tree primitives into stable spatial batches. Native camera worklets hide offscreen batches using display, preserving vectors, node inspection, complete exports and bounded viewport bitmaps. Add sampled UI frame-interval diagnostics at gesture completion; no per-frame React updates or JS reporting.

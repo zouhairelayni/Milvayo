@@ -1,5 +1,5 @@
 // /src/app/ModernApp.js
-import { Profiler, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, Profiler, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Platform, StatusBar as NativeStatusBar, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -27,6 +27,8 @@ import { Projects } from '../screens/governance/Projects';
 import Portfolios from '../screens/governance/Portfolios';
 import { Programs } from '../screens/governance/Programs';
 import ScreenPresence from '../ui/ScreenPresence';
+import ScreenSkeleton from '../components/loading/ScreenSkeleton';
+const { screenReadiness } = require('./navigation/screenReadiness.cjs');
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import { useRenderMetric } from '../diagnostics/useRenderMetric';
 import IslandNotice from '../components/notice/IslandNotice';
@@ -99,16 +101,13 @@ const DEFERRED_NATIVE_TABS = ['timeline', 'board', 'tasks', 'sprints'];
 const retainHiddenTab = () => retainsHiddenTabs(Platform.OS);
 const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTask, onOpenBackup, go, query, onQueryChange, openStatus, statusRequest }) {
   // Heavy native screens (Timeline SVG/gestures, Board cards, Tasks, Sprints): commit the tab change first so the
-  // bar, title and press feedback respond at once, then mount the screen two frames later. Only the first visit pays;
+  // bar, title and press feedback respond at once, then let React schedule the screen concurrently. Only the first visit pays;
   // afterwards the page stays mounted and hidden.
   const [ready, setReady] = useState(Platform.OS==='web' || !DEFERRED_NATIVE_TABS.includes(pageId));
   useEffect(() => {
     if (!active || ready) return undefined;
-    let nextFrame = 0;
-    const firstFrame = requestAnimationFrame(() => {
-      nextFrame = requestAnimationFrame(() => setReady(true));
-    });
-    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(nextFrame); };
+    // Let React prepare the first heavy view as interruptible work, without a timer/minimum hold.
+    startTransition(() => setReady(true));
   }, [active, ready]);
   const shown = useRef(false);
   useEffect(() => {
@@ -120,15 +119,16 @@ const CachedPage = memo(function CachedPage({ pageId, active, openTask, onNewTas
   const ScreenComponent = SCREENS[pageId];
   // The screen element keeps its identity when only `active` flips, so showing a retained page re-renders nothing
   // unless the store or its query really changed while it was hidden.
-  const content = useMemo(() => ready
+  const readiness = screenReadiness({ hasData: ready, preparing: !ready });
+  const content = useMemo(() => readiness.view === 'content'
     ? <Profiler id={pageId} onRender={(_, __, duration) => diagnosticMonitor.recordRender(pageId, duration)}>
         <ScreenComponent openTask={openTask} onNewTask={onNewTask} onOpenBackup={onOpenBackup} go={go} query={query} onQueryChange={onQueryChange} openStatus={openStatus} statusRequest={statusRequest} />
       </Profiler>
-    : <View accessible accessibilityLabel={`Opening ${pageId}`} style={{ flex:1,justifyContent:'center',alignItems:'center' }}><T size={13} muted>{`Preparing ${pageId}…`}</T></View>,
-  [ready, pageId, ScreenComponent, openTask, onNewTask, onOpenBackup, go, query, onQueryChange, openStatus, statusRequest]);
+    : null,
+  [readiness.view, pageId, ScreenComponent, openTask, onNewTask, onOpenBackup, go, query, onQueryChange, openStatus, statusRequest]);
   return <ScreenPresence active={active} style={{flex:1}}>
     <StoreFreeze frozen={!active}>
-      <ScreenErrorBoundary screenId={pageId} go={go}>{content}</ScreenErrorBoundary>
+      <ScreenErrorBoundary screenId={pageId} go={go}>{content || <ScreenSkeleton screen={pageId} active={active}/>}</ScreenErrorBoundary>
     </StoreFreeze>
   </ScreenPresence>;
 }, (prev, next) => !shouldRenderPage(prev, next)); // memo's comparator answers "equal, skip?"
