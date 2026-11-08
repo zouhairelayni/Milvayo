@@ -1,5 +1,5 @@
 // /src/screens/tasks/TaskSheet.js
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
@@ -44,8 +44,51 @@ export function NewTaskSheet({ onClose, onSave, extra }) {
 
 export default function TaskSheet({ taskId, onClose }) {
   const { c } = useTheme();
+  const api = useStore();
   const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();
-  const t = s.tasks.find((x) => x.id === taskId);
+  const storedTask = s.tasks.find((x) => x.id === taskId);
+  const [draftPatch,setDraftPatch]=useState({}),[draftReady,setDraftReady]=useState(!api.createTaskDraft),[saveState,setSaveState]=useState(''),[saving,setSaving]=useState(false);
+  const draft=useRef(null),controllerIdentity=useRef(null),draftIdentity=JSON.stringify([workspace.selectedId,taskId]);
+  const draftAvailable=!api.createTaskDraft||(draftReady&&controllerIdentity.current===draftIdentity);
+  const shownSaveState=!api.createTaskDraft||controllerIdentity.current===draftIdentity?saveState:'';
+  const t=storedTask?{...storedTask,...(controllerIdentity.current===draftIdentity?draftPatch:{})}:null;
+  const session=api.cloudSession?.();
+  useEffect(()=>{
+    if(!api.createTaskDraft)return;
+    setDraftReady(false);setDraftPatch({});setSaveState('');controllerIdentity.current=draftIdentity;
+    let mounted=true;const controller=api.createTaskDraft(workspace.selectedId,taskId,next=>{if(mounted)setDraftPatch(next.patch);});draft.current=controller;
+    controller.open().then(()=>{if(mounted)setDraftReady(true);}).catch(e=>{if(mounted)setSaveState(e.message);});
+    return()=>{mounted=false;void controller.flush().catch(()=>{});};
+  },[draftIdentity,api.createTaskDraft]);
+  const stage=(patch)=>{
+    if(!draft.current)return t&&updateTask(t.id,patch);
+    if(!draftAvailable||saving)return false;
+    try{void draft.current.stage(patch).then(()=>setSaveState('Draft saved on this device')).catch(e=>setSaveState(e.message));return true;}
+    catch(e){setSaveState(e.message);return false;}
+  };
+  const commitDraft=async()=>{
+    if(!draft.current||!draftAvailable)return;
+    try{await draft.current.commit();setSaveState(session?.getState().connected?'Saved on this device · cloud synchronization pending':'Saved on this device');}
+    catch(e){setSaveState(e.message);}
+  };
+  const saveTask=async(synchronize=true)=>{
+    if(saving||!draftAvailable)return false;setSaving(true);
+    try{
+      if(draft.current)await draft.current.commit();
+      else if(descriptionEditing&&t&&descriptionDraft!==(t.description||'')&&updateTask(t.id,{description:descriptionDraft})===false)return false;
+      if(api.flush&&!(await api.flush()))throw Error('Local save failed; changes remain on this device');
+      await session?.flush();
+      if(synchronize&&session?.getState().connected)await (session.syncNow?session.syncNow():session.tick());
+      const state=session?.getState();
+      setSaveState(state?.conflicts?'Changes need conflict resolution':state?.pending?'Saved on this device · cloud synchronization pending':state?.connected?'Cloud acknowledged all queued changes':'Saved on this device');
+      setDescriptionEditing(false);return true;
+    }catch(e){setSaveState(e.message);return false;}finally{setSaving(false);}
+  };
+  useEffect(()=>{
+    if(!api.createTaskDraft)return;
+    const timer=setInterval(()=>{if(Object.keys(draft.current?.snapshot().patch||{}).length)void saveTask();},session?.getSyncInterval?.()||45000);
+    return()=>clearInterval(timer);
+  },[draftAvailable,saving,draftIdentity,session]);
   const [open, setOpen] = useState(null);
   const [detailTab,setDetailTab]=useState('activity');
   const [descriptionEditing, setDescriptionEditing] = useState(false);
@@ -78,7 +121,7 @@ export default function TaskSheet({ taskId, onClose }) {
   const canVerify = !!t && checks.length > 0 && checks.every((k) => k.status === 'passed' && k.evidence) &&
     !!t.evidence?.trim() && !!t.actual?.trim() && !blocked;
   const canMerge = !!t?.verified && canVerify && !!t?.mainSha?.trim();
-  const patchCheck = (key, changes) => t && set({ tests: t.tests.map((k) => k.id === key ? { ...k, ...changes } : k) }, `Updated acceptance evidence for ${t.id}`);
+  const patchCheck = (key, changes) => t && stage({ tests: t.tests.map((k) => k.id === key ? { ...k, ...changes } : k) }, `Updated acceptance evidence for ${t.id}`);
   const addLabel = () => {
     if (!t) return;
     const value = labelDraft.trim().slice(0, 40);
@@ -102,27 +145,23 @@ export default function TaskSheet({ taskId, onClose }) {
     setAttachmentName(''); setAttachmentUrl('');
   };
 
-  const closeTask = () => {
-    if (descriptionEditing && t && descriptionDraft !== (t.description || '')) set({ description: descriptionDraft });
-    onClose();
+  const closeTask = async () => {
+    if(await saveTask())onClose();
   };
 
   const footer = t ? (
     <>
     <InlineNotice />
     <ActionMenu label="Task actions" items={[
-      {label:'Duplicate task',icon:'copy',confirmation:{title:'Duplicate this task?',description:'Create a copy and keep this task open.',confirmLabel:'Duplicate',successMessage:'Task duplicated.'},onPress:()=>{
-        if(descriptionEditing&&descriptionDraft!==(t.description||'')){
-          if(set({description:descriptionDraft})===false)return false;
-          setDescriptionEditing(false);
-        }
+      {label:'Duplicate task',icon:'copy',confirmation:{title:'Duplicate this task?',description:'Create a copy and keep this task open.',confirmLabel:'Duplicate',successMessage:'Task duplicated.'},onPress:async()=>{
+        if(!(await saveTask(false)))return false;
         return duplicateTask(t.id)||false;
       }},
       {label:'Delete task',icon:'trash-2',danger:true,confirmation:{title:'Delete this task?',description:'This removes the task and cannot be undone here.',confirmLabel:'Delete'},onPress:()=>{
         const ok=deleteTask(t.id);if(ok)onClose();return !!ok;
       }},
     ]}/>
-    <View style={{flex:1}}/><Button label="Done" small onPress={closeTask}/>
+    <View style={{flex:1}}/><Button label="Save" small disabled={saving||!draftAvailable} onPress={()=>saveTask()}/><Button label="Done" small variant="ghost" disabled={saving} onPress={closeTask}/>
     </>
   ) : null;
 
@@ -132,24 +171,30 @@ export default function TaskSheet({ taskId, onClose }) {
 
   return (
     <Sheet visible={!!t} onClose={closeTask} title={t ? 'Task details' : ''} footer={footer} showNotice={false}>
+      {shownSaveState?<T muted size={12} accessibilityLiveRegion="polite">{shownSaveState}</T>:null}
+      {shownSaveState.startsWith('Task changed while editing')?<Card pad={12} style={{gap:12}}>
+        <T size={13}>Compare the retained draft with the current task</T>
+        {Object.keys(draftPatch).map(field=><View key={field} style={{gap:4}}><T size={12}>{field}</T><T selectable size={12}>Your draft: {JSON.stringify(draftPatch[field])}</T><T selectable muted size={12}>Current task: {JSON.stringify(storedTask?.[field]??null)}</T></View>)}
+        <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
+          <Button label="Use my draft" disabled={saving} onPress={async()=>{try{await draft.current.rebase();await saveTask();}catch(e){setSaveState(e.message);}}}/>
+          <Button label="Keep current task" variant="secondary" disabled={saving} onPress={async()=>{try{for(const field of Object.keys(draft.current.snapshot().patch))await draft.current.discard(field);setDescriptionEditing(false);setSaveState('Current task kept');}catch(e){setSaveState(e.message);}}}/>
+        </View>
+      </Card>:null}
       {presence.viewers?<T muted size={12}>{presence.editing?'Another member is currently editing this task':`${presence.viewers} other member(s) viewing`}</T>:null}
       {t ? (
         <>
-          <Input lazy value={t.title} onChangeText={v=>set({title:v})} accessibilityLabel="Task title" style={{fontSize:24,fontWeight:'600',lineHeight:32,backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:4,minHeight:56}} />
+          <Input value={t.title} editable={draftAvailable&&!saving} onBlur={commitDraft} onChangeText={v=>stage({title:v})} accessibilityLabel="Task title" style={{fontSize:24,fontWeight:'600',lineHeight:32,backgroundColor:'transparent',paddingHorizontal:0,paddingVertical:4,minHeight:56}} />
           <AddToCanvas source={{sourceType:'task',sourceId:t.id}}/>
           <View style={{gap:10}}>
             <T size={16} weight="700">Description</T>
             {descriptionEditing?<Card pad={12} style={{gap:10}}>
               <T size={12} muted>Markdown source · **bold**, *italic*, headings and lists</T>
-              <Input value={descriptionDraft} onChangeText={setDescriptionDraft} multiline placeholder="Add a description..." style={{minHeight:160,fontSize:14}}/>
+              <Input value={descriptionDraft} editable={draftAvailable&&!saving} onChangeText={v=>{setDescriptionDraft(v);if(draft.current)stage({description:v});}} multiline placeholder="Add a description..." style={{minHeight:160,fontSize:14}}/>
               <View style={{flexDirection:'row',gap:8}}>
-                <PressSurface accessibilityRole="button" accessibilityLabel="Save description" onPress={()=>{
-                  if(descriptionDraft!==(t.description||'')&&set({description:descriptionDraft})===false)return;
-                  setDescriptionEditing(false);
-                }} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
+                <PressSurface accessibilityRole="button" accessibilityLabel="Save description" onPress={()=>saveTask()} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
                   <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={c.accentText} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" accessible={false}><Path d="M20 6 9 17 4 12"/></Svg>
                 </PressSurface>
-                <PressSurface accessibilityRole="button" accessibilityLabel="Cancel description editing" onPress={()=>setDescriptionEditing(false)} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
+                <PressSurface accessibilityRole="button" accessibilityLabel="Cancel description editing" onPress={()=>{if(draft.current)void draft.current.discard('description').catch(e=>setSaveState(e.message));setDescriptionDraft(storedTask.description||'');setDescriptionEditing(false);}} style={{width:44,height:44,borderRadius:12,alignItems:'center',justifyContent:'center',backgroundColor:c.elevated}}>
                   <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={c.danger} strokeWidth={2} strokeLinecap="round" accessible={false}><Path d="m6 6 12 12M18 6 6 18"/></Svg>
                 </PressSurface>
               </View>
@@ -166,7 +211,7 @@ export default function TaskSheet({ taskId, onClose }) {
           <View style={{gap:4}}>
             <T size={16} weight="600" style={{marginBottom:4}}>Plan this task</T>
             {row('status', 'Status', t.status,
-              <Segmented options={STATUS} value={t.status} onChange={(v) => { moveTask(t.id, v); setOpen(null); }} />)}
+              <Segmented options={STATUS} value={t.status} onChange={(v) => { moveTask(t.id, v); setOpen(null); void saveTask(); }} />)}
             {row('schedule', 'Schedule', `${t.start ? fmt(t.start) : 'No start'} – ${t.due ? fmt(t.due) : 'No due'}`,
               <View style={{ gap: 12 }}>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
@@ -174,7 +219,7 @@ export default function TaskSheet({ taskId, onClose }) {
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
                   <View style={{ flex: 1, minWidth: 135 }}><Field label="Effort (hours)">
-                    <Input value={String(t.effort)} keyboardType="numeric" onChangeText={(v) => set({ effort: Number(v) || 0 })} />
+                    <Input value={String(t.effort)} editable={draftAvailable&&!saving} onBlur={commitDraft} keyboardType="numeric" onChangeText={(v) => stage({ effort: Number(v) || 0 })} />
                   </Field></View>
                   <View style={{ flex: 1, minWidth: 135 }}><Field label="Logged hours">
                     <T size={13} muted style={{ paddingTop: 9 }}>{String(t.logged)}h · see Time tracking above</T>
@@ -186,7 +231,7 @@ export default function TaskSheet({ taskId, onClose }) {
             {row('owner', 'Owner', t.owner || 'Unassigned',
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                 {[...new Set([...s.contributors.map((p) => p.name), 'Unassigned'])].map((name) => (
-                  <Chip key={name} label={name} active={t.owner === name} onPress={() => { set({ owner: name }, `Assigned "${t.title}" to ${name}`); setOpen(null); }} />
+                  <Chip key={name} label={name} active={t.owner === name} onPress={() => { set({ owner: name }, `Assigned "${t.title}" to ${name}`); setOpen(null); void saveTask(); }} />
                 ))}
               </View>)}
           </View>
@@ -225,7 +270,7 @@ export default function TaskSheet({ taskId, onClose }) {
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                       {CHECK_STATES.map((st) => <Chip key={st} label={st} active={k.status === st} onPress={() => setCheck(k.id, st)} />)}
                     </View>
-                    <Input lazy
+                    <Input
                       value={t.tests.find((raw) => `${t.id}::${raw.id}` === k.id)?.evidence || ''}
                       onChangeText={(v) => patchCheck(k.id.slice(t.id.length + 2), { evidence: v })}
                       placeholder="Test result / evidence reference" multiline
@@ -323,7 +368,7 @@ export default function TaskSheet({ taskId, onClose }) {
               <View style={{gap:12}}>{s.customFields.map(f=><View key={f.id} style={{gap:6}}><T size={12} weight="600">{f.name}{f.required?' *':''}</T>
                 {f.type==='boolean'?<Segmented options={['false','true']} value={String(t.customValues?.[f.id]??false)} onChange={v=>setCustomValue(t.id,f.id,v==='true')}/>:
                  f.type==='select'?<View style={{flexDirection:'row',flexWrap:'wrap',gap:6}}>{(f.options||[]).map(v=><Chip key={v} label={v} active={t.customValues?.[f.id]===v} onPress={()=>setCustomValue(t.id,f.id,v)}/>)}</View>:
-                 <CustomValueInput value={t.customValues?.[f.id]} type={f.type} onSave={v=>setCustomValue(t.id,f.id,v)}/>}
+                 <CustomValueInput value={t.customValues?.[f.id]} type={f.type} onDraft={v=>stage({customValues:{...(draft.current?.snapshot().patch.customValues||t.customValues||{}),[f.id]:v}})} onSave={async v=>{stage({customValues:{...(draft.current?.snapshot().patch.customValues||t.customValues||{}),[f.id]:v}});await saveTask();}}/>}
                </View>)}</View>)}
             {row('integrations','GitHub references',`${(t.githubLinks||[]).length} links`,
               <View style={{gap:8}}><T size={12} muted>Enable the GitHub Power-Up in Board tools before attaching a link.</T>
@@ -335,17 +380,17 @@ export default function TaskSheet({ taskId, onClose }) {
             {row('verification', 'Verification & delivery', t.merged ? 'Merge recorded' : t.verified ? 'Verified' : 'Not verified',
               <View style={{ gap: 10 }}>
                 <T size={12} muted>Evidence records only. These actions do not run tests or merge code.</T>
-                <Field label="Expected result"><Input lazy value={t.expected || ''} onChangeText={(v) => set({ expected: v })} multiline /></Field>
-                <Field label="Actual result"><Input lazy value={t.actual || ''} onChangeText={(v) => set({ actual: v })} multiline /></Field>
-                <Field label="Verification evidence"><Input lazy value={t.evidence || ''} onChangeText={(v) => set({ evidence: v })} multiline /></Field>
-                <Field label="Rollback steps"><Input lazy value={t.rollback || ''} onChangeText={(v) => set({ rollback: v })} multiline /></Field>
-                <Field label="Repository"><Input lazy value={t.repo || ''} onChangeText={(v) => set({ repo: v })} /></Field>
-                <Field label="Branch"><Input lazy value={t.branch || ''} onChangeText={(v) => set({ branch: v })} /></Field>
-                <Field label="Working commit"><Input lazy value={t.commit || ''} onChangeText={(v) => set({ commit: v })} /></Field>
-                <Field label="Main branch SHA"><Input lazy value={t.mainSha || ''} onChangeText={(v) => set({ mainSha: v })} /></Field>
+                <Field label="Expected result"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.expected || ''} onChangeText={(v) => stage({ expected: v })} multiline /></Field>
+                <Field label="Actual result"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.actual || ''} onChangeText={(v) => stage({ actual: v })} multiline /></Field>
+                <Field label="Verification evidence"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.evidence || ''} onChangeText={(v) => stage({ evidence: v })} multiline /></Field>
+                <Field label="Rollback steps"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.rollback || ''} onChangeText={(v) => stage({ rollback: v })} multiline /></Field>
+                <Field label="Repository"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.repo || ''} onChangeText={(v) => stage({ repo: v })} /></Field>
+                <Field label="Branch"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.branch || ''} onChangeText={(v) => stage({ branch: v })} /></Field>
+                <Field label="Working commit"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.commit || ''} onChangeText={(v) => stage({ commit: v })} /></Field>
+                <Field label="Main branch SHA"><Input editable={draftAvailable&&!saving} onBlur={commitDraft} value={t.mainSha || ''} onChangeText={(v) => stage({ mainSha: v })} /></Field>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  <Button label="Verify evidence" small disabled={!canVerify || !!t.verified} onPress={() => verifyTask(t.id)} />
-                  <Button label="Record merge" small variant="secondary" disabled={!canMerge || !!t.merged} onPress={() => mergeTask(t.id)} />
+                  <Button label="Verify evidence" small disabled={!canVerify || !!t.verified} onPress={async() => {if(await saveTask(false)){verifyTask(t.id);await session?.syncNow?.();}}} />
+                  <Button label="Record merge" small variant="secondary" disabled={!canMerge || !!t.merged} onPress={async() => {if(await saveTask(false)){mergeTask(t.id);await session?.syncNow?.();}}} />
                 </View>
               </View>)}
 

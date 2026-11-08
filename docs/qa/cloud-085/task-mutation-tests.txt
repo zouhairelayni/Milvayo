@@ -1,0 +1,37 @@
+✔ queue persists offline edits and resumes after process termination without losing payloads (62.52473ms)
+✔ lost acknowledgements resend the exact durable payload and idempotency key (19.602192ms)
+✔ permanent conflict retains edits and stops ordered dependent operations (20.805731ms)
+✔ journal scopes separate hosts, users, organizations, cloud and local workspaces (0.845654ms)
+✔ conversation sends survive a lost acknowledgement and process restart with the same identity (12.336577ms)
+✔ corrupt journals and failed disk writes cannot silently become a fresh queue (18.338923ms)
+✔ a permission reset removes revoked cached projects while retaining blocked edits for scoped recovery (33.096115ms)
+✔ compatible unsent task fields consolidate while sent/retried operations keep their immutable payload (135.258423ms)
+✔ consolidation preserves structural edits, messages and attempted mutation identities (17.872846ms)
+✔ conflict resolution retains original intent and sends a fresh revision-checked idempotency identity (20.356731ms)
+✔ real task editor invalidation resets and timestamps remain consolidatable (53.080885ms)
+✔ wire format is prepared once before first send and replayed exactly after restart (25.735384ms)
+✔ v0.8.4 full-record sent payload survives upgrade with the original mutation ID and hash input (18.094ms)
+✔ a complete contiguous commit advances the durable cursor and the immediate unchanged refresh needs only authorization reads (18.245538ms)
+✔ a sequence gap retains the old cursor so another collaborator record cannot be skipped (18.586654ms)
+✔ a no-op acknowledgment at the next sequence cannot skip the unseen second record in a collaborator atomic commit (11.910423ms)
+✔ lost acknowledgments and duplicate receipts advance only through their own sequence after restart (31.9225ms)
+✔ messages and legacy acknowledgments cannot advance the canonical workspace cursor (43.18173ms)
+✔ an older delayed acknowledgment cannot overwrite newer records already received by refresh (15.782577ms)
+✔ actual editor title, description, priority and absolute deadline edits consolidate into one canonical mutation (42.538807ms)
+✔ absolute start and due edits batch while ordering-sensitive fields retain atomic boundaries (25.553538ms)
+✔ a scheduling mutation touching additional records cannot consolidate with adjacent task drafts (19.733231ms)
+✔ independent task validator agrees with canonical validation for valid and malformed field values (306.009269ms)
+✔ simple saves remain six point reads at 10, 100, 500 and 2,000 tasks with no summary or task deletion (329.277192ms)
+✔ compact payloads retain exact old field checks, fresh custom configuration and idempotent receipts (20.40623ms)
+✔ stale independent fields merge against immutable revisions; competing fields and forged envelopes fail (8.390731ms)
+✔ compact unchanged edits preserve receipt-only no-op behavior without task/version/sequence writes (3.353885ms)
+✔ old full-payload receipts replay under fresh authorization and new receipts bind restore semantics (10.191539ms)
+✔ forged patch paths, fields, old values and absent bases cannot change records (3.767192ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 978.098883

@@ -63,39 +63,53 @@ function createService(db,rtdb,getTelemetry=()=>({})){
   });
  }
  async function commit(uid,b){
+  const V=require('../taskMutation.cjs');
   S.segment(b.mutationId);if(!Array.isArray(b.changes)||!b.changes.length||b.changes.length>100)fail('Mutation must have 1–100 record changes','invalid-argument');
-  const hash=digest({changes:b.changes,actor:uid});
-  return db.runTransaction(async tx=>{const a=await access(tx,uid,b.orgId,b.workspaceId);if(a.member?.active!==true||a.meta?.state!=='active')fail('Workspace access is unavailable');
-   const receipt=a.ws.collection('receipts').doc(b.mutationId),[ack,subscription]=await Promise.all([tx.get(receipt),tx.get(a.org.collection('subscription').doc('current'))]);
-   // Permission is checked even on replay; stale receipts cannot recover revoked data.
-   for(const c of b.changes){const r=checkRecord(c.after||c.before);if(c.key!==r.key)fail('Mutation path mismatch','invalid-argument');const comment=r.kind==='comments'||r.kind==='canvas.threads',action=b.restore?'restore':!c.after?'delete':r.kind==='projects'?'manage':comment?'comment':!c.before?'create':'edit';if(!IAM.can(a.member,a.grant,r.projectId,action)||comment&&c.before&&!IAM.can(a.member,a.grant,r.projectId,'edit'))fail('Action is outside the scoped grant');}
-   if(b.changes.some(c=>!['comments','canvas.threads'].includes((c.after||c.before).kind))&&!subscription.data()?.seats?.includes(uid))fail('A licensed seat is required for project editing');
-   if(ack.exists){if(ack.data().hash!==hash||ack.data().actor!==uid)fail('Mutation ID reused','already-exists');return {...ack.data().result,duplicate:true};}
-   const projects=[...new Set(b.changes.map(c=>(c.after||c.before).projectId))],scoped=projects.length===1&&!!projects[0]&&b.changes.every(c=>(c.after||c.before).kind!=='projects');
-   const snapshot=await tx.get(scoped?a.ws.collection('records').where('projectId','==',projects[0]):a.ws.collection('records'));const records=new Map(snapshot.docs.map(d=>[d.id,d.data()])),sequence=a.meta.sequence+1,updates=[];
-   const beforeRecords=[...records.values()];
-   const seen=new Set();for(const c of b.changes){if(seen.has(c.key))fail('Duplicate mutation key','invalid-argument');seen.add(c.key);if(!Number.isSafeInteger(c.baseRevision)||c.baseRevision<0)fail('Invalid base revision','invalid-argument');const old=records.get(c.key);if(old?.deleted&&!b.restore)fail('Deleted records require an explicit authorized restore');if(c.before)checkRecord(c.before);if(c.after)checkRecord(c.after);
-    if(c.before&&(!old||old.revision!==c.baseRevision)){
-     // Merge uses the supplied base only if it matches an immutable server revision.
-     const rev=await tx.get(a.ws.collection('versions').doc(c.key+'@'+c.baseRevision));
-     if(!rev.exists||!S.equal(rev.data().record.data,c.before.data)||rev.data().record.order!==c.before.order)fail('Unknown mutation base','conflict');
-    }else if(c.before&&(!S.equal(old.data,c.before.data)||old.order!==c.before.order))fail('Forged mutation base','conflict');
-    const merged=S.mergeChange(old,c),next={...checkRecord(merged),schema:S.SCHEMA,revision:(old?.revision||0)+1,sequence,deleted:merged.deleted===true};updates.push({old,next});records.set(c.key,next);
+  const envelope=c=>c.patch?V.patchEnvelope(c):checkRecord(c.after||c.before);
+  const hash=digest({changes:b.changes,actor:uid});let attempts=0,totalReads=0;
+  const result=await db.runTransaction(async tx=>{attempts++;const reads={authorization:2,workspaceSequence:1,subscription:0,receipt:0,records:0,versions:0,configuration:0,summaries:0};totalReads+=3;
+   const get=async(ref,category)=>{const snap=await tx.get(ref),count=Number.isInteger(snap.size)?snap.size:1;reads[category]+=count;totalReads+=count;return snap;};
+   const a=await access(tx,uid,b.orgId,b.workspaceId);if(a.member?.active!==true||a.meta?.state!=='active')fail('Workspace access is unavailable');
+   const receipt=a.ws.collection('receipts').doc(b.mutationId),[ack,subscription]=await Promise.all([get(receipt,'receipt'),get(a.org.collection('subscription').doc('current'),'subscription')]);
+   // Replays also require fresh authorization; receipts cannot recover revoked content.
+   for(const c of b.changes){const r=envelope(c);if(c.key!==r.key)fail('Mutation path mismatch','invalid-argument');if(c.patch&&(c.before||c.after))fail('Ambiguous task patch','invalid-argument');const comment=r.kind==='comments'||r.kind==='canvas.threads',action=b.restore?'restore':c.patch?'edit':!c.after?'delete':r.kind==='projects'?'manage':comment?'comment':!c.before?'create':'edit';if(!IAM.can(a.member,a.grant,r.projectId,action)||comment&&c.before&&!IAM.can(a.member,a.grant,r.projectId,'edit'))fail('Action is outside the scoped grant');}
+   if(b.changes.some(c=>!['comments','canvas.threads'].includes(envelope(c).kind))&&!subscription.data()?.seats?.includes(uid))fail('A licensed seat is required for project editing');
+   if(ack.exists){if(ack.data().hash!==hash||ack.data().actor!==uid||ack.data().restore!==undefined&&ack.data().restore!==(b.restore===true))fail('Mutation ID reused','already-exists');return {...ack.data().result,duplicate:true,measured:IAM.administer(a.member)?{documentReads:5,documentWrites:0,documentDeletes:0,readBreakdown:reads}:undefined};}
+   const narrow=!b.restore&&b.changes.every(c=>c.patch||V.eligible(c));
+   const projects=[...new Set(b.changes.map(c=>envelope(c).projectId))],scoped=projects.length===1&&!!projects[0]&&b.changes.every(c=>envelope(c).kind!=='projects');
+   let records;
+   if(narrow){const snapshots=await Promise.all([...new Set(b.changes.map(c=>c.key))].map(key=>get(a.ws.collection('records').doc(key),'records')));records=new Map(snapshots.filter(d=>d.exists).map(d=>[d.id,d.data()]));}
+   else{const snap=await get(scoped?a.ws.collection('records').where('projectId','==',projects[0]):a.ws.collection('records'),'records');records=new Map(snap.docs.map(d=>[d.id,d.data()]));}
+   const sequence=a.meta.sequence+1,updates=[],unchanged=[],beforeRecords=[...records.values()],seen=new Set(),configurations=new Map();
+   for(const wire of b.changes){if(seen.has(wire.key))fail('Duplicate mutation key','invalid-argument');seen.add(wire.key);if(!Number.isSafeInteger(wire.baseRevision)||wire.baseRevision<0)fail('Invalid base revision','invalid-argument');const old=records.get(wire.key);if(old?.deleted&&!b.restore)fail('Deleted records require an explicit authorized restore');
+    let c=wire,base;
+    if(wire.baseRevision!==old?.revision&&(wire.before||wire.patch)){
+     const rev=await get(a.ws.collection('versions').doc(wire.key+'@'+wire.baseRevision),'versions');
+     if(!rev.exists)fail('Unknown mutation base','conflict');base=rev.data().record;
+    }else base=old;
+    if(wire.patch)c=V.expandPatch(wire,base);
+    if(c.before)checkRecord(c.before);if(c.after)checkRecord(c.after);
+    if(c.before&&(!base||!VEnvelope(base,c.before)||!S.equal(base.data,c.before.data)||base.order!==c.before.order))fail('Forged mutation base','conflict');
+    const merged=S.mergeChange(old,c),next={...checkRecord(merged),schema:S.SCHEMA,revision:(old?.revision||0)+1,sequence,deleted:merged.deleted===true};
+    if(narrow){let project;if(!S.equal(old?.data.customValues,next.data.customValues)){if(!configurations.has(next.projectId))configurations.set(next.projectId,(await get(a.ws.collection('records').doc(S.keyOf('projects',next.projectId,next.projectId)),'configuration')).data());project=configurations.get(next.projectId);}V.validateIndependent(old,next,project);}
     if(!b.restore&&((next.kind==='tasks'&&['verified','merged'].some(k=>next.data[k]&&!old?.data[k]))||(next.kind==='releases'&&next.data.status==='Released'&&old?.data.status!=='Released'))&&!IAM.can(a.member,a.grant,next.projectId,'approve'))fail('Approval permission required');
+    if(old&&S.equal(old.data,next.data)&&old.order===next.order&&!!old.deleted===!!next.deleted)unchanged.push(old);else{updates.push({old,next});records.set(c.key,next);}
    }
-   S.validateRecords([...records.values()]);
-   if(!b.restore)require('../validation.cjs').validateTransition(beforeRecords,[...records.values()]);
-   const summaryIds=[...new Set(updates.map(u=>u.next.projectId).filter(Boolean))];const previousSummaries=await Promise.all(summaryIds.map(p=>tx.get(a.ws.collection('summaries').doc(p))));
-   const result={sequence,records:updates.map(u=>u.next),measured:{documentReads:snapshot.size+5,documentWrites:updates.length*2+3}};
-   for(let i=0;i<summaryIds.length;i++){const p=summaryIds[i];tx.set(previousSummaries[i].ref,summaries.update(previousSummaries[i].data()||summaries.empty(p),updates.filter(u=>u.next.projectId===p),sequence));}result.measured.documentReads+=summaryIds.length;result.measured.documentWrites+=summaryIds.length;
-   for(const {old,next} of updates){tx.set(a.ws.collection('records').doc(next.key),next);if(old?.revision===1){tx.set(a.ws.collection('versions').doc(old.key+'@1'),{record:old,actor:uid,at:Date.now()});result.measured.documentWrites++;}tx.create(a.ws.collection('versions').doc(next.key+'@'+next.revision),{record:next,actor:uid,at:Date.now()});}
-   if(!IAM.administer(a.member))result.measured.documentReads=null;
-   tx.update(a.ws,{sequence});tx.create(receipt,{actor:uid,hash,result,at:Date.now()});
-   // Audit metadata is separate from content; versions above retain recoverable revisions.
-   tx.create(a.ws.collection('audit').doc(b.mutationId),{actor:uid,action:b.restore?'Restore records':'Commit records',projectId:updates.every(u=>u.next.projectId===updates[0].next.projectId)?updates[0].next.projectId:'',keys:updates.map(u=>u.next.key),sequence,at:Date.now()});
-   return result;
+   if(!narrow){S.validateRecords([...records.values()]);if(!b.restore)require('../validation.cjs').validateTransition(beforeRecords,[...records.values()]);}
+   const summaryChanges=updates.filter(summaries.affects),summaryIds=[...new Set(summaryChanges.map(u=>u.next.projectId).filter(Boolean))];
+   const previousSummaries=await Promise.all(summaryIds.map(p=>get(a.ws.collection('summaries').doc(p),'summaries')));
+   const measured={documentReads:Object.values(reads).reduce((x,y)=>x+y,0),documentWrites:0,documentDeletes:0,validationClass:narrow?'A':'canonical',fullProjectScan:!narrow,readBreakdown:reads,writeBreakdown:{records:updates.length,versions:0,receipt:1,sequence:updates.length?1:0,audit:updates.length?1:0,summaries:summaryIds.length},clientSdkReads:0,securityRulesDependentReads:0,listenerReads:0};
+   const response={sequence:updates.length?sequence:a.meta.sequence,committedSequence:updates.length?sequence:null,records:[...updates.map(u=>u.next),...unchanged],measured};
+   for(let i=0;i<summaryIds.length;i++){const p=summaryIds[i];tx.set(previousSummaries[i].ref,summaries.update(previousSummaries[i].data()||summaries.empty(p),summaryChanges.filter(u=>u.next.projectId===p),sequence));}
+   for(const {old,next} of updates){const ref=a.ws.collection('records').doc(next.key);if(old)tx.update(ref,next);else tx.create(ref,next);if(old?.revision===1){tx.set(a.ws.collection('versions').doc(old.key+'@1'),{record:old,actor:uid,at:Date.now()});measured.writeBreakdown.versions++;}tx.create(a.ws.collection('versions').doc(next.key+'@'+next.revision),{record:next,actor:uid,at:Date.now()});measured.writeBreakdown.versions++;}
+   measured.documentWrites=Object.values(measured.writeBreakdown).reduce((x,y)=>x+y,0);
+   if(!IAM.administer(a.member))response.measured={documentReads:null,documentWrites:measured.documentWrites};
+   if(updates.length){tx.update(a.ws,{sequence});tx.create(a.ws.collection('audit').doc(b.mutationId),{actor:uid,action:b.restore?'Restore records':'Commit records',projectId:updates.every(u=>u.next.projectId===updates[0].next.projectId)?updates[0].next.projectId:'',keys:updates.map(u=>u.next.key),sequence,at:Date.now()});}
+   tx.create(receipt,{actor:uid,hash,restore:b.restore===true,result:response,at:Date.now()});return response;
   });
+  if(result.measured&&Number.isFinite(result.measured.documentReads))result.measured={...result.measured,transactionAttempts:attempts,transactionRetries:attempts-1,allAttemptsDocumentReads:totalReads};return result;
  }
+ function VEnvelope(a,b){return ['key','kind','projectId','boardId','id'].every(k=>a[k]===b[k]);}
  async function grant(uid,b){
   const target=S.segment(b.uid),g=IAM.validGrant(b.grant),ws=wsRef(b.orgId,b.workspaceId),acl=rtdb.ref(`acl/${b.orgId}/${b.workspaceId}/${target}`);
   // A versioned deny phase makes concurrent grants converge without stale ACL resurrection.

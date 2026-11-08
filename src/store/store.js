@@ -4,6 +4,7 @@ import BoardMorph from '../components/brand/BoardMorph';
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { View, AppState, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { acquireLocalWriter } from '../cloud/localWriter';
 import { T } from '../ui/uiBase';
 const model=require('../domain/model.cjs');
 const {localDay}=require('../utils/localDay.cjs');
@@ -25,7 +26,7 @@ const orderByDependency=(p,ids)=>{const chosen=new Set(ids),byId=new Map(p.tasks
 const current=w=>w.projects.find(p=>p.id===w.selectedId);
 
 export function StoreProvider({children,onReady,loading}){
- const [ws,setWs]=useState(null),[fault,setFault]=useState(''),[ready,setReady]=useState(false);
+ const [ws,setWs]=useState(null),[fault,setFault]=useState(''),[ready,setReady]=useState(false),[loadErrorCode,setLoadErrorCode]=useState('');
  useEffect(()=>{if(ready)onReady?.();},[ready,onReady]);
  const [notice,setNotice]=useState(null);
  const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});
@@ -39,12 +40,16 @@ export function StoreProvider({children,onReady,loading}){
   {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},
    onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});
  useEffect(()=>{
-  const save=()=>{void writer.current?.flush();}; // the writer does not exist until the first load finishes
-  const sub=AppState.addEventListener('change',state=>{if(state!=='active')save();});
-  if(Platform.OS==='web'&&typeof window!=='undefined')window.addEventListener('pagehide',save);
-  return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined')window.removeEventListener('pagehide',save);save();};
+  const save=()=>{void writer.current?.flush();void cloudRef.current?.flush();}; // the writer does not exist until the first load finishes
+  const sub=AppState.addEventListener('change',state=>{cloudRef.current?.setVisibility(state==='active');if(state!=='active')save();});
+  const visibility=()=>{cloudRef.current?.setVisibility(typeof document==='undefined'||document.visibilityState!=='hidden');if(typeof document!=='undefined'&&document.visibilityState==='hidden')save();};
+  if(Platform.OS==='web'&&typeof window!=='undefined'){window.addEventListener('pagehide',save);window.addEventListener('visibilitychange',visibility);}
+  return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined'){window.removeEventListener('pagehide',save);window.removeEventListener('visibilitychange',visibility);}save();};
  },[]);
- useEffect(()=>{let active=true;(async()=>{
+ useEffect(()=>{let active=true,releaseWriter;(async()=>{
+   // The workspace index and recovery leases are shared across all local workspaces.
+   releaseWriter=await acquireLocalWriter('local-storage');
+   if(!active){await releaseWriter();return;}
    const started = Date.now();
    diagnosticMonitor.recordAction('startup storage read started');
    diagnosticMonitor.recordStartup('storage read started');
@@ -64,7 +69,7 @@ export function StoreProvider({children,onReady,loading}){
    // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.
    if(!raw)void writer.current.enqueue(loadedWorkspace);
    if(!rawIndex||index!==parsed)AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(index)).catch(()=>{}); // the list is rebuilt from the saved keys if this write is lost
- })().catch(e=>{if(active){setFault(`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify('Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false}},[]);
+ })().catch(e=>{if(active){setLoadErrorCode(e.code||'');setFault(e.code==='workspace-in-use'||e.code==='workspace-coordination-unavailable'?e.message:`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify(e.code==='workspace-in-use'?e.message:'Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false;loaded.current=false;void(async()=>{await cloudRef.current?.disconnect();await writer.current?.flush();await releaseWriter?.();})().catch(()=>{});}},[]);
  const put=(next,deferPersistence=false)=>{
   // Validate before mutating any in-memory or persistent state.
   const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));
@@ -125,6 +130,15 @@ export function StoreProvider({children,onReady,loading}){
   applyRemote:async(next,localId)=>{if(localId!==indexRef.current?.activeId)throw Error('Workspace changed during synchronization');put(next);const activeWriter=writer.current;if(!activeWriter||!(await activeWriter.flush()))throw Error('Cloud changes could not be saved locally');}});
  const api=useMemo(()=>({
   cloudSession:()=>cloudRef.current,
+  createTaskDraft:(projectId,taskId,onChange)=>{
+    const localId=indexRef.current?.activeId,scope=cloudRef.current?.getState()?.scope||null;
+    const matches=()=>indexRef.current?.activeId===localId&&currentRef.current?.selectedId===projectId&&require('../cloud/schema.cjs').equal(cloudRef.current?.getState()?.scope||null,scope);
+    return require('../screens/tasks/taskDraft.cjs').createTaskDraft({
+      storage:AsyncStorage,key:require('../screens/tasks/taskDraft.cjs').draftKey([localId,scope],projectId,taskId),
+      getTask:()=>matches()?currentRef.current?.projects.find(p=>p.id===projectId)?.tasks.find(t=>t.id===taskId):null,
+      commit:patch=>matches()&&api.updateTask(taskId,patch),persist:()=>matches()?writer.current?.flush()??Promise.resolve(false):Promise.resolve(false),onChange,
+    });
+  },
   activeWorkspaceId:()=>indexRef.current?.activeId,
   switchWorkspace:async id=>{try{const cur=indexRef.current;return cur.activeId===id?true:await swapTo(workspaces.setActive(cur,id))}catch(e){notify(e.message,'error');return false}},
   createWorkspace:async name=>{try{
@@ -292,7 +306,7 @@ export function StoreProvider({children,onReady,loading}){
  const workspaceList=useMemo(()=>idx?{activeId:idx.activeId,items:idx.items}:null,[idx]);
  const context=useMemo(()=>({s:view,projects,workspace:ws,workspaceList,workspaceId:idx?.activeId,error:fault,notice,dismissNotice,...api}),[view,projects,ws,workspaceList,idx,fault,notice,dismissNotice,api]);
  if(!ready)return loading!==undefined?loading:<View style={{flex:1,alignItems:'center',justifyContent:'center',gap:10}}><BoardMorph size={64}/><T weight="600">Opening your workspace</T><T muted size={13}>Projects and tasks stay on this device.</T></View>;
- if(!ws)return <View style={{flex:1,justifyContent:'center',padding:28,gap:12}}><T weight="600">Workspace data could not be opened safely</T><T>{fault}</T><T>Return to your last working release. Do not clear application storage.</T></View>;
+ if(!ws)return <View style={{flex:1,justifyContent:'center',padding:28,gap:12}}><T weight="600">{loadErrorCode==='workspace-in-use'?'Workspace open in another tab':loadErrorCode==='workspace-coordination-unavailable'?'Browser write coordination unavailable':'Workspace data could not be opened safely'}</T><T>{fault}</T>{!loadErrorCode.startsWith('workspace-')?<T>Return to your last working release. Do not clear application storage.</T>:null}</View>;
  return <ActionsContext.Provider value={api}><StoreContext.Provider value={context}><View style={{flex:1}}>{children}</View></StoreContext.Provider></ActionsContext.Provider>;
 }
 export const useStore=()=>useContext(StoreContext);

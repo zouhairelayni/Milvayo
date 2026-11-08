@@ -1,3 +1,11 @@
+## v0.8.5 — Smart task saving and bounded cloud mutations (2026-11-08)
+
+- Replace whole-project validation for independent title/description/priority/custom-value edits with operation-specific canonical task validation; retain full validation for structural/workflow/recovery operations. Send changed fields only, preserve old receipt replay, revisions, actor audit and scoped authorization. Common edits measure six reads and five steady writes; summaries update only when counts/status change.
+- Add durable scoped task drafts across standard and advanced fields, one explicit Save action, local/cloud acknowledgment states, configurable 45-second checkpoints and deliberate local/remote conflict comparison. Consolidate compatible unsent edits without rewriting already-sent payloads or hiding conflicts.
+- Reuse checksum-addressed journal chunks while retaining the previous generation and legacy readers. A measured 1,000-edit append falls from 7.72 s to 2.37 s with 49.2% less retained storage and 95.2% fewer bytes written. Require one Web Locks owner before local storage/index/recovery access; competing tabs block safely and can take over after closure.
+- Adapt workspace/conversation polling to idle/background state; preserve fresh permission checks and scoped record caches. Retain the central sequence after actual contention experiments hit host limits; Canvas/structural validation cost and production/mobile acceptance remain explicit risks.
+- Keep local schemaVersion 1, backup v1/v2/niyav compatibility, existing Metro and dependencies. Synchronize package/lock/Expo/Functions at 0.8.5, Android/iOS 95. In-place delivery on `work`; QA and rollback: `docs/qa/cloud-085/REPORT.md`. No production build, commit, push, merge, login, billing or deploy.
+
 ## v0.8.4 — Web chart correction and local Firebase integration (2026-11-07)
 
 - Fix WebShape console errors in Projects, project details, Resources and Reports by replacing chart rotation/origin props with explicit SVG rotations around the same centers. Preserve arc geometry, colors, readings, legend actions and diagnostic logging.

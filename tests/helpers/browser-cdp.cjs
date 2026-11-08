@@ -1,9 +1,9 @@
 // /tests/helpers/browser-cdp.cjs
 'use strict';
 // Direct Chromium DevTools protocol. No Playwright, browser downloads, app builds or new packages.
-async function connect(port = 9233) {
+async function connect(port = 9233, targetId = null) {
   const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-  const target = targets.find(x => x.type === 'page');
+  const target = targets.find(x => x.type === 'page' && (!targetId || x.id === targetId));
   if (!target) throw Error('Start a local Chromium debugging session first.');
   const socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }); });

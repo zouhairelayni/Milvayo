@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-11-08T00:01:09.478Z",
+  "method": "Actual v0.8.4 HEAD journal modules and current v0.8.5 modules, same fixture and in-memory AsyncStorage contract; 1,000 accepted captures, with successful restart verification. Host timings are not physical Android storage timings. Concurrent engineering jobs may affect wall time.",
+  "environment": {
+    "node": "v24.21.0",
+    "arch": "arm64",
+    "platform": "linux"
+  },
+  "baseline": {
+    "edits": 1000,
+    "pending": 1000,
+    "appendMs": 7718.504956,
+    "storedBytes": 3527018,
+    "storageWrites": 10355,
+    "writtenBytes": 886530500,
+    "storageDeletes": 9318,
+    "largestRowBytes": 100000
+  },
+  "optimized": {
+    "edits": 1000,
+    "pending": 1000,
+    "appendMs": 2372.8736910000007,
+    "storedBytes": 1793141,
+    "storageWrites": 3016,
+    "writtenBytes": 42817377,
+    "storageDeletes": 1965,
+    "largestRowBytes": 56224
+  },
+  "consolidated": {
+    "edits": 1000,
+    "pending": 1,
+    "appendMs": 2750.9688830000014,
+    "storedBytes": 1814222,
+    "storageWrites": 3018,
+    "writtenBytes": 42869487,
+    "storageDeletes": 1967,
+    "largestRowBytes": 56224
+  },
+  "reductionPercent": {
+    "residentBytes": 49.159856853579996,
+    "writtenBytes": 95.17023080424192,
+    "appendMs": 69.2573405792084
+  }
+}

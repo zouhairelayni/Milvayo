@@ -1,0 +1,29 @@
+✔ many typed values and standard/advanced fields persist across restart and commit once (7.130654ms)
+✔ invalid drafts, storage errors and concurrent same-field changes keep user intent (5.777731ms)
+✔ unchanged drafts and cancel create no domain mutation; scopes separate accounts and environments (1.599154ms)
+✔ corrupt stored drafts fail closed and remain available for recovery (0.795308ms)
+✔ edits arriving during a local save stay in the durable next draft (15.272538ms)
+✔ malformed persisted draft containers and unsafe field values are rejected before rendering (1.962808ms)
+✔ incomplete numeric custom input retains correction text instead of sending NaN (2460.609344ms)
+✔ effort draft uses the canonical estimateHours for restart and concurrent-change checks (23.365961ms)
+✔ only the newest value is committed once typing pauses (3.889423ms)
+✔ flush commits at once and a second flush does nothing (0.538462ms)
+✔ an empty string is a real value, not "nothing pending" (0.439654ms)
+✔ store-writing text stays buffered; task title is durably staged, and Input flushes on blur, submit and unmount (75.457346ms)
+✔ Releases: edit and create open a proper draft sheet instead of an inline fold (1.934077ms)
+✔ date rail pages across months, recenters on the committed week, rejects duplicate/bad events and preserves day selection (1218.634999ms)
+✔ web date paging waits for scroll to stop and empty rails do not shift (75.08973ms)
+✔ Home date swipe removes chevrons, changes the chart week, clears the day filter, and keeps the existing year bound (295.558192ms)
+✔ task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success (410.105231ms)
+✔ bottom navigation has icon selection without a tile and still rejects stale press intents (115.815269ms)
+✔ Settings removes only its duplicate tools entry; More and Board header retain their tools (2.358115ms)
+✔ held Board lists render above the ribbon without replacing the responder; release restores strip clipping and scroll (230.779576ms)
+✔ description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place (332.900961ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3626.181036

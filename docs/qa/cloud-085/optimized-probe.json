@@ -1,0 +1,393 @@
+{
+  "fixture": {
+    "tasks": 100,
+    "objects": 25
+  },
+  "cold": {
+    "documentReads": 132,
+    "bytes": 97653,
+    "recordCacheHit": false
+  },
+  "rows": [
+    {
+      "ms": 275.262616,
+      "documentReads": 6,
+      "documentWrites": 6,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 2,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 253.60096200000044,
+      "cpuMicroseconds": {
+        "user": 55466,
+        "system": 4110
+      },
+      "heapBytes": 84597176
+    },
+    {
+      "ms": 279.75088499999765,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 175.3389610000013,
+      "cpuMicroseconds": {
+        "user": 66145,
+        "system": 6551
+      },
+      "heapBytes": 86729168
+    },
+    {
+      "ms": 347.5046150000053,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 321.7592689999983,
+      "cpuMicroseconds": {
+        "user": 44687,
+        "system": 4962
+      },
+      "heapBytes": 88587840
+    },
+    {
+      "ms": 157.3059229999999,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 134.49119200000132,
+      "cpuMicroseconds": {
+        "user": 52033,
+        "system": 5559
+      },
+      "heapBytes": 90412248
+    },
+    {
+      "ms": 257.95334600000206,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 236.26080800000273,
+      "cpuMicroseconds": {
+        "user": 48701,
+        "system": 760
+      },
+      "heapBytes": 92205992
+    },
+    {
+      "ms": 180.98853800000506,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 135.95542299999943,
+      "cpuMicroseconds": {
+        "user": 41029,
+        "system": 980
+      },
+      "heapBytes": 94033248
+    },
+    {
+      "ms": 296.9151150000034,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 229.72100000000137,
+      "cpuMicroseconds": {
+        "user": 45067,
+        "system": 857
+      },
+      "heapBytes": 95815768
+    },
+    {
+      "ms": 198.19596099999762,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 145.2854609999995,
+      "cpuMicroseconds": {
+        "user": 31308,
+        "system": 5643
+      },
+      "heapBytes": 97621456
+    },
+    {
+      "ms": 103.33288399999583,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 83.65738499999861,
+      "cpuMicroseconds": {
+        "user": 31599,
+        "system": 10125
+      },
+      "heapBytes": 99425672
+    },
+    {
+      "ms": 127.07657699999982,
+      "documentReads": 6,
+      "documentWrites": 5,
+      "documentDeletes": 0,
+      "validationClass": "A",
+      "fullProjectScan": false,
+      "readBreakdown": {
+        "authorization": 2,
+        "workspaceSequence": 1,
+        "subscription": 1,
+        "receipt": 1,
+        "records": 1,
+        "versions": 0,
+        "configuration": 0,
+        "summaries": 0
+      },
+      "writeBreakdown": {
+        "records": 1,
+        "versions": 1,
+        "receipt": 1,
+        "sequence": 1,
+        "audit": 1,
+        "summaries": 0
+      },
+      "clientSdkReads": 0,
+      "securityRulesDependentReads": 0,
+      "listenerReads": 0,
+      "transactionAttempts": 1,
+      "transactionRetries": 0,
+      "allAttemptsDocumentReads": 6,
+      "functionExecutionMs": 106.47676900000079,
+      "cpuMicroseconds": {
+        "user": 41908,
+        "system": 25774
+      },
+      "heapBytes": 78389136
+    }
+  ]
+}

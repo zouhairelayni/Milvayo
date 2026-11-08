@@ -5,6 +5,7 @@ import {Button,Input,T,SectionTitle,downloadText} from '../../ui/ui';
 import {DangerConfirm,Fold,Pick} from '../../components/inline/CompactTools';
 import {useStoreActions} from '../../store/store';
 import CloudRecovery from './CloudRecovery';
+import CloudConflicts from './CloudConflicts';
 import CloudOrganization from './CloudOrganization';
 import CloudPlatform from './CloudPlatform';
 const {ROLES}=require('../../cloud/iam.cjs');
@@ -19,10 +20,12 @@ function CloudPanelContent({api,session,state}){
  return <View style={{gap:16}}>
   <T>Local Firebase emulator</T>
   <T muted size={13}>Connect a local copy for collaboration testing. Existing backups stay on this device. Billing is simulated.</T>
-  <T muted size={12}>demo-milvayo-083 · build 0.8.4</T>
+  <T muted size={12}>demo-milvayo-083 · build 0.8.5</T>
   {state.connected?<>
    <T>{state.scope.orgId} / {state.scope.workspaceId}</T>
    <T>{state.pending} pending · {state.conflicts} conflicts</T>
+   <T muted size={12}>Periodic editing checkpoint</T>
+   <Pick values={[{value:30000,label:'30 seconds'},{value:45000,label:'45 seconds'},{value:60000,label:'60 seconds'}]} value={state.syncInterval||45000} onChange={ms=>session.setSyncInterval(ms)}/>
    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
     <Button label="Synchronize" disabled={busy||state.busy} onPress={()=>run(()=>session.tick())}/>
     <Button label="Disconnect" variant="secondary" disabled={busy||state.busy} onPress={()=>run(()=>session.disconnect())}/>
@@ -65,6 +68,7 @@ function CloudPanelContent({api,session,state}){
    </Fold>
    {session.clientMetrics()?<T muted size={12}>Presence payloads: {session.clientMetrics().presenceUpdates} updates · {session.clientMetrics().uploadPayloadBytes} bytes up · {session.clientMetrics().downloadPayloadBytes} bytes down</T>:null}
    <Button label="Export authorized cloud backup" variant="secondary" disabled={busy||state.busy} onPress={()=>run(async()=>downloadText('milvayo-cloud-backup.json',JSON.stringify(await session.request({action:'backup'})),'application/json'))}/>
+   <Fold title="Resolve sync conflicts" subtitle="Compare retained edits with the current cloud version"><CloudConflicts session={session}/></Fold>
    <Fold title="Cloud recovery" subtitle="Validate and preview a task, project or workspace restore"><CloudRecovery session={session}/></Fold>
   </>:<View style={{gap:12}}>
    <Input value={host} onChangeText={setHost} autoCapitalize="none" placeholder="127.0.0.1" accessibilityLabel="Private emulator host"/>

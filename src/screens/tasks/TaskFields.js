@@ -45,8 +45,10 @@ export function DateField({label,value,onValid}){
  return <InlineDateField label={label} value={value} onChange={onValid}/>;
 }
 
-export function CustomValueInput({value,type,onSave}){
+export function CustomValueInput({value,type,onSave,onDraft}){
  const [draft,setDraft]=useState(String(value??''));
  useEffect(()=>setDraft(String(value??'')),[value]);
- return <View style={{gap:7}}>{type==='date'?<InlineDateField label="Date value" value={draft} onChange={setDraft}/>:<Input value={draft} onChangeText={setDraft} placeholder={type} keyboardType={type==='number'?'numeric':undefined}/>}<Button label="Save value" small variant="secondary" onPress={()=>onSave(type==='number'?(draft===''?null:Number(draft)):draft)}/></View>;
+ const valueOf=v=>type==='number'?(v===''?null:Number.isFinite(Number(v))?Number(v):v):v;
+ const change=v=>{setDraft(v);onDraft?.(valueOf(v));};
+ return <View style={{gap:7}}>{type==='date'?<InlineDateField label="Date value" value={draft} onChange={change}/>:<Input value={draft} onChangeText={change} placeholder={type} keyboardType={type==='number'?'numeric':undefined}/>}<Button label="Save value" small variant="secondary" onPress={()=>onSave(valueOf(draft))}/></View>;
 }

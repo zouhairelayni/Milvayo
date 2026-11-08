@@ -1,0 +1,12 @@
+{
+  "status": "Pass",
+  "runtime": "Actual headless Chromium, two same-origin browser tabs, real Web Locks and localStorage, actual journal storage implementation",
+  "checks": [
+    "Simultaneous writer acquisition admits one tab",
+    "Second writer fails closed before local mutation",
+    "Tab termination releases lifetime lock",
+    "Second tab reads prior durable pending operation and appends its own without corruption",
+    "Checksummed journal remains readable after takeover"
+  ],
+  "fullAppMultiTab": "Parent regression must also verify store integration; this test isolates the actual shared storage/lock primitives"
+}

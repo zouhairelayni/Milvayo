@@ -3,12 +3,34 @@
 const S=require('./schema.cjs');
 const {createJournal,journalKey}=require('./journal.cjs');
 const {leaseKey}=require('./lease.cjs');
+const {createPollingPolicy}=require('./polling.cjs');
 function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChange=()=>{}}){
- let client=null,journal=null,scope=null,timer=null,busy=false,stopped=false,original=null,lastPresenceAuthorization=0,lastCaptureError=null;
+ let client=null,journal=null,scope=null,timer=null,busy=false,stopped=false,original=null,lastPresenceAuthorization=0,lastCaptureError=null,activeTick=null,lastDrain=0,nextPoll=0,syncInterval=45000,visible=true;
+ const polling=createPollingPolicy();
  let state={connected:false,busy:false,pending:0,conflicts:0,error:'',measured:null};const listeners=new Set(),presenceStops=new Set();
  const emit=patch=>{state={...state,...patch};onChange(state);listeners.forEach(fn=>fn(state));};
  const request=body=>client.request({...scope,...body});
- async function tick(){if(busy||!journal||stopped||getLocalId()!==scope.localId)return;busy=true;const activeJournal=journal;try{await activeJournal.drain();if(stopped||journal!==activeJournal)return;const remote=await activeJournal.refresh();if(remote&&!stopped&&journal===activeJournal){const current=getWorkspace(),next=S.unpack(remote.records,current);if(remote.reset&&original)next.backups=original.backups;if(!S.equal(S.pack(current),S.pack(next)))await applyRemote(next,scope.localId);emit({...journal.status(),grant:remote.grant,membershipRole:remote.membershipRole,measured:remote.measured});if(Date.now()-lastPresenceAuthorization>40000){await request({action:'presenceAuthorize'});lastPresenceAuthorization=Date.now();}}}catch(e){emit({error:e.message});if(e.code==='permission-denied'||e.code==='unauthenticated'){await disconnect();emit({error:'Cloud access ended. Pending edits remain in the scoped recovery journal.'});}}finally{busy=false;}}
+ async function tick(options={}){
+  const flush=options.flush!==false;
+  if(activeTick){await activeTick;if(flush&&!stopped)return tick(options);return;}
+  if(!journal||stopped||getLocalId()!==scope.localId)return;
+  activeTick=(async()=>{busy=true;const activeJournal=journal;try{
+   const beforeCursor=activeJournal.status().cursor;
+   if(flush||(visible&&Date.now()-lastDrain>=syncInterval)){await activeJournal.consolidate();await activeJournal.drain();lastDrain=Date.now();}
+   if(stopped||journal!==activeJournal)return;
+   const remote=await activeJournal.refresh();
+   if(remote&&!stopped&&journal===activeJournal){
+    const current=getWorkspace(),next=S.unpack(remote.records,current);if(remote.reset&&original)next.backups=original.backups;
+    if(!S.equal(S.pack(current),S.pack(next)))await applyRemote(next,scope.localId);
+    emit({...journal.status(),grant:remote.grant,membershipRole:remote.membershipRole,measured:remote.measured});
+    polling.observe({changed:activeJournal.status().cursor!==beforeCursor,pending:activeJournal.status().pending>0});
+    if(visible&&Date.now()-lastPresenceAuthorization>40000){await request({action:'presenceAuthorize'});lastPresenceAuthorization=Date.now();}
+   }
+  }catch(e){polling.observe({failed:true});emit({error:e.message});if(e.code==='permission-denied'||e.code==='unauthenticated'){await disconnect();emit({error:'Cloud access ended. Pending edits remain in the scoped recovery journal.'});}}
+  finally{busy=false;nextPoll=Date.now()+polling.next({visible});}})();
+  try{return await activeTick;}finally{activeTick=null;}
+ }
+
  async function connect(options){
   if(client||state.busy)throw Error('Disconnect before opening another cloud account');const expectedLocalId=getLocalId();emit({busy:true,error:''});stopped=false;
   try{
@@ -26,16 +48,35 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
     // This operation is explicitly requested; the previous local workspace is recoverable.
     const next=S.unpack(initial.records,local);next.backups=[require('../domain/model.cjs').workspaceSnapshot(local,'Before opening cloud workspace'),...local.backups].slice(0,12);await applyRemote(next,scope.localId);
    }
-   journal=createJournal({storage,scope,send:scopedRequest,receive:(cursor,accessVersion)=>scopedRequest({action:'pull',cursor,accessVersion:accessVersion||''}),newId:()=>require('expo-crypto').randomUUID(),onChange:emit});
+   journal=createJournal({storage,scope,prepareChanges:require('./taskMutation.cjs').compactChanges,send:scopedRequest,receive:(cursor,accessVersion)=>scopedRequest({action:'pull',cursor,accessVersion:accessVersion||''}),newId:()=>require('expo-crypto').randomUUID(),onChange:emit});
    await journal.open(initial.records,S.unpack(initial.records,getWorkspace()),initial.cursor,initial.accessVersion);
    if(existingJournal&&!options.publish)await applyRemote(S.unpack(journal.export().local,getWorkspace()),scope.localId);
    await journal.capture(getWorkspace());
-   emit({connected:true,scope,grant:initial.grant,membershipRole:initial.membershipRole,...journal.status()});timer=setInterval(()=>{void tick();},5000);await tick();return scope;
+   emit({connected:true,scope,grant:initial.grant,membershipRole:initial.membershipRole,...journal.status()});polling.reset();timer=setInterval(()=>{if(Date.now()>=nextPoll)void tick({flush:false});},5000);await tick();return scope;
   }catch(e){await disconnect();emit({error:e.message});throw e;}finally{emit({busy:false});}
  }
  async function disconnect(){await journal?.flush();if(lastCaptureError)throw Error('Cloud edits could not be journaled. Export a local backup before changing accounts: '+lastCaptureError.message);stopped=true;clearInterval(timer);for(const stop of presenceStops)await stop();presenceStops.clear();journal?.close();journal=null;if(original&&scope&&getLocalId()===scope.localId){await applyRemote(original,scope.localId);await storage.removeItem(leaseKey(scope.localId));}original=null;const old=client;client=null;scope=null;if(old)await old.close();emit({connected:false,scope:null,busy:false});}
  async function capture(workspace){if(journal&&!stopped&&getLocalId()===scope.localId)try{await journal.capture(workspace);lastCaptureError=null;}catch(e){lastCaptureError=e;emit({error:'Cloud queue could not be saved: '+e.message});throw e;}}
- return {connect,disconnect,capture,tick,request,flush:()=>journal?.flush()||Promise.resolve(),getState:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},exportJournal:()=>journal?.export(),
+ return {connect,disconnect,capture,tick,request,
+  syncNow:async()=>{await journal?.flush();await tick();return state;},
+  setVisibility:value=>{visible=!!value;if(visible){polling.reset();nextPoll=0;void tick({flush:false});}},
+  getSyncInterval:()=>syncInterval,
+  setSyncInterval:ms=>{if(!Number.isInteger(ms)||ms<30000||ms>600000)throw Error('Sync interval must be 30–600 seconds');syncInterval=ms;emit({syncInterval});},
+  async loadConflicts(){
+   if(!journal||!state.connected)throw Error('Connect before resolving cloud conflicts');
+   const remote=await request({action:'pull',cursor:0,accessVersion:''}),queued=journal.export().queue.filter(q=>q.status==='conflict');
+   return {remote,conflicts:queued.map(q=>({...q,remote:q.changes.map(c=>remote.records.find(r=>r.key===c.key)||null)}))};
+  },
+  async resolveConflict(id,choice,preview){
+   if(!journal||!state.connected)throw Error('Connect before resolving cloud conflicts');
+   if(!['local','remote'].includes(choice))throw Error('Choose which version to keep');
+   const q=journal.export().queue.find(q=>q.id===id&&q.status==='conflict');if(!q||q.request)throw Error('Record conflict is unavailable');
+   const latest=await request({action:'pull',cursor:0,accessVersion:''});
+   const changes=q.changes.map(c=>{const current=latest.records.find(r=>r.key===c.key),shown=preview?.records?.find(r=>r.key===c.key);if(!S.equal(current,shown))throw Error('Remote version changed; compare again before resolving');if(!current||current.deleted)throw Error('Deleted records require the authorized recovery workflow; your original edit is retained');const after=choice==='remote'?current:{...current,data:{...current.data}};if(choice==='local'){if(!c.after)throw Error('Deletion conflicts require recovery review');for(const field of new Set([...Object.keys(c.before?.data||{}),...Object.keys(c.after.data)]))if(!S.equal(c.before?.data?.[field],c.after.data[field])){if(Object.hasOwn(c.after.data,field))after.data[field]=S.clone(c.after.data[field]);else delete after.data[field];}if(c.before?.order!==c.after.order)after.order=c.after.order;}return {key:c.key,before:current,after,baseRevision:current.revision};});
+   await journal.resolveConflict(id,S.clone(changes),{remoteRecords:latest.records,cursor:latest.cursor,accessVersion:latest.accessVersion});
+   await applyRemote(S.unpack(journal.export().local,getWorkspace()),scope.localId);await tick();return state;
+  },
+  flush:()=>journal?.flush()||Promise.resolve(),getState:()=>state,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},exportJournal:()=>journal?.export(),
   async enqueueMessage(value){if(!journal||!state.connected)throw Error('Connect to a cloud workspace first');const id=await journal.enqueueMessage({...value,action:'message'});void tick();return id;},
   pendingMessages:(projectId,threadId)=>journal?.export().queue.filter(q=>q.request?.action==='message'&&q.request.projectId===projectId&&q.request.threadId===threadId).map(q=>({id:q.id,body:q.request.body,actor:q.actor,at:q.createdAt,pending:true,status:q.status}))||[],
   async restoreNew(backup,workspaceId){require('./recovery.cjs').verifyBackup(backup);if(!client||!state.connected||backup.orgId!==scope.orgId||backup.workspaceId!==scope.workspaceId)throw Error('Choose a backup of this connected cloud workspace');S.segment(workspaceId);if(workspaceId===scope.workspaceId)throw Error('Choose a new cloud workspace ID');await client.publish({...scope,workspaceId},S.unpack(backup.records),{extras:backup.extras,restoredFrom:scope.workspaceId,archiveRecords:backup.records});return {workspaceId};},

@@ -1,0 +1,1438 @@
+npm notice run milvayo@0.8.5 test
+npm notice run node tests/run-all.cjs
+✔ screen history bounds memory, skips disabled tools, truncates forward branches and isolates project/workspace scope (4.357846ms)
+✔ back dispatcher closes highest priority/latest layer before its root and cleans subscriptions (2.090846ms)
+✔ browser Back and Forward restore the actual screen history and disposal removes its listener (1.788193ms)
+✔ browser Back dismisses one nested layer per gesture, without navigating the page behind it (0.784039ms)
+✔ a busy modal consumes repeated browser Back; manual close plus page navigation skips closed modal entries (0.607385ms)
+✔ browser entries from a previous project cannot restore that project after scope reset (0.484808ms)
+✔ browser Back skips a disabled tool and aligns its history entry with the usable destination (0.496192ms)
+✔ closing a project switcher during scope change does not queue a stale browser pop into the new project (0.417654ms)
+✔ blocked browser History writes degrade safely instead of throwing from a modal effect (1.340616ms)
+✔ Android system Back uses the current screen stack and returns false at Home; hook cleanup removes its listener (3294.813767ms)
+✔ iOS back is edge-only, single-finger and commits on a distance or velocity threshold; canceled/vertical motion is ignored (97.213538ms)
+✔ Backup is a tab of Settings and no longer a menu route (6.490538ms)
+✔ only the Back up button is accent coloured on the Backup tab (4.110385ms)
+✔ backup scope: Project or Workspace, each with its own dropdown, and the chosen project is exported (4.581961ms)
+✔ a running encryption shows progress and explicit Cancel while screen navigation retains the job (1.744769ms)
+✔ Specifications offers add, edit and delete (3.004654ms)
+✔ Coral Board with six actual card windows is the launcher default across platforms (19.916769ms)
+✔ All ten Board colorways exist and launcher follows accent and appearance (31.015961ms)
+✔ GitHub workflow builds signed ARM64 APK locally, without EAS cloud (11.903308ms)
+✔ One-time signing import validates local EAS credential file without uploading when required data is missing (28.178269ms)
+✔ launcher, adaptive, splash and web icons use actual Niyarvo artwork (19.310615ms)
+✔ cold start prepares the shell during playback and reveals immediately when both animation and workspace are ready (1975.003499ms)
+✔ a slow or failed-safe workspace retains the completed logo until storage reports readiness, without replay (50.138ms)
+✔ duplicate completion does not schedule a hold or replay; unmount cancels first-frame estimates (30.263115ms)
+✔ module-load fresh detection is read-only, precedes render, excludes upgrades/recovered workspaces and fails closed (783.657307ms)
+✔ fresh eligibility is delivered once after subscribing, manual replay works, and unsubscribed handlers never fire (13.675154ms)
+✔ finishing passes one atomic starter configuration to creation, navigates only on acceptance, and keeps the tour on rejection (95.519423ms)
+✔ More keeps current manager/tools layout and adds replay; active tour hides underlying accessibility and keeps notices in its layer (1.445807ms)
+✔ the project root holds no code files except the Expo entry App.js (3.329192ms)
+✔ src has no loose code files, and tests/ has no loose code files except run-all.cjs (1.282846ms)
+✔ every test is a *.test.cjs inside a tests/<group>/ folder (0.859808ms)
+✔ every code file starts with a comment holding its own /path (136.617231ms)
+✔ every relative import and require in App.js, src, tests and scripts points to a real file (892.958191ms)
+✔ a hidden retained tab is told it is hidden, and the shown tab is told it is active (3.093308ms)
+✔ Board does no deferred card or column mounting while hidden (4.842308ms)
+✔ Testing shows 25 checks first and counts statuses in one pass (4.254461ms)
+✔ 4: only a new error notice is shown inline (1.973616ms)
+✔ 4: the Task Sheet and the project and workspace switchers are native Modals and show errors inline (8.889961ms)
+✔ Board keeps wire-engines filters and drop position AND shows Task Sheet colored cards (3.635384ms)
+✔ Tasks keeps wire-engines search/layouts/bulk edit AND colored labels without a visible ID (1.8795ms)
+✔ Task Sheet uses setLabels (trim, dedupe, clear verified) and the descendant-safe parent picker (3.7855ms)
+✔ Store exposes both action sets and Timeline keeps critical path (2.666847ms)
+✔ Mode switching and tag edits never change the task record shape or ID (32.1225ms)
+✔ Plain-string labels from old data still normalize (3.563884ms)
+✔ a clean Git package includes the native icon adapter and its plugin, excluding generated native folders (529.881461ms)
+✔ drawer/sidebar navigation keys are unique and Task configuration belongs to Tasks (8.377115ms)
+✔ the More screen, bottom bar and switchers handle navigation and project switching (2.578462ms)
+✔ all original capability groups have modern navigation destinations (1.448885ms)
+✔ modern shell never mounts retired ClassicApp (2.915192ms)
+✔ a current tab touch is accepted, but a release after navigation is stale (2.338039ms)
+✔ missing touches and mismatched target releases cannot navigate (0.5245ms)
+✔ queued tab burst mounts only the final selection; later frames still navigate (4.294385ms)
+✔ a menu navigation or shell unmount cancels a queued bottom-tab selection (0.785116ms)
+✔ native Board opens only near columns and reveals later columns on scroll (0.731961ms)
+✔ startup navigation survives a long run without unbounded diagnostic memory (39.899999ms)
+✔ previous exceptions stay explicitly labelled without inflating current counts (0.762154ms)
+✔ top placement preserves iOS notch and Android system status area (1.956769ms)
+✔ pending saves coalesce and preserve the newest complete snapshot (7.003577ms)
+✔ a burst before IO serializes only the final snapshot (0.845692ms)
+✔ failed saves remain retryable and do not falsely report durable success (0.614ms)
+✔ a failed old write cannot overwrite a newer pending value (1.186731ms)
+✔ incremental normalization shares unchanged projects and validates changed ones (28.153ms)
+✔ 10k reversed dependencies validate without recursive stack overflow (446.311115ms)
+✔ deep malformed parent chains produce a controlled validation error (9.324538ms)
+✔ indexed summaries preserve leaf costs, captured rates, blockers and comments (5.90523ms)
+✔ interval routing matches exhaustive routing across randomized layouts (105.787076ms)
+✔ one-sided task dates produce finite geometry and invalid dates are excluded (29.913923ms)
+✔ invalid WBS graphs reject before rendering or saving (2.212423ms)
+✔ project/task identity resets stale editors; hidden pages do not stay subscribed (3.43023ms)
+✔ critical path handles a reversed 10k dated chain without overflowing the stack (222.524846ms)
+✔ all 19 menu entries still exist, in the same order, and each has exactly one home on the phone (24.046269ms)
+✔ feature parity matrix: where every old menu entry lives now (1.363039ms)
+✔ every reachable id is a registered screen, and the retained primary views sit in Home or Work (3.576077ms)
+✔ sections: Home, Work, Projects, More; Work holds Board, Timeline, List, Sprints in that order (1.146693ms)
+✔ swipe on the bar or the pill steps one neighbour, ignores short or vertical drags, stops at the ends (0.658154ms)
+✔ bottom bar: Home, Work, Create, Projects, More; swipe and stale-press guards are kept (1.818269ms)
+✔ view pill: reuses the shared Segmented control, swipes between views, ignores the tap a swipe ends in (1.701577ms)
+✔ header keeps every per-screen control: Tools, New sprint, New release, Timeline tools, search (4.387654ms)
+✔ Create sheet: the + button opens New task, with Project and Release one tap away (5.195731ms)
+✔ More: the rest of the old menu, workspace switcher, appearance cycle and desktop layout (2.289038ms)
+✔ reused, not rebuilt: island notice, board drag, timeline gestures and dependency lines are still wired (6.996962ms)
+✔ wide layout is untouched: sidebar with all 19 entries and the toolbar New task button (1.963154ms)
+✔ roundPath: straight line stays straight, a corner becomes one curve (2.307577ms)
+✔ distToPath: distance to a segment, clamped at its ends (10.583038ms)
+✔ refreshMax: never negative, follows content minus visible size (1.977846ms)
+✔ board drag context: fresh state and drop slot (1.036769ms)
+✔ screens use the extracted modules and no longer define them inline (6.565923ms)
+✔ ModernApp.js keeps the screen tables and passes them to the shell parts (3.250692ms)
+✔ shell parts are defined once, outside ModernApp.js (3.636808ms)
+✔ shell files import only paths that exist (19.2475ms)
+✔ ui.js only re-exports; every shared component is still exported once (4.578884ms)
+✔ no cycle: base imports no other ui file, controls only base, layout only base and controls (2.506308ms)
+✔ Milvayo release versions, build numbers and cumulative changelog agree (6.356923ms)
+✔ Projects: each card owns its edit fields, so typing re-renders one card (3.711923ms)
+✔ Project governance: the document list is memoised on document data only (1.261077ms)
+✔ Timeline: bars are memoised and receive callbacks that never change identity (3.625307ms)
+✔ stable wrappers always reach the latest closure (1.986577ms)
+✔ Board search waits for a typing pause; Tasks uses header search and counts in one pass (2.307423ms)
+✔ heavy native tabs defer their first mount; web and Overview do not (3.249924ms)
+✔ Board initially mounts five cards and grows only through list scrolling without dropping visited cards (1.761423ms)
+✔ first snapshots wait only while unavailable; empty, cached, refreshing and offline data remain usable (2.869269ms)
+✔ delayed hydration resolves immediately or fails explicitly with no elapsed-time gate (0.521731ms)
+✔ retained page mounts without frame timers, reuses content identity and never replays its skeleton (2368.377537ms)
+✔ one app entry, one store, and no legacy screen reachable (10.017731ms)
+✔ app does not replace dependency files during initialization (7.512423ms)
+✔ timeline does not jump away from task bars after opening (1.54027ms)
+✔ management screens use original domain mutation layer (1.767808ms)
+✔ all legacy management capabilities are presented in one compact interface (6.538808ms)
+✔ one cumulative changelog under docs/changelog and QA/instructions in their own directories (11.938115ms)
+✔ four phone sections plus Create, all other screens through More (15.027961ms)
+✔ unique encrypted backup format reference lives only in docs/instructions (4.466116ms)
+✔ every app source parses and every JSX component root has an import or local binding (7579.851995ms)
+✔ modern sprint management uses original agile lifecycle; sprint goals are prose not oversized Stat values (7.228423ms)
+✔ native Kanban scroll can own swipes before a hold, unlike prior responder-capturing release (13.600846ms)
+✔ freeze cell hands out the exact last visible value while hidden, then the live one (1.926077ms)
+✔ a hidden page ignores query and handler-free changes; becoming visible always renders (0.536077ms)
+✔ native retains tabs, web keeps its unmount policy (0.384731ms)
+✔ retained tab set restarts from the visible tab after a project switch and refills lazily (1.583615ms)
+✔ Shell wires retention: frozen wrapper, stable element, inverted memo comparator, project-aware set (3.394346ms)
+✔ Markdown read mode renders bold, italic, headings and bullet text without treating HTML as markup (4.921077ms)
+✔ Label colors have a large deterministic palette, reject invalid values and survive project JSON normalization (36.799616ms)
+✔ Standard task sheet is focused, Advanced retains original editors, and ID appears only in task footer (4.233961ms)
+✔ Colored labels survive gzip and password-protected .niyav project backups (112.926269ms)
+✔ the app version is read from app.json, not typed into diagnostics (6.7705ms)
+✔ service worker cache name gets the app.json version at build time (35.158769ms)
+✔ Board: dropping a card with a filter on keeps hidden cards where they were (3.422461ms)
+✔ Board: due-date, priority, owner and tag filters come from kanbanUX.filterCards (12.320615ms)
+✔ Tasks: search, paging, sorting, tree, groups and rollups use the shared engines (32.676615ms)
+✔ bulk edit of priority, stage and owner goes through bulkUpdate and clears release metadata (25.189308ms)
+✔ task sheet: tags go through updateLabels and the parent picker leaves out subtasks (3.71973ms)
+✔ Resources shows open tasks and logged hours from operations.capacitySummary (2.967462ms)
+✔ Timeline: critical path, schedule problems, parent summaries, sample dates and a first-task jump (6.783539ms)
+✔ wiring ledger: no export of the audited modules is left unused without a reason (577.009577ms)
+✔ background cancels pending Board hold and stale releases cannot open a task after resume (1420.70246ms)
+✔ background cancels a lifted list/card once, resets offset and unlocks through onCancel without committing a drop (86.087962ms)
+✔ background invalidates delayed title measurements and task-open timers; unmount removes lifecycle listener (131.934076ms)
+✔ List Due soon shows three rows, scrolls through the rest, and preserves callbacks and dates (1276.32396ms)
+✔ Board creation replaces the vertical Add list action; native column window starts at zero and reaches the last columns (3.605923ms)
+✔ native board finger offset follows the finger plus horizontal and vertical auto-scroll (3.6015ms)
+✔ scroll motion cancels pending lift; stationary long press is still eligible (0.528923ms)
+✔ Kanban restores original MockDesign responder, auto-scroll and full list structure (7.217731ms)
+✔ Native Kanban and Timeline gesture paths are isolated (6.489693ms)
+✔ Kan date classification never claims completed tasks are overdue (36.075308ms)
+✔ Kan filters work together and never mutate original tasks (4.5195ms)
+✔ Kan rejects unsupported due/priority filters (0.676961ms)
+✔ Kan duplicate strips verification, Git refs, scheduling predecessors and sprint membership (3.672923ms)
+✔ Kan duplicate rejects unknown or duplicate IDs (1.368654ms)
+✔ Kan label editor deduplicates, revokes verification, blocks oversized lists (1.0195ms)
+✔ Kan per-board description preference survives JSON normalization (2.263ms)
+✔ Kan additional boards isolate display preferences and remove deleted entries (1.437884ms)
+✔ Kan drop index respects hidden cards under active filter (1.493808ms)
+✔ modern board retains card/list gesture logic and management actions (2.065846ms)
+✔ title double-tap geometry checks BOTH page coordinates, including edges (2.343923ms)
+✔ title double tap threshold does not accidentally reopen sheet (0.563731ms)
+✔ inline rename keeps internal spaces and commits only a valid title (0.521538ms)
+✔ swipes cancel pending hold; finger-offset accounts for two-axis auto-scrolling (1.872384ms)
+✔ original mock board controls remain wired after integration (6.147962ms)
+✔ rename via task sheet and board inline commit preserves canonical fields (36.933846ms)
+✔ each board list mounts five cards and only user scroll near the loaded end adds the next five (1580.134422ms)
+✔ web wheel/keyboard and accessibility scrolling also unlock demand mounting without a Show more control (546.337346ms)
+✔ mount counts are bounded and unchanged by non-user, inactive, top or invalid scroll samples (0.894077ms)
+✔ drop hit testing includes page and list scrolling and inserts before the unmounted tail, including filtered order (3.370154ms)
+✔ held-card auto-scroll selects the target list after horizontal/page scroll and clamps its range (0.909269ms)
+✔ card drags include source-list scroll and discard stale measurements when their card unmounts (371.369807ms)
+✔ platform role changes protect the final initialized owner and audit a permitted transfer (6.392115ms)
+✔ resource allocations preserve unique global licenses and explicit caps (4.468731ms)
+✔ import batching respects UTF-8 request budgets, row counts and source order (420.380461ms)
+✔ collaboration backup v2 validates integrity, references, sequence IDs and notification replay (40.21173ms)
+﹣ emulator conversations, organization administration, licenses and staged recovery (2.104692ms) # Not run: Firebase emulators required
+✔ 085 projections preserve baseline and isolate mutation and polling savings (8.226462ms)
+✔ regional document and compute units convert published units without mixing generations (1.195654ms)
+✔ new comparison variants include configurable post-Save reconciliation while legacy variants remain unchanged (1.199693ms)
+﹣ emulator-backed authorization, incremental sync, recovery and collaboration (2.250615ms) # Not run: use npm run test:cloud against Firebase emulators
+✔ deterministic fixtures preserve large Canvas records and one-object updates (791.731038ms)
+✔ trusted mutation validation enforces workflow, verification, release and frozen sprint history (31.865423ms)
+✔ backup preview rejects corruption and missing references before an atomic restore (51.181038ms)
+✔ journal shards stay below Android row limits; interrupted commits keep the previous pointer (30.596808ms)
+✔ an interrupted borrowed cloud workspace returns to its untouched local source (4.595462ms)
+✔ journal chunks preserve emoji at UTF-16 boundaries through a native-like UTF-8 storage bridge (7.561423ms)
+✔ simulated payment signatures are verified and bounded without contacting a provider (19.1145ms)
+✔ cost model shares project read quotas and reports unpriced positive usage (6.469808ms)
+✔ journal reuses immutable chunks, retains exactly the previous complete manifest, and removes only unreferenced chunks (15.513077ms)
+✔ termination at every staging/manifest boundary preserves the previous acknowledged generation (24.91223ms)
+✔ corrupt chunks, missing parts, malformed manifests and checksums never become an empty queue (7.309885ms)
+✔ old inline and sharded v1 journals migrate without losing pending operations (11.455115ms)
+✔ surrogate pairs spanning a chunk boundary round trip through UTF-8 storage (19.026961ms)
+✔ failed cleanup cannot undo a committed generation (11.755538ms)
+✔ mutable caller rows are serialized again rather than reusing a stale cached payload (2.110692ms)
+✔ a previously retained but unverified chunk is rewritten before reuse after restart (2.623461ms)
+✔ queue persists offline edits and resumes after process termination without losing payloads (78.586846ms)
+✔ lost acknowledgements resend the exact durable payload and idempotency key (26.284885ms)
+✔ permanent conflict retains edits and stops ordered dependent operations (20.5095ms)
+✔ journal scopes separate hosts, users, organizations, cloud and local workspaces (0.651846ms)
+✔ conversation sends survive a lost acknowledgement and process restart with the same identity (12.911307ms)
+✔ corrupt journals and failed disk writes cannot silently become a fresh queue (11.260923ms)
+✔ a permission reset removes revoked cached projects while retaining blocked edits for scoped recovery (38.938846ms)
+✔ compatible unsent task fields consolidate while sent/retried operations keep their immutable payload (131.638962ms)
+✔ consolidation preserves structural edits, messages and attempted mutation identities (31.927539ms)
+✔ conflict resolution retains original intent and sends a fresh revision-checked idempotency identity (23.060385ms)
+✔ real task editor invalidation resets and timestamps remain consolidatable (60.210616ms)
+✔ wire format is prepared once before first send and replayed exactly after restart (26.8785ms)
+✔ v0.8.4 full-record sent payload survives upgrade with the original mutation ID and hash input (13.177923ms)
+✔ a complete contiguous commit advances the durable cursor and the immediate unchanged refresh needs only authorization reads (17.8615ms)
+✔ a sequence gap retains the old cursor so another collaborator record cannot be skipped (13.693308ms)
+✔ a no-op acknowledgment at the next sequence cannot skip the unseen second record in a collaborator atomic commit (14.824231ms)
+✔ lost acknowledgments and duplicate receipts advance only through their own sequence after restart (15.139654ms)
+✔ messages and legacy acknowledgments cannot advance the canonical workspace cursor (32.315808ms)
+✔ an older delayed acknowledgment cannot overwrite newer records already received by refresh (25.099808ms)
+✔ actual editor title, description, priority and absolute deadline edits consolidate into one canonical mutation (51.085116ms)
+✔ absolute start and due edits batch while ordering-sensitive fields retain atomic boundaries (43.34ms)
+✔ a scheduling mutation touching additional records cannot consolidate with adjacent task drafts (18.631616ms)
+✔ same-origin writer lock blocks a second writer until explicit release (3.684077ms)
+✔ unsupported coordination fails closed rather than using a racy localStorage lease (0.524923ms)
+✔ adaptive polling is bounded and resets for changes or queued work (3.099962ms)
+✔ idle modeled sessions reduce requests without pretending to measure user behavior (1.169077ms)
+✔ canonical workspace and Canvas survive cloud and JSON/import round trips (73.374307ms)
+✔ one task edit changes one record; Canvas movement changes one element plus board metadata (12.647885ms)
+✔ same task IDs in independent projects remain isolated; unsafe payloads fail (18.363154ms)
+✔ independent fields merge; concurrent text/reorder/delete updates conflict (1.745692ms)
+✔ canonical validation rejects dependency corruption and unknown fields (36.116154ms)
+✔ roles cannot bridge inactive membership, project denials, or platform/organization boundaries (1.132116ms)
+✔ all cloud configuration fails closed outside the exact local demo project (2.260308ms)
+✔ opening remote work keeps the local source and disconnect restores it (106.913ms)
+✔ borrowed workspace pending edits survive disconnect and are resumed before reconciliation (43.40277ms)
+✔ revocation stops synchronization and clears a borrowed local view (21.458961ms)
+✔ a workspace switch while authentication is pending cannot publish into the new local workspace (16.820692ms)
+✔ a failed journal write is visible and cannot discard borrowed edits on disconnect (31.091077ms)
+✔ explicit Save consolidates compatible edits, uses changed-field payloads and waits for acknowledgment (123.436884ms)
+✔ same-field conflict compares latest cloud data and resolves with a fresh revision-checked operation (45.545307ms)
+✔ many typed values and standard/advanced fields persist across restart and commit once (7.056692ms)
+✔ invalid drafts, storage errors and concurrent same-field changes keep user intent (5.795884ms)
+✔ unchanged drafts and cancel create no domain mutation; scopes separate accounts and environments (1.178884ms)
+✔ corrupt stored drafts fail closed and remain available for recovery (0.652577ms)
+✔ edits arriving during a local save stay in the durable next draft (29.745115ms)
+✔ malformed persisted draft containers and unsafe field values are rejected before rendering (4.278693ms)
+✔ incomplete numeric custom input retains correction text instead of sending NaN (2291.202229ms)
+✔ effort draft uses the canonical estimateHours for restart and concurrent-change checks (8.039769ms)
+✔ independent task validator agrees with canonical validation for valid and malformed field values (290.934692ms)
+✔ simple saves remain six point reads at 10, 100, 500 and 2,000 tasks with no summary or task deletion (302.51ms)
+✔ compact payloads retain exact old field checks, fresh custom configuration and idempotent receipts (25.421231ms)
+✔ stale independent fields merge against immutable revisions; competing fields and forged envelopes fail (9.294846ms)
+✔ compact unchanged edits preserve receipt-only no-op behavior without task/version/sequence writes (4.703961ms)
+✔ old full-payload receipts replay under fresh authorization and new receipts bind restore semantics (7.064769ms)
+✔ forged patch paths, fields, old values and absent bases cannot change records (5.134884ms)
+✔ crash recorder distinguishes confirmed exception from unclean prior session (9.224693ms)
+✔ redacts credentials and account identifiers in copied reports (0.610731ms)
+✔ diagnostics keep bounded memory and report slow navigation and render data (9.743462ms)
+✔ diagnostics connected to Settings, render errors, navigation and React profiler (10.519308ms)
+✔ timeline shows all scheduled rows with viewport virtualization, no paging buttons (2.338615ms)
+✔ sprint screen imports useState after sprint management refactor (1.690885ms)
+✔ previous-run breadcrumbs survive a missing JS exception and stay sanitized (0.937462ms)
+✔ global and console errors are captured and flushed while startup storage is still pending, with original handlers preserved (3373.986613ms)
+✔ background transitions during startup and later background breadcrumbs never wait on foreground batching (307.912153ms)
+✔ resume resets timer-delay accounting and restores ordinary foreground batching without duplicate handlers (512.491076ms)
+✔ starting in the background preserves state and a failed startup read still leaves capture functional (379.340615ms)
+✔ browser page hide immediately flushes evidence and page show resumes foreground batching (132.251385ms)
+✔ Fast Refresh disposal during a slow startup cannot resurrect listeners, timers or native-exit callbacks (132.087692ms)
+✔ native-exit completion after clear or disposal cannot reintroduce cleared evidence (214.758346ms)
+✔ synchronous native-history failure cannot reject startup, while valid OS history still persists (259.819692ms)
+✔ Android native exit history returns only OS reason and timestamp (1651.23396ms)
+✔ missing, malformed and failing native history never prevents startup (297.280423ms)
+✔ an OS signal is not misreported as a proven low-memory or native crash (0.637539ms)
+✔ ordinary breadcrumbs retain every bounded event while persistence is coalesced without an unbounded delay (6000.907611ms)
+✔ crashes, backgrounding and clear bypass pending saves; no stale run is persisted after clear (1246.40273ms)
+✔ failed diagnostic persistence stays retryable and does not interrupt live reports (528.111115ms)
+✔ release reports retain bounded commit samples and explain missing React Profiler callbacks truthfully (68.068692ms)
+✔ startup markers are distinct, bounded, sanitized and use a separate collection from ordinary breadcrumbs (5.846307ms)
+✔ release render-to-commit hook records every committed render and never records an aborted render (5183.731843ms)
+✔ work timing preserves results and failures, coalesces diagnostic writes and survives persistence/clear (447.614077ms)
+✔ Advanced tasks defaults preserve existing access, new projects stay lean, and switch/import round trips retain all task fields (35.580693ms)
+✔ Planning & delivery remains available with legacy Advanced tasks off, while Manage tools omits the retired switch (5330.368727ms)
+✔ v0.3.1 project migrates without sprint fields and does not change tasks (46.792462ms)
+✔ create sprint validates dates, IDs and 90-day maximum (5.208423ms)
+✔ assignment belongs to only one planned sprint and is referentially valid (7.31327ms)
+✔ at most one sprint active, and start captures an authentic baseline (2.162154ms)
+✔ status changes record progress; unchanged edits do not fabricate burndown events (18.818385ms)
+✔ assigning to active sprint adds a progress snapshot without altering status (5.340423ms)
+✔ finish is explicit and immutable history freezes while unfinished tasks become backlog (45.353115ms)
+✔ planned sprint deletion unassigns tasks; active sprint deletion is refused (157.855346ms)
+✔ burndown plots recorded days only, without fabricated future actuals (152.628115ms)
+✔ normalization round-trip preserves sprint history, scopes, and task assignment (5.636039ms)
+✔ reject missing sprint, completed-sprint assignment and duplicate IDs in imported data (51.781846ms)
+✔ unrelated project data and the user-selected accent stay outside sprint changes (0.922462ms)
+✔ planned sprint edits preserve IDs, scope and validation, and cannot alter active history (1.726077ms)
+✔ advanced commands survive normalization and project JSON import (184.971807ms)
+✔ legacy simple rules remain supported (2.667039ms)
+✔ status command applies exactly on entering requested status (10.055193ms)
+✔ rule skips unmatched priority, board and disabled state (2.325923ms)
+✔ card button changes only requested task (2.343269ms)
+✔ board button respects board scoping and emits history (8.873962ms)
+✔ due date checks are idempotent for each task and date (2.177116ms)
+✔ invalid commands fail atomically and do not mutate input (21.478116ms)
+✔ actions limited to approved safe types (1.340731ms)
+✔ boards deletion disables bound automations without discarding tasks (2.003923ms)
+✔ day arithmetic crosses month and leap boundaries (0.501308ms)
+✔ automation history preserved in workspace backup and restored (10.323885ms)
+✔ modern automation editor is wired to command CRUD, run and history (2.258769ms)
+✔ board button invoked from selected board affects only that board (1.129231ms)
+✔ functions superseded by a verified live path are removed (11.195269ms)
+✔ tested model logic the UI does not expose yet is kept (0.563231ms)
+✔ functions the app uses are still exported (0.483807ms)
+✔ live date-edit path (Timeline > updateTask > patchTask) clears release metadata and keeps scheduling valid (57.736692ms)
+✔ live resize path: timelineEdit rules plus patchTask validation replace model.resizeTask (3.895193ms)
+✔ portfolio health the screens show comes from operations.health (replaces portfolioStats) (1.775885ms)
+✔ Board card age uses powerUps.ageInDays, same result as the old inline maths (3.332423ms)
+✔ drag movement changes lane and stores ordering (193.286231ms)
+✔ dependency completion guard, cycles, missing deps (3.236577ms)
+✔ automation applies only on entering configured status; preserves manual fields (1.710077ms)
+✔ date shifting works in UTC across a year boundary (0.5135ms)
+✔ attachments and dependency graph persist through import/export (2.635846ms)
+✔ reject invalid imported dependency graph and oversized collections instead of truncating (14.387731ms)
+✔ release gate invalidated by unfinished dependencies (2.651192ms)
+✔ inline month grids use real ISO days, Monday-first rows and leap-year rollover (12.102077ms)
+✔ calendar exception toggles are sorted, deduplicated, immutable and persistence-safe (4.146461ms)
+✔ schedule chart reports due distribution without inventing daily completion history or mutating tasks (4.092116ms)
+✔ chart geometry stays finite for empty, zero, negative and malformed values (6.928116ms)
+✔ brush widths and colors survive backup, reject invalid widths and erase only actual unlocked stroke geometry (9.694769ms)
+✔ atomic grouping, move, resize, ungroup, undo and import preserve world positions and diagram internals (40.600076ms)
+✔ nested groups, locked children, invalid resize and stale gesture coordinates fail without mutating the board (3.866ms)
+✔ alignment translates grouped descendants exactly once and rejects a selection containing only one independent root (2.534077ms)
+✔ new line colors come from the palette and survive edit, undo, persistence and import (8.431116ms)
+✔ live sources update on relevant changes while snapshots freeze, metadata edits reuse projections and missing links redact (21.937769ms)
+✔ roadmaps use canonical dates and phase/sprint/milestone scopes without writing a second schedule (11.437269ms)
+✔ project task diagrams contain canonical parent/subtask nodes for all three layouts without changing WBS (1.804039ms)
+✔ large project diagrams fail with an explicit limit and long canonical task IDs can be snapshotted intact (10.566346ms)
+✔ cross-project snapshot imports preserve the origin project so source navigation cannot target a coincidental task ID (3.746423ms)
+✔ Canvas schema rejects future/corrupt/shared/cross-project/duplicate/oversize data without mutating the input (15.743692ms)
+✔ Canvas operations keep links attached, move grouped objects, prevent locked edits and preserve canonical project data (66.659192ms)
+✔ Canvas comments, snapshots, project/workspace imports and board backups round-trip with remapped references (17.050385ms)
+✔ connector edits/deletion and element deletion are undoable; viewport saves do not change content revisions (7.431923ms)
+✔ copying a frame includes nested children, internal connections and comment anchors without external links (1.7195ms)
+✔ roadmap snapshots reject impossible and reversed dates before rendering (2.359538ms)
+✔ drawing-heavy board backups stay inside their own import byte limit and round-trip intact (363.580845ms)
+✔ ungrouping a selected frame releases its children, preserves the frame and refuses locked member changes (20.247192ms)
+✔ layer controls reorder tied and saturated layers and survive board backup restoration (2.672846ms)
+✔ portfolio health computes once per immutable project/day, matches domain truth and refreshes after edits or rollover (1672.564999ms)
+✔ completed sprint velocity is derived once per projection and frozen burndown remains unchanged after task edits/import (180.253115ms)
+✔ schedule aggregation keeps UTC weekdays, stable task order, Done counts, bounds and persistence behavior without mutating tasks (1.520231ms)
+✔ a 500-element legacy WBS preserves every element when its synthesized root is saved and imported repeatedly (56.345423ms)
+✔ localDay returns the device-local date, not the UTC date (13.889423ms)
+✔ no "today" default is taken from the UTC clock any more (572.370384ms)
+✔ demo project roundtrip and required collections (53.372039ms)
+✔ no merge without successful verification evidence and SHA (7.957884ms)
+✔ reject malformed file and duplicate IDs (1.444308ms)
+✔ workspace normalization selects existing project only (4.919539ms)
+✔ import title and text are bounded (2.005462ms)
+✔ workspace import recovery preserves all projects, not just selected (6.622769ms)
+✔ project snapshots restore deleted projects without removing other projects (2.262231ms)
+✔ release cannot be recorded as released until all linked tasks are merged and SHA supplied (1.482269ms)
+✔ legacy board and tasks are projected without mutating the source (51.658692ms)
+✔ create list and rename persist through original workspace import, retaining IDs (12.344808ms)
+✔ drag task to new list persists custom field and test evidence (5.207885ms)
+✔ blockers prevent Done drops and preserve original project after failure (2.688731ms)
+✔ cycle validation is enforced in modern task editor (2.081307ms)
+✔ invalid date cannot silently corrupt a scheduled task (1.4375ms)
+✔ list delete migrates tasks instead of dropping them (4.923808ms)
+✔ cannot remove final list, invalid list, or protected board (2.231269ms)
+✔ board delete preserves task and sends it to Main (2.776115ms)
+✔ historic cost uses rate snapshot not current rate (3.463885ms)
+✔ list order survives normalisation (1.765154ms)
+✔ status transition still updates sprint burndown history (4.039885ms)
+✔ new task is created with the target board and list in the canonical model (2.693347ms)
+✔ task delivery evidence and attachment references survive persisted workspace round-trip (2.118423ms)
+✔ verification requires evidence, then preserves merge checkpoint and rejects stale verification (5.874731ms)
+✔ board archive flag survives normalization; archived board and tasks remain intact (2.069077ms)
+✔ projectView reuses unchanged task objects and rebuilds changed ones (2.87273ms)
+✔ starter project creation is one validated transaction; original data remains intact and tools survive import (49.315999ms)
+✔ ordinary creation stays lean and invalid tool overrides reject before any transaction (2.772231ms)
+✔ three slides and four starters, all with drawings that exist (3.701692ms)
+✔ starters switch off only real optional tools and only ever land on a screen that tool set keeps on (0.817693ms)
+✔ an unknown starter falls back to the default and never throws (0.401039ms)
+✔ project name rules match the Create project sheet (0.442808ms)
+✔ steps move forward and back inside the three steps (0.562884ms)
+✔ only a true first launch is fresh: an upgrade from an older release is never fresh (0.5175ms)
+✔ copy follows the writing rules: no exclamation marks and no trailing period on short strings (1.321423ms)
+✔ legacy project is assigned a protected default board with all tasks (30.327769ms)
+✔ boards can be created independently with separate task membership (4.280615ms)
+✔ board names are validated and unique case insensitively (2.5355ms)
+✔ deleting a board moves task membership back to Main without deleting work (1.995038ms)
+✔ cannot delete or rename default board or assign to invalid board (1.122077ms)
+✔ board references survive project and workspace JSON roundtrip (6.136346ms)
+✔ invalid board references rejected by project validator (1.635154ms)
+✔ project metadata additions are backward compatible (0.809654ms)
+✔ portfolios maintain unique ids and valid project membership (1.971923ms)
+✔ time logging rejects invalid date, unknown task and negative hours (1.648654ms)
+✔ recorded time and rate cards produce cost from actual entries (3.515269ms)
+✔ capacity summary does not include completed work (1.575154ms)
+✔ task comments and reminders survive JSON without touching task (2.248308ms)
+✔ unsafe CSV formulas are escaped (0.778039ms)
+✔ CSV preserves task columns and escaped quotes (1.422539ms)
+✔ project template resets status and results without deleting hierarchy (2.525308ms)
+✔ modern task sheet uses inline editors and no raw whitespace after controls (2.016923ms)
+✔ modern board retains fixed lane sizing and scrollable list layout (1.177038ms)
+✔ rate snapshot protects historical time cost if contributor is removed (1.624077ms)
+✔ contributors with same normalized name cannot be duplicated (1.139346ms)
+✔ task deletion removes orphaned time entries, comments and reminders (3.961116ms)
+✔ leaf progress respects manual percentage (14.207424ms)
+✔ done leaf contributes 100, even when manual value is 0 (0.699961ms)
+✔ parent progress weights by leaf effort (0.927038ms)
+✔ nested rollups never double count intermediate parent (2.857808ms)
+✔ project progress includes each root only (1.161615ms)
+✔ estimated effort falls back to a unit weight if unset (0.51127ms)
+✔ task traversal detects cycles (1.208038ms)
+✔ task traversal detects orphans (0.9465ms)
+✔ task traversal detects duplicate IDs (0.612577ms)
+✔ input clamping rejects non-finite and negative values (0.606307ms)
+✔ normalizing old project gets savedViews empty and progress/effort zero (30.285039ms)
+✔ JSON roundtrip retains task effort, progress and saved query (14.608423ms)
+✔ backups and workspace normalization retain planning metadata (4.509ms)
+✔ save view does not mutate original (1.279462ms)
+✔ saved view updates by id (1.369ms)
+✔ saved view supports delete without changing task data (2.563769ms)
+✔ saved view duplicate IDs are rejected (0.600038ms)
+✔ saved view enforces upper limit (1.278731ms)
+✔ text search and owner/status filters work together (0.780692ms)
+✔ due sort pushes unscheduled tasks to end (24.498039ms)
+✔ query sorting does not modify source ordering (0.6265ms)
+✔ workspace normalization fails loudly for corrupted duplicate saved views (1.299423ms)
+✔ status Done rollup remains separate from verification flags (0.447615ms)
+✔ progress sort uses derived parent rollup (0.597885ms)
+✔ deep nested project rolls up without double counting (1.136346ms)
+✔ saved view import fails on more than 50 views rather than dropping extra data (1.769923ms)
+✔ planning mutation invalidates parents, dependents and released checkpoint (2.560154ms)
+✔ planning mutation preserves original on invalid input (1.125346ms)
+✔ identical planning update returns same object (0.580654ms)
+✔ planning mutation refuses editing a completed task progress (0.921307ms)
+✔ legacy projects retain an empty Power-Up set and no linked resources (36.80873ms)
+✔ enable and disable built-in extensions per board (2.807385ms)
+✔ deleted board cleans its Power-Ups and preserves tasks (1.748423ms)
+✔ reject unknown Power-Ups and orphaned board settings on import (1.245115ms)
+✔ strict GitHub URL support for issue, PR, commit and branch (1.628231ms)
+✔ reject GitHub spoofing, alternate protocols and ambiguous paths (1.080769ms)
+✔ link requires enabled Power-Up and valid task (1.948269ms)
+✔ link additions, dedupe, metadata and removal survive JSON roundtrip (4.461654ms)
+✔ disabling a Power-Up never deletes linked references (2.241077ms)
+✔ validate import sanitizes malicious links without ever storing credentials (1.117154ms)
+✔ public preview reads only GitHub API and handles PR status without token (1.146346ms)
+✔ public API errors report private repos/rate limits honestly (1.037ms)
+✔ due-date and aging extension metrics do not require network (1.362808ms)
+✔ progressOf counts partial work and skips milestones (2.479616ms)
+✔ project summary uses the same progress as Overview (24.467846ms)
+✔ projectMetric is cached per project object and recomputed for a new one (1.388038ms)
+✔ migration: a project saved before the switches existed has every tool on (33.8ms)
+✔ damaged or unknown switch values never stop a workspace loading and never switch anything off by accident (3.332269ms)
+✔ a brand-new project starts lean; the sample and existing projects do not (2.393384ms)
+✔ switching a tool changes the switch only: the tool data is untouched and the switch survives save, load and edit (5.157616ms)
+✔ core screens can never be switched off, and screen tools have matching routes (1.1495ms)
+✔ navigation follows the switches: pill, More and the wide sidebar (2.679846ms)
+✔ with every tool on, all 19 entries are reachable; switching any tool off and on again restores it (6.51573ms)
+✔ wiring: store action, More tool switches, Overview shortcuts, redirect and Create sheet follow the switches (5.936692ms)
+✔ legacy projects gain explicit per-project FS links without changing task schedules (29.318923ms)
+✔ full JSON project and workspace restore preserve typed links and calendar exceptions (10.283731ms)
+✔ separate projects retain separate calendars and dependency settings (3.140923ms)
+✔ unlinking, deleting task and re-linking keeps typed metadata in sync (2.420731ms)
+✔ rejected imports with orphan, duplicate and malformed typed links (2.7045ms)
+✔ validate project rejects stale stored relationships and normalizer repairs only deliberate internal unlink (1.217269ms)
+✔ working calendar controls only affects selected project and audits do not mutate (2.298231ms)
+✔ calendar validation rejects empty weekdays, bad ISO dates and contradictions (1.367577ms)
+✔ schedule preview is read-only, applying invalidates verification and stale edits reject (3.562461ms)
+✔ edit metadata retained across task date adjustment and read-only audit (9.708577ms)
+✔ no unsanctioned automatic scheduling on imports and restored backups (5.521615ms)
+✔ editing typed links reopens successor verification and downgrades Released gate (1.029115ms)
+✔ task dependency changes invalidate downstream evidence and release status (1.112923ms)
+✔ deleting a task clears metadata and invalidates dependents, never leaves Released (1.405ms)
+✔ typed dependencies attach to correct Gantt anchor endpoints (27.093538ms)
+✔ UTC date validation rejects rollover and non-ISO dates (7.022962ms)
+✔ workdays calendar respects Friday-Monday, DST and explicit holiday (1.347808ms)
+✔ opened weekend override is eligible and holiday exceptions cannot contradict (1.375ms)
+✔ rejects invalid weekday sets and ambiguous override dates (0.792692ms)
+✔ calendar mode uses continuous days, not workdays (0.522192ms)
+✔ legacy dependsOn converts to FS lag zero (2.546308ms)
+✔ typed links overlay only existing persisted edges (0.725692ms)
+✔ rejects duplicate typed links, bad types and out-of-range lag (0.898808ms)
+✔ cycle, self link, duplicate task IDs and missing predecessor are rejected (1.253807ms)
+✔ FS push-only preserves task duration, user-scheduled anchor and original project (2.540615ms)
+✔ FS zero lag skips weekends under workdays calendar (0.761961ms)
+✔ workdays skip holidays and preserve counted effort across weekends (1.146616ms)
+✔ FS positive lag adds days after next available date (0.839961ms)
+✔ FS negative lag permits controlled overlap (0.823885ms)
+✔ SS constrains successor start against predecessor start (1.025154ms)
+✔ FF constrains successor finish while preserving duration (0.414884ms)
+✔ SF constrains successor finish against predecessor start (0.362807ms)
+✔ multiple incoming predecessors use the most restrictive constraint (0.470654ms)
+✔ cascade propagates through multiple successor levels in topological order (0.519346ms)
+✔ only descendants of explicit anchor may move (0.412ms)
+✔ never pulls already-later successor earlier (0.32823ms)
+✔ milestone represented by due-only date shifts due but preserves blank start (0.371538ms)
+✔ audit reports conflicts with typed link metadata and no mutation (0.793538ms)
+✔ partial-date successor blocks preview rather than inventing date (0.495846ms)
+✔ missing predecessor date blocks preview and audit reports it (0.4295ms)
+✔ invalid project dates on closed days block workdays plan (0.403884ms)
+✔ invalid anchor dependency is reported and does not move anchor (0.347461ms)
+✔ stale-preview refuses a changed task date or verification state (0.656462ms)
+✔ empty changed anchors, unknown and duplicate anchors reject (0.806039ms)
+✔ non-integer day shifts and oversized lags cannot enter scheduling (0.878193ms)
+✔ deterministic preview contains no current-time dependent data (0.434116ms)
+✔ applied schedule clears checks only on moved successors (0.380115ms)
+✔ existing project model stays import-export compatible after FS schedule (69.252461ms)
+✔ preview cannot be applied to another project with identical tasks (1.005423ms)
+✔ rejects a pathological task span rather than scanning millions of days (0.738884ms)
+✔ workday FF lag and milestone SF relationship align correctly (0.730231ms)
+✔ applying a clean preview retains existing task objects and dependency structure (0.601346ms)
+✔ add, edit and delete an entry in every specification list, and the project still validates (33.609269ms)
+✔ phases keep their stage, goal and exit criteria (2.257153ms)
+✔ invalid input is refused and the project is not changed (1.770615ms)
+✔ deleting a phase clears the phase on its tasks instead of leaving a dangling id (0.917192ms)
+✔ the original project is never mutated (0.779577ms)
+✔ legacy projects receive a default task type and unrestricted workflow (29.277ms)
+✔ config preserves types/fields and typed values through workspace export-import (7.947961ms)
+✔ custom fields accept only their declared types and values (2.155576ms)
+✔ configuration rejects collisions, invalid options and unknown task types (1.413423ms)
+✔ cannot add a required field while old records lack its value (0.9115ms)
+✔ only configured transitions apply when enabled, including type-specific rules (1.734962ms)
+✔ bulk status changes obey workflow and remain atomic (1.399308ms)
+✔ remove custom field clears values but preserves other fields (1.594231ms)
+✔ changes to verified task reopen linked released checkpoint and dependent verification (1.601077ms)
+✔ cannot import unknown metadata or fields silently (2.379615ms)
+✔ modern app safe area and new task editors are in the single shell (2.627577ms)
+✔ typed custom fields use local draft and explicit save (2.338038ms)
+✔ old projects normalize to parentId empty without date loss (28.968769ms)
+✔ hierarchy depth, order and descendants (4.00523ms)
+✔ parent move is persisted and round-trips through project import/workspace recovery (8.636808ms)
+✔ reject missing parent, self-parent and parent cycles atomically (2.282347ms)
+✔ validate imported hierarchy against missing parents and circular cycles (2.241539ms)
+✔ delete parent detaches children and removes predecessor links (1.680423ms)
+✔ query filters status, priority and searches parent-independent text (2.539615ms)
+✔ bounded incremental pagination (1.364ms)
+✔ atomic bulk updates apply selected priority only and leave source unchanged (3.514961ms)
+✔ bulk completed status validates blocking predecessor after proposed changes (3.728308ms)
+✔ bulk rejects invalid priority, status, duplicates and unknown ids without mutation (4.937423ms)
+✔ bulk no-op keeps reference and does not claim changes (1.198807ms)
+✔ automation rules apply to bulk status changes (23.758308ms)
+✔ large workspaces filter and paginate predictably (41.833538ms)
+✔ snapshot retains task hierarchy and bulk results (3.576885ms)
+✔ task check defaults to persistent Done status when no routing rule exists (32.265308ms)
+✔ user-configured task-check route moves to Validation and saves through import (5.134346ms)
+✔ Done automation target retains completed state and previous dependency guards (2.567385ms)
+✔ card-aging automation applies to old open cards once per day and skips Done (3.163307ms)
+✔ task-check and selection affordances are separate (1.187269ms)
+✔ task config is not duplicated in settings and confirmation wraps (4.984615ms)
+✔ colored comment dots use stable identities, fixed screen hit targets and follow grouped object geometry (5.082077ms)
+✔ custom S-curves always remain a continuous deterministic cubic, including dense and overlapping endpoints (14.3595ms)
+✔ connector style survives moves, resize, restore, reload and board export/import (4.792077ms)
+✔ undo history keeps recent operations within count and byte budgets, including multibyte notes (66.096231ms)
+✔ Canvas zoom preserves focal world coordinates, hit testing follows layers, groups and connectors follow drag previews (4.004385ms)
+✔ S-curve, straight and elbow connectors have distinct paths and a generous zoom-aware editing hit area (5.908384ms)
+✔ selected resize and connector handles hit in screen space and previews attach to resized edges (1.315962ms)
+✔ inline edits use existing note interiors and locate individual native diagram nodes in world space (2.297193ms)
+✔ selection strip follows world position, pan, zoom, drag and resize while staying inside safe space (8.727193ms)
+✔ new objects are placed visibly without changing the camera and low-zoom editors remain usable (8.846192ms)
+✔ touch-history mismatch warnings are classified without hiding them or retaining touch coordinates (5.601577ms)
+✔ connectors choose closest facing left, top, right and bottom edges (4.777346ms)
+✔ routes avoid intervening boxes, follow live moves/resizes and remain editable on detours (18.231538ms)
+✔ cached routes only invalidate for moved endpoints or obstacles near the existing route (1.322885ms)
+✔ gesture geometry excludes document, snapshot, drawing and text payloads while keeping editing constraints (12.431307ms)
+✔ native Canvas previews hundreds of drag updates without JS writes, commits once, cancels safely and keeps pinch focal point (1284.55673ms)
+✔ browser Canvas uses the SVG WebShape DOM ref, commits at release and removes listeners (202.183962ms)
+✔ native context overlay reads the shared camera/drag directly rather than subscribing React to gesture frames (23.74377ms)
+✔ drag ledger never adds a delta twice or flashes old coordinates through delayed React commits (7.060346ms)
+✔ consecutive release operations, cancellations and an external undo reconcile by operation and revision (0.673462ms)
+✔ resize preview and commit use identical absolute coordinates for group children and connectors (1.886346ms)
+✔ arbitrary imported IDs are safe geometry keys and release packets contain only affected objects (0.754307ms)
+✔ overscan culls distant scene content, retains crossing connectors and changes windows only at coarse boundaries (2.792308ms)
+✔ route caching and geometric projections retain unrelated identities after one object moves (2.181461ms)
+✔ compiled native connector preview executes captured helpers while drawing, targeting, resizing and cancelling (5313.001727ms)
+✔ compiled selection overlay follows shared camera and live object previews without JS callbacks (1622.324422ms)
+✔ compiled native transform ledger holds absolute positions across delayed revision handoffs (1121.871115ms)
+✔ diagram zoom clamps limits, preserves focal content, bounds panning and does not mutate its inputs (2.973577ms)
+✔ native pinch/pan: repeated gestures, third finger, remaining finger, cancel, preset reset and page-scroll handoff (802.824769ms)
+✔ web touch zoom/pan: focal scaling, zero-distance, limits, cancellation, leftover finger and listener cleanup (55.824577ms)
+✔ web keeps page scrolling when content fits, supports trackpad/presets and mouse pan without rerendering SVG (35.982962ms)
+✔ full-screen Fit contains an entire very wide tree and centers spare space without changing embedded zoom limits (1.800423ms)
+✔ native camera uses only viewport bitmap dimensions and UI animated viewBox values, never scene-size views (851.990769ms)
+✔ native viewport camera survives many UI updates and reports only on completion; full-screen diagonal panning stays local (78.661538ms)
+✔ web full-screen wheel zoom and mouse pan preserve pose; embedded scroll handoff remains in its own existing tests (90.281962ms)
+✔ native Tree batch display follows the live camera without remounting children or using opacity bitmaps (48.143077ms)
+✔ first native camera size follows explicit 100%/150%/Fit pose, independent of scene aspect ratio (27.838ms)
+✔ the app root is only the gesture-handler root: nothing there can change identity and remount the app (2.543538ms)
+✔ no recovery layers mask a remount; a tripwire reports it instead (2.520962ms)
+✔ library guard: RNGH still derives the intercepting detector mode from its gesture prop (20.126692ms)
+✔ SDK 58 native animation versions and shared gesture root are declared (3.567462ms)
+✔ Android and iOS use worklet gestures and UI-thread shared translation (3.342347ms)
+✔ web retains original mock drag behavior, task sheet is inline (4.296461ms)
+✔ native drag and timeline reuse original card and grid spacing (2.946731ms)
+✔ Timeline imports Platform used by TaskBar; no mock geometry changed (3.519847ms)
+✔ native animated styles close over shared values, never a gesture controller (2.392423ms)
+✔ Android/iOS retain native UI-thread movement; original web implementation unaffected (16.222269ms)
+✔ timeline density preserves focal dates, clamps edges/canvas limits and bounds each gesture preview (3.081462ms)
+✔ native timeline pinch uses a shared transform, commits once, rebases extra fingers and releases on cancel (1065.258076ms)
+✔ web timeline pinch transforms chart/calendar together, preserves ordinary scrolling and cleans up listeners (136.834193ms)
+✔ pinch guards prevent task moves/resizes/link creation and taps while ordinary edit semantics remain (516.258731ms)
+✔ repeated zoom in/out keeps finite density and scroll inside the native canvas budget (4.548962ms)
+✔ presets rebase far-right scroll, preserve the focal date and handle a canvas smaller than the viewport (0.55173ms)
+✔ web gesture uses browser pointer listeners without taking the ScrollView responder on touch-start (3.029154ms)
+✔ web ScrollViews preserve normal arbitration instead of disabling the pan responder (4.400308ms)
+✔ hidden heavyweight web screens are no longer retained and diagnostics distinguish log calls from exceptions (5.579039ms)
+✔ Canvas exports complete bounds, transformed connectors and escaped text; geometry stays stable on unrelated project changes (18.589615ms)
+✔ linked WBS uses canonical orientation-aware geometry and source updates while frozen snapshots retain their text (8.574308ms)
+✔ text color and frame border choices affect exported geometry, while unrelated object scenes retain identity (2.275577ms)
+✔ timeline import becomes vector phase summaries and dated milestone diamonds without altering canonical tasks (22.731538ms)
+✔ roadmap scopes, empty data, single-day and coincident milestones produce finite vector geometry (16.833654ms)
+✔ only selected layout is generated; switching back and remounting reuses geometry and view state without export work (412.427615ms)
+✔ task edits, budget, WBS owners and notes do not regenerate vectors; CSV reads current metadata (98.666231ms)
+✔ titles, order, parent relationships and root title invalidate layouts lazily; hours invalidate only top-down Tree (157.967731ms)
+✔ workspace and project IDs isolate identical structures, and tree direction has an independent cache entry (306.991346ms)
+✔ Expand reuses selected geometry and only one live diagram; closing restores the embedded pose (132.798923ms)
+✔ cache enforces entry/byte budgets and LRU; oversize results/errors are never retained (1.820154ms)
+✔ semantic revision survives cloned inputs and ignores undisplayed metadata without changing import data (113.459193ms)
+✔ 2×/4× PNG plans include the entire aspect ratio and enforce pixel/side budgets for narrow, tall and very large diagrams (4.137038ms)
+✔ all three SVG exports retain all primitives, complete dimensions, escaped labels and explicit background choice without changing scenes (4.958231ms)
+✔ native PNG captures explicit full-scene dimensions, writes actual base64 bytes, shares PNG and bounds retained export files (105.9465ms)
+✔ native capture rejects wrong dimensions, invalid data, timeout and aborted/late callbacks without leaked timers (91.069308ms)
+✔ web PNG rasterizes a complete SVG, releases object URLs/canvas memory and surfaces encoding errors (31.339923ms)
+✔ drawing primitives are generated once per selected scene and reused across switches, zoom and unrelated theme changes (111.562654ms)
+✔ preview selection binds current callbacks without storing old handlers in cached drawing output (42.910808ms)
+✔ Tree batches retain each primitive exactly once in both orientations and skip offscreen text (12.935923ms)
+✔ spatial visibility follows continuous camera pose and includes stroke overscan (0.550115ms)
+✔ program contains portfolio, and portfolio contains project without copying tasks (33.996116ms)
+✔ programs reject unknown portfolio references on edit (3.247154ms)
+✔ legacy direct members survive migration, even when new portfolio membership is added (3.111077ms)
+✔ shared projects are deduplicated when several portfolios belong to one program (1.449154ms)
+✔ deleting a portfolio unlinks the program without deleting projects (2.145615ms)
+✔ portfolio memberships and program membership survive snapshot and restore (5.042384ms)
+✔ Governance group exposes independent screens with one shared relationship connector (3.242461ms)
+✔ Page removes redundant title/subtitle header while preserving its actions row (4.657962ms)
+✔ Timeline navigation mark rotates horizontally in the sidebar, not the actual chart (11.124808ms)
+✔ Governance navigation has one independent entry per screen, in required order (1.360807ms)
+✔ Project governance round-trip preserves statuses, risks, WBS and budgets (30.79277ms)
+✔ Project in one program enforced across direct and nested portfolio membership (6.1155ms)
+✔ Workspace recovery snapshot retains governance records and relationships (3.861039ms)
+✔ Open project from Portfolios and Programs navigates to the project detail (4.599423ms)
+✔ Portfolio and Program create/edit editors are accessible sheets rather than inline forms (1.497308ms)
+✔ Projects, Programs and Portfolios have independent screens and shared domain selectors (6.281154ms)
+✔ project task cards display scalar task counts, never task-object arrays (4.0875ms)
+✔ program and portfolio membership summarizes existing workspace projects without copying task data (0.882616ms)
+✔ old workspace loads with no programs (34.732116ms)
+✔ program can be created and edited without copying project contents (3.190423ms)
+✔ program cannot reference nonexisting projects (1.982ms)
+✔ normalization drops stale memberships during import (2.254462ms)
+✔ program and membership survive full-workspace and recovery snapshots (5.103423ms)
+✔ project deletion cleans up program memberships (2.014385ms)
+✔ program delete removes only program, not projects (1.110153ms)
+✔ Governance has Projects Portfolios Programs in order with independent feature modules (2.371654ms)
+✔ Settings no longer edits or deletes projects and Backup uses file picker (1.393923ms)
+✖ 1: the writer is null until the first load, so every flush is guarded (5.731269ms)
+✔ 3: due, aging and overdue sweeps tell the user when nothing applies (26.766807ms)
+✔ 5: removed dead imports stay removed and the native gesture file has no web code (7.962077ms)
+✔ encryption survives screen unsubscribe and retains only completed ciphertext for later download (6.976385ms)
+✔ decryption runs outside screen and requires explicit import; plaintext is never persisted (1.118038ms)
+✔ single-flight guard, cancellation and failures do not create false ready files (1.578231ms)
+✔ cold restart reports interrupted operation without storing a password or silently resuming (0.440192ms)
+✔ source enforces durable encrypted-only downloads and no unmount cancellation (3.210193ms)
+✔ completion and failures create routeable, nonsecret notices without storing passwords or plaintext (6.473962ms)
+✔ retry after incorrect password retains selected ciphertext in memory, never the typed password (1.231539ms)
+✔ unused store actions are removed; the ones the UI uses remain (2.714808ms)
+✔ snapshot budget is checked on every edit, not only when snapshots change (17.6895ms)
+✔ bulkStatus orders selected tasks predecessors first (4.404385ms)
+✔ Canvas deferred persistence coalesces edits and explicit flush writes the latest immutable snapshot (6.848923ms)
+✔ a later immediate edit supersedes the deferred Canvas save and failed deferred writes remain retryable (1.028462ms)
+✔ project templates with Canvas preserve boards and rebind live project/task links to the copied project (18.510423ms)
+✔ importing a project already present remaps Canvas ownership without losing live links or snapshot origin (826.191038ms)
+✔ Canvas storage refuses growth past Android row headroom without losing existing tasks, boards or recovery (44.823462ms)
+✔ archived Canvas deletion retains a restorable pre-delete snapshot (3.628346ms)
+✔ expo-crypto AES adapter matches the known-answer vector and native SDK call contract (10.930346ms)
+✔ migrated cipher reads legacy Node-crypto protected backups and writes Node-readable files (276.399384ms)
+✔ PBKDF2 HMAC-SHA256 remains byte-identical and cancellable (36.160731ms)
+✔ No Noble direct or transitive dependency, and Expo Go supported AES remains the sole cipher (18.975577ms)
+✔ password bytes are zeroed even when KDF rejects on create or restore (30.334846ms)
+✔ snapshot budget keeps the newest snapshots, drops the oldest, never touches the live workspace (20.872039ms)
+✔ snapshot budget is a no-op under the limit and keeps one snapshot above the soft limit (8.551731ms)
+✔ a snapshot that would make the workspace unloadable is dropped (10.700731ms)
+✔ a workspace backup file imports as projects and restores as a whole workspace through the model (33.418462ms)
+✔ Android imports use the system picker; DocumentPicker is only the iOS path (2.040577ms)
+✔ import and restore report the real error, not a generic one (1.106231ms)
+✔ Android SAF picker reads directly from granted File instead of inaccessible DocumentPicker cache (3.369923ms)
+✔ Android SAF picker cancellation does not read or mutate anything (0.398423ms)
+✔ Android SAF picker supports older bare File return (0.365423ms)
+✔ Android SAF picker refuses overlarge document without reading it (1.354231ms)
+✔ Android SAF picker refuses large text when provider reports no size (0.684538ms)
+✔ Android SAF picker surfaces sanitized access errors, no private cache paths (1.206539ms)
+✔ unsupported SDK lacking SAF picker has explicit compatibility error (0.391154ms)
+✔ Android SAF failure does not hide size-limit rejection (0.382384ms)
+✔ Android SAF file may be readable even if size metadata throws (0.602346ms)
+✔ permission errors explain Downloads retry and do not expose internal URI (0.807ms)
+✔ iOS document picker: cancel, wrong type, oversized file and oversized text are refused (1.274693ms)
+✔ iOS document picker returns the text and strips a BOM (0.429884ms)
+✔ size limit counts UTF-8 bytes, not characters (1.254807ms)
+✔ a file with null, a number or an array gives a plain error (1.842192ms)
+✔ web picker checks the file size before reading it (1.6235ms)
+✔ levels are 200k / 400k / 600k and Medium is the default (2.868346ms)
+✔ low: round trip, count stored in file, opens without being told the level (108.870653ms)
+✔ medium: round trip, count stored in file, opens without being told the level (199.28273ms)
+✔ high: round trip, count stored in file, opens without being told the level (293.561961ms)
+✔ no level given -> Medium; no password -> plain gzip regardless of level (94.371577ms)
+✔ legacy 600,000-round file (made without the level option) still opens (291.227269ms)
+✔ wrong password and a changed iteration count are rejected (187.533808ms)
+✔ hostile iteration counts are refused before any key derivation (51.6405ms)
+✔ truncated and corrupted protected files are rejected (98.397616ms)
+✔ cancellation stops derivation and creates no file (4.191038ms)
+✔ key from the stored count equals Node PBKDF2 (format unchanged) (186.488231ms)
+✔ the known-answer vectors embedded in the app primitives match Node crypto and zlib (6.404385ms)
+✔ the app primitives fail closed: self-test before any protected file is made or opened (1.523846ms)
+✔ byte readers: Android picker, iOS picker, cancel, size limits (3.765692ms)
+✔ Backup screen: formats, password rules, protected-file unlock, no password kept (3.610423ms)
+✔ Input supports masked password entry without suggestions (1.188038ms)
+✔ exports are compact JSON and leave out recovery snapshots unless asked (1.116461ms)
+✔ plain .niyav is a standard gzip stream any tool can open (6.068692ms)
+✔ plain JSON and BOM-prefixed JSON are still read as before (8.728115ms)
+✔ protected .niyav has the documented layout and round-trips (57.941808ms)
+✔ an independent decoder written only from the documented layout opens a protected file (52.987615ms)
+✔ wrong password and every kind of tampering fail closed with no plaintext (1074.128038ms)
+✔ hostile or downgraded key settings are refused before any key derivation runs (53.107346ms)
+✔ every file gets its own salt and nonce, so identical backups never look alike (58.946538ms)
+✔ password rules: at least 12 characters on export, unicode forms are equivalent, empty never means "no password" (79.940192ms)
+✔ size limits: oversize input is refused, and a compression bomb is stopped while inflating (58.348616ms)
+✔ a failed self-check refuses to produce a protected file (27.760654ms)
+✔ chunked PBKDF2 gives the same key as Node for 1, 2 and many iterations (788.04673ms)
+✔ it waits on the timer between slices and reports rising progress that ends at 1 (47.308846ms)
+✔ the default wait is a real timer, so touches are handled between slices (1.970884ms)
+✔ cancelling stops the work with NIYAV_CANCELLED, before and during the derivation (4.046462ms)
+✔ a key longer than one block is refused (0.425384ms)
+✔ the codec passes progress and cancel to key derivation, and files still round-trip (9520.352224ms)
+✔ project template duplication preserves the original selected project and survives persistence/import normalization (37.139384ms)
+✔ invalid project or a full workspace rejects a copy without changing selection or persisted data (7.080269ms)
+✔ first workspace keeps the original storage key, so existing data needs no migration (5.402769ms)
+✔ create, rename, switch and delete keep the list valid (2.715307ms)
+✔ names are trimmed, required, limited and unique ignoring case (1.425884ms)
+✔ the last workspace cannot be deleted, and the workspace limit holds (3.814192ms)
+✔ deleting the open workspace moves to the first one left (0.525961ms)
+✔ unreadable or damaged saved lists fall back safely (1.536961ms)
+✔ interrupted create: data without a list entry is recovered, not lost (1.161116ms)
+✔ interrupted delete: a listed workspace whose data is gone is dropped; one odd read never empties the list (0.495116ms)
+✔ two workspaces hold the same project ids without touching each other (26.645693ms)
+✔ a writer made for one key can never write into another key, even if flushed late (2.0335ms)
+✔ store wiring: per-key writer, serialized switches, epoch and import guards, workspace-scoped screens (3.296846ms)
+✔ critical path finds the longest dependency chain (not every dependency) (10.998769ms)
+✔ critical path works with independent parallel tasks (1.228808ms)
+✔ critical path handles empty, milestone-only and invalid dates (0.981038ms)
+✔ critical path rejects a cycle in untrusted input (1.3575ms)
+✔ pointer hit target requires contact with a scheduled successor bar (21.370461ms)
+✔ independent link operations preserve other predecessors and reject cycles (42.955269ms)
+✔ critical path data does not mutate task models or alter persisted schema (3.843385ms)
+✔ routes are rounded orthogonal polylines with explicit endpoints (73.263962ms)
+✔ no route passes through a task bar other than its own two (23.748307ms)
+✔ parallel route segments keep a lane apart (9.424076ms)
+✔ a successor with room to spare gets a short route and never loops back (1.23677ms)
+✔ routing is deterministic and leaves source tasks unchanged (12.765538ms)
+✔ link gesture uses relative dx/dy and lands on successor bar (1.063731ms)
+✔ relative pointer is stable regardless of window or status-bar offset (0.626962ms)
+✔ link pointer rejects invalid input or unscheduled source (0.583385ms)
+✔ link preview is an orthogonal route that ends exactly at the pointer (1.789539ms)
+✔ release near a bar picks that bar, and not the source (0.87223ms)
+✔ selected dependency removal changes only the successor and preserves others (31.318423ms)
+✔ back-to-back tasks (no gap) still get a clean S-shaped route without NaN (0.994731ms)
+✔ one modern timeline draws viewport-limited SVG instead of massive native canvas (1.759808ms)
+✔ timeline retains all task rows with continuous scroll and no sliced-page navigation (4.384769ms)
+✔ overview and board are separate modern screens, no second application exists (1.626731ms)
+✔ timeline uses matching native coordinate geometry and avoids auto-scrolling task bars away (1.743615ms)
+✔ task bars and links share the same visible viewport (0.540731ms)
+✔ timeline drag and link states are not page-navigation or data-format mutations (0.483692ms)
+✔ UTC calendar day conversion rejects rollover dates and DST drift (5.003616ms)
+✔ Gantt includes undated tasks in the same grid and groups tasks by status (0.809385ms)
+✔ bar geometry uses inclusive date width and milestone diamond (1.587539ms)
+✔ dependency connector geometry points from predecessor finish to successor start (21.640385ms)
+✔ invalid overlapping predecessor date detected (0.954884ms)
+✔ align successor after all predecessors preserves duration and clears verification (21.524577ms)
+✔ unscheduled predecessor prevents auto align (2.067462ms)
+✔ gantt task milestone survives project roundtrip (3.484923ms)
+✔ dependency and schedule edits invalidate task release metadata (7.17ms)
+✔ valid adjacent finish-to-start linkage is not shown as a conflict (4.458ms)
+✔ sample schedule is opt-in, limited to the sample workspace and never replaces dates (1.629077ms)
+✔ malformed task dates do not persist through normalization (0.314923ms)
+✔ reversed task dates are flagged instead of silently shrinking the bar (0.507154ms)
+✔ calendar opens near actual tasks rather than showing a blank years-long runway (0.430616ms)
+✔ milestones are placed at their due date even when an earlier start is recorded (0.203539ms)
+✔ hierarchy sorts roots and children and maintains depth (3.583039ms)
+✔ collapse hides descendants, not siblings, and does not change data (0.762231ms)
+✔ summary span aggregates scheduled descendants and weighted leaf progress (4.267923ms)
+✔ missing parent is shown as root and cyclic records are bounded (2.896153ms)
+✔ parent summary without any scheduled descendant is omitted (0.567269ms)
+✔ native handoff waits for touch dispatch, applies once and invalidates superseded/unmounted sessions (3.398885ms)
+✔ native commit validates complete geometry and clamps absolute dimensions/scroll (0.763808ms)
+✔ native pinch ignores malformed focal/scale samples and cancels queued commits on background (1682.910384ms)
+✔ native diagram offsets contain no shared values for RNGH render-time validation (87.917461ms)
+✔ switch selected project independently of managing projects (28.663192ms)
+✔ archiving hides project but does not delete data and selects next active (5.060461ms)
+✔ last active project must not be archived (1.382808ms)
+✔ timeline resizing changes end, not start, and refuses inverted dates (9.375807ms)
+✔ archived status survives export/import and restored projects stay selectable (2.314038ms)
+✔ workspace import cannot strand user with only archived projects (1.078807ms)
+✔ restored project snapshots return an active, selectable project (1.703039ms)
+✔ rapid zoom inputs commit the latest focal position once per frame and can be cancelled (4.561231ms)
+✔ calendar labels use UTC across leap/year boundaries and allocate only requested ticks (4.539346ms)
+✔ vertical owner-derived window reaches final rows for 34 and 1000 tasks with bounded mounting (0.8335ms)
+✔ native scroll keeps shared-value-bearing gesture relationships out of core Animated render props (859.192346ms)
+✔ pinch text counter-scale cancels parent scale without reading shared state during React render (158.059115ms)
+✔ scrollSince: how far the chart scrolled since the lift, per axis (4.324692ms)
+✔ isStale: a missing or old heartbeat means the drag is gone (0.664385ms)
+✔ keepWhole: dragged or lifted bars are never clipped away (2.377538ms)
+✔ native hook follows the chart scroll and always ends the drag (2.457461ms)
+✔ native surface adds the scroll shift to the bar translation on the UI thread (1.075654ms)
+✔ Timeline keeps the dragged bar mounted and whole, and stops stale auto-scroll (1.236577ms)
+✔ web hook: a touch drag survives the browser pan, ends cleanly and beats (1.207424ms)
+✔ RULE: a move keeps the duration, a resize changes it (3.543154ms)
+✔ RULE: a resize never goes below one day (0.707808ms)
+✔ RULE: a resize is recorded as a duration change, a move as a move (1.471385ms)
+✔ Timeline uses the shared edit rules and previews every drag so dependency lines stay on the bar (4.357577ms)
+✔ full timeline stays continuously scrollable with viewport painting, never user-facing pagination (2.582884ms)
+✔ SVG drawing width and hit area are bounded to visible horizontal viewport (0.969615ms)
+✔ x-window size stays near viewport even across extreme dates and scrolling (2.176346ms)
+✔ all scheduled tasks remain in date range and have a reachable row (6.232076ms)
+✔ Expo splash config uses supported schema and preserves local dependency manifest (0.819615ms)
+✔ dependency paths remain visible when either endpoint is outside vertical paint range (2.190154ms)
+✔ viewBox renders global chart coordinates in bounded native SVG without scaled dimensions (2.383346ms)
+✔ timeline keeps all scheduled tasks and drawing remains windowed without row paging (0.779846ms)
+✔ native timeline never toggles native scroll ownership during long-press drag (2.242577ms)
+✔ active bar is retained through horizontal window rebase (0.938884ms)
+✔ background touch target only mounts for a visible dependency path (0.452077ms)
+✔ horizontal dependency visibility considers routed polyline, not only endpoints (0.410115ms)
+✔ chosen foreground reaches WCAG AA on all ten theme accents and both default themes (2.633423ms)
+✔ saved view keeps and defaults the tag filter (40.278769ms)
+✔ Tasks saves/restores the tag filter and renders the moved calendar preview; Costs has no dead state (5.728385ms)
+✔ priority color dot includes accessible priority name (10.46577ms)
+✔ persistent tools switch directly, note insertion takes two actions and does not open an inspector (678.194461ms)
+✔ direct editing saves one transaction, cancellation leaves content intact and undo/redo persists (371.819269ms)
+✔ save failure prevents leaving, retry preserves the board and viewport is restored (353.908076ms)
+✔ resize/connector actions, label/style/delete and source task integrity (336.887846ms)
+✔ Connect mode connects two objects; multiple selection groups and duplicate preserves the group (353.587461ms)
+✔ direct swatches update one object, undo restores color and canonical sources remain unchanged (318.908153ms)
+✔ project diagrams retain live/snapshot behavior, readable framing and real layout changes (407.562076ms)
+✔ drawing brush width/color, eraser, undo and independent diagrams remain functional (257.337884ms)
+✔ clipboard paste merges with the latest board when an edit occurs while clipboard IO is pending (246.877154ms)
+✔ selection change commits inline text rather than dropping the edit (275.838269ms)
+✔ comments, replies, resolve/reopen, rename and unavailable sharing have real persistent handlers (312.075308ms)
+✔ arrangement, lock/unlock, ungroup and layer controls affect the selected objects (235.441192ms)
+✔ adding, editing, inspector transitions and reopening preserve a saved low-zoom camera (476.706653ms)
+✔ selection Fit changes only the view while source/diagram insertion preserves the existing camera and canonical tasks (213.639385ms)
+✔ a first unmodified board frames local content while a saved pose is never automatically replaced (529.441576ms)
+✔ Select exposes multi-selection directly and Canvas uses one popover architecture for every section (303.608615ms)
+✔ inline editing disables the gesture surface, buffers keystrokes and rejects an intervening text replacement (288.741384ms)
+✔ Canvas Tree creation/import/layout use left-to-right while the orientation chooser is absent (283.286654ms)
+✔ line deletion requires adjacent confirmation, cancellation preserves it and repeated confirmation commits once (335.775654ms)
+✔ object list opens actions directly and Back traverses nested popovers without moving the camera (256.470307ms)
+✔ pinned comments create dots, open chat bubbles, reply/resolve and reveal a visible thread after zooming in (212.627731ms)
+✔ phone and desktop Canvas title stays centered between equal measured control slots (1326.404461ms)
+✔ unified Canvas header owns direct history, Fit and board actions without a floating history panel (63.993231ms)
+✔ Canvas library stays lightweight, creates durable project boards and loads the editor only on entry (1157.323037ms)
+✔ rejected creation keeps its draft and error visible, and all templates normalize without canonical mutation (127.186423ms)
+✔ Add to Canvas inserts a live source reference into a chosen project board, preserving source tasks (41.908616ms)
+✔ Add to Canvas retries a failed durable save without inserting another linked object (55.636846ms)
+✔ tools switch without sheets, multi-selection toggles deterministically and unknown tools preserve mode (4.086692ms)
+✔ readable opening and explicit fit serve different bounds, including empty and oversized scenes (1.034539ms)
+✔ dock exposes exactly four direct controls with safe-area placement (1249.046422ms)
+✔ swatches expose actual colors and an accessible checked state in both themes (67.108615ms)
+✔ source filtering virtualizes all matches beyond fifty and uses unique scoped roadmap keys (86.600693ms)
+✔ a virtualized source sheet owns its scrolling and does not dismiss when the list is swiped (199.27177ms)
+✔ a wide diagram opens on its actual root rather than an empty corner of its container (0.752307ms)
+✔ context actions occupy one strip, change with object type and use an anchored palette only on request (38.546577ms)
+✔ brush palette switches eraser/width/ink directly without a drawing sheet (52.871ms)
+✔ object inspector virtualizes complete searchable results rather than cutting them off (24.897461ms)
+✔ only the newest value is committed once typing pauses (3.214384ms)
+✔ flush commits at once and a second flush does nothing (0.653769ms)
+✔ an empty string is a real value, not "nothing pending" (0.402269ms)
+✖ store-writing text fields use the lazy Input, and Input flushes on blur, submit and unmount (31.797615ms)
+✔ Releases: edit and create open a proper draft sheet instead of an inline fold (5.572038ms)
+✔ brand keeps a named Milvayo Board mark and readable wordmark at compact and wide sizes (1216.310884ms)
+✔ explicitly sticky island work remains visible with an accessible dismissal control (68.398616ms)
+✔ notification expansion and Backup action stay accessible without dismissing the current workspace (47.377923ms)
+✔ notice motion uses opacity/translation and system reduced motion on both platforms (2.008423ms)
+✔ shared buttons expose names, disabled state, matching label/icon ink and generous touch targets (85.417423ms)
+✔ fields retain accessible labels, focus contrast, disabled state and inline editing callbacks (56.562615ms)
+✔ sheets support explicit close, Android Back, accessibility escape and top-only downward dismissal (104.565847ms)
+✔ phone sub-screen titles stay readable and Back/search controls keep their callbacks (93.593346ms)
+✔ timeline retains one pinned calendar and contextual actions above the single scrolling task canvas (2.892846ms)
+✔ retained screens freeze workspace subscriptions and share a single notice host with the tour (1.389769ms)
+✔ workspace history filters and expands bounded chunks without mutating stored entries (237.050038ms)
+✔ automation checks remain distinct callable actions in their contextual Run checks menu (335.870269ms)
+✔ browser uses mobile navigation for a phone, Desktop site or forced mode for desktop (2.078577ms)
+✔ desktop-site override is reversible and web-only (2.824116ms)
+✔ wide shell shows sidebar and toolbar, phone shell retains bottom tabs; override is reachable (3.999347ms)
+✔ desktop-browser Web works at 320, portrait, landscape and full-screen widths (2.524ms)
+✔ native portrait keeps its phone UI and Web preference is Web-only (0.643347ms)
+✔ full-screen preview retains geometry, offers accessible compact controls, respects measured space and inspects current work elements (253.449462ms)
+✔ export menu serializes only on demand, stays open after success/failure and supports PNG quality/background options (92.539885ms)
+✔ PNG cancellation and duplicate taps never trigger late saving or resurrect dismissed UI (116.170153ms)
+✔ native export mounts its separate bounded source only on demand and captures once after layout, then releases it (100.441ms)
+✔ native export completion announces politely without unsupported status roles; web retains status semantics (107.489577ms)
+✔ Canvas inline export exposes real format operations without a nested Sheet and closes through its host (50.179346ms)
+✔ all ten retained accent families have readable body, placeholder, selected and button text in three explicit modes (9.162846ms)
+✔ confirmation commits once, keeps failed saves open, and closes only after durable success (989.094615ms)
+✔ context menu preserves disabled, safe and destructive callbacks and dismisses after selection (131.25373ms)
+✔ searchable choices preserve typed values, bound initial rows, and reset the filter after selection (130.915346ms)
+✔ inline calendars pick real dates, respect limits and browse across month boundaries without committing navigation (216.219615ms)
+✔ range calendar keeps the opposite date fixed and does not advance after a rejected start edit (73.111846ms)
+✔ confirming menu actions keeps one popup open through cancel, failure, retry and success (114.074154ms)
+✔ dangerous menu actions require confirmation even without a custom prompt and errors never dismiss (88.345115ms)
+✔ rejected bulk status edits preserve task selection for retry; accepted edits clear it (1309.22896ms)
+✔ date rail reuses adjacent pages through day-selection and callback changes, rebuilding only for actual page data/capability (88.297615ms)
+✔ native reveal cancels pending work on unmount while retaining the existing duration and reduced-motion configuration (26.823193ms)
+✔ every top phone header omits its screen title beside the hamburger/back control, while in-screen headings remain (2289.755344ms)
+✔ List has no duplicate Add task action and retains its organize/filter controls (401.912346ms)
+✔ New sprint is in the scrolling selector row, absent from the top header, and opens the existing creation form (285.503308ms)
+✔ Hamburger opens a compact Projects/Workspaces sheet; project selection, creation/cancel and Done remain wired (1836.41646ms)
+✔ Workspace view retains create/rename/confirmed delete and failed-switch recovery; successful switch returns to Projects (320.322038ms)
+✔ Compact sheet is bounded on phone and wide layouts; ordinary sheets retain their full drawer layout and dismissal rules (347.507807ms)
+✔ Bottom bar has no upper outline or selected surface, selected icons grow and navigation remains accessible (294.014038ms)
+✔ More workspace row opens the shared compact manager directly, starts with Workspaces and forwards project picks (130.146808ms)
+✔ all thirty real icon PNGs have opaque gradient backgrounds and a solid resolved theme-color mark (144.494923ms)
+✔ adaptive layers stay separate and all aliases plus primary configure a real gradient background image (393.788ms)
+✔ launcher prompt is platform neutral and still confirms durable saving before apply (8.584846ms)
+✔ island shows for 3 seconds, shrinks, holds a full 3 seconds after settling, then dismisses after exit (1047.516961ms)
+✔ replacing a compact notification cancels its timers; stale timers and unmount cannot dismiss the replacement (79.728385ms)
+✔ compact islands reopen on tap, full reading pauses dismissal, sticky messages and Backup controls remain usable (73.632538ms)
+✔ Due soon merges enabled boards, preserves date/status/archive rules and survives import without mutation (64.018653ms)
+✔ List keeps the preview, task-open callback and relocated per-board date switches; Board contains neither dates panel nor date switch (1321.417999ms)
+✔ Home, Work and Projects hide project-name text while both header layouts retain the hamburger, search and popup controls (301.748961ms)
+✔ Android browser mobile UI is default in portrait and landscape (6.246ms)
+✔ request desktop site and browser desktop UA select desktop Web even at narrow widths (6.245769ms)
+✔ Desktop site with a widened CSS viewport works even when the mobile UA persists (1.924269ms)
+✔ Android mobile UA fallback works when UA Client Hints are not supported (1.733154ms)
+✔ critical path and original link routing are retained while dependency links regain stable colors (1.019924ms)
+✔ Timeline limits visible task bars to a bounded native viewport (3.07573ms)
+✔ Tasks entirely outside chart viewport do not mount offscreen native bars (0.523193ms)
+✔ Timeline limits simultaneous native row gestures, without deleting saved tasks (8.233692ms)
+✔ Modern shell uses maintained native safe-area context (1.408423ms)
+✔ Kanban native motion adds bounded lift/tilt and preview displacement without render-time shared reads (1037.026576ms)
+✔ native chart traces and columns publish finite SVG props through animated worklets (64.019616ms)
+✔ retained screen presence preserves its child and hides inactive pages without geometry transforms (76.426231ms)
+✔ native totals use intrinsic text height and retain default system font scaling (34.694077ms)
+✔ Kanban arrival and dragged opacity have one owner and preserve the measured root (76.644154ms)
+✔ selected native tab icon scales to 24px without a highlight surface or layout change (45.6835ms)
+✔ native list lift is 40% smaller while direct drag and neighbour preview distances stay exact (36.797193ms)
+✔ web list scale and tilt use the same smaller excursion and keep the original card default (133.377307ms)
+✔ shared buttons do not use decorative left or right accent bars (2.988884ms)
+✔ tour keeps three slides/four starters, Skip on every step changes no data, and Back restores pager position (1446.095961ms)
+✔ each starter submits the selected ID and trimmed name; invalid names do not submit (824.88123ms)
+✔ rejected/thrown creation retains the draft, prevents duplicate submits and permits retry; success cannot submit twice (116.059038ms)
+✔ web paging settles once scrolling stops and malformed positions cannot select a nonexistent slide (95.572961ms)
+✔ web Escape uses tour Back and Tab stays within the visible tour controls (70.687885ms)
+✔ a temporarily zero-width viewport never sends negative artwork or card dimensions to native views (182.604961ms)
+✔ date rail pages across months, recenters on the committed week, rejects duplicate/bad events and preserves day selection (1603.721537ms)
+✔ web date paging waits for scroll to stop and empty rails do not shift (95.963615ms)
+✔ Home date swipe removes chevrons, changes the chart week, clears the day filter, and keeps the existing year bound (350.407846ms)
+✖ task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success (428.258962ms)
+✔ bottom navigation has icon selection without a tile and still rejects stale press intents (77.114961ms)
+✔ Settings removes only its duplicate tools entry; More and Board header retain their tools (3.096385ms)
+✔ held Board lists render above the ribbon without replacing the responder; release restores strip clipping and scroll (281.526615ms)
+✖ description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place (294.122807ms)
+✔ mobile browser uses phone UI; Desktop site and manual desktop remain available (2.037808ms)
+✔ Android native portrait still uses mobile navigation and gestures (0.529384ms)
+✔ store uses a leaf UI import instead of importing back through the UI barrel (1.869692ms)
+✔ native Projects bounds initial cards and batches while web and embedded management retain their existing pagination (1835.831037ms)
+✔ virtualized project editors retain rejected and unsaved drafts across row unmount; successful save and cancel clear them (283.918692ms)
+✔ failed project selection stays in the list; workspace changes do not reuse another workspace’s draft cache (200.331846ms)
+✔ shared Android actions and icon controls have 48-unit targets while web sizes remain stable (139.236615ms)
+✔ Home control inventory: first task, explicit import, projects, task rows, All tasks, status tiles, Overdue, Milestones, In sprint, releases, testing and Project overview (1573.235345ms)
+✔ Today handles overdue, blocked, done, missing dependency and undated tasks without mutation; display survives project import (217.588693ms)
+✔ Today alert buttons keep empty states in compact sheets and leave project metrics as the main view (129.631923ms)
+✔ Today weighted-progress acceptance text wraps within its card at narrow widths (131.756115ms)
+✔ existing projects use next-task copy and a selected-date empty state clears the date (120.973577ms)
+✔ Releases control inventory: header New release, name/version/repo/notes, Cancel, Create/Save, gates, four stages, Edit metadata and confirmed Delete (1669.125538ms)
+✔ Sprints control inventory: New/first sprint, selector, Start/Edit/Delete, Finish/confirm/Cancel, name/goal/dates/Save, assigned Open/Remove, backlog search/Add/Show more, historical scope and interactive burndown (2053.772344ms)
+✔ Testing control inventory: four status counts, check row, Show more, result pending/passed/failed/blocked, Done and sheet dismissal (1173.835037ms)
+✔ Timeline control inventory: Items, First task, Today, Critical path, Parents, To schedule, zoom, Open, move/resize/link, Remove/Keep, conflict repair, sample schedule and sheet dismissal (5.053461ms)
+✔ Dependency colors and complete SVG line styling remain byte-for-byte identical to batch 02 (3.843192ms)
+✔ Calendar has daily weekday/date cells at Days zoom, with sparse readable ticks for long schedules and coarser zoom (9.186308ms)
+✔ Softer view pills preserve all options, selection, press feedback and callbacks; quiet ribbon does not recolor other chips (1362.53323ms)
+✔ Reused native disclosures animate only rotation, settle in 185ms, and honor system reduced motion (1.23623ms)
+✔ all 10 RIVNA accents generate readable primary buttons and 4 appearance surfaces (11.005423ms)
+✔ Board has a single tools entry and all old filters live inside its sheet (3.576384ms)
+✔ all navigation items use fills rather than decorative accent stripes (1.957346ms)
+✔ Kanban top/bottom preference is board-scoped and survives backup/import (37.680693ms)
+✔ New task sheet remains draft-only until Save task explicitly calls the canonical store action (1.923038ms)
+✔ Board Tools, mobile swiping, task configuration and governance editor are real controls (4.109077ms)
+✔ single cumulative changelog and organized QA/instructions are present without duplication (9.117154ms)
+✔ v0.5.48 uses shared header actions; New task is a text button on desktop and the Create button on phones (4.504ms)
+✔ Timeline first focus waits for visible screen, not drag activity, and presets stay in Timeline options (1.989538ms)
+✔ Board and Tasks keep header Tools; New sprint belongs to the scrolling sprint row (4.189192ms)
+✔ one complete historical changelog and categorized QA/instructions only (13.961077ms)
+✔ header action groups scroll instead of wrapping or squeezing onto a second line (4.364346ms)
+✔ large-surface components and secondary list interactions use the same layout scale (8.34573ms)
+✔ version and cumulative changelog remain synchronized (19.748654ms)
+✔ ten accents in three appearances have readable text and primary buttons (11.105539ms)
+✔ noninteractive labels no longer imitate pressable buttons (1.644192ms)
+✔ new risks stay draft-only until a named Save; deleting risks requires confirmation (2.001154ms)
+✔ governance controls use readable typography and no decorative left side stripe (2.794385ms)
+✔ notifications and error boundary communicate without exposing technical exception text (2.405539ms)
+✔ charts and gesture-heavy task surfaces have accessible actions without changing drag geometry (2.523346ms)
+✔ historical release remains cumulative, with one current QA record and synchronized metadata (26.362384ms)
+✔ Project creation uses six accessible field controls and only saves on explicit Create (3.038538ms)
+✔ Markdown renderer supports bold, italics, headings, lists, quote and code without HTML (9.410307ms)
+✔ Other long-form planning editors reuse the same Markdown source/preview path (7.305308ms)
+✔ Shared sheets reset prior scroll position when opened again (1.554654ms)
+✔ v0.5.51 ships one cumulative changelog, QA and matching application versions (23.697192ms)
+✔ Releases uses one task-style editor and persistent form data saved on command (3.0905ms)
+✔ Testing replaces per-card status-control clutter with an accessible editor sheet (1.2655ms)
+✔ Scheduling previews render safe, readable tasks, dates and errors instead of truncated JSON (3.2725ms)
+✔ Sprint burndown lets vertical gestures reach the page (2.863731ms)
+✔ Current release is a full source version with one cumulative changelog (32.298923ms)
+✔ Sprint assignment and archived lists are disclosed progressively without dropping actions (1.547654ms)
+✔ Long specification text and Scheduling/Collaboration task selection use existing shared editors (1.356ms)
+✔ Sprints binds Fold from the existing inline components module (4.169616ms)
+✔ User chosen Daylight Amber, Orange, and dark accents stay exact (11.656769ms)
+✔ color picker reflects active Daylight shades instead of fixed old swatches (6.521924ms)
+✔ official geometry is a three-piece N and six 3-2-1 board openings in all ten colorways (7.8885ms)
+✔ three ribbons move with the approved engineer timing and windows reveal in sequence (0.692269ms)
+✔ startup prepares the shell concurrently and removes the artificial final hold (2.217846ms)
+✔ the Brand logo can still play at 1.5x; the More screen shows it still and keeps the appearance toggle (1.6215ms)
+✔ 0.5.58 manifests match and no legacy logo dependency is necessary (53.271115ms)
+✔ Board creation trims names, rejects blanks, preserves failed drafts and selects the new board only on success (633.48923ms)
+✔ List creation targets the current board and selected status; failure retains the draft and never selects a different board (84.322692ms)
+✔ Board plus leads the ribbon, opens one sheet with both creation paths, and Main has no delete action (287.895539ms)
+✔ Board deletion requires confirmation, cancel is inert, failure stays in tools and success returns to Main (224.337346ms)
+✔ Deleting a board preserves tasks, dependency data and dates through import; Main is protected (6.326115ms)
+✔ List keeps only header search/tools and restores saved search to the same header (79.891653ms)
+✔ Due soon scroll demand is bounded, skips background updates, resets on new data and supports accessibility (48.737384ms)
+✔ Due soon retains every eligible task beyond thirty, with deterministic order and unchanged import eligibility (23.654077ms)
+✔ Board mark exposes platform-correct accessibility without a nonboolean DOM accessible prop (705.741538ms)
+✔ diagnostics classifies warning fingerprints and never saves warning message content (3.6785ms)
+✔ web sheets expose a named modal dialog while native retains its own accessibility semantics (211.139577ms)
+✔ desktop sidebar can collapse and still exposes every destination (2.300077ms)
+✔ desktop top bar includes a real project switcher and task search (1.270384ms)
+✔ viewport adaptation does not fork cached pages or remount a new shell (0.946423ms)
+✔ all screens inherit a fluid page frame and shared tokenized controls (2.964385ms)
+✔ Kanban keeps gestures while revealing useful card metadata without emoji icons (1.3195ms)
+✔ Timeline renders task labels by default on desktop without removing virtualization (0.814308ms)
+✔ four skeleton compositions have bounded, distinct geometry with inert shapes and native-safe loading semantics (1637.609922ms)
+✔ native loading motion respects dynamic reduced motion, stops on hidden state and removes subscriptions (74.819499ms)
+✔ portrait and landscape Web retain HF2 desktop shell while native portrait remains mobile (3.291654ms)
+✔ 0.5.33 tasks use physical viewport for optional table columns rather than desktop preference (1.396347ms)
+✔ shared Store/UI cycle remains broken and source does not include Sonnet layout rewrite (1.055808ms)
+✔ weekend shading is viewport bounded, pointer transparent and opt-in by zoom (3.395731ms)
+✔ Two SVG mode buttons switch between original lines and mock-style bars/ideal ticks, preserving history and selected readings (1579.887615ms)
+✔ Bar view keeps series toggles, never hides both series, and handles one-day/zero/empty history (202.115423ms)
+✔ native logo waits for layout and advances continuously on UI frames while JS callbacks are queued (1609.427192ms)
+✔ reduced motion presents the final Board on the first native frame and reveals after that frame without a timed hold (89.512308ms)
+✔ unmount and inactive transitions cancel playback and reject queued completion from an old epoch (213.464423ms)
+✔ cold choreography moves every ribbon early and retains the exact original N and Board endpoints (3.908039ms)
+✔ CompletionArc renders through installed SVG Web without console errors and preserves native rotation and readings (2192.616921ms)
+✔ StatusOrbit keeps populated/empty/single-status arcs and legend actions without invalid Web props (459.612154ms)
+✔ explicit Android icon apply reconciles aliases even when the selected icon already matches (838.412422ms)
+✔ rapid icon requests coalesce and primary restoration uses null (25.302423ms)
+✔ unsupported native icon switching leaves the app usable (32.321615ms)
+✔ native theme changes do not toggle launcher components automatically (4.562923ms)
+✔ launcher changes await durable data and fail closed when saving fails (16.558808ms)
+✔ 30 deterministic icon choices follow all ten accents and resolved appearance (3.699384ms)
+✔ native prebuild has all 29 aliases plus primary and real themed assets (49.693154ms)
+✔ every PWA install manifest uses its matching theme artwork and stable app ID (142.14ms)
+✔ theme provider controls icon across platform and the settings preview matches selected preferences (3.816846ms)
+✔ The animated hamburger is retired with the phone side menu; nothing imports it (4.330923ms)
+✔ RIVNA-inspired accent selector exposes ten unique named choices (3.4385ms)
+✔ Coral is default and invalid names use safe fallback (0.638ms)
+✔ accent tokens preserve semantic palette values and do not mutate workspace data (80.328616ms)
+✔ Timeline pinch commits display density and focal scroll only; presets, pinned calendar and task/import data remain (1930.312076ms)
+✔ returning to Days centers Today after arbitrary scrolling in Weeks and Months, including repeated preset selections (233.992769ms)
+✔ Today focus remains finite and bounded before layout, across resize and extreme schedule spans (0.982653ms)
+✔ Timeline options renders Days, Weeks and Months in one top row; selecting a pill keeps the options popup open (1519.159076ms)
+✔ every tour drawing exists, uses only theme colours and is decorative (3.780885ms)
+✔ the drawings share the EmptyArtwork language: selection disc, surface panels, hairlines (1.405961ms)
+✔ WBS: compact summary preserves all derived values on phone and desktop (409.977192ms)
+✔ WBS diagram inventory: Tree/directions, Fishbone, Mind map, Fit/100%/150%, pinch feedback, SVG/CSV export; gestures change no saved WBS (164.113192ms)
+✔ WBS viewport fits the measured width and bounded height, and preserves its scene child during resize (24.992423ms)
+✔ WBS Outline control inventory and empty starters remain available; empty diagrams do not mount gesture controls (206.256884ms)
+✔ WBS exposes only Outline and Diagram; the inner icon-and-label selector preserves all three 100% views (98.333654ms)
+ℹ tests 1064
+ℹ suites 0
+ℹ pass 1058
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 2
+ℹ todo 0
+ℹ duration_ms 134756.785211
+
+✖ failing tests:
+
+test at tests/store/audit-fix1-0529.test.cjs:10:1
+✖ 1: the writer is null until the first load, so every flush is guarded (5.731269ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /const save=\(\)=>\{void writer\.current\?\.flush\(\);\}/. Input:
+  
+  '// /src/store/store.js\n' +
+    "import { diagnosticMonitor } from '../diagnostics/monitor';\n" +
+    "import BoardMorph from '../components/brand/BoardMorph';\n" +
+    "import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';\n" +
+    "import { View, AppState, Platform } from 'react-native';\n" +
+    "import AsyncStorage from '@react-native-async-storage/async-storage';\n" +
+    "import { acquireLocalWriter } from '../cloud/localWriter';\n" +
+    "import { T } from '../ui/uiBase';\n" +
+    "const model=require('../domain/model.cjs');\n" +
+    "const {localDay}=require('../utils/localDay.cjs');\n" +
+    "const bridge=require('../domain/modernBridge.cjs');\n" +
+    "const programs=require('../domain/programs.cjs');\n" +
+    "const projectRelations=require('../domain/projectRelations.cjs');\n" +
+    "const projectTools=require('../domain/projectTools.cjs');\n" +
+    "const backupBudget=require('./backupBudget.cjs');\n" +
+    "const {parseBackupJson}=require('./importFiles.cjs');\n" +
+    "const workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'milvayo-v1', so nothing is migrated\n" +
+    'const StoreContext=createContext(null);\n' +
+    'const ActionsContext=createContext(null); // stable actions only, so memoised children skip store-value changes\n' +
+    'const ActiveContext=createContext(true); // false while a retained tab is hidden; deferred work (progressive mounting) waits\n' +
+    "const activity=(w,label)=>({...w,revision:(w.revision||0)+1,activity:[{id:model.id('activity'),at:model.iso(),action:label},...(w.activity||[])].slice(0,90)});\n" +
+    '// Selected tasks are moved predecessors first, so the order they were tapped in cannot make a valid bulk move fail.\n' +
+    'const orderByDependency=(p,ids)=>{const chosen=new Set(ids),byId=new Map(p.tasks.map(t=>[t.id,t])),done=new Set(),out=[];\n' +
+    ' const visit=(id,seen)=>{if(done.has(id)||seen.has(id)||!chosen.has(id))return;seen.add(id);for(const d of byId.get(id)?.dependsOn||[])visit(d,seen);done.add(id);out.push(id)};\n' +
+    ' ids.forEach(id=>visit(id,new Set()));return out};\n' +
+    'const current=w=>w.projects.find(p=>p.id===w.selectedId);\n' +
+    '\n' +
+    'export function StoreProvider({children,onReady,loading}){\n' +
+    " const [ws,setWs]=useState(null),[fault,setFault]=useState(''),[ready,setReady]=useState(false),[loadErrorCode,setLoadErrorCode]=useState('');\n" +
+    ' useEffect(()=>{if(ready)onReady?.();},[ready,onReady]);\n' +
+    ' const [notice,setNotice]=useState(null);\n' +
+    " const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});\n" +
+    " const currentRef=useRef(null),loaded=useRef(false),lastError=useRef('');\n" +
+    ' const normalizer=useRef(null),writer=useRef(null),cloudRef=useRef(null);\n' +
+    ' const [idx,setIdx]=useState(null),indexRef=useRef(null),swapping=useRef(false),epochRef=useRef(0);\n' +
+    ' if(!normalizer.current)normalizer.current=model.createWorkspaceNormalizer();\n' +
+    ' // A writer is bound to one storage key for its whole life, so a late save can only ever reach the workspace it was made for.\n' +
+    " const makeWriter=key=>require('./latestWriter.cjs').createLatestWriter(\n" +
+    "  value=>AsyncStorage.setItem(key,diagnosticMonitor.measureWork('workspace serialization',()=>JSON.stringify(value))),\n" +
+    "  {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},\n" +
+    "   onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});\n" +
+    ' useEffect(()=>{\n' +
+    '  const save=()=>{void writer.current?.flush();void cloudRef.current?.flush();}; // the writer does not exist until the first load finishes\n' +
+    "  const sub=AppState.addEventListener('change',state=>{cloudRef.current?.setVisibility(state==='active');if(state!=='active')save();});\n" +
+    "  const visibility=()=>{cloudRef.current?.setVisibility(typeof document==='undefined'||document.visibilityState!=='hidden');if(typeof document!=='undefined'&&document.visibilityState==='hidden')save();};\n" +
+    "  if(Platform.OS==='web'&&typeof window!=='undefined'){window.addEventListener('pagehide',save);window.addEventListener('visibilitychange',visibility);}\n" +
+    "  return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined'){window.removeEventListener('pagehide',save);window.removeEventListener('visibilitychange',visibility);}save();};\n" +
+    ' },[]);\n' +
+    ' useEffect(()=>{let active=true,releaseWriter;(async()=>{\n' +
+    '   // The workspace index and recovery leases are shared across all local workspaces.\n' +
+    "   releaseWriter=await acquireLocalWriter('local-storage');\n" +
+    '   if(!active){await releaseWriter();return;}\n' +
+    '   const started = Date.now();\n' +
+    "   diagnosticMonitor.recordAction('startup storage read started');\n" +
+    "   diagnosticMonitor.recordStartup('storage read started');\n" +
+    '   const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);\n' +
+    '   const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());\n' +
+    "   await require('../cloud/lease.cjs').recoverCloudLease(AsyncStorage,index.activeId);\n" +
+    '   const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);\n' +
+    '   if(!active)return;\n' +
+    '   diagnosticMonitor.recordAction(`startup storage read ${Date.now()-started}ms`);\n' +
+    "   diagnosticMonitor.recordStartup('storage read complete', `${Date.now()-started}ms`);\n" +
+    '   const normalizeStarted = Date.now();\n' +
+    "   const loadedWorkspace=diagnosticMonitor.measureWork('startup parse and normalization',()=>normalizer.current(raw?JSON.parse(raw):model.createWorkspace()));\n" +
+    '   diagnosticMonitor.recordAction(`startup normalize ${Date.now()-normalizeStarted}ms`);\n' +
+    "   diagnosticMonitor.recordStartup('normalization complete', `${Date.now()-normalizeStarted}ms`);\n" +
+    '   writer.current=makeWriter(key);indexRef.current=index;\n' +
+    '   currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setIdx(index);setReady(true);\n' +
+    '   // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.\n' +
+    '   if(!raw)void writer.current.enqueue(loadedWorkspace);\n' +
+    '   if(!rawIndex||index!==parsed)AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(index)).catch(()=>{}); // the list is rebuilt from the saved keys if this write is lost\n' +
+    " })().catch(e=>{if(active){setLoadErrorCode(e.code||'');setFault(e.code==='workspace-in-use'||e.code==='workspace-coordination-unavailable'?e.message:`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify(e.code==='workspace-in-use'?e.message:'Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false;loaded.current=false;void(async()=>{await cloudRef.current?.disconnect();await writer.current?.flush();await releaseWriter?.();})().catch(()=>{});}},[]);\n" +
+    ' const put=(next,deferPersistence=false)=>{\n' +
+    '  // Validate before mutating any in-memory or persistent state.\n' +
+    "  const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));\n" +
+    '  currentRef.current=safe;setWs(safe);\n' +
+    '  void cloudRef.current?.capture(safe).catch(e=>{setFault(`Cloud queue could not be saved: ${e.message}. Local work is retained; export a backup.`);});\n' +
+    '  if(deferPersistence)writer.current.defer(safe);else void writer.current.enqueue(safe);\n' +
+    ' };\n' +
+    ' const trans=(fn,label,deferPersistence=false)=>{\n' +
+    "  lastError.current='';\n" +
+    "  if(!loaded.current||!currentRef.current){lastError.current='The workspace is still loading. Try again in a moment.';return false}\n" +
+    "  try{const prev=currentRef.current;let next=diagnosticMonitor.measureWork('workspace mutation',()=>fn(prev));if(next===prev)return true;\n" +
+    '   // Snapshots are whole copies of earlier workspaces. Check on every edit, not only when snapshots change: ordinary edits grow the live data too.\n' +
+    '   // shortcut: one extra JSON pass per edit, fine for a few MB; check only every Nth edit if edits start to lag.\n' +
+    "   {const fitted=diagnosticMonitor.measureWork('recovery budget check',()=>backupBudget.fitBackups(next));if(fitted.trimmed){next=fitted.workspace;notify('Older recovery snapshots were removed to keep the workspace within device storage limits.','info')}}\n" +
+    "   put(activity(next,label),deferPersistence);setFault('');if(/(?:Moved .+ to (?:Done|Validation)|Bulk moved|Created automation|Saved automation|Created task|Created sprint)/i.test(label))notify(label,'success');return true}\n" +
+    "  catch(e){lastError.current=e.message||String(e);setFault(lastError.current);notify(lastError.current,'error');return false}\n" +
+    ' };\n' +
+    ' const projectChange=(fn,label)=>trans(w=>{\n' +
+    '  const p=current(w),next=fn(p);if(next===p)return w;\n' +
+    '  let reconciled=bridge.reconcile(p,next);\n' +
+    '  if((reconciled.automationCommands||[]).length && (reconciled.automationHistory||[]).length === (p.automationHistory||[]).length){\n' +
+    '   const old=new Map(p.tasks.map(t=>[t.id,t.status]));\n' +
+    '   for(const t of reconciled.tasks){\n' +
+    '    const from=old.get(t.id);\n' +
+    "    if(from!==undefined&&from!==t.status)reconciled=model.automation.run(reconciled,{type:'status',taskId:t.id,from,to:t.status}).project;\n" +
+    '   }\n' +
+    '  }\n' +
+    '  model.validateProject(reconciled);\n' +
+    '  return {...w,projects:w.projects.map(x=>x.id===p.id?reconciled:x)};\n' +
+    ' },label);\n' +
+    ' const safeMutation=(fn,label)=>projectChange(fn,label);\n' +
+    " const snapshotChange=(fn,label)=>trans(w=>{const p=current(w),next=fn(p);const safe=bridge.reconcile(p,next);model.validateProject(safe);return {...w,backups:[model.workspaceSnapshot(w,'Before '+label),...w.backups].slice(0,12),projects:w.projects.map(x=>x.id===p.id?safe:x)}},label);\n" +
+    ' // One workspace change at a time. Edits are refused while it runs, the open workspace is fully saved first, and the\n' +
+    ' // epoch changes on every switch so work that started in the old workspace can tell it must not write into the new one.\n' +
+    ' const exclusive=async fn=>{\n' +
+    "  if(swapping.current){notify('Another workspace change is still running.','info');return false}\n" +
+    '  swapping.current=true;\n' +
+    "  try{return await fn()}catch(e){notify(e.message||String(e),'error');return false}finally{swapping.current=false}\n" +
+    ' };\n' +
+    ' const saveIndex=async next=>{await AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(next)'... 28229 more characters
+  
+      at TestContext.<anonymous> (/mnt/Milvayo/tests/store/audit-fix1-0529.test.cjs:13:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "// /src/store/store.js\nimport { diagnosticMonitor } from '../diagnostics/monitor';\nimport BoardMorph from '../components/brand/BoardMorph';\nimport React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';\nimport { View, AppState, Platform } from 'react-native';\nimport AsyncStorage from '@react-native-async-storage/async-storage';\nimport { acquireLocalWriter } from '../cloud/localWriter';\nimport { T } from '../ui/uiBase';\nconst model=require('../domain/model.cjs');\nconst {localDay}=require('../utils/localDay.cjs');\nconst bridge=require('../domain/modernBridge.cjs');\nconst programs=require('../domain/programs.cjs');\nconst projectRelations=require('../domain/projectRelations.cjs');\nconst projectTools=require('../domain/projectTools.cjs');\nconst backupBudget=require('./backupBudget.cjs');\nconst {parseBackupJson}=require('./importFiles.cjs');\nconst workspaces=require('./workspaces.cjs'); // the first workspace keeps the original key 'milvayo-v1', so nothing is migrated\nconst StoreContext=createContext(null);\nconst ActionsContext=createContext(null); // stable actions only, so memoised children skip store-value changes\nconst ActiveContext=createContext(true); // false while a retained tab is hidden; deferred work (progressive mounting) waits\nconst activity=(w,label)=>({...w,revision:(w.revision||0)+1,activity:[{id:model.id('activity'),at:model.iso(),action:label},...(w.activity||[])].slice(0,90)});\n// Selected tasks are moved predecessors first, so the order they were tapped in cannot make a valid bulk move fail.\nconst orderByDependency=(p,ids)=>{const chosen=new Set(ids),byId=new Map(p.tasks.map(t=>[t.id,t])),done=new Set(),out=[];\n const visit=(id,seen)=>{if(done.has(id)||seen.has(id)||!chosen.has(id))return;seen.add(id);for(const d of byId.get(id)?.dependsOn||[])visit(d,seen);done.add(id);out.push(id)};\n ids.forEach(id=>visit(id,new Set()));return out};\nconst current=w=>w.projects.find(p=>p.id===w.selectedId);\n\nexport function StoreProvider({children,onReady,loading}){\n const [ws,setWs]=useState(null),[fault,setFault]=useState(''),[ready,setReady]=useState(false),[loadErrorCode,setLoadErrorCode]=useState('');\n useEffect(()=>{if(ready)onReady?.();},[ready,onReady]);\n const [notice,setNotice]=useState(null);\n const notify=(text,type='info')=>setNotice({id:`notice-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,text:String(text).slice(0,300),type});\n const currentRef=useRef(null),loaded=useRef(false),lastError=useRef('');\n const normalizer=useRef(null),writer=useRef(null),cloudRef=useRef(null);\n const [idx,setIdx]=useState(null),indexRef=useRef(null),swapping=useRef(false),epochRef=useRef(0);\n if(!normalizer.current)normalizer.current=model.createWorkspaceNormalizer();\n // A writer is bound to one storage key for its whole life, so a late save can only ever reach the workspace it was made for.\n const makeWriter=key=>require('./latestWriter.cjs').createLatestWriter(\n  value=>AsyncStorage.setItem(key,diagnosticMonitor.measureWork('workspace serialization',()=>JSON.stringify(value))),\n  {onError:e=>{setFault(`Saving failed: ${e.message}. Do not uninstall or clear app data; export a backup.`);notify('Local save failed. Do not clear app data; export a backup.','error');},\n   onSuccess:()=>setFault(f=>f.startsWith('Saving failed:')?'':f)});\n useEffect(()=>{\n  const save=()=>{void writer.current?.flush();void cloudRef.current?.flush();}; // the writer does not exist until the first load finishes\n  const sub=AppState.addEventListener('change',state=>{cloudRef.current?.setVisibility(state==='active');if(state!=='active')save();});\n  const visibility=()=>{cloudRef.current?.setVisibility(typeof document==='undefined'||document.visibilityState!=='hidden');if(typeof document!=='undefined'&&document.visibilityState==='hidden')save();};\n  if(Platform.OS==='web'&&typeof window!=='undefined'){window.addEventListener('pagehide',save);window.addEventListener('visibilitychange',visibility);}\n  return()=>{sub.remove();if(Platform.OS==='web'&&typeof window!=='undefined'){window.removeEventListener('pagehide',save);window.removeEventListener('visibilitychange',visibility);}save();};\n },[]);\n useEffect(()=>{let active=true,releaseWriter;(async()=>{\n   // The workspace index and recovery leases are shared across all local workspaces.\n   releaseWriter=await acquireLocalWriter('local-storage');\n   if(!active){await releaseWriter();return;}\n   const started = Date.now();\n   diagnosticMonitor.recordAction('startup storage read started');\n   diagnosticMonitor.recordStartup('storage read started');\n   const rawIndex=await AsyncStorage.getItem(workspaces.INDEX_KEY);\n   const parsed=workspaces.parseIndex(rawIndex),index=workspaces.reconcileIndex(parsed,await AsyncStorage.getAllKeys());\n   await require('../cloud/lease.cjs').recoverCloudLease(AsyncStorage,index.activeId);\n   const key=workspaces.keyFor(index.activeId),raw=await AsyncStorage.getItem(key);\n   if(!active)return;\n   diagnosticMonitor.recordAction(`startup storage read ${Date.now()-started}ms`);\n   diagnosticMonitor.recordStartup('storage read complete', `${Date.now()-started}ms`);\n   const normalizeStarted = Date.now();\n   const loadedWorkspace=diagnosticMonitor.measureWork('startup parse and normalization',()=>normalizer.current(raw?JSON.parse(raw):model.createWorkspace()));\n   diagnosticMonitor.recordAction(`startup normalize ${Date.now()-normalizeStarted}ms`);\n   diagnosticMonitor.recordStartup('normalization complete', `${Date.now()-normalizeStarted}ms`);\n   writer.current=makeWriter(key);indexRef.current=index;\n   currentRef.current=loadedWorkspace;loaded.current=true;setWs(loadedWorkspace);setIdx(index);setReady(true);\n   // On a new install the sample is established, but on an existing install there is no migration write until an actual edit.\n   if(!raw)void writer.current.enqueue(loadedWorkspace);\n   if(!rawIndex||index!==parsed)AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(index)).catch(()=>{}); // the list is rebuilt from the saved keys if this write is lost\n })().catch(e=>{if(active){setLoadErrorCode(e.code||'');setFault(e.code==='workspace-in-use'||e.code==='workspace-coordination-unavailable'?e.message:`Unable to load the existing workspace: ${e.message}. Existing data has NOT been overwritten. Export it from the previous release before attempting recovery.`);notify(e.code==='workspace-in-use'?e.message:'Unable to load the local workspace. Your data was not overwritten.','error');setReady(true)}});return()=>{active=false;loaded.current=false;void(async()=>{await cloudRef.current?.disconnect();await writer.current?.flush();await releaseWriter?.();})().catch(()=>{});}},[]);\n const put=(next,deferPersistence=false)=>{\n  // Validate before mutating any in-memory or persistent state.\n  const safe=diagnosticMonitor.measureWork('edit normalization',()=>normalizer.current(next));\n  currentRef.current=safe;setWs(safe);\n  void cloudRef.current?.capture(safe).catch(e=>{setFault(`Cloud queue could not be saved: ${e.message}. Local work is retained; export a backup.`);});\n  if(deferPersistence)writer.current.defer(safe);else void writer.current.enqueue(safe);\n };\n const trans=(fn,label,deferPersistence=false)=>{\n  lastError.current='';\n  if(!loaded.current||!currentRef.current){lastError.current='The workspace is still loading. Try again in a moment.';return false}\n  try{const prev=currentRef.current;let next=diagnosticMonitor.measureWork('workspace mutation',()=>fn(prev));if(next===prev)return true;\n   // Snapshots are whole copies of earlier workspaces. Check on every edit, not only when snapshots change: ordinary edits grow the live data too.\n   // shortcut: one extra JSON pass per edit, fine for a few MB; check only every Nth edit if edits start to lag.\n   {const fitted=diagnosticMonitor.measureWork('recovery budget check',()=>backupBudget.fitBackups(next));if(fitted.trimmed){next=fitted.workspace;notify('Older recovery snapshots were removed to keep the workspace within device storage limits.','info')}}\n   put(activity(next,label),deferPersistence);setFault('');if(/(?:Moved .+ to (?:Done|Validation)|Bulk moved|Created automation|Saved automation|Created task|Created sprint)/i.test(label))notify(label,'success');return true}\n  catch(e){lastError.current=e.message||String(e);setFault(lastError.current);notify(lastError.current,'error');return false}\n };\n const projectChange=(fn,label)=>trans(w=>{\n  const p=current(w),next=fn(p);if(next===p)return w;\n  let reconciled=bridge.reconcile(p,next);\n  if((reconciled.automationCommands||[]).length && (reconciled.automationHistory||[]).length === (p.automationHistory||[]).length){\n   const old=new Map(p.tasks.map(t=>[t.id,t.status]));\n   for(const t of reconciled.tasks){\n    const from=old.get(t.id);\n    if(from!==undefined&&from!==t.status)reconciled=model.automation.run(reconciled,{type:'status',taskId:t.id,from,to:t.status}).project;\n   }\n  }\n  model.validateProject(reconciled);\n  return {...w,projects:w.projects.map(x=>x.id===p.id?reconciled:x)};\n },label);\n const safeMutation=(fn,label)=>projectChange(fn,label);\n const snapshotChange=(fn,label)=>trans(w=>{const p=current(w),next=fn(p);const safe=bridge.reconcile(p,next);model.validateProject(safe);return {...w,backups:[model.workspaceSnapshot(w,'Before '+label),...w.backups].slice(0,12),projects:w.projects.map(x=>x.id===p.id?safe:x)}},label);\n // One workspace change at a time. Edits are refused while it runs, the open workspace is fully saved first, and the\n // epoch changes on every switch so work that started in the old workspace can tell it must not write into the new one.\n const exclusive=async fn=>{\n  if(swapping.current){notify('Another workspace change is still running.','info');return false}\n  swapping.current=true;\n  try{return await fn()}catch(e){notify(e.message||String(e),'error');return false}finally{swapping.current=false}\n };\n const saveIndex=async next=>{await AsyncStorage.setItem(workspaces.INDEX_KEY,JSON.stringify(next)"... 28229 more characters,
+    expected: /const save=\(\)=>\{void writer\.current\?\.flush\(\);\}/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui/commit-buffer.test.cjs:21:1
+✖ store-writing text fields use the lazy Input, and Input flushes on blur, submit and unmount (31.797615ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /<Input lazy\s+value=\{t\.title\}/. Input:
+  
+  '// /src/screens/tasks/TaskSheet.js\n' +
+    "import { useEffect, useRef, useState } from 'react';\n" +
+    "import { Pressable, View } from 'react-native';\n" +
+    "import { Feather } from '@expo/vector-icons';\n" +
+    "import Svg, { Path } from 'react-native-svg';\n" +
+    "import AddToCanvas from '../canvas/AddToCanvas';\n" +
+    "import PressSurface from '../../ui/PressSurface';\n" +
+    "import TaskMarkdown from '../../components/inline/TaskMarkdown';\n" +
+    "import MarkdownField from '../../components/inline/MarkdownField';\n" +
+    "import TaskLabels from '../../components/inline/TaskLabels';\n" +
+    "import { COLORS, textColor } from '../../ui/labelPalette.cjs';\n" +
+    "import { InlineDateRange, ActionMenu, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from '../../ui/ui';\n" +
+    "import { useStore } from '../../store/store';\n" +
+    "import { useTheme, PRIORITY_COLOR, STATUS_COLOR } from '../../ui/theme/theme';\n" +
+    "import { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from '../../store/data';\n" +
+    "import InlineNotice from '../../components/notice/InlineNotice';\n" +
+    "import { Field, InlineDrop, CustomValueInput } from './TaskFields';\n" +
+    "import { Fold } from '../../components/inline/CompactTools';\n" +
+    "import { localDay } from '../../utils/localDay.cjs';\n" +
+    "import { descendants } from '../../domain/taskWorkflows.cjs';\n" +
+    "import {useCloudPresence} from '../../cloud/useCloudPresence';\n" +
+    'const NONE = new Set();\n' +
+    '\n' +
+    '// A new task is only created on explicit Save. Dismissing this sheet discards its draft.\n' +
+    'export function NewTaskSheet({ onClose, onSave, extra }) {\n' +
+    "  const [title, setTitle] = useState('');\n" +
+    "  const [description, setDescription] = useState('');\n" +
+    "  const [status, setStatus] = useState('Backlog');\n" +
+    "  const [priority, setPriority] = useState('Medium');\n" +
+    '  const save = () => {\n' +
+    '    const name = title.trim();\n' +
+    '    if (!name || name.length > 240) return;\n' +
+    '    onSave({ title: name, description, status, priority });\n' +
+    '  };\n' +
+    '  return <Sheet visible onClose={onClose} title="Create task" showNotice={false}\n' +
+    '    footer={<><Button label="Cancel" small variant="ghost" onPress={onClose}/><Button label="Save task" small icon="check" disabled={!title.trim() || title.trim().length>240} onPress={save}/></>}>\n' +
+    '    <View style={{gap:8}}><T weight="600">Task title</T><Input value={title} onChangeText={setTitle} autoFocus accessibilityLabel="New task title" placeholder="What needs to be done?"/></View>\n' +
+    '    <Fold title="Add a description" initial={false}><MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/></Fold>\n' +
+    '    <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>\n' +
+    '    <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>\n' +
+    '    {extra}\n' +
+    '  </Sheet>;\n' +
+    '}\n' +
+    '\n' +
+    'export default function TaskSheet({ taskId, onClose }) {\n' +
+    '  const { c } = useTheme();\n' +
+    '  const api = useStore();\n' +
+    '  const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();\n' +
+    '  const storedTask = s.tasks.find((x) => x.id === taskId);\n' +
+    "  const [draftPatch,setDraftPatch]=useState({}),[draftReady,setDraftReady]=useState(!api.createTaskDraft),[saveState,setSaveState]=useState(''),[saving,setSaving]=useState(false);\n" +
+    '  const draft=useRef(null),controllerIdentity=useRef(null),draftIdentity=JSON.stringify([workspace.selectedId,taskId]);\n' +
+    '  const draftAvailable=!api.createTaskDraft||(draftReady&&controllerIdentity.current===draftIdentity);\n' +
+    "  const shownSaveState=!api.createTaskDraft||controllerIdentity.current===draftIdentity?saveState:'';\n" +
+    '  const t=storedTask?{...storedTask,...(controllerIdentity.current===draftIdentity?draftPatch:{})}:null;\n' +
+    '  const session=api.cloudSession?.();\n' +
+    '  useEffect(()=>{\n' +
+    '    if(!api.createTaskDraft)return;\n' +
+    "    setDraftReady(false);setDraftPatch({});setSaveState('');controllerIdentity.current=draftIdentity;\n" +
+    '    let mounted=true;const controller=api.createTaskDraft(workspace.selectedId,taskId,next=>{if(mounted)setDraftPatch(next.patch);});draft.current=controller;\n' +
+    '    controller.open().then(()=>{if(mounted)setDraftReady(true);}).catch(e=>{if(mounted)setSaveState(e.message);});\n' +
+    '    return()=>{mounted=false;void controller.flush().catch(()=>{});};\n' +
+    '  },[draftIdentity,api.createTaskDraft]);\n' +
+    '  const stage=(patch)=>{\n' +
+    '    if(!draft.current)return t&&updateTask(t.id,patch);\n' +
+    '    if(!draftAvailable||saving)return false;\n' +
+    "    try{void draft.current.stage(patch).then(()=>setSaveState('Draft saved on this device')).catch(e=>setSaveState(e.message));return true;}\n" +
+    '    catch(e){setSaveState(e.message);return false;}\n' +
+    '  };\n' +
+    '  const commitDraft=async()=>{\n' +
+    '    if(!draft.current||!draftAvailable)return;\n' +
+    "    try{await draft.current.commit();setSaveState(session?.getState().connected?'Saved on this device · cloud synchronization pending':'Saved on this device');}\n" +
+    '    catch(e){setSaveState(e.message);}\n' +
+    '  };\n' +
+    '  const saveTask=async(synchronize=true)=>{\n' +
+    '    if(saving||!draftAvailable)return false;setSaving(true);\n' +
+    '    try{\n' +
+    '      if(draft.current)await draft.current.commit();\n' +
+    "      else if(descriptionEditing&&t&&descriptionDraft!==(t.description||'')&&updateTask(t.id,{description:descriptionDraft})===false)return false;\n" +
+    "      if(api.flush&&!(await api.flush()))throw Error('Local save failed; changes remain on this device');\n" +
+    '      await session?.flush();\n' +
+    '      if(synchronize&&session?.getState().connected)await (session.syncNow?session.syncNow():session.tick());\n' +
+    '      const state=session?.getState();\n' +
+    "      setSaveState(state?.conflicts?'Changes need conflict resolution':state?.pending?'Saved on this device · cloud synchronization pending':state?.connected?'Cloud acknowledged all queued changes':'Saved on this device');\n" +
+    '      setDescriptionEditing(false);return true;\n' +
+    '    }catch(e){setSaveState(e.message);return false;}finally{setSaving(false);}\n' +
+    '  };\n' +
+    '  useEffect(()=>{\n' +
+    '    if(!api.createTaskDraft)return;\n' +
+    '    const timer=setInterval(()=>{if(Object.keys(draft.current?.snapshot().patch||{}).length)void saveTask();},session?.getSyncInterval?.()||45000);\n' +
+    '    return()=>clearInterval(timer);\n' +
+    '  },[draftAvailable,saving,draftIdentity,session]);\n' +
+    '  const [open, setOpen] = useState(null);\n' +
+    "  const [detailTab,setDetailTab]=useState('activity');\n" +
+    '  const [descriptionEditing, setDescriptionEditing] = useState(false);\n' +
+    "  const presence=useCloudPresence(workspace.selectedId,'task:'+taskId,descriptionEditing);\n" +
+    "  const [descriptionDraft, setDescriptionDraft] = useState('');\n" +
+    '  const [labelColorDraft, setLabelColorDraft] = useState(COLORS[0]);\n' +
+    '  const [labelEditor, setLabelEditor] = useState(false);\n' +
+    "  const [comment, setComment] = useState('');\n" +
+    "  const [githubUrl,setGithubUrl]=useState('');\n" +
+    "  const [subTitle,setSubTitle]=useState(''),[logHours,setLogHours]=useState('1');\n" +
+    "  const [depDraft, setDepDraft] = useState('');\n" +
+    "  const [parentDraft, setParentDraft] = useState('');\n" +
+    "  const [labelDraft, setLabelDraft] = useState('');\n" +
+    "  const [checkDraft, setCheckDraft] = useState('');\n" +
+    "  const [attachmentName, setAttachmentName] = useState('');\n" +
+    "  const [attachmentUrl, setAttachmentUrl] = useState('');\n" +
+    '\n' +
+    '  useEffect(() => {\n' +
+    "    setOpen(null); setDetailTab('activity'); setDescriptionEditing(false); setDescriptionDraft(''); setLabelEditor(false);\n" +
+    "    setGithubUrl(''); setSubTitle(''); setLogHours('1');\n" +
+    "    setComment(''); setDepDraft(''); setParentDraft(''); setLabelDraft('');\n" +
+    "    setCheckDraft(''); setAttachmentName(''); setAttachmentUrl('');\n" +
+    '  }, [taskId]);\n' +
+    '\n' +
+    "  const active = s.sprints.find((x) => x.state === 'active');\n" +
+    '  const set = (patch, label) => t && updateTask(t.id, patch, label);\n' +
+    '  const depTasks = t ? t.dependsOn.map((id) => s.tasks.find((x) => x.id === id)).filter(Boolean) : [];\n' +
+    "  const blocked = depTasks.some((d) => d.status !== 'Done');\n" +
+    '  const checks = t ? s.checks.filter((k) => k.taskId === t.id) : [];\n' +
+    "  const canVerify = !!t && checks.length > 0 && checks.every((k) => k.status === 'passed' && k.evidence) &&\n" +
+    '    !!t.evidence?.trim() && !!t.actual?.trim() && !blocked;\n' +
+    '  const canMerge = !!t?.verified && canVerify && !!t?.mainSha?.trim();\n' +
+    '  const patchCheck = (key, changes) => t && stage({ tests: t.tests.map((k) => k.id === key ? { ...k, ...changes } : k) }, `Updated acceptance evidence for ${t.id}`);\n' +
+    '  const addLabel = () => {\n' +
+    '    if (!t) return;\n' +
+    '    const value = labelDraft.trim().slice(0, 40);\n' +
+    '    if (value) {\n' +
+    '      if (!t.labels.includes(value) && t.labels.length < 30) setLabels(t.id, [...t.labels, value]);\n' +
+    '      setLabelColor(value, labelColorDraft);\n' +
+    '    }\n' +
+    "    setLabelDraft('');\n" +
+    '  };\n' +
+    '  const addCheck = () => {\n' +
+    '    if (!t) return;\n' +
+    '    const title = checkDraft.trim();\n' +
+    "    if (title && t.tests.length < 250) set({ tests: [...t.tests, { id: `check-${Date.now()}`, title, result: 'pending', evidence: '' }] });\n" +
+    "    setCheckDraft('');\n" +
+    '  };\n' +
+    '  const addAttachment = () => {\n' +
+    '    if (!t) return;\n' +
+    '    const url = attachmentUrl.trim();\n' +
+    '    if (!/^https?:\\/\\//i.test(url)) return;\n' +
+    '    set({ attachments: [...(t.attachments || []), { id: `link-${Date.now()}`, name: attachmentName.trim() || url, url }] });\n' +
+    "    setAttachmentName(''); setAttachmentUrl('');\n" +
+    '  };\n' +
+    '\n' +
+    '  const closeTask = async () => {\n' +
+    '    if(await saveTask())onClose();\n' +
+    '  };\n' +
+    '\n' +
+    '  const footer = t ? (\n' +
+    '    <>\n' +
+    '    <InlineNotice />\n' +
+    '    <ActionMenu label="Task actions" items={[\n' +
+    "      {label:'Duplicate task',icon:'copy',confirmation:{title:'Duplicate this task?',description:'Create a copy and keep this task open.',confirmLabel:'Duplicate',successMessage:'Task duplicated.'},onPress:async()=>{\n" +
+    '        if(!(await saveTask(false)))return false;\n' +
+    '        return duplicateTask(t.id)||false;\n' +
+    '      }},\n' +
+    "      {label:'Delete task',icon:'trash-2',danger:true,confirmation:{title:'Delete this task?',description:'This removes the task and cannot be undone here.',confirmLabel:'Delete'},onPress:()=>{\n" +
+    '        const ok=deleteTask(t.id);if(ok)onClose();return !!ok;\n' +
+    '      }},\n' +
+    '    ]}/>\n' +
+    '    <View style={{flex:1}}/><Button label="S'... 22969 more characters
+  
+      at TestContext.<anonymous> (/mnt/Milvayo/tests/ui/commit-buffer.test.cjs:26:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '// /src/screens/tasks/TaskSheet.js\nimport { useEffect, useRef, useState } from \'react\';\nimport { Pressable, View } from \'react-native\';\nimport { Feather } from \'@expo/vector-icons\';\nimport Svg, { Path } from \'react-native-svg\';\nimport AddToCanvas from \'../canvas/AddToCanvas\';\nimport PressSurface from \'../../ui/PressSurface\';\nimport TaskMarkdown from \'../../components/inline/TaskMarkdown\';\nimport MarkdownField from \'../../components/inline/MarkdownField\';\nimport TaskLabels from \'../../components/inline/TaskLabels\';\nimport { COLORS, textColor } from \'../../ui/labelPalette.cjs\';\nimport { InlineDateRange, ActionMenu, Button, Card, Chip, Input, Pill, Segmented, Sheet, T } from \'../../ui/ui\';\nimport { useStore } from \'../../store/store\';\nimport { useTheme, PRIORITY_COLOR, STATUS_COLOR } from \'../../ui/theme/theme\';\nimport { CHECK_STATES, PRIORITIES, STAGES, STATUS, isOverdue, fmt } from \'../../store/data\';\nimport InlineNotice from \'../../components/notice/InlineNotice\';\nimport { Field, InlineDrop, CustomValueInput } from \'./TaskFields\';\nimport { Fold } from \'../../components/inline/CompactTools\';\nimport { localDay } from \'../../utils/localDay.cjs\';\nimport { descendants } from \'../../domain/taskWorkflows.cjs\';\nimport {useCloudPresence} from \'../../cloud/useCloudPresence\';\nconst NONE = new Set();\n\n// A new task is only created on explicit Save. Dismissing this sheet discards its draft.\nexport function NewTaskSheet({ onClose, onSave, extra }) {\n  const [title, setTitle] = useState(\'\');\n  const [description, setDescription] = useState(\'\');\n  const [status, setStatus] = useState(\'Backlog\');\n  const [priority, setPriority] = useState(\'Medium\');\n  const save = () => {\n    const name = title.trim();\n    if (!name || name.length > 240) return;\n    onSave({ title: name, description, status, priority });\n  };\n  return <Sheet visible onClose={onClose} title="Create task" showNotice={false}\n    footer={<><Button label="Cancel" small variant="ghost" onPress={onClose}/><Button label="Save task" small icon="check" disabled={!title.trim() || title.trim().length>240} onPress={save}/></>}>\n    <View style={{gap:8}}><T weight="600">Task title</T><Input value={title} onChangeText={setTitle} autoFocus accessibilityLabel="New task title" placeholder="What needs to be done?"/></View>\n    <Fold title="Add a description" initial={false}><MarkdownField label="Description" value={description} onChangeText={setDescription} placeholder="Details (optional)"/></Fold>\n    <View style={{gap:8}}><T weight="600">Status</T><Segmented options={STATUS} value={status} onChange={setStatus}/></View>\n    <View style={{gap:8}}><T weight="600">Priority</T><Segmented options={PRIORITIES} value={priority} onChange={setPriority}/></View>\n    {extra}\n  </Sheet>;\n}\n\nexport default function TaskSheet({ taskId, onClose }) {\n  const { c } = useTheme();\n  const api = useStore();\n  const { s, workspace, setLabels, updateTask, moveTask, addComment, toggleSprintTask, setLabelColor, setCheck, verifyTask, mergeTask, deleteTask, duplicateTask, addSubtask, setCustomValue, logTime, addGithubLink, removeGithubLink, refreshGithubLink, runCommand } = useStore();\n  const storedTask = s.tasks.find((x) => x.id === taskId);\n  const [draftPatch,setDraftPatch]=useState({}),[draftReady,setDraftReady]=useState(!api.createTaskDraft),[saveState,setSaveState]=useState(\'\'),[saving,setSaving]=useState(false);\n  const draft=useRef(null),controllerIdentity=useRef(null),draftIdentity=JSON.stringify([workspace.selectedId,taskId]);\n  const draftAvailable=!api.createTaskDraft||(draftReady&&controllerIdentity.current===draftIdentity);\n  const shownSaveState=!api.createTaskDraft||controllerIdentity.current===draftIdentity?saveState:\'\';\n  const t=storedTask?{...storedTask,...(controllerIdentity.current===draftIdentity?draftPatch:{})}:null;\n  const session=api.cloudSession?.();\n  useEffect(()=>{\n    if(!api.createTaskDraft)return;\n    setDraftReady(false);setDraftPatch({});setSaveState(\'\');controllerIdentity.current=draftIdentity;\n    let mounted=true;const controller=api.createTaskDraft(workspace.selectedId,taskId,next=>{if(mounted)setDraftPatch(next.patch);});draft.current=controller;\n    controller.open().then(()=>{if(mounted)setDraftReady(true);}).catch(e=>{if(mounted)setSaveState(e.message);});\n    return()=>{mounted=false;void controller.flush().catch(()=>{});};\n  },[draftIdentity,api.createTaskDraft]);\n  const stage=(patch)=>{\n    if(!draft.current)return t&&updateTask(t.id,patch);\n    if(!draftAvailable||saving)return false;\n    try{void draft.current.stage(patch).then(()=>setSaveState(\'Draft saved on this device\')).catch(e=>setSaveState(e.message));return true;}\n    catch(e){setSaveState(e.message);return false;}\n  };\n  const commitDraft=async()=>{\n    if(!draft.current||!draftAvailable)return;\n    try{await draft.current.commit();setSaveState(session?.getState().connected?\'Saved on this device · cloud synchronization pending\':\'Saved on this device\');}\n    catch(e){setSaveState(e.message);}\n  };\n  const saveTask=async(synchronize=true)=>{\n    if(saving||!draftAvailable)return false;setSaving(true);\n    try{\n      if(draft.current)await draft.current.commit();\n      else if(descriptionEditing&&t&&descriptionDraft!==(t.description||\'\')&&updateTask(t.id,{description:descriptionDraft})===false)return false;\n      if(api.flush&&!(await api.flush()))throw Error(\'Local save failed; changes remain on this device\');\n      await session?.flush();\n      if(synchronize&&session?.getState().connected)await (session.syncNow?session.syncNow():session.tick());\n      const state=session?.getState();\n      setSaveState(state?.conflicts?\'Changes need conflict resolution\':state?.pending?\'Saved on this device · cloud synchronization pending\':state?.connected?\'Cloud acknowledged all queued changes\':\'Saved on this device\');\n      setDescriptionEditing(false);return true;\n    }catch(e){setSaveState(e.message);return false;}finally{setSaving(false);}\n  };\n  useEffect(()=>{\n    if(!api.createTaskDraft)return;\n    const timer=setInterval(()=>{if(Object.keys(draft.current?.snapshot().patch||{}).length)void saveTask();},session?.getSyncInterval?.()||45000);\n    return()=>clearInterval(timer);\n  },[draftAvailable,saving,draftIdentity,session]);\n  const [open, setOpen] = useState(null);\n  const [detailTab,setDetailTab]=useState(\'activity\');\n  const [descriptionEditing, setDescriptionEditing] = useState(false);\n  const presence=useCloudPresence(workspace.selectedId,\'task:\'+taskId,descriptionEditing);\n  const [descriptionDraft, setDescriptionDraft] = useState(\'\');\n  const [labelColorDraft, setLabelColorDraft] = useState(COLORS[0]);\n  const [labelEditor, setLabelEditor] = useState(false);\n  const [comment, setComment] = useState(\'\');\n  const [githubUrl,setGithubUrl]=useState(\'\');\n  const [subTitle,setSubTitle]=useState(\'\'),[logHours,setLogHours]=useState(\'1\');\n  const [depDraft, setDepDraft] = useState(\'\');\n  const [parentDraft, setParentDraft] = useState(\'\');\n  const [labelDraft, setLabelDraft] = useState(\'\');\n  const [checkDraft, setCheckDraft] = useState(\'\');\n  const [attachmentName, setAttachmentName] = useState(\'\');\n  const [attachmentUrl, setAttachmentUrl] = useState(\'\');\n\n  useEffect(() => {\n    setOpen(null); setDetailTab(\'activity\'); setDescriptionEditing(false); setDescriptionDraft(\'\'); setLabelEditor(false);\n    setGithubUrl(\'\'); setSubTitle(\'\'); setLogHours(\'1\');\n    setComment(\'\'); setDepDraft(\'\'); setParentDraft(\'\'); setLabelDraft(\'\');\n    setCheckDraft(\'\'); setAttachmentName(\'\'); setAttachmentUrl(\'\');\n  }, [taskId]);\n\n  const active = s.sprints.find((x) => x.state === \'active\');\n  const set = (patch, label) => t && updateTask(t.id, patch, label);\n  const depTasks = t ? t.dependsOn.map((id) => s.tasks.find((x) => x.id === id)).filter(Boolean) : [];\n  const blocked = depTasks.some((d) => d.status !== \'Done\');\n  const checks = t ? s.checks.filter((k) => k.taskId === t.id) : [];\n  const canVerify = !!t && checks.length > 0 && checks.every((k) => k.status === \'passed\' && k.evidence) &&\n    !!t.evidence?.trim() && !!t.actual?.trim() && !blocked;\n  const canMerge = !!t?.verified && canVerify && !!t?.mainSha?.trim();\n  const patchCheck = (key, changes) => t && stage({ tests: t.tests.map((k) => k.id === key ? { ...k, ...changes } : k) }, `Updated acceptance evidence for ${t.id}`);\n  const addLabel = () => {\n    if (!t) return;\n    const value = labelDraft.trim().slice(0, 40);\n    if (value) {\n      if (!t.labels.includes(value) && t.labels.length < 30) setLabels(t.id, [...t.labels, value]);\n      setLabelColor(value, labelColorDraft);\n    }\n    setLabelDraft(\'\');\n  };\n  const addCheck = () => {\n    if (!t) return;\n    const title = checkDraft.trim();\n    if (title && t.tests.length < 250) set({ tests: [...t.tests, { id: `check-${Date.now()}`, title, result: \'pending\', evidence: \'\' }] });\n    setCheckDraft(\'\');\n  };\n  const addAttachment = () => {\n    if (!t) return;\n    const url = attachmentUrl.trim();\n    if (!/^https?:\\/\\//i.test(url)) return;\n    set({ attachments: [...(t.attachments || []), { id: `link-${Date.now()}`, name: attachmentName.trim() || url, url }] });\n    setAttachmentName(\'\'); setAttachmentUrl(\'\');\n  };\n\n  const closeTask = async () => {\n    if(await saveTask())onClose();\n  };\n\n  const footer = t ? (\n    <>\n    <InlineNotice />\n    <ActionMenu label="Task actions" items={[\n      {label:\'Duplicate task\',icon:\'copy\',confirmation:{title:\'Duplicate this task?\',description:\'Create a copy and keep this task open.\',confirmLabel:\'Duplicate\',successMessage:\'Task duplicated.\'},onPress:async()=>{\n        if(!(await saveTask(false)))return false;\n        return duplicateTask(t.id)||false;\n      }},\n      {label:\'Delete task\',icon:\'trash-2\',danger:true,confirmation:{title:\'Delete this task?\',description:\'This removes the task and cannot be undone here.\',confirmLabel:\'Delete\'},onPress:()=>{\n        const ok=deleteTask(t.id);if(ok)onClose();return !!ok;\n      }},\n    ]}/>\n    <View style={{flex:1}}/><Button label="S'... 22969 more characters,
+    expected: /<Input lazy\s+value=\{t\.title\}/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ui/popup-navigation-followup-063.test.cjs:52:1
+✖ task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success (428.258962ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + Promise {
+  +   <pending>,
+  +   Symbol(async_id_symbol): 138,
+  +   Symbol(trigger_async_id_symbol): 27
+  + }
+  - false
+  
+      at TestContext.<anonymous> (/mnt/Milvayo/tests/ui/popup-navigation-followup-063.test.cjs:59:59)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [Promise],
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/ui/popup-navigation-followup-063.test.cjs:105:1
+✖ description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place (294.122807ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/mnt/Milvayo/tests/ui/popup-navigation-followup-063.test.cjs:115:179)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

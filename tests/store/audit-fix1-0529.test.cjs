@@ -9,9 +9,11 @@ const read = (f) => fs.readFileSync(path.join(__dirname, '..', '..', f), 'utf8')
 
 test('1: the writer is null until the first load, so every flush is guarded', () => {
   const src = read('src/store/store.js');
-  // Startup paths are guarded: the AppState/cleanup save and api.flush.
-  assert.match(src, /const save=\(\)=>\{void writer\.current\?\.flush\(\);\}/);
-  assert.equal((src.match(/writer\.current\?\.flush\(\)/g) || []).length, 2);
+  // Startup paths are guarded: AppState save, writer-lock cleanup, draft persistence and api.flush.
+  assert.match(src, /const save=\(\)=>\{void writer\.current\?\.flush\(\);void cloudRef\.current\?\.flush\(\);\}/);
+  assert.equal((src.match(/writer\.current\?\.flush\(\)/g) || []).length, 4);
+  assert.match(src, /await writer\.current\?\.flush\(\);await releaseWriter\?\.\(\)/);
+  assert.match(src, /persist:\(\)=>matches\(\)\?writer\.current\?\.flush\(\)\?\?Promise\.resolve\(false\)/);
   // The only plain call left is in swapTo, which throws 'still loading' first when currentRef is null (writer and currentRef are set together).
   const plain = src.match(/[^\n]*writer\.current\.flush\(\)[^\n]*/g) || [];
   assert.equal(plain.length, 1);

@@ -1,0 +1,47 @@
+✔ journal reuses immutable chunks, retains exactly the previous complete manifest, and removes only unreferenced chunks (14.792308ms)
+✔ termination at every staging/manifest boundary preserves the previous acknowledged generation (23.212038ms)
+✔ corrupt chunks, missing parts, malformed manifests and checksums never become an empty queue (7.198538ms)
+✔ old inline and sharded v1 journals migrate without losing pending operations (7.286692ms)
+✔ surrogate pairs spanning a chunk boundary round trip through UTF-8 storage (22.077769ms)
+✔ failed cleanup cannot undo a committed generation (19.258615ms)
+✔ mutable caller rows are serialized again rather than reusing a stale cached payload (5.334384ms)
+✔ a previously retained but unverified chunk is rewritten before reuse after restart (3.902577ms)
+✔ queue persists offline edits and resumes after process termination without losing payloads (94.061538ms)
+✔ lost acknowledgements resend the exact durable payload and idempotency key (41.034423ms)
+✔ permanent conflict retains edits and stops ordered dependent operations (19.907539ms)
+✔ journal scopes separate hosts, users, organizations, cloud and local workspaces (0.702693ms)
+✔ conversation sends survive a lost acknowledgement and process restart with the same identity (15.590308ms)
+✔ corrupt journals and failed disk writes cannot silently become a fresh queue (11.517308ms)
+✔ a permission reset removes revoked cached projects while retaining blocked edits for scoped recovery (38.058077ms)
+✔ compatible unsent task fields consolidate while sent/retried operations keep their immutable payload (146.584846ms)
+✔ consolidation preserves structural edits, messages and attempted mutation identities (20.278116ms)
+✔ conflict resolution retains original intent and sends a fresh revision-checked idempotency identity (23.979846ms)
+✔ real task editor invalidation resets and timestamps remain consolidatable (59.685153ms)
+✔ wire format is prepared once before first send and replayed exactly after restart (12.763923ms)
+✔ v0.8.4 full-record sent payload survives upgrade with the original mutation ID and hash input (14.865462ms)
+✔ a complete contiguous commit advances the durable cursor and the immediate unchanged refresh needs only authorization reads (13.47173ms)
+✔ a sequence gap retains the old cursor so another collaborator record cannot be skipped (11.448961ms)
+✔ a no-op acknowledgment at the next sequence cannot skip the unseen second record in a collaborator atomic commit (14.619538ms)
+✔ lost acknowledgments and duplicate receipts advance only through their own sequence after restart (18.381115ms)
+✔ messages and legacy acknowledgments cannot advance the canonical workspace cursor (18.520885ms)
+✔ an older delayed acknowledgment cannot overwrite newer records already received by refresh (31.546731ms)
+✔ actual editor title, description, priority and absolute deadline edits consolidate into one canonical mutation (45.249616ms)
+✔ absolute start and due edits batch while ordering-sensitive fields retain atomic boundaries (19.703423ms)
+✔ a scheduling mutation touching additional records cannot consolidate with adjacent task drafts (15.744116ms)
+✔ same-origin writer lock blocks a second writer until explicit release (3.678615ms)
+✔ unsupported coordination fails closed rather than using a racy localStorage lease (0.525346ms)
+✔ independent task validator agrees with canonical validation for valid and malformed field values (347.865116ms)
+✔ simple saves remain six point reads at 10, 100, 500 and 2,000 tasks with no summary or task deletion (354.952ms)
+✔ compact payloads retain exact old field checks, fresh custom configuration and idempotent receipts (12.591692ms)
+✔ stale independent fields merge against immutable revisions; competing fields and forged envelopes fail (15.081346ms)
+✔ compact unchanged edits preserve receipt-only no-op behavior without task/version/sequence writes (6.277269ms)
+✔ old full-payload receipts replay under fresh authorization and new receipts bind restore semantics (9.895539ms)
+✔ forged patch paths, fields, old values and absent bases cannot change records (3.506846ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1081.809114

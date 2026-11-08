@@ -1,0 +1,14 @@
+{
+  "status": "Pass",
+  "runtime": "Actual Expo Metro Web application, EXPO_OFFLINE=1 CI=1, headless Chromium",
+  "checks": [
+    "Typed title persisted as a scoped draft without committing the task",
+    "Reload during editing retained draft and reopened it",
+    "Blur plus explicit Save persisted once; repeated unchanged Save made no domain mutation",
+    "Advanced verification text used the same durable combined Save",
+    "Second real app tab was blocked by the local single-writer gate"
+  ],
+  "cloudAcknowledgment": "Covered by deterministic session tests and trusted backend emulator tests; real cloud acknowledgment/conflict UI with two browser accounts Not run.",
+  "fastRefresh": "Not run: CI mode disables watchers",
+  "expoGo": "Not run: no physical Android device"
+}

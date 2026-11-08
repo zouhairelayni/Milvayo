@@ -1,0 +1,34 @@
+✔ the project root holds no code files except the Expo entry App.js (30.884808ms)
+✔ src has no loose code files, and tests/ has no loose code files except run-all.cjs (23.497923ms)
+✔ every test is a *.test.cjs inside a tests/<group>/ folder (3.668731ms)
+✔ every code file starts with a comment holding its own /path (4064.138305ms)
+✔ every relative import and require in App.js, src, tests and scripts points to a real file (4181.005266ms)
+✔ every app source parses and every JSX component root has an import or local binding (5626.071996ms)
+✔ Markdown read mode renders bold, italic, headings and bullet text without treating HTML as markup (9.867731ms)
+✔ Label colors have a large deterministic palette, reject invalid values and survive project JSON normalization (228.923346ms)
+✔ Standard task sheet is focused, Advanced retains original editors, and ID appears only in task footer (20.79023ms)
+✔ Colored labels survive gzip and password-protected .niyav project backups (248.86923ms)
+✔ opening remote work keeps the local source and disconnect restores it (333.14223ms)
+✔ borrowed workspace pending edits survive disconnect and are resumed before reconciliation (123.701538ms)
+✔ revocation stops synchronization and clears a borrowed local view (66.9845ms)
+✔ a workspace switch while authentication is pending cannot publish into the new local workspace (65.353577ms)
+✔ a failed journal write is visible and cannot discard borrowed edits on disconnect (87.022192ms)
+✔ explicit Save consolidates compatible edits, uses changed-field payloads and waits for acknowledgment (511.797884ms)
+✔ same-field conflict compares latest cloud data and resolves with a fresh revision-checked operation (219.904077ms)
+✔ many typed values and standard/advanced fields persist across restart and commit once (8.575423ms)
+✔ invalid drafts, storage errors and concurrent same-field changes keep user intent (8.543923ms)
+✔ unchanged drafts and cancel create no domain mutation; scopes separate accounts and environments (3.017192ms)
+✔ corrupt stored drafts fail closed and remain available for recovery (0.88123ms)
+✔ edits arriving during a local save stay in the durable next draft (34.3805ms)
+✔ malformed persisted draft containers and unsafe field values are rejected before rendering (6.018077ms)
+✔ incomplete numeric custom input retains correction text instead of sending NaN (5896.82665ms)
+✔ Advanced tasks defaults preserve existing access, new projects stay lean, and switch/import round trips retain all task fields (38.196923ms)
+✔ Planning & delivery remains available with legacy Advanced tasks off, while Manage tools omits the retired switch (3062.642921ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10848.084684

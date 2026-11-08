@@ -1,0 +1,9 @@
+// /src/cloud/tools/cost085.cjs
+'use strict';
+const fs=require('node:fs'),{estimate,projectUsage}=require('../costModel.cjs'),{simulatePolling}=require('../polling.cjs');
+const table=JSON.parse(fs.readFileSync(process.argv[2]||'docs/cloud/prices-us-central1.json','utf8')),out='docs/qa/cloud-085';
+const variants=['v084-baseline','v085-mutations','v085-polling','v085-combined','v085-stress'],rows=[];
+const assumptions={days:30,actionsPerUserDay:30,tasksPerWorkspace:500,simpleMutationShare:.8,simpleReads:6,simpleWrites:5,retryMultiplier:2,pollsPerUserDay:240,conversationPollsPerUserDay:120,messagesPerUserDay:3,watchers:5,postSaveRefreshesPerUserDay:30,postSaveRefreshReads:4};
+for(const users of [100,1000,10000,100000])for(const variant of variants){const usage=projectUsage(users,variant,assumptions),cost=estimate(usage,table);rows.push({users,variant,source:'Modeled workload, not observed user behavior or certified Firebase bill',assumptions,monthly:cost.knownSubtotal,perActiveUser:cost.knownSubtotal/users,estimate:cost,usage});}
+fs.mkdirSync(out,{recursive:true});fs.writeFileSync(out+'/cost-projections.json',JSON.stringify({table,scope:'Known infrastructure subtotal. Build, registry, App Check, enterprise identity, backups and other inputs remain unpriced/unused. No live service or billing changes.',pollingModel:{workspace:simulatePolling({durationMs:1200000}),conversation:simulatePolling({durationMs:360000,activeMs:3000,idleMs:30000,hiddenMs:120000})},rows},null,2)+'\n');
+fs.writeFileSync(out+'/cost-projections.csv','users,variant,known_monthly_usd,per_active_user,reads,writes,requests,unpriced\n'+rows.map(r=>[r.users,r.variant,r.monthly,r.perActiveUser,r.usage.firestoreReads,r.usage.firestoreWrites,r.usage.functionRequests,r.estimate.unpriced.join('|')].join(',')).join('\n')+'\n');console.log(JSON.stringify(rows.map(({users,variant,monthly,perActiveUser})=>({users,variant,monthly,perActiveUser})),null,2));

@@ -1,0 +1,98 @@
+npm notice run milvayo@0.8.4 test:cloud:running
+npm notice run node src/cloud/tools/runTests.cjs
+✔ platform role changes protect the final initialized owner and audit a permitted transfer (4.229423ms)
+✔ resource allocations preserve unique global licenses and explicit caps (3.669846ms)
+✔ import batching respects UTF-8 request budgets, row counts and source order (556.855576ms)
+✔ collaboration backup v2 validates integrity, references, sequence IDs and notification replay (97.025539ms)
+▶ emulator conversations, organization administration, licenses and staged recovery
+  ✔ guests do not consume a seat or gain editing and organization permissions (1017.674923ms)
+  ✔ groups validate membership, department references and do not grant content (439.584961ms)
+  ✔ licenses count a person once across allocations and cap concurrency transactionally (996.837269ms)
+  ✔ authenticated messages are idempotent, target authorized members and keep private notifications (1136.35723ms)
+  ✔ message history pages preserve ordering and incremental poll cursors (19873.950871ms)
+  ✔ revoked project grants remove mentions, notifications and watchers without leakage (722.452538ms)
+  ✔ large complete recovery keeps collaboration isolated until checksum activation (1749.042114ms)
+  ✔ platform operations and configuration remain separate from customer content (530.753577ms)
+✔ emulator conversations, organization administration, licenses and staged recovery (56192.388113ms)
+✔ 085 projections preserve baseline and isolate mutation and polling savings (6.695769ms)
+✔ regional document and compute units convert published units without mixing generations (0.696961ms)
+[2026-11-08T00:05:02.765Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x31184178 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:05:02.842Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x31184179 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:05:02.922Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x3118417a error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:05:03.004Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x3118417b error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:05:03.088Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x3118417c error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:05:03.178Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x3118417d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+▶ emulator-backed authorization, incremental sync, recovery and collaboration
+  ✔ HTTP function and all client collections deny signed-out and cross-tenant access (1309.65623ms)
+  ✔ organization and platform administration do not automatically reveal customer content (263.842538ms)
+
+Interrupted while running:
+
+⚠ tests/cloud/emulator.test.cjs (tests/cloud/emulator.test.cjs:1:1)
+✖ tests/cloud/emulator.test.cjs (120011.714721ms)
+✖ tests/cloud/invariants.test.cjs
+✖ tests/cloud/journal-storage.test.cjs
+✖ tests/cloud/journal.test.cjs
+✖ tests/cloud/local-writer.test.cjs
+✖ tests/cloud/polling.test.cjs
+✖ tests/cloud/schema.test.cjs
+✖ tests/cloud/session.test.cjs
+✖ tests/cloud/task-draft.test.cjs
+✖ tests/cloud/task-mutation-085.test.cjs
+ℹ tests 27
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 10
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177968.628834
+
+✖ failing tests:
+
+test at tests/cloud/emulator.test.cjs:1:1
+✖ tests/cloud/emulator.test.cjs (120011.714721ms)
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/invariants.test.cjs:1:1
+✖ tests/cloud/invariants.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/journal-storage.test.cjs:1:1
+✖ tests/cloud/journal-storage.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/journal.test.cjs:1:1
+✖ tests/cloud/journal.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/local-writer.test.cjs:1:1
+✖ tests/cloud/local-writer.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/polling.test.cjs:1:1
+✖ tests/cloud/polling.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/schema.test.cjs:1:1
+✖ tests/cloud/schema.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/session.test.cjs:1:1
+✖ tests/cloud/session.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/task-draft.test.cjs:1:1
+✖ tests/cloud/task-draft.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at tests/cloud/task-mutation-085.test.cjs:1:1
+✖ tests/cloud/task-mutation-085.test.cjs
+  'Promise resolution is still pending but the event loop has already resolved'
+Terminated

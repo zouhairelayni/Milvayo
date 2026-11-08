@@ -18,12 +18,19 @@ test('flush commits at once and a second flush does nothing',()=>{
 test('an empty string is a real value, not "nothing pending"',()=>{
  const t=fake(),got=[];const b=createCommitBuffer(v=>got.push(v),300,t);b.push('');b.flush();assert.deepEqual(got,['']);
 });
-test('store-writing text fields use the lazy Input, and Input flushes on blur, submit and unmount',()=>{
+test('store-writing text stays buffered; task title is durably staged, and Input flushes on blur, submit and unmount',async()=>{
  const read=f=>fs.readFileSync(path.join(__dirname,'../..',f),'utf8');
  const ui=read('src/ui/uiControls.js');
  assert.match(ui,/lazy\)\s*buffer\.current\.flush\(\);\s*onBlur/);assert.match(ui,/onSubmitEditing\(e\)/);assert.match(ui,/useEffect\(\(\) => \(\) => buffer\.current\.flush\(\), \[\]\)/);
  assert.match(read('src/screens/governance/Projects.js'),/<Input lazy value=\{info\.manager\}/);
- assert.match(read('src/screens/tasks/TaskSheet.js'),/<Input lazy\s+value=\{t\.title\}/);
+ const sheet=read('src/screens/tasks/TaskSheet.js');
+ assert.match(sheet,/<Input value=\{t\.title\}[^>]+onBlur=\{commitDraft\} onChangeText=\{v=>stage\(\{title:v\}\)\}/);
+ const data=new Map(),commits=[],task={title:'Original'},storage={getItem:async key=>data.get(key),setItem:async(key,value)=>data.set(key,value)};
+ const make=()=>require('../../src/screens/tasks/taskDraft.cjs').createTaskDraft({storage,key:'buffer-contract',getTask:()=>task,commit:patch=>{commits.push(patch);Object.assign(task,patch);return true;},persist:async()=>true});
+ const draft=make();await draft.open();for(const title of ['N','Ne','New title'])await draft.stage({title});
+ assert.deepEqual(commits,[],'typing must not run a domain/store mutation per keystroke');
+ const reopened=make();await reopened.open();assert.equal(reopened.snapshot().patch.title,'New title','durable staging must survive editor/process replacement');
+ await reopened.commit();assert.deepEqual(commits,[{title:'New title'}]);assert.deepEqual(reopened.snapshot().patch,{});
 });
 
 test('Releases: edit and create open a proper draft sheet instead of an inline fold',()=>{

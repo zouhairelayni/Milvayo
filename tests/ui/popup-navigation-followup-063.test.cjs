@@ -49,17 +49,17 @@ test('Home date swipe removes chevrons, changes the chart week, clears the day f
  assert.equal(rail(tree).props.onShift(1),false);
 });
 
-test('task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success',()=>{
+test('task description precedes planning; copy failures keep context, draft save guards duplication, delete closes only after success',async()=>{
  const workspace=model.createWorkspace();workspace.projects[0]=bridge.addTask(workspace.projects[0],'Review brief').project;
  const s=bridge.projectView(workspace),calls=[];let saveOK=false,copyOK=false,deleteOK=false,closed=0;
  const store={s,workspace,updateTask:(...args)=>{calls.push(['save',...args]);return saveOK;},duplicateTask:id=>{calls.push(['copy',id]);return copyOK?'copy-id':null;},deleteTask:id=>{calls.push(['delete',id]);return deleteOK;}};
  const h=screenHarness('src/screens/tasks/TaskSheet.js',store),props={taskId:s.tasks[0].id,onClose:()=>closed++};
  const actions=tree=>nodes(tree).find(n=>n.type==='ActionMenu').props.items;
  let tree=h.render('default',props);const all=nodes(tree);assert.ok(all.findIndex(n=>n.props.children==='Description')<all.findIndex(n=>n.props.children==='Plan this task'));
- assert.ok(actions(tree).every(x=>x.confirmation));assert.equal(actions(tree)[0].onPress(),false);assert.equal(closed,0);
+ assert.ok(actions(tree).every(x=>x.confirmation));assert.equal(await actions(tree)[0].onPress(),false);assert.equal(closed,0);
  control(tree,'Edit description').props.onPress();tree=h.render('default',props);nodes(tree).find(n=>n.props.placeholder==='Add a description...').props.onChangeText('New details');tree=h.render('default',props);
- const count=calls.filter(x=>x[0]==='copy').length;assert.equal(actions(tree)[0].onPress(),false);assert.equal(calls.filter(x=>x[0]==='copy').length,count);
- saveOK=true;copyOK=true;assert.equal(actions(tree)[0].onPress(),'copy-id');assert.equal(closed,0);
+ const count=calls.filter(x=>x[0]==='copy').length;assert.equal(await actions(tree)[0].onPress(),false);assert.equal(calls.filter(x=>x[0]==='copy').length,count);
+ saveOK=true;copyOK=true;assert.equal(await actions(tree)[0].onPress(),'copy-id');assert.equal(closed,0);
  tree=h.render('default',props);assert.equal(actions(tree)[1].onPress(),false);assert.equal(closed,0);deleteOK=true;assert.equal(actions(tree)[1].onPress(),true);assert.equal(closed,1);
 });
 
@@ -102,7 +102,7 @@ test('held Board lists render above the ribbon without replacing the responder; 
 });
 
 
-test('description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place',()=>{
+test('description edit icons track the theme; cancel discards, rejected saves retain the draft, and successful/empty saves preview in place',async()=>{
  const {palette}=require('../../src/ui/theme/themePalette.cjs');let c=palette('Mint','dark'),accept=false,closed=0;
  const workspace=model.createWorkspace(),s=bridge.projectView(workspace),task=s.tasks[0],calls=[];
  const store={s,workspace,updateTask:(id,patch)=>{calls.push([id,patch.description]);if(!accept)return false;task.description=patch.description;return true;}};
@@ -114,8 +114,8 @@ test('description edit icons track the theme; cancel discards, rejected saves re
  for(const mode of ['light','amoled']){c=palette('Violet',mode);tree=render();assert.equal(control(tree,'Save description').props.children.props.stroke,c.accentText);assert.equal(control(tree,'Cancel description editing').props.children.props.stroke,c.danger);}
  input(tree).props.onChangeText('Discard this');tree=render();control(tree,'Cancel description editing').props.onPress();tree=render();assert.equal(input(tree),undefined);assert.equal(calls.length,0);assert.equal(closed,0);
  control(tree,'Edit description').props.onPress();tree=render();assert.equal(input(tree).props.value,task.description||'');input(tree).props.onChangeText('Keep this draft');tree=render();
- control(tree,'Save description').props.onPress();tree=render();assert.equal(input(tree).props.value,'Keep this draft');assert.equal(closed,0);
- accept=true;control(tree,'Save description').props.onPress();tree=render();assert.equal(input(tree),undefined);assert.equal(task.description,'Keep this draft');assert.equal(closed,0);
- control(tree,'Edit description').props.onPress();tree=render();input(tree).props.onChangeText('');tree=render();control(tree,'Save description').props.onPress();tree=render();assert.equal(task.description,'');assert.equal(input(tree),undefined);
- const count=calls.length;control(tree,'Edit description').props.onPress();tree=render();control(tree,'Save description').props.onPress();assert.equal(calls.length,count);assert.equal(input(render()),undefined);
+ await control(tree,'Save description').props.onPress();tree=render();assert.equal(input(tree).props.value,'Keep this draft');assert.equal(closed,0);
+ accept=true;await control(tree,'Save description').props.onPress();tree=render();assert.equal(input(tree),undefined);assert.equal(task.description,'Keep this draft');assert.equal(closed,0);
+ control(tree,'Edit description').props.onPress();tree=render();input(tree).props.onChangeText('');tree=render();await control(tree,'Save description').props.onPress();tree=render();assert.equal(task.description,'');assert.equal(input(tree),undefined);
+ const count=calls.length;control(tree,'Edit description').props.onPress();tree=render();await control(tree,'Save description').props.onPress();assert.equal(calls.length,count);assert.equal(input(render()),undefined);
 });

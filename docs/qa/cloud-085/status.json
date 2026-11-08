@@ -1,0 +1,55 @@
+{
+  "release": "0.8.5",
+  "build": 95,
+  "branch": "work",
+  "delivery": "in-place, uncommitted",
+  "generalTests": {
+    "status": "Pass",
+    "passed": 1062,
+    "failed": 0,
+    "skipped": 2,
+    "durationMs": 110481.943613,
+    "evidence": "final-tests.txt"
+  },
+  "emulatorRun": {
+    "status": "Pass",
+    "passed": 94,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "emulator-tests.txt",
+    "scope": "Coordinated Auth/Functions/Firestore/RTDB/Storage/Hosting with original IAM/security/recovery tests; later pure journal/UI refinements validated in final general/focused tests"
+  },
+  "web": {
+    "status": "Pass",
+    "mode": "EXPO_OFFLINE=1 CI=1 Expo Metro and actual headless Chromium",
+    "evidence": "task-save-web.json"
+  },
+  "multiTab": {
+    "status": "Pass",
+    "policy": "single writer with safe exclusion and takeover",
+    "evidence": [
+      "task-save-web.json",
+      "journal-tabs.json"
+    ]
+  },
+  "compatibility": {
+    "status": "Pass against available offline metadata",
+    "warning": "Fresh registry compatibility Not run; no dependency changes",
+    "evidence": "expo-compatibility.txt"
+  },
+  "syntaxAndPaths": "Pass in general suite",
+  "physicalExpoGo": "Not run",
+  "fastRefresh": "Not run: CI disables watching",
+  "production": "Not run",
+  "contentionGate": {
+    "status": "Fail",
+    "acknowledged": 8,
+    "clientTimeouts": 2,
+    "actors": 10,
+    "note": "Timed-out eventual receipt state uncertain; larger runs Not run"
+  },
+  "readiness": "Next local development/Termux acceptance with documented limits; not production or full mobile readiness",
+  "runtimeProcesses": "All task-started emulators, Metro and Chromium stopped; unrelated Termux server preserved",
+  "migration": "Local schemaVersion1 and backupv1/v2 preserved; journalv2 reader required until pending work recovered before rollback",
+  "productionBuild": "Not run: owner prohibited production build"
+}

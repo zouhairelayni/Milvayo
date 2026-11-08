@@ -1,0 +1,123 @@
+{
+  "fixture": {
+    "tasks": 100,
+    "objects": 25
+  },
+  "cold": {
+    "documentReads": 132,
+    "bytes": 97653,
+    "recordCacheHit": false
+  },
+  "rows": [
+    {
+      "ms": 228.05099900000096,
+      "documentReads": 135,
+      "documentWrites": 7,
+      "functionExecutionMs": 209.30953799999952,
+      "cpuMicroseconds": {
+        "user": 198353,
+        "system": 14457
+      },
+      "heapBytes": 77064736
+    },
+    {
+      "ms": 254.69769199999973,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 229.90049999999974,
+      "cpuMicroseconds": {
+        "user": 181522,
+        "system": 8739
+      },
+      "heapBytes": 95149712
+    },
+    {
+      "ms": 240.2444620000024,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 221.58076900000015,
+      "cpuMicroseconds": {
+        "user": 164078,
+        "system": 7788
+      },
+      "heapBytes": 83111824
+    },
+    {
+      "ms": 148.22965399999885,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 132.61142299999847,
+      "cpuMicroseconds": {
+        "user": 142685,
+        "system": 621
+      },
+      "heapBytes": 100017144
+    },
+    {
+      "ms": 169.23430700000245,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 155.03815399999985,
+      "cpuMicroseconds": {
+        "user": 137255,
+        "system": 24314
+      },
+      "heapBytes": 116069944
+    },
+    {
+      "ms": 173.99507600000288,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 158.67769299999964,
+      "cpuMicroseconds": {
+        "user": 113785,
+        "system": 23761
+      },
+      "heapBytes": 82085552
+    },
+    {
+      "ms": 121.33019200000126,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 106.62092299999858,
+      "cpuMicroseconds": {
+        "user": 97396,
+        "system": 0
+      },
+      "heapBytes": 97786328
+    },
+    {
+      "ms": 142.6700380000002,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 125.37876900000265,
+      "cpuMicroseconds": {
+        "user": 88244,
+        "system": 6521
+      },
+      "heapBytes": 113525352
+    },
+    {
+      "ms": 131.71934599999804,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 120.92592299999887,
+      "cpuMicroseconds": {
+        "user": 78592,
+        "system": 11346
+      },
+      "heapBytes": 129173472
+    },
+    {
+      "ms": 155.87126900000294,
+      "documentReads": 135,
+      "documentWrites": 6,
+      "functionExecutionMs": 144.3132310000001,
+      "cpuMicroseconds": {
+        "user": 93891,
+        "system": 9974
+      },
+      "heapBytes": 85650848
+    }
+  ]
+}

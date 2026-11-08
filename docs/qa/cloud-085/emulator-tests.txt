@@ -1,0 +1,558 @@
+npm notice run milvayo@0.8.5 test:cloud
+npm notice run node src/cloud/tools/emulators.cjs test
+i  emulators: Starting emulators: auth, functions, firestore, database, hosting, storage
+i  emulators: Detected demo project ID "demo-milvayo-083", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator was started in standard edition.
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  database: Database Emulator logging to database-debug.log
+⚠  Unexpected rules runtime error: Picked up JAVA_TOOL_OPTIONS: -Xms32m -Xmx192m -XX:ActiveProcessorCount=2
+
+i  hosting[demo-milvayo-083]: Serving hosting files from: dist
+✔  hosting[demo-milvayo-083]: Local server: http://127.0.0.1:5000
+i  functions: Watching "/mnt/Milvayo/src/cloud/server" for Cloud Functions...
+✔  functions: Using node@24 from host.
+Serving at port 8539
+
+✔  functions: Loaded functions definitions from source: cloudApi.
+✔  functions[us-central1-cloudApi]: http function initialized (http://127.0.0.1:5001/demo-milvayo-083/us-central1/cloudApi).
+i  Running script: node src/cloud/tools/runTests.cjs
+✔ platform role changes protect the final initialized owner and audit a permitted transfer (2.789423ms)
+✔ resource allocations preserve unique global licenses and explicit caps (6.4265ms)
+✔ import batching respects UTF-8 request budgets, row counts and source order (361.238962ms)
+✔ collaboration backup v2 validates integrity, references, sequence IDs and notification replay (31.88027ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 1531.9965379999999ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 272.758346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 284.032384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 174.406462ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 128.550731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 498.333653ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 16.104538ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 107.217692ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 82.558769ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 171.653846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 73.804461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 206.500923ms
+▶ emulator conversations, organization administration, licenses and staged recovery
+  ✔ guests do not consume a seat or gain editing and organization permissions (2376.12469ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 303.312885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 441.491923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 240.22777ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 213.037538ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 262.366693ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 59.272807ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 167.979961ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 183.617961ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 51.110846ms
+  ✔ groups validate membership, department references and do not grant content (2182.942806ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 80.548077ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 95.135384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 89.194269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 116.5085ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 68.551693ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 78.782038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 77.059846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 103.601153ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 108.213654ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 665.344ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 95.472308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 73.711615ms
+  ✔ licenses count a person once across allocations and cap concurrency transactionally (13391.048105ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 137.830461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 117.935269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 128.540616ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 66.587731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 136.383539ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 133.208693ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 80.858347ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 103.484384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 42.742731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 88.317461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 64.9465ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 51.605885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 60.411539ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 96.067231ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 80.439846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 107.119153ms
+  ✔ authenticated messages are idempotent, target authorized members and keep private notifications (1611.363729ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 131.266577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 113.408384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 136.858807ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 182.092269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 123.246999ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 119.976692ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 101.345731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 99.977385ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 117.094577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 90.942308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 87.798385ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 88.697577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 85.055539ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 99.467577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 106.618538ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 94.044654ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 94.324923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 86.903385ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 94.726462ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 90.341884ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 129.365076ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 77.129577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 84.808269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 115.635885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 83.830615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 86.137769ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 105.333192ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 127.939116ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 103.264346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 87.971269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 91.193038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 101.929846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 116.034962ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 101.550462ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 85.453808ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 105.399115ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 95.4415ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 97.369077ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 93.376346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 83.630769ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 91.278961ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 107.583462ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 116.409115ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 92.346692ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 91.451308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 99.950615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 101.249923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 88.155577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 102.434462ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 84.131807ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 78.085923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 75.873347ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 67.138461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 78.686461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+  ✔ message history pages preserve ordering and incremental poll cursors (5813.477112ms)
+i  functions: Finished "us-central1-cloudApi" in 222.731307ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 64.718384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 27.965347ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 83.926923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 105.143693ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 185.775423ms
+  ✔ revoked project grants remove mentions, notifications and watchers without leakage (725.286731ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 136.127346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 510.908692ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 229.11423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 64.305538ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 152.928615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 81.10373ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 169.2555ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 23.855192ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 59.472192ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 35.856423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 34.517192ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 89.999423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 166.073615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 146.836731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 39.776731ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 126.322ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 64.08223ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 27.143308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 189.469461ms
+  ✔ large complete recovery keeps collaboration isolated until checksum activation (2839.010151ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 44.455461ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 26.650038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 19.685077ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 21.531654ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 29.043269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 40.128423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 39.008ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 41.251116ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 48.847961ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 23.783154ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 49.739962ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 21.888846ms
+  ✔ platform operations and configuration remain separate from customer content (754.105654ms)
+✔ emulator conversations, organization administration, licenses and staged recovery (51947.147847ms)
+✔ 085 projections preserve baseline and isolate mutation and polling savings (6.737ms)
+✔ regional document and compute units convert published units without mixing generations (0.791039ms)
+✔ new comparison variants include configurable post-Save reconciliation while legacy variants remain unchanged (1.030116ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 39.883115ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 49.797615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 49.4185ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 67.452654ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 57.900346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 3.810039ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 27.296423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 53.684885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 45.265577ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 31.922384ms
+[2026-11-08T00:11:12.930Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea856d error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:11:13.006Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea856e error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:11:13.088Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea856f error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:11:13.171Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea8570 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:11:13.247Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea8571 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+[2026-11-08T00:11:13.334Z]  @firebase/firestore: Firestore (13.2.0): GrpcConnection RPC 'Write' stream 0x5eea8572 error. Code: 7 Message: 7 PERMISSION_DENIED: 
+false for 'create' @ L36, false for 'update' @ L36
+▶ emulator-backed authorization, incremental sync, recovery and collaboration
+  ✔ HTTP function and all client collections deny signed-out and cross-tenant access (1463.474307ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 38.256038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 40.683884ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 21.307693ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 30.0485ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 63.858577ms
+  ✔ organization and platform administration do not automatically reveal customer content (318.193307ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 353.845846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 75.640231ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 47.743885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 205.1055ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 65.611653ms
+⚠  com.google.firebase.rules.runtime.common.EvaluationException: Error: storage.rules line [8], column [17]. Null value error.
+  ✔ scoped roles, explicit project denials and storage isolation are enforced (2269.970614ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 65.076038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 47.966923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 82.090423ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 60.988154ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 51.088615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 45.582269ms
+  ✔ independent fields merge using server revisions; duplicate delivery has one effect (494.886499ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 35.1375ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 31.2975ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 56.594038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 54.848308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 8.967923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 62.366769ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 39.657154ms
+  ✔ malformed fields, forged bases, dependency cycles and partial multi-record edits roll back (336.827769ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 89.179384ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 67.741885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 33.965692ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 87.571269ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 60.282346ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 80.691154ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 45.871539ms
+  ✔ backup integrity, soft deletion, revision history and restore preserve domain references (512.947576ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 35.308846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 33.843077ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 33.832615ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 31.170115ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 60.677153ms
+i  functions: Finished "us-central1-cloudApi" in 914.401845ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 64.610923ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 34.130192ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 26.49723ms
+  ✔ invitation targeting, one-use acceptance and concurrent seat limits are transactional (1265.639768ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 46.716846ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 43.513616ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 47.912539ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 34.847153ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 33.791885ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 8.007308ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 206.010884ms
+i  functions: Finished "us-central1-cloudApi" in 332.861154ms
+  ✔ summary projections, mock billing signatures and concurrent grants retain authorization (780.943038ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 114.324961ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 32.982154ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 35.715ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 69.201423ms
+  ✔ member revocation denies existing content and releases the seat without granting platform rights (273.149154ms)
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 246.976539ms
+[2026-11-08T00:11:20.256Z]  @firebase/database: FIREBASE WARNING: set at /presence/personal-9zc8MKoH1f1J7jJe2sgzJjpuNo1R/main/sample-workspace/9zc8MKoH1f1J7jJe2sgzJjpuNo1R/bad failed: permission_denied 
+[2026-11-08T00:11:20.266Z]  @firebase/database: FIREBASE WARNING: set at /acl/personal-9zc8MKoH1f1J7jJe2sgzJjpuNo1R failed: permission_denied 
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 198.193038ms
+i  functions: Beginning execution of "us-central1-cloudApi"
+i  functions: Finished "us-central1-cloudApi" in 34.788077ms
+  ✔ Realtime Database protects rooms, multiple sessions and revocation independently (926.082923ms)
+✔ emulator-backed authorization, incremental sync, recovery and collaboration (10504.308877ms)
+✔ deterministic fixtures preserve large Canvas records and one-object updates (483.52ms)
+✔ trusted mutation validation enforces workflow, verification, release and frozen sprint history (16.735961ms)
+✔ backup preview rejects corruption and missing references before an atomic restore (14.018576ms)
+✔ journal shards stay below Android row limits; interrupted commits keep the previous pointer (22.663269ms)
+✔ an interrupted borrowed cloud workspace returns to its untouched local source (3.487731ms)
+✔ journal chunks preserve emoji at UTF-16 boundaries through a native-like UTF-8 storage bridge (5.442577ms)
+✔ simulated payment signatures are verified and bounded without contacting a provider (10.889077ms)
+✔ cost model shares project read quotas and reports unpriced positive usage (9.764731ms)
+✔ journal reuses immutable chunks, retains exactly the previous complete manifest, and removes only unreferenced chunks (13.760769ms)
+✔ termination at every staging/manifest boundary preserves the previous acknowledged generation (18.094423ms)
+✔ corrupt chunks, missing parts, malformed manifests and checksums never become an empty queue (4.993384ms)
+✔ old inline and sharded v1 journals migrate without losing pending operations (5.331231ms)
+✔ surrogate pairs spanning a chunk boundary round trip through UTF-8 storage (17.5395ms)
+✔ failed cleanup cannot undo a committed generation (4.149116ms)
+✔ mutable caller rows are serialized again rather than reusing a stale cached payload (1.871116ms)
+✔ a previously retained but unverified chunk is rewritten before reuse after restart (1.700654ms)
+✔ queue persists offline edits and resumes after process termination without losing payloads (67.937462ms)
+✔ lost acknowledgements resend the exact durable payload and idempotency key (21.333808ms)
+✔ permanent conflict retains edits and stops ordered dependent operations (16.913961ms)
+✔ journal scopes separate hosts, users, organizations, cloud and local workspaces (1.121692ms)
+✔ conversation sends survive a lost acknowledgement and process restart with the same identity (16.029269ms)
+✔ corrupt journals and failed disk writes cannot silently become a fresh queue (17.1815ms)
+✔ a permission reset removes revoked cached projects while retaining blocked edits for scoped recovery (20.790885ms)
+✔ compatible unsent task fields consolidate while sent/retried operations keep their immutable payload (109.113462ms)
+✔ consolidation preserves structural edits, messages and attempted mutation identities (19.642961ms)
+✔ conflict resolution retains original intent and sends a fresh revision-checked idempotency identity (28.089076ms)
+✔ real task editor invalidation resets and timestamps remain consolidatable (62.253384ms)
+✔ wire format is prepared once before first send and replayed exactly after restart (19.4665ms)
+✔ v0.8.4 full-record sent payload survives upgrade with the original mutation ID and hash input (14.356154ms)
+✔ a complete contiguous commit advances the durable cursor and the immediate unchanged refresh needs only authorization reads (24.392962ms)
+✔ a sequence gap retains the old cursor so another collaborator record cannot be skipped (10.903538ms)
+✔ a no-op acknowledgment at the next sequence cannot skip the unseen second record in a collaborator atomic commit (11.910038ms)
+✔ lost acknowledgments and duplicate receipts advance only through their own sequence after restart (13.809115ms)
+✔ messages and legacy acknowledgments cannot advance the canonical workspace cursor (15.988692ms)
+✔ an older delayed acknowledgment cannot overwrite newer records already received by refresh (14.3735ms)
+✔ same-origin writer lock blocks a second writer until explicit release (3.491885ms)
+✔ unsupported coordination fails closed rather than using a racy localStorage lease (0.510885ms)
+✔ adaptive polling is bounded and resets for changes or queued work (7.22373ms)
+✔ idle modeled sessions reduce requests without pretending to measure user behavior (19.972116ms)
+✔ canonical workspace and Canvas survive cloud and JSON/import round trips (54.088693ms)
+✔ one task edit changes one record; Canvas movement changes one element plus board metadata (12.275923ms)
+✔ same task IDs in independent projects remain isolated; unsafe payloads fail (22.639539ms)
+✔ independent fields merge; concurrent text/reorder/delete updates conflict (1.598846ms)
+✔ canonical validation rejects dependency corruption and unknown fields (21.106462ms)
+✔ roles cannot bridge inactive membership, project denials, or platform/organization boundaries (0.9735ms)
+✔ all cloud configuration fails closed outside the exact local demo project (2.231038ms)
+✔ opening remote work keeps the local source and disconnect restores it (125.646423ms)
+✔ borrowed workspace pending edits survive disconnect and are resumed before reconciliation (56.809423ms)
+✔ revocation stops synchronization and clears a borrowed local view (30.299231ms)
+✔ a workspace switch while authentication is pending cannot publish into the new local workspace (24.499961ms)
+✔ a failed journal write is visible and cannot discard borrowed edits on disconnect (28.040654ms)
+✔ explicit Save consolidates compatible edits, uses changed-field payloads and waits for acknowledgment (83.343884ms)
+✔ same-field conflict compares latest cloud data and resolves with a fresh revision-checked operation (52.184308ms)
+✔ many typed values and standard/advanced fields persist across restart and commit once (6.677384ms)
+✔ invalid drafts, storage errors and concurrent same-field changes keep user intent (6.309692ms)
+✔ unchanged drafts and cancel create no domain mutation; scopes separate accounts and environments (2.088846ms)
+✔ corrupt stored drafts fail closed and remain available for recovery (0.804923ms)
+✔ edits arriving during a local save stay in the durable next draft (16.530808ms)
+✔ malformed persisted draft containers and unsafe field values are rejected before rendering (4.077ms)
+✔ incomplete numeric custom input retains correction text instead of sending NaN (3594.274997ms)
+✔ independent task validator agrees with canonical validation for valid and malformed field values (582.859346ms)
+✔ simple saves remain six point reads at 10, 100, 500 and 2,000 tasks with no summary or task deletion (447.019576ms)
+✔ compact payloads retain exact old field checks, fresh custom configuration and idempotent receipts (52.164577ms)
+✔ stale independent fields merge against immutable revisions; competing fields and forged envelopes fail (17.843077ms)
+✔ compact unchanged edits preserve receipt-only no-op behavior without task/version/sequence writes (14.340193ms)
+✔ old full-payload receipts replay under fresh authorization and new receipts bind restore semantics (33.345923ms)
+✔ forged patch paths, fields, old values and absent bases cannot change records (7.764654ms)
+ℹ tests 94
+ℹ suites 0
+ℹ pass 94
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 74964.439715
+✔  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  functions: Stopping Functions Emulator
+i  hosting: Stopping Hosting Emulator
+i  database: Stopping Database Emulator
+i  firestore: Stopping Firestore Emulator
+i  auth: Stopping Authentication Emulator
+i  storage: Stopping Storage Emulator
+i  eventarc: Stopping Eventarc Emulator
+i  tasks: Stopping Cloud Tasks Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

@@ -18,3 +18,14 @@
 | Commercial/enterprise monitoring, storage UI and device acceptance incomplete | Full v1 handoff definition of done not met | See readiness matrix; do not label this full production v1 |
 
 No high-risk finding is waived by cheap reads or simulated tests. Existing local exports remain the reversible source of truth.
+
+## v0.8.5 risk disposition
+
+- Independent field scan: resolved for supported A fields; six reads constant through 2,000 tasks. Structural/Canvas scans remain.
+- Central sequence: retained; ten-request host stress yielded eight acknowledgments/two timeouts. Not an enterprise concurrency pass.
+- Journal amplification: measured improvement; v2 reader required until pending work is recovered before rollback.
+- Browser writers: coordinated single owner/takeover; no concurrent same-origin writing. Unsupported Web Locks fails closed.
+- Conflict editor: implemented field comparison and authorized revision-checked local/remote choices; deletion conflicts deliberately remain in recovery.
+- Privacy/mobile/production: memory-only Auth preserved; plaintext pending device data and physical offline/background/Expo Go/Fast Refresh gates remain.
+
+See [085 evidence](../qa/cloud-085/REPORT.md). Historical risks above describe the v0.8.4 baseline.

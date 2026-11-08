@@ -27,3 +27,7 @@ Client modules live in src/cloud; trusted HTTP operations in src/cloud/server; o
 Each domain put is journaled, including committed Canvas changes; local writer coalescing does not collapse cloud operation boundaries. Local work is retained if cloud persistence fails. The cloud queue is separate from schemaVersion 1 backups. Explicit imports are staged, resumable and hidden until canonical validation plus a source checksum pass.
 
 Do not infer production scaling from this implementation. A workspace sequence document serializes consistency, and validation reads all records in the affected project (workspace-wide for structural edits). This is a measured correctness-first bottleneck, documented in the risk register.
+
+## v0.8.5 implementation
+
+Independent existing-task edits use a bounded point-read validator (six reads; seven for custom configuration), with compact field patches and five steady writes. Structural/workflow/bulk/recovery operations retain the canonical validator. Count summaries skip unrelated edits. Durable task drafts and explicit Save consolidate compatible unsent mutations; fixed sent payloads replay verbatim across upgrades. The workspace sequence remains central and is a measured contention limit. See [085 mutation analysis](../qa/cloud-085/mutation-analysis.md) and [readiness](../qa/cloud-085/privacy-and-readiness.md).

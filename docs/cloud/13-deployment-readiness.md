@@ -25,3 +25,9 @@ This work is an implemented local emulator integration. It does **not** satisfy 
 Required handoff documentation is consolidated here plus QA and usage instructions. A separate CHG-MILVAYO-CLOUD file is intentionally omitted because AGENTS.md requires exactly one cumulative release changelog: docs/changelog/CHANGELOG.md.
 
 Rollback: disconnect the emulator session, export local JSON/niyav and any pending journal, stop only task-started processes, then revert the cloud patch while preserving unrelated files. Keep package/lock/app metadata synchronized. No local schemaVersion migration is required. Do not reset/delete the project folder or clear AsyncStorage. Production activation is a separate future task; this source intentionally fails outside the demo emulator environment.
+
+## v0.8.5 local optimization status
+
+The next local implementation is 0.8.5/build95 on `work`, in place and uncommitted. Bounded field validation, durable Smart Save, explicit conflict comparison, adaptive polling, journal chunk reuse and single-writer tab coordination are implemented. Current QA supersedes the v0.8.4 table only for those changes: [cloud-085/REPORT.md](../qa/cloud-085/REPORT.md).
+
+No production build/deploy/login/billing activation/push/merge was run. Central-sequence contention, structural/Canvas broad validation, device confidentiality and real Android/Expo Go/Fast Refresh acceptance remain gates. Large stress runs were intentionally bounded at the owner's request. Do not infer production readiness from emulator operations or incomplete cost subtotals. [Reversible installation and migration policy](../qa/cloud-085/privacy-and-readiness.md).
