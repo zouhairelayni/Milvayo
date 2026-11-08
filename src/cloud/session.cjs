@@ -5,8 +5,21 @@ const {createJournal,journalKey}=require('./journal.cjs');
 const {leaseKey}=require('./lease.cjs');
 const {createPollingPolicy}=require('./polling.cjs');
 function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChange=()=>{}}){
- let client=null,journal=null,scope=null,timer=null,busy=false,stopped=false,original=null,lastPresenceAuthorization=0,lastCaptureError=null,activeTick=null,lastDrain=0,nextPoll=0,syncInterval=45000,visible=true;
+ let client=null,journal=null,scope=null,timer=null,busy=false,stopped=false,original=null,lastPresenceAuthorization=0,lastCaptureError=null,activeTick=null,lastDrain=0,nextPoll=0,syncInterval=45000,visible=true,signalLive=false,stopSignal=null;
  const polling=createPollingPolicy();
+ // While the change signal is live, polling is only a safety net; queued local work still retries on the short delay.
+ const SIGNAL_FALLBACK_MS=300000,SIGNAL_HIDDEN_FALLBACK_MS=600000,AUTHORIZE_MS=240000;
+ const nextDelay=()=>signalLive?(journal?.status().pending>0?5000:(visible?SIGNAL_FALLBACK_MS:SIGNAL_HIDDEN_FALLBACK_MS)):polling.next({visible});
+ async function authorize(){if(!client||!visible||Date.now()-lastPresenceAuthorization<=AUTHORIZE_MS)return;lastPresenceAuthorization=Date.now();try{await request({action:'presenceAuthorize'});}catch(e){lastPresenceAuthorization=0;throw e;}}
+ function startSignal(activeClient,activeJournal){
+  if(typeof activeClient.heads!=='function')return;
+  let first=true,access=0;
+  stopSignal=activeClient.heads({...scope},head=>{
+   if(stopped||journal!==activeJournal)return;
+   const moved=head.sequence>activeJournal.status().cursor||(!first&&head.access!==access);first=false;access=head.access;
+   if(moved){nextPoll=0;void tick({flush:false});}
+  },live=>{if(stopped||journal!==activeJournal)return;const changed=live!==signalLive;signalLive=!!live;if(changed){polling.reset();nextPoll=signalLive?Date.now()+nextDelay():0;}});
+ }
  let state={connected:false,busy:false,pending:0,conflicts:0,error:'',measured:null};const listeners=new Set(),presenceStops=new Set();
  const emit=patch=>{state={...state,...patch};onChange(state);listeners.forEach(fn=>fn(state));};
  const request=body=>client.request({...scope,...body});
@@ -24,10 +37,10 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
     if(!S.equal(S.pack(current),S.pack(next)))await applyRemote(next,scope.localId);
     emit({...journal.status(),grant:remote.grant,membershipRole:remote.membershipRole,measured:remote.measured});
     polling.observe({changed:activeJournal.status().cursor!==beforeCursor,pending:activeJournal.status().pending>0});
-    if(visible&&Date.now()-lastPresenceAuthorization>40000){await request({action:'presenceAuthorize'});lastPresenceAuthorization=Date.now();}
+    await authorize();
    }
   }catch(e){polling.observe({failed:true});emit({error:e.message});if(e.code==='permission-denied'||e.code==='unauthenticated'){await disconnect();emit({error:'Cloud access ended. Pending edits remain in the scoped recovery journal.'});}}
-  finally{busy=false;nextPoll=Date.now()+polling.next({visible});}})();
+  finally{busy=false;nextPoll=Date.now()+nextDelay();}})();
   try{return await activeTick;}finally{activeTick=null;}
  }
 
@@ -41,7 +54,10 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
    const connectionClient=client,connectionScope={...scope},scopedRequest=body=>connectionClient.request({...connectionScope,...body});
    const existingJournal=await storage.getItem(journalKey(scope));
    if(options.publish&&!existingJournal)await client.publish(scope,getWorkspace());
-   const initial=await request({action:'pull',cursor:0});
+   // A returning session resumes from its stored cursor instead of re-reading the whole workspace.
+   const peek=existingJournal&&!options.publish?await require('./journalStorage.cjs').createJournalStorage(storage,journalKey(scope),()=>'peek').read().catch(()=>null):null;
+   const resume=!!peek&&peek.schema===1&&Array.isArray(peek.records)&&peek.records.length>0&&Number.isSafeInteger(peek.cursor);
+   const initial=await request({action:'pull',cursor:resume?peek.cursor:0,accessVersion:resume?(peek.accessVersion||''):''});
    if(getLocalId()!==expectedLocalId)throw Error('Workspace changed during connection');
    const local=getWorkspace();if(!options.publish){original=S.clone(local);await storage.setItem(leaseKey(scope.localId),JSON.stringify({schema:1,localId:scope.localId,original}));}
    if(!existingJournal&&!options.publish&&!S.equal(S.pack(local),initial.records.filter(r=>!r.deleted).map(({key,kind,projectId,boardId,id,data,order})=>({key,kind,projectId,boardId,id,data,order})))){
@@ -49,13 +65,15 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
     const next=S.unpack(initial.records,local);next.backups=[require('../domain/model.cjs').workspaceSnapshot(local,'Before opening cloud workspace'),...local.backups].slice(0,12);await applyRemote(next,scope.localId);
    }
    journal=createJournal({storage,scope,prepareChanges:require('./taskMutation.cjs').compactChanges,send:scopedRequest,receive:(cursor,accessVersion)=>scopedRequest({action:'pull',cursor,accessVersion:accessVersion||''}),newId:()=>require('expo-crypto').randomUUID(),onChange:emit});
-   await journal.open(initial.records,S.unpack(initial.records,getWorkspace()),initial.cursor,initial.accessVersion);
+   if(resume)await journal.open([],getWorkspace(),0,'');else await journal.open(initial.records,S.unpack(initial.records,getWorkspace()),initial.cursor,initial.accessVersion);
    if(existingJournal&&!options.publish)await applyRemote(S.unpack(journal.export().local,getWorkspace()),scope.localId);
    await journal.capture(getWorkspace());
-   emit({connected:true,scope,grant:initial.grant,membershipRole:initial.membershipRole,...journal.status()});polling.reset();timer=setInterval(()=>{if(Date.now()>=nextPoll)void tick({flush:false});},5000);await tick();return scope;
+   emit({connected:true,scope,grant:initial.grant,membershipRole:initial.membershipRole,...journal.status()});polling.reset();timer=setInterval(()=>{if(Date.now()>=nextPoll)void tick({flush:false});else void authorize().catch(()=>{});},5000);
+   try{if(typeof client.heads==='function'){await authorize();startSignal(client,journal);}}catch{/* signal is optional; adaptive polling remains active */}
+   await tick();return scope;
   }catch(e){await disconnect();emit({error:e.message});throw e;}finally{emit({busy:false});}
  }
- async function disconnect(){await journal?.flush();if(lastCaptureError)throw Error('Cloud edits could not be journaled. Export a local backup before changing accounts: '+lastCaptureError.message);stopped=true;clearInterval(timer);for(const stop of presenceStops)await stop();presenceStops.clear();journal?.close();journal=null;if(original&&scope&&getLocalId()===scope.localId){await applyRemote(original,scope.localId);await storage.removeItem(leaseKey(scope.localId));}original=null;const old=client;client=null;scope=null;if(old)await old.close();emit({connected:false,scope:null,busy:false});}
+ async function disconnect(){await journal?.flush();if(lastCaptureError)throw Error('Cloud edits could not be journaled. Export a local backup before changing accounts: '+lastCaptureError.message);stopped=true;clearInterval(timer);try{stopSignal?.();}catch{}stopSignal=null;signalLive=false;for(const stop of presenceStops)await stop();presenceStops.clear();journal?.close();journal=null;if(original&&scope&&getLocalId()===scope.localId){await applyRemote(original,scope.localId);await storage.removeItem(leaseKey(scope.localId));}original=null;const old=client;client=null;scope=null;if(old)await old.close();emit({connected:false,scope:null,busy:false});}
  async function capture(workspace){if(journal&&!stopped&&getLocalId()===scope.localId)try{await journal.capture(workspace);lastCaptureError=null;}catch(e){lastCaptureError=e;emit({error:'Cloud queue could not be saved: '+e.message});throw e;}}
  return {connect,disconnect,capture,tick,request,
   syncNow:async()=>{await journal?.flush();await tick();return state;},

@@ -31,7 +31,14 @@ export async function createEmulatorClient(host){
   const timer=setInterval(()=>{report();publish().catch(()=>{});},25000);
   return async()=>{if(!active)return;active=false;traffic.activeSessions--;clearInterval(timer);stopPeers();stopOffset();stopConnect();await remove(session).catch(()=>{});await disconnect.cancel().catch(()=>{});};
  }
- return {app,auth,db,rtdb,storage,config,request,presence,metrics:()=>({...traffic,scope:'Client session payloads only; protocol and TLS overhead excluded'}),
+ // Change signal: one tiny RTDB node per workspace. The listener reports {sequence, access}; callers pull only when it moves.
+ function heads(scope,onHead,onLive=()=>{}){
+  const node=ref(rtdb,`heads/${scope.orgId}/${scope.workspaceId}`);let connected=false,readable=true;const report=()=>onLive(connected&&readable);
+  const stopConnect=onValue(ref(rtdb,'.info/connected'),s=>{connected=!!s.val();report();});
+  const stopHead=onValue(node,s=>{readable=true;const v=s.val()||{};traffic.downloadPayloadBytes+=JSON.stringify(v).length;report();onHead({sequence:Number(v.sequence)||0,access:Number(v.access)||0});},()=>{readable=false;report();});
+  return ()=>{stopConnect();stopHead();};
+ }
+ return {app,auth,db,rtdb,storage,config,request,presence,heads,metrics:()=>({...traffic,scope:'Client session payloads only; protocol and TLS overhead excluded'}),
   async login(email,password,create=false){const result=await (create?createUserWithEmailAndPassword:signInWithEmailAndPassword)(auth,email,password);return result.user.uid;},
   async publish(scope,workspace,{extras,restoredFrom='',archiveRecords}={}){const records=S.importRecords(archiveRecords||S.pack(workspace)),archive=extras?require('./archive.cjs').normalizeExtras(extras,auth.currentUser.uid):null;const sourceHash=await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256,S.stable(records)),extrasHash=archive?await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256,S.stable(archive)):'';const begin=await request({...scope,action:'importBegin',sourceHash,extrasHash,restoredFrom});if(begin.state!=='active'){for(const batch of require('./batches.cjs').batches(records))await request({...scope,action:'importChunk',sourceHash,records:batch});if(archive)for(const [family,rows] of Object.entries(archive))for(const batch of require('./batches.cjs').batches(rows))await request({...scope,action:'importExtras',sourceHash,family,rows:batch});await request({...scope,action:'importFinalize',sourceHash});}return records;},
   async close(){await signOut(auth);await terminate(db);await deleteApp(app);}

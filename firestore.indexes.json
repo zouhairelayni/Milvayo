@@ -85,6 +85,106 @@
       "collectionGroup": "messages",
       "fieldPath": "body",
       "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "key",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "kind",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "id",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "boardId",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "order",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "revision",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "schema",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "records",
+      "fieldPath": "deleted",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.data",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.kind",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.id",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.boardId",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.projectId",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.order",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.revision",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.schema",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.deleted",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "record.sequence",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "actor",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "versions",
+      "fieldPath": "at",
+      "indexes": []
     }
   ]
 }

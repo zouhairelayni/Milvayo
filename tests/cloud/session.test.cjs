@@ -6,12 +6,13 @@ function fixture(){
  const original=generate({tasks:1,objects:0,seed:1}),remote=generate({tasks:2,objects:0,seed:2});let workspace=original,localId='main',revoked=false,login=async()=> 'alice',closed=0;
  let records=S.pack(remote).map(r=>({...r,revision:1,sequence:1,deleted:false})),sequence=1;
  const versions=new Map(records.map(r=>[r.key+'@'+r.revision,r]));
- const storageData=new Map(),storage={getItem:async k=>storageData.get(k)||null,setItem:async(k,v)=>storageData.set(k,v),removeItem:async k=>storageData.delete(k)},sent=[];
- const client={config:{host:'127.0.0.1'},login:(...args)=>login(...args),publish:async(_scope,w)=>{records=S.pack(w).map(r=>({...r,revision:1,sequence:1,deleted:false}));},close:async()=>{closed++;},presence:async()=>async()=>{},request:async b=>{if(revoked)throw Object.assign(Error('Revoked'),{code:'permission-denied'});if(b.action==='bootstrap')return {orgId:'org',workspaceId:'main'};if(b.action==='presenceAuthorize')return {};if(b.action==='pull')return {records:records.filter(r=>r.sequence>b.cursor),cursor:sequence,accessVersion:'v1',grant:{workspaceRole:'manager',projects:{}},reset:false};if(b.action==='commit'){sent.push(b);sequence++;const ack=[];for(const wire of b.changes){const current=records.find(r=>r.key===wire.key),c=wire.patch?require('../../src/cloud/taskMutation.cjs').expandPatch(wire,versions.get(wire.key+'@'+wire.baseRevision)):wire,next={...S.mergeChange(current,c),revision:(current?.revision||0)+1,sequence};records=records.filter(r=>r.key!==c.key).concat(next);versions.set(next.key+'@'+next.revision,next);ack.push(next);}return {records:ack,sequence};}throw Error('Unexpected action '+b.action);}};
+ const pulls=[],hook={},storageData=new Map(),storage={getItem:async k=>storageData.get(k)||null,setItem:async(k,v)=>storageData.set(k,v),removeItem:async k=>storageData.delete(k)},sent=[];
+ const client={config:{host:'127.0.0.1'},login:(...args)=>login(...args),publish:async(_scope,w)=>{records=S.pack(w).map(r=>({...r,revision:1,sequence:1,deleted:false}));},close:async()=>{closed++;},presence:async()=>async()=>{},request:async b=>{if(revoked)throw Object.assign(Error('Revoked'),{code:'permission-denied'});if(b.action==='bootstrap')return {orgId:'org',workspaceId:'main'};if(b.action==='presenceAuthorize')return {};if(b.action==='pull'){pulls.push(b);}if(b.action==='pull')return {records:records.filter(r=>r.sequence>b.cursor),cursor:sequence,accessVersion:'v1',grant:{workspaceRole:'manager',projects:{}},reset:false};if(b.action==='commit'){sent.push(b);sequence++;const ack=[];for(const wire of b.changes){const current=records.find(r=>r.key===wire.key),c=wire.patch?require('../../src/cloud/taskMutation.cjs').expandPatch(wire,versions.get(wire.key+'@'+wire.baseRevision)):wire,next={...S.mergeChange(current,c),revision:(current?.revision||0)+1,sequence};records=records.filter(r=>r.key!==c.key).concat(next);versions.set(next.key+'@'+next.revision,next);ack.push(next);}return {records:ack,sequence};}throw Error('Unexpected action '+b.action);}};
+ let offset=0;const intervals=[];class ClockDate extends Date{static now(){return Date.now()+offset;}constructor(...a){if(a.length)super(...a);else super(ClockDate.now());}}
  const file=path.resolve(__dirname,'../../src/cloud/session.cjs'),actual=createRequire(file),module={exports:{}};
- vm.runInNewContext(fs.readFileSync(file,'utf8'),{module,exports:module.exports,require:id=>id==='./client'?{createEmulatorClient:async()=>client}:id==='expo-crypto'?{randomUUID:crypto.randomUUID}:actual(id),setInterval:()=>1,clearInterval(){},Date});
+ vm.runInNewContext(fs.readFileSync(file,'utf8'),{module,exports:module.exports,require:id=>id==='./client'?{createEmulatorClient:async()=>client}:id==='expo-crypto'?{randomUUID:crypto.randomUUID}:actual(id),setInterval:fn=>{intervals.push(fn);return intervals.length;},clearInterval(){},Date:ClockDate});
  const make=()=>module.exports.createCloudSession({storage,getWorkspace:()=>workspace,getLocalId:()=>localId,applyRemote:async(next,id)=>{assert.equal(id,localId);workspace=next;}});
- return {make,original,remote,storageData,sent,get workspace(){return workspace;},set workspace(v){workspace=v;},set localId(v){localId=v;},set login(fn){login=fn;},set revoked(v){revoked=v;},get closed(){return closed;}};
+ return {make,advance:async ms=>{offset+=ms;for(const fn of intervals.slice())fn();for(let i=0;i<10;i++)await new Promise(r=>setImmediate(r));},original,remote,storageData,sent,pulls,hook,set signal(on){client.heads=on?(_scope,onHead,onLive)=>{hook.head=onHead;hook.live=onLive;return()=>{hook.stopped=true;};}:undefined;},bump(next){sequence=next;},get workspace(){return workspace;},set workspace(v){workspace=v;},set localId(v){localId=v;},set login(fn){login=fn;},set revoked(v){revoked=v;},get closed(){return closed;}};
 }
 test('opening remote work keeps the local source and disconnect restores it',async()=>{const x=fixture(),session=x.make();await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});assert.equal(x.workspace.projects[0].id,x.remote.projects[0].id);await session.disconnect();assert.deepEqual(x.workspace,x.original);assert.equal(x.closed,1);});
 test('borrowed workspace pending edits survive disconnect and are resumed before reconciliation',async()=>{const x=fixture(),a=x.make(),options={host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'};await a.connect(options);x.workspace=structuredClone(x.workspace);x.workspace.projects[0].tasks[0].title='Offline edit';await a.capture(x.workspace);await a.disconnect();assert.deepEqual(x.workspace,x.original);const b=x.make();await b.connect(options);assert.equal(x.workspace.projects[0].tasks[0].title,'Offline edit');assert.equal(x.sent.length,1);assert.equal(b.getState().pending,0);await b.disconnect();});
@@ -34,5 +35,33 @@ test('same-field conflict compares latest cloud data and resolves with a fresh r
  await session.syncNow();assert.equal(session.getState().conflicts,1);
  const review=await session.loadConflicts();assert.equal(review.conflicts[0].remote[0].data.title,'Cloud title');
  const id=review.conflicts[0].id;await session.resolveConflict(id,'local',review.remote);assert.equal(session.getState().conflicts,0);assert.equal(session.getState().pending,0);assert.equal(x.workspace.projects[0].tasks[0].title,'My title');assert.equal(session.exportJournal().resolvedConflicts[0].id,id);
+ await session.disconnect();
+});
+
+test('a returning session resumes from its stored cursor instead of re-reading the workspace',async()=>{
+ const x=fixture(),options={host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'},a=x.make();
+ await a.connect(options);assert.equal(x.pulls[0].cursor,0);const cursor=a.exportJournal().cursor;await a.disconnect();
+ x.pulls.length=0;const b=x.make();await b.connect(options);
+ assert.equal(x.pulls[0].cursor,cursor,'resume must not request cursor 0');assert.equal(x.pulls[0].accessVersion,'v1');assert.ok(x.pulls.every(p=>p.cursor===cursor));await b.disconnect();
+});
+test('a live change signal triggers one pull only when the head moves and slows the fallback poll',async()=>{
+ const x=fixture();x.signal=true;const session=x.make();
+ await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});
+ const cursor=session.exportJournal().cursor;x.hook.live(true);const before=x.pulls.length;
+ x.hook.head({sequence:cursor,access:0});await new Promise(r=>setImmediate(r));assert.equal(x.pulls.length,before,'an unchanged head must not pull');
+ x.bump(cursor+1);x.hook.head({sequence:cursor+1,access:0});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));assert.equal(x.pulls.length,before+1,'a moved head pulls once');
+ const stateBefore=x.pulls.length;x.hook.head({sequence:cursor+1,access:5});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));assert.equal(x.pulls.length,stateBefore+1,'an access change pulls even without new records');
+ await session.disconnect();assert.equal(x.hook.stopped,true);
+});
+
+test('losing or being denied the change signal resumes adaptive polling; a live signal keeps polling to the slow safety net',async()=>{
+ const x=fixture();x.signal=true;const session=x.make();
+ await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});x.hook.live(true);await x.advance(0);
+ const base=x.pulls.length;for(let i=0;i<12;i++)await x.advance(5000);
+ assert.equal(x.pulls.length,base,'with a live signal there is no poll inside the first minute');
+ await x.advance(230000);assert.equal(x.pulls.length,base,'still inside the five-minute safety net');
+ await x.advance(20000);assert.equal(x.pulls.length,base+1,'the safety-net poll runs after five minutes');
+ x.hook.live(false);await x.advance(5000);
+ assert.ok(x.pulls.length>base+1,'when the signal is unavailable or denied, adaptive polling resumes immediately');
  await session.disconnect();
 });

@@ -1,3 +1,16 @@
+## Firebase v3.0 security patch — Global signal restricted to unrestricted workspace readers (2026-11-08, version not bumped)
+
+- Fix an RTDB authorization leak: the workspace-wide change signal (`heads`) was readable by users with only project access or with a confidential-project denial. The ACL now records `unrestricted` (workspace-wide read with no project-level denial) and the rule requires it; legacy ACL entries fail closed until refreshed. Users without the signal keep adaptive polling. Grants, revocations, presence rules and every other behavior are unchanged.
+- Add regression tests (grant matrix, revocation, failed RTDB writes, polling fallback) and an emulator rules suite; document the 10-minute ACL expiry exposure and options in `docs/Milvayo-Handoffs/firebase v3.0.md` (3.7, 3.8). Emulator results: Not run here. Firebase v3.0 Phase 2 is closed; remaining work moves to the v4.0 plan.
+
+## Firebase v3.0 — Narrow workflow validation, change signal and cost tuning (2026-11-08, version not bumped)
+
+- Add Class B narrow validation for single-task status, stage, owner, position/order and list reset edits: the task, the project workflow configuration and, for Done, only that task's dependencies are read (8 reads at 100/500/2,000 tasks, previously 109/509/2,009). A 320-case differential test proves it never accepts what canonical validation rejects. Structural, dependency, date, board, sprint, import and restore changes keep full canonical validation.
+- Add a best-effort RTDB change signal (`heads/{org}/{workspace}`) written after commits, grants and revocations; clients pull only when it moves, keep a 5-minute safety poll while it is live and fall back to adaptive polling when RTDB is unreachable. ACL expiry is now 10 minutes (revocation is still immediate) and presence authorization runs every 4 minutes.
+- Returning sessions resume from the stored journal cursor and access version instead of re-reading the workspace.
+- Exempt unqueried `records` and `versions` fields from indexing; set `cloudApi` to 1 vCPU, 512 MiB, concurrency 40, max 10 instances. Add v3 cost variants and `src/cloud/tools/cost3.cjs`; earlier variants are unchanged.
+- No data format, local schema, dependency or UI change. package/app versions were intentionally left at 0.8.5. Details, Phase 2 plan and rollback: `docs/Milvayo-Handoffs/firebase v3.0.md`; evidence: `docs/qa/cloud-v3/REPORT.md`. Emulator, device and deployment acceptance: Not run.
+
 ## v0.8.5 — Smart task saving and bounded cloud mutations (2026-11-08)
 
 - Replace whole-project validation for independent title/description/priority/custom-value edits with operation-specific canonical task validation; retain full validation for structural/workflow/recovery operations. Send changed fields only, preserve old receipt replay, revisions, actor audit and scoped authorization. Common edits measure six reads and five steady writes; summaries update only when counts/status change.

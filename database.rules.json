@@ -2,6 +2,11 @@
  "rules": {
   ".read": false,
   ".write": false,
+  "heads": {
+   "$org": { "$workspace": {
+    ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && root.child('acl').child($org).child($workspace).child(auth.uid).child('unrestricted').val() == true"
+   }}
+  },
   "presence": {
    "$org": { "$workspace": { "$project": {
     ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",

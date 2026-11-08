@@ -6,6 +6,28 @@ const INDEPENDENT=new Set(['title','description','priority','customValues','upda
 const fields=(a,b)=>[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>!S.equal(a[k],b[k]));
 function sameEnvelope(a,b){return ['key','kind','projectId','boardId','id','order'].every(k=>a[k]===b[k]);}
 function eligible(change){const a=change.before,b=change.after;return !!(a&&b&&!a.deleted&&!b.deleted&&a.kind==='tasks'&&sameEnvelope(a,b)&&fields(a.data,b.data).every(k=>INDEPENDENT.has(k)&&(!['verified','merged'].includes(k)||b.data[k]===false)));}
+// Class B: workflow-sensitive single-task edits. Bounded reads: the task, the project configuration and, for Done, the task's own dependencies.
+const WORKFLOW=new Set([...INDEPENDENT,'status','stage','owner','position','listId']);
+const sameKey=(a,b)=>['key','kind','projectId','boardId','id'].every(k=>a[k]===b[k]);
+function eligibleB(change){const a=change.before,b=change.after;if(!(a&&b&&!a.deleted&&!b.deleted&&a.kind==='tasks'&&sameKey(a,b)))return false;
+ return fields(a.data,b.data).every(k=>WORKFLOW.has(k)&&(!['verified','merged'].includes(k)||b.data[k]===false)&&(k!=='listId'||b.data.listId===''));}
+const classOf=c=>c.patch||eligible(c)?'A':eligibleB(c)?'B':null;
+function needsConfiguration(old,next){return !S.equal(old?.data.customValues,next.data.customValues)||old?.data.status!==next.data.status;}
+function validateWorkflow(old,next,project){
+ if(!eligibleB({before:old,after:next}))throw Error('Task change requires canonical validation');
+ if(!S.equal(model.defaultTask(next.data),next.data))throw Error('Cloud change violates the canonical task schema');
+ if(needsConfiguration(old,next)){
+  if(!project||project.deleted)throw Error('Task configuration is unavailable');
+  if(!S.equal(old.data.customValues,next.data.customValues))model.taskSchema.validateTask(project.data,next.data);
+  if(old.data.status!==next.data.status)model.taskSchema.checkTransition(project.data,old.data,next.data.status);
+ }
+ return true;
+}
+// Done requires every dependency to be Done in the committed state; statusOf receives a dependency task ID.
+function validateDone(old,next,statusOf){
+ if(old.data.status===next.data.status||next.data.status!=='Done')return true;
+ if(next.data.dependsOn.some(id=>statusOf(id)!=='Done'))throw Error('Complete dependency tasks before Done');return true;
+}
 function validateIndependent(old,next,project){
  if(!eligible({before:old,after:next}))throw Error('Task change requires canonical validation');
  if(!S.equal(model.defaultTask(next.data),next.data))throw Error('Cloud change violates the canonical task schema');
@@ -34,4 +56,4 @@ function expandPatch(c,base){
  const result={key:c.key,baseRevision:c.baseRevision,before:base,after:{...base,data}};
  if(!eligible(result))throw Error('Task patch requires canonical validation');return result;
 }
-module.exports={INDEPENDENT,fields,eligible,validateIndependent,compactChanges,patchEnvelope,expandPatch};
+module.exports={INDEPENDENT,WORKFLOW,fields,eligible,eligibleB,classOf,needsConfiguration,validateWorkflow,validateDone,validateIndependent,compactChanges,patchEnvelope,expandPatch};

@@ -10,7 +10,7 @@ let service,app;
 const counters={requests:0,succeeded:0,failed:0,recordedReads:0,recordedWrites:0,samples:[]};
 function metrics(){const sorted=counters.samples.slice().sort((a,b)=>a-b),at=q=>sorted[Math.min(sorted.length-1,Math.ceil(sorted.length*q)-1)]??null;return {...counters,samples:undefined,sampleCount:sorted.length,p50Ms:at(.5),p95Ms:at(.95),p99Ms:at(.99),heapBytes:process.memoryUsage().heapUsed,scope:'Current emulator worker only; operation counts cover instrumented responses, not billing',rtdbTraffic:'See client payload counters',storageTraffic:'Not instrumented',productionCosts:'Not measured'};}
 
-exports.cloudApi=onRequest({cors:true,maxInstances:1,memory:'256MiB',timeoutSeconds:120},async(req,res)=>{
+exports.cloudApi=onRequest({cors:true,maxInstances:10,memory:'512MiB',cpu:1,concurrency:40,timeoutSeconds:120},async(req,res)=>{
  const started=performance.now(),cpuStarted=process.cpuUsage();counters.requests++;
  try{
   assertServerEnvironment();
