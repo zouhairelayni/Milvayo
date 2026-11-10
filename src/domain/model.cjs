@@ -157,7 +157,7 @@ function moveTask(project,taskId,status,toIndex=99999){
  return result;
 }
 function shiftDate(day,amount){const value=dateOnly(day);if(!value)throw Error('Invalid date');const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+amount);return d.toISOString().slice(0,10);}
-function importProject(raw){if(typeof raw!=='object'||raw===null||Array.isArray(raw))throw Error('Invalid JSON object');if(raw.format!==FORMAT)throw Error('Unsupported project file. Expected '+FORMAT);if(!Array.isArray(raw.tasks))throw Error('Project must contain a tasks array');const p=makeProject(raw);return validateProject(p);}
+function importProject(raw){if(typeof raw!=='object'||raw===null||Array.isArray(raw))throw Error('This project backup is missing or has an invalid structure.');if(raw.format!==FORMAT)throw Error("This file isn't a supported Milvayo project backup. Choose a .json or .niyav project backup.");if(!Array.isArray(raw.tasks))throw Error('This project backup is incomplete because its task list is missing.');const p=makeProject(raw);return validateProject(p);}
 function canVerify(task){return !!task.tests.length && task.tests.every(t=>t.result==='passed'&&t.evidence.trim()) && !!task.evidence.trim() && !!task.actual.trim();}
 function canMerge(task){return task.verified && canVerify(task) && !!task.mainSha.trim();}
 function verifyTask(t){if(!canVerify(t))throw Error('Pass all checks and record test evidence and actual result first.');return {...t,verified:true,status:'Done',updatedAt:iso()};}

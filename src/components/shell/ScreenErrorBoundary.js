@@ -15,7 +15,7 @@ export default class ScreenErrorBoundary extends Component {
   static getDerivedStateFromError(error) { return { error }; }
   componentDidCatch(error, info) {
     diagnosticMonitor.captureError(error, 'React render boundary', this.props.screenId, info?.componentStack || '');
-    console.error(`[Niyarvo screen: ${this.props.screenId}]`, error, info?.componentStack || '');
+    console.error(`[Milvayo screen: ${this.props.screenId}]`, error, info?.componentStack || '');
   }
   render() {
     if (!this.state.error) return this.props.children;

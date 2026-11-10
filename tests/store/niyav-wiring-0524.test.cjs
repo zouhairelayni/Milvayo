@@ -71,7 +71,9 @@ test('Backup screen: formats, password rules, protected-file unlock, no password
   assert.match(src, /downloadBytes\(`\$\{base\}\.niyav`/);
   assert.match(src, /label="Download backup"/);
   assert.match(src, /backupText\(all,\{snapshots:withSnapshots,projectId\}\)/);
-  assert.match(src, /cannot be opened by anyone/);
+  assert.match(src, /If you forget it, the backup cannot be opened/);
+  assert.doesNotMatch(src, /Niyarvo/);
+  assert.match(src, /milvayo-all-projects-backup/);
 });
 
 test('Input supports masked password entry without suggestions', () => {

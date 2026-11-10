@@ -26,7 +26,7 @@ test('plain JSON and BOM-prefixed JSON are still read as before', async () => {
   assert.equal(await codec.decode(new Uint8Array([0xef, 0xbb, 0xbf, ...bytesOf(sample)])), sample);
   assert.equal(codec.sniff(bytesOf('  \n{"a":1}')), 'json');
   for (const junk of ['', 'hello', '[1,2]', '\u0000\u0001']) assert.equal(codec.sniff(bytesOf(junk)), 'unknown');
-  await assert.rejects(codec.decode(bytesOf('not a backup')), { code: 'NIYAV_UNKNOWN' });
+  await assert.rejects(codec.decode(bytesOf('not a backup')), e => e.code === 'NIYAV_UNKNOWN' && /\.json or \.niyav/.test(e.message) && !/Niyarvo/.test(e.message));
 });
 
 test('protected .niyav has the documented layout and round-trips', async () => {

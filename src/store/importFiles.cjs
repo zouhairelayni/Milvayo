@@ -25,7 +25,7 @@ function userReadableImportError(error) {
   if (error && error.code === 'NP_IMPORT_ACCESS') return error.message;
   const message = String(error && error.message || error || 'Unknown error');
   if (/\bREAD\b.*permission|permission.*\bREAD\b|permission denied|EACCES|SecurityException|access denied|isn.t readable|FileSystemFile\.text|ExponentFileSystem\.readAsStringAsync/i.test(message)) {
-    return 'Android could not read the selected document. Try selecting the JSON from the Downloads folder using the system picker, or import it from Milvayo Web. The current workspace has not changed.';
+    return 'The selected file could not be read. Check its access permissions and try again. On Android, choose it from Downloads using the system picker. Your workspace has not changed.';
   }
   return message;
 }
@@ -122,8 +122,17 @@ async function pickDocumentFileBytes(selection, FileClass, maxBytes = MAX_IMPORT
 
 // JSON.parse('null') succeeds, so reject non-objects before callers read .format.
 function parseBackupJson(text) {
-  const value = JSON.parse(text);
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Expected a Niyarvo backup');
+  let value;
+  try { value = JSON.parse(text); } catch {
+    const error = new Error('This JSON file is malformed or damaged. Check the file and try again.');
+    error.code = 'BACKUP_JSON_CORRUPT';
+    throw error;
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    const error = new Error('This file does not contain a valid Milvayo backup. Choose a project or complete workspace backup.');
+    error.code = 'BACKUP_STRUCTURE';
+    throw error;
+  }
   return value;
 }
 

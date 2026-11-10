@@ -172,8 +172,9 @@ export function StoreProvider({children,onReady,loading}){
     if(value.format===model.FORMAT)items=[value];
     else if(value.schemaVersion===1&&Array.isArray(value.projects))items=value.projects;
     else if(value.format==='niyarvo.workspace.v1'&&value.workspace?.schemaVersion===1)items=value.workspace.projects;
-    else throw Error('Expected a compatible Milvayo project or workspace backup');
-    if(!items.length||items.length>30)throw Error('Invalid project count');
+    else throw Error("This file isn't a supported Milvayo project or workspace backup. Choose a .json or .niyav backup.");
+    if(!items.length)throw Error('This backup does not contain any projects. Choose a project or workspace backup with at least one project.');
+    if(items.length>30)throw Error('This backup contains more than 30 projects, which is the workspace limit.');
     const created=items.map(raw=>model.importProject(raw));
     const names=[];
     const ok=trans(w=>{

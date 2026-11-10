@@ -10,7 +10,7 @@ The existing Expo project is linked to `com.milvayo.projects`; the signing key a
 
 1. While in `~/Milvayo`, run `npx --yes eas-cli@latest credentials -p android`.
 2. Select the `preview` profile, then `credentials.json` -> **Download credentials from EAS to credentials.json**. Follow the prompts to download the existing Android keystore and a credentials JSON containing `keystorePath`, `keystorePassword`, `keyAlias`, `keyPassword`. **Do not select Generate new keystore.**
-3. Move the credentials JSON and JKS file to a private folder *outside* the repository, for example `~/niyarvo-private/`. Preserve their relative paths (or update the JSON `keystorePath` accordingly). Keep the files only on your own device. The `.gitignore` now excludes `credentials.json`, `.jks`, `.keystore` and `.env*` from Git.
+3. Move the credentials JSON and JKS file to a private folder *outside* the repository, for example `~/milvayo-private/`. Preserve their relative paths (or update the JSON `keystorePath` accordingly). Keep the files only on your own device. The `.gitignore` excludes `credentials.json`, `.jks`, `.keystore` and `.env*` from Git.
 
 **B. Store the four signing secrets without exposing their contents**
 
@@ -19,7 +19,7 @@ Use this helper from the **work** branch after applying the patch (the path poin
 ```bash
 cd ~/Milvayo
 git switch work
-node scripts/ci/upload-android-signing-secrets.cjs ~/niyarvo-private/credentials.json
+node scripts/ci/upload-android-signing-secrets.cjs ~/milvayo-private/credentials.json
 gh secret list -R zouhairelayni/Milvayo
 ```
 
@@ -29,6 +29,8 @@ It creates these secrets in the Milvayo repository:
 - `NIYARVO_ANDROID_KEYSTORE_PASSWORD`
 - `NIYARVO_ANDROID_KEY_ALIAS`
 - `NIYARVO_ANDROID_KEY_PASSWORD`
+
+The GitHub Actions workflow still reads the `NIYARVO_ANDROID_*` secret names. Keep those repository secret names until the workflow and stored secrets are migrated together; they are compatibility identifiers, not current app branding.
 
 **Never share** the JSON, JKS, passwords, token, or Base64 text in chat or Git. The helper only prints secret *names*. Base64 is an encoding, not encryption; GitHub secret storage protects it.
 

@@ -156,7 +156,7 @@ function createCodec(prim) {
       return prim.strFromU8(body);
     }
     if (kind === 'gzip') return prim.strFromU8(await inflate(bytes, maxBytes));
-    if (kind !== 'encrypted') throw new NiyavError('NIYAV_UNKNOWN', 'This file is not a Niyarvo backup.');
+    if (kind !== 'encrypted') throw new NiyavError('NIYAV_UNKNOWN', "This file type isn't supported. Choose a .json or .niyav backup.");
 
     const parsed = parseHeader(bytes);
     if (password === undefined || password === null) throw new NiyavError('NIYAV_NEEDS_PASSWORD', 'This backup is password protected.');

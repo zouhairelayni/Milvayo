@@ -28,7 +28,7 @@ test('Android SAF picker refuses large text when provider reports no size',async
 });
 test('Android SAF picker surfaces sanitized access errors, no private cache paths',async()=>{
  await assert.rejects(pickAndroidJsonText({pickFileAsync:async()=>({result:{text:async()=>{throw Error("Location 'file:///data/user/0/host.exp.exponent/cache/DocumentPicker/foo.json' isn't readable")}}})}), e=>{
-  assert.match(e.message,/Android could not read/);assert.doesNotMatch(e.message,/host\.exp|file:\/\//);return true;
+  assert.match(e.message,/selected file could not be read/);assert.match(e.message,/Downloads/);assert.doesNotMatch(e.message,/host\.exp|file:\/\//);return true;
  });
 });
 test('unsupported SDK lacking SAF picker has explicit compatibility error',async()=>{
@@ -69,10 +69,10 @@ test('size limit counts UTF-8 bytes, not characters',async()=>{
  await assert.rejects(pickAndroidJsonText({pickFileAsync:async()=>({result:{text:async()=>emoji}})},100),/exceeds 5 MB/);
 });
 
-test('a file with null, a number or an array gives a plain error',()=>{
- for(const t of ['null','5','[]','"x"'])assert.throws(()=>parseBackupJson(t),/Expected a Niyarvo backup/);
+test('JSON backup parsing distinguishes malformed JSON from invalid backup structure',()=>{
+ for(const t of ['null','5','[]','"x"'])assert.throws(()=>parseBackupJson(t),e=>e.code==='BACKUP_STRUCTURE'&&/valid Milvayo backup/.test(e.message));
  assert.deepEqual(parseBackupJson('{"a":1}'),{a:1});
- assert.throws(()=>parseBackupJson('{'),SyntaxError);
+ assert.throws(()=>parseBackupJson('{'),e=>e.code==='BACKUP_JSON_CORRUPT'&&/malformed or damaged/.test(e.message));
 });
 
 test('web picker checks the file size before reading it',()=>{

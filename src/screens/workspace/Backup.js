@@ -24,10 +24,10 @@ function pickBytesFile(done, fail) {
   input.onchange = () => {
     const f = input.files && input.files[0];
     if (!f) return;
-    if (f.size > MAX_IMPORT_BYTES) { fail(new Error('Import exceeds 5 MB limit')); return; } // check before reading, so a huge file never loads into memory
+    if (f.size > MAX_IMPORT_BYTES) { fail(new Error('This backup exceeds the 5 MB import limit. Choose a smaller file.')); return; } // check before reading, so a huge file never loads into memory
     const r = new FileReader();
     r.onload = () => done(new Uint8Array(r.result));
-    r.onerror = () => fail(new Error('The file could not be read.'));
+    r.onerror = () => fail(new Error('The selected file could not be read. Check its access permissions and try again.'));
     r.readAsArrayBuffer(f);
   };
   input.click();
@@ -85,7 +85,7 @@ export default function Backup() {
     if(Platform.OS==='android')return pickAndroidFileBytes(File);
     return pickDocumentFileBytes(await DocumentPicker.getDocumentAsync({type:'*/*',copyToCacheDirectory:true,multiple:false}),File);
   };
-  const stageWorkspace=(text)=>{if(tooBig(text))throw Error('Import exceeds 5 MB limit');const payload=parseBackupJson(text);if(payload.format!=='niyarvo.workspace.v1'||!payload.workspace||!Array.isArray(payload.workspace.projects))throw Error('Select a complete Niyarvo workspace backup.');setWholeFile({text,name:'Selected workspace',projects:payload.workspace.projects.length})};
+  const stageWorkspace=(text)=>{if(tooBig(text))throw Error('This backup exceeds the 5 MB import limit. Choose a smaller file.');const payload=parseBackupJson(text);if(payload.format!=='niyarvo.workspace.v1'||payload.workspace?.schemaVersion!==1||!Array.isArray(payload.workspace?.projects)||!payload.workspace.projects.length)throw Error('This is not a complete Milvayo workspace backup. Choose a .json or .niyav workspace backup with at least one project.');setWholeFile({text,name:'Selected workspace',projects:payload.workspace.projects.length})};
   const route=(text,purpose)=>{if(purpose==='project')runImport(text);else stageWorkspace(text)};
   // .json, gzip .niyav and protected .niyav all arrive here as bytes. A protected file waits for its password.
   const readPicked=async(purpose)=>{
@@ -126,7 +126,7 @@ export default function Backup() {
   };
   const exportBackup=async(all)=>{
     if(busy||jobState.running)return;
-    const base=all?'niyarvo-all-projects-backup':`${slug(chosen.name)}-backup`;
+    const base=all?'milvayo-all-projects-backup':`${slug(chosen.name)}-backup`;
     let text;try{text=backupText(all,{snapshots:withSnapshots,projectId})}catch(e){say(false,e.message);return}
     if(fmt==='json'){
       if(await downloadText(`${base}.json`,text,'application/json'))say(true,'JSON backup exported.');
@@ -226,7 +226,7 @@ export default function Backup() {
                 {pw2 ? <T size={12} color={pw===pw2?c.ink:'#E0512D'} accessibilityRole="text">{pw===pw2?'Passwords match. Ready to encrypt.':'Passwords do not match. Nothing will be encrypted.'}</T> : null}
                 <Segmented options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} value={level} onChange={pickLevel} />
                 <T size={11} muted>{LEVEL_TEXT[level]} All three use AES-256 encryption; the level only sets how slow it is to guess the password. The level is saved in the file, so opening it never asks for it.</T>
-                <T size={11} muted>The password is never stored or sent anywhere. If it is forgotten, this backup cannot be opened by anyone, including Niyarvo. Keep it somewhere safe.</T>
+                <T size={11} muted>The password is never stored or sent anywhere. If you forget it, the backup cannot be opened. Keep it somewhere safe.</T>
               </View>
             ) : null}
           </View>
@@ -251,7 +251,7 @@ export default function Backup() {
       <View style={{display:section==='recovery'?'flex':'none',gap:16}}>
       <Feedback type="warning" text="Recovery can replace current workspace data. Export a backup first; every restore still asks for confirmation."/>
       <Fold title="Full workspace recovery" subtitle="Restores projects, programs, portfolios and local history together. Explicit confirmation required.">
-        <T size={12} muted>Only use a complete Niyarvo workspace backup (.json or .niyav). An automatic snapshot of the current workspace is created before replacement. To add projects without replacing your workspace, use Import project above.</T>
+        <T size={12} muted>Choose a complete Milvayo workspace backup (.json or .niyav). A recovery snapshot is created before replacement. To add projects without replacing this workspace, use Import project above.</T>
         <Button label="Choose workspace file" icon="upload" small variant="secondary" onPress={chooseWorkspace} disabled={!!busy || !!jobState.running}/>
         {wholeFile?<View style={{gap:8}}><T size={12} muted>{wholeFile.projects} project(s) in selected workspace. This replaces current workspace data after confirmation.</T><DangerConfirm label="Restore entire workspace" onConfirm={()=>{const r=restoreWorkspace(wholeFile.text);say(r.ok,r.ok?'Whole workspace restored; prior snapshot retained.':r.error);if(r.ok)setWholeFile(null)}}/><Button label="Cancel selection" small variant="ghost" onPress={()=>setWholeFile(null)}/></View>:null}
         <Button label="Create recovery snapshot" small variant="secondary" onPress={()=>{if(createSnapshot())say(true,'Local recovery snapshot created')}}/>
