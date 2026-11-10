@@ -1,7 +1,14 @@
+## v0.8.6 — Firebase v4.0 Gate 2 task patch prototype (2026-11-10)
+
+- Add `patch`: a routine task edit (title, description, priority, custom values, status, owner, stage, position) writes exactly one Firestore document, with no version, receipt, audit, workspace-sequence or summary write; 5 reads (6 with a status change). Retry safety uses a last-operation ID on the task, stale revisions return a conflict with the current record, tombstones are never revived. Validation reuses the Class A/B validators and is proven equivalent to the legacy commit across 320 edit shapes.
+- Add workspace protocol and write-freeze controls (`workspaceControl`, administrator-only, audited). A protocol-4 workspace refuses legacy commits ("Update the app…"); `patch` refuses any other workspace; a freeze stops both. v4 replaces v3 outright (no installed clients yet); legacy code stays only until Gate 3 passes.
+- Sandbox/in-memory Gate 2 checks pass; the emulator test `tests/cloud/patch.emulator.test.cjs` is written and Not run. The full repository comparison recorded 804 passing, 71 failing (same missing-dependency/assets failures as baseline), and 5 skipped. This checkpoint is not emulator or production certified; nothing deployed.
+- Synchronize app, lockfile, Expo and local Functions package versions to 0.8.6; Android `versionCode` and iOS `buildNumber` to 96. No schema migration, dependency change, build, deployment or production operation.
+
 ## Firebase v3.0 security patch — Global signal restricted to unrestricted workspace readers (2026-11-08, version not bumped)
 
 - Fix an RTDB authorization leak: the workspace-wide change signal (`heads`) was readable by users with only project access or with a confidential-project denial. The ACL now records `unrestricted` (workspace-wide read with no project-level denial) and the rule requires it; legacy ACL entries fail closed until refreshed. Users without the signal keep adaptive polling. Grants, revocations, presence rules and every other behavior are unchanged.
-- Add regression tests (grant matrix, revocation, failed RTDB writes, polling fallback) and an emulator rules suite; document the 10-minute ACL expiry exposure and options in `docs/Milvayo-Handoffs/firebase v3.0.md` (3.7, 3.8). Emulator results: Not run here. Firebase v3.0 Phase 2 is closed; remaining work moves to the v4.0 plan.
+- Add regression tests (grant matrix, revocation, failed RTDB writes, polling fallback) and an emulator rules suite; document the 10-minute ACL expiry exposure and options in `docs/Milvayo-Handoffs/firebase v3.0.md` (3.7, 3.8). Verified as the v3.1.2 baseline in Termux against the Firebase emulators: `npm run test:cloud` 130 passed, 0 failed (a test-helper bug that initially caused one false failure was corrected; no runtime change). Not production-certified. The 10-minute ACL expiry exposure after a failed RTDB revocation write remains an open risk. Firebase v3.0 Phase 2 is closed without implementation; remaining work moves to the v4.0 plan.
 
 ## Firebase v3.0 — Narrow workflow validation, change signal and cost tuning (2026-11-08, version not bumped)
 

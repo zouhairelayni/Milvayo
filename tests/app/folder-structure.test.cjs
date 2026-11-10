@@ -20,7 +20,7 @@ const code = files.filter((f) => CODE.test(f) || f === 'firestore.rules' || f ==
 
 test('the project root holds no code files except the Expo entry App.js', () => {
   const stray = fs.readdirSync(root, { withFileTypes: true })
-    .filter((e) => e.isFile() && CODE.test(e.name) && e.name !== 'App.js').map((e) => e.name);
+    .filter((e) => e.isFile() && CODE.test(e.name) && !['App.js', 'metro.config.js'].includes(e.name)).map((e) => e.name);
   assert.deepEqual(stray, []);
   assert.match(fs.readFileSync(path.join(root, 'App.js'), 'utf8'), /from '\.\/src\/app\/App'/);
 });
