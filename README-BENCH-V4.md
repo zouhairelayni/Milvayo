@@ -4,8 +4,8 @@
 
 There are **two independent scripts**:
 
-1. `tests/cloud/bench-v4-workflows.cjs`: measures **10 currently supported v4 task-patch cases**, including Mark Done with and without a completed dependency, and a forbidden Done transition. It separately measures **18 legacy-v3 workflows**, including task creation/deletion, dates, adding/removing dependencies, Canvas object operations, Canvas threads, sprint creation/assignment, time tracking, and comments. It reports **v4 unsupported operations** rather than claiming those were optimized. Both categories use real Functions/Firestore emulator calls when run on the device.
-2. `tests/cloud/bench-v4-gate2.cjs`: measures three simple v4 costs and then **30 separate authenticated accounts concurrently editing 30 different tasks with a mixed workload** (title, description, priority, owner, stage, position, status). It independently checks the 30 changed fields in Firestore. This isolates the shared-workspace bottleneck; it does **not** measure same-task editing conflicts or 30 Canvas collaborators.
+1. `scripts/cloud/bench-v4-workflows.cjs`: measures **10 currently supported v4 task-patch cases**, including Mark Done with and without a completed dependency, and a forbidden Done transition. It separately measures **18 legacy-v3 workflows**, including task creation/deletion, dates, adding/removing dependencies, Canvas object operations, Canvas threads, sprint creation/assignment, time tracking, and comments. It reports **v4 unsupported operations** rather than claiming those were optimized. Both categories use real Functions/Firestore emulator calls when run on the device.
+2. `scripts/cloud/bench-v4-gate2.cjs`: measures three simple v4 costs and then **30 separate authenticated accounts concurrently editing 30 different tasks with a mixed workload** (title, description, priority, owner, stage, position, status). It independently checks the 30 changed fields in Firestore. This isolates the shared-workspace bottleneck; it does **not** measure same-task editing conflicts or 30 Canvas collaborators.
 
 ### Install (Termux)
 
@@ -14,8 +14,8 @@ Download `Milvayo-v4-Expanded-Workflow-Benchmarks.zip` to Android Downloads, the
 ```bash
 cd ~/Milvayo
 unzip -o ~/storage/downloads/Milvayo-v4-Expanded-Workflow-Benchmarks.zip -d .
-node --check tests/cloud/bench-v4-workflows.cjs
-node --check tests/cloud/bench-v4-gate2.cjs
+node --check scripts/cloud/bench-v4-workflows.cjs
+node --check scripts/cloud/bench-v4-gate2.cjs
 ```
 
 ### Run both with one emulator startup
@@ -26,7 +26,7 @@ JAVA_TOOL_OPTIONS="-Xms32m -Xmx192m -XX:ActiveProcessorCount=2" \
 firebase emulators:exec \
   --only auth,firestore,database,functions,storage,hosting \
   --project demo-milvayo-083 \
-  "node tests/cloud/bench-v4-workflows.cjs && node tests/cloud/bench-v4-gate2.cjs" \
+  "node scripts/cloud/bench-v4-workflows.cjs && node scripts/cloud/bench-v4-gate2.cjs" \
   > "$HOME/milvayo-v4-expanded-bench.log" 2>&1
 code=$?
 echo '=== BENCHMARK SUMMARY ==='

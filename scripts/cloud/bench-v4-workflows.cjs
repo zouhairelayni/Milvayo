@@ -1,10 +1,10 @@
-// /tests/cloud/bench-v4-workflows.cjs
+// /scripts/cloud/bench-v4-workflows.cjs
 // Emulator-only workflow cost matrix. It deliberately separates implemented v4 task patches
 // from still-legacy v3 workflows; it is NOT a claim that every app action supports v4.
 'use strict';
 const crypto=require('node:crypto'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const assert=require('node:assert/strict');
-const H=require('../helpers/cloud-emulators.cjs');
+const H=require('../../tests/helpers/cloud-emulators.cjs');
 const S=require('../../src/cloud/schema.cjs');
 const M=require('../../src/domain/model.cjs');
 const {generate}=require('../../src/cloud/tools/fixtures.cjs');

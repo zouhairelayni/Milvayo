@@ -4,6 +4,7 @@
 - Add workspace protocol and write-freeze controls (`workspaceControl`, administrator-only, audited). A protocol-4 workspace refuses legacy commits ("Update the app…"); `patch` refuses any other workspace; a freeze stops both. v4 replaces v3 outright (no installed clients yet); legacy code stays only until Gate 3 passes.
 - Sandbox/in-memory Gate 2 checks pass; the emulator test `tests/cloud/patch.emulator.test.cjs` is written and Not run. The full repository comparison recorded 804 passing, 71 failing (same missing-dependency/assets failures as baseline), and 5 skipped. This checkpoint is not emulator or production certified; nothing deployed.
 - Synchronize app, lockfile, Expo and local Functions package versions to 0.8.6; Android `versionCode` and iOS `buildNumber` to 96. No schema migration, dependency change, build, deployment or production operation.
+- Keep standalone emulator benchmark runners under `scripts/cloud/`, outside the `tests/` tree. After correcting their location and instructions, `npm test` passes 1,090 tests with 0 failures and 4 emulator-only skips.
 
 ## Firebase v3.0 security patch — Global signal restricted to unrestricted workspace readers (2026-11-08, version not bumped)
 

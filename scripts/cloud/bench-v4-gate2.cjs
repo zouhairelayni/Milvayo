@@ -1,4 +1,4 @@
-// /tests/cloud/bench-v4-gate2.cjs
+// /scripts/cloud/bench-v4-gate2.cjs
 // Standalone, emulator-only benchmark (NOT automatically included in test:cloud).
 // Measures v4 task-patch read/write/delete instrumentation and 30 authenticated users
 // committing to distinct tasks in the same shared workspace simultaneously.
@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const H = require('../helpers/cloud-emulators.cjs');
+const H = require('../../tests/helpers/cloud-emulators.cjs');
 const {generate} = require('../../src/cloud/tools/fixtures.cjs');
 const {PROJECT_ID} = require('../../src/cloud/config.cjs');
 

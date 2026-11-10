@@ -13,6 +13,7 @@ Date: 2026-11-08. Sandbox run, unit/in-memory only. The Firebase emulator suite 
 | Non-routine fields (board, dependencies, sprint, updatedAt, unknown) and invalid values rejected | Pass |
 | 320-case equivalence with the legacy commit validators | Pass |
 | Workspace controls administrator-only and audited | Pass |
+| `npm test` after moving standalone benchmark runners out of `tests/` | Pass — 1,090 passed, 0 failed, 4 skipped (emulator-only) |
 | Whole repository vs untouched 0.8.5 in this environment | 880 tests, 804 pass, 71 fail, 5 skipped; identical failing set (missing node_modules/assets/public); 5 skipped = 3 baseline + 2 emulator suites |
 | tests/cloud/patch.emulator.test.cjs | Written; Not run |
 | Contention/concurrency, two-device collaboration, production | Not run |
