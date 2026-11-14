@@ -1,46 +1,247 @@
 // /src/cloud/server/patch.cjs
 'use strict';
-// Firebase v4.0 lean task patch (Gate 2 prototype). Writes exactly one document for a routine task edit:
+// Firebase v4.0 lean record patch. A routine edit of one task or one Canvas object writes exactly one document:
 // no version, receipt, audit, workspace-sequence or summary write. Available only on workspaces whose protocol is 4.
-const S=require('../schema.cjs'),IAM=require('../iam.cjs'),V=require('../taskMutation.cjs');
-const ALLOWED=new Set([...V.WORKFLOW].filter(k=>k!=='updatedAt'));
+const crypto=require('node:crypto');
+const S=require('../schema.cjs'),IAM=require('../iam.cjs'),V=require('../taskMutation.cjs'),canvas=require('../../domain/canvas.cjs'),model=require('../../domain/model.cjs'),{LIMITS,createCascade,invalidate,newEdge,readEdges,shell}=require('./cascade.cjs');
+// Mirrors of the canonical normalizers in operations.cjs (text trimming, valid calendar dates, whole-number limits); the equivalence tests compare them with canonical validation.
+const txt=(v,n=240)=>typeof v==='string'?v.trim().slice(0,n):'';
+const isDate=v=>typeof v==='string'&&/^\d{4}-\d\d-\d\d$/.test(v)&&!Number.isNaN(Date.parse(v+'T00:00:00Z'))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v;
+const whole=(v,max)=>Number.isFinite(v)&&v>=0&&v<=max?Math.round(v*100)/100:0;
+// Appended records are refused above these counts (their canonical array limits are 10,000 tasks, 20,000 comments, 10,000 time entries) so a cloud project can never become unloadable.
+const CAPS=Object.freeze({tasks:9000,comments:19000,timeEntries:9500});
+// An operation ID is bound to the actor and the exact edit, so a reused ID can never acknowledge different content.
+const fingerprint=(uid,b)=>crypto.createHash('sha256').update(S.stable({uid,action:b.action,projectId:b.projectId,boardId:b.boardId||'',id:b.taskId||b.objectId,set:b.set,dependsOn:b.dependsOn,objectIds:b.objectIds,bases:b.bases,data:b.data,order:b.order,commentId:b.commentId,entryId:b.entryId})).digest('hex').slice(0,32);
+const ALLOWED=new Set([...V.PATCHABLE].filter(k=>k!=='updatedAt'));
+// Canvas objects: geometry and layer only. Text, grouping, links and drawings keep the full legacy validation (board size and group rules span records).
+const CANVAS_ALLOWED=new Set(['x','y','width','height','zIndex']);
+// EXPERIMENT (default off): MILVAYO_PATCH_AUTH_MODE=snapshot reads membership, grant, workspace and seat documents outside the transaction so that
+// shared documents are not locked by every edit. Authorization may then be a few milliseconds stale relative to a concurrent revoke; the default keeps every read transactional.
+const authMode=()=>process.env.MILVAYO_PATCH_AUTH_MODE==='snapshot'?'snapshot':'transaction';
 function patchHandlers({db,access,fail,stamp=Date.now}){
+ // Stage timing for the concurrency investigation: wall time of the whole transaction, the duration of each attempt (more than one means a retry) and the authorization phase.
+ const ms=t=>+(performance.now()-t).toFixed(1);
+ const timedTx=(timings,fn)=>{const t0=performance.now();timings.attemptMs=[];return db.runTransaction(async tx=>{const s=performance.now();try{return await fn(tx);}finally{timings.attemptMs.push(ms(s));}}).then(r=>{timings.transactionMs=ms(t0);if(r&&r.measured)r.measured.timings=timings;if(r&&timings.bench&&process.env.MILVAYO_BENCH==='1')r.txTimings=timings;return r;});};
  const reject=(code,current)=>({ok:false,code,current});
- async function patch(uid,b){
-  S.segment(b.projectId);S.segment(b.taskId);S.segment(b.opId);
+ async function run(uid,b,spec){
+  S.segment(b.projectId);S.segment(b.opId);
   if(!Number.isSafeInteger(b.baseRevision)||b.baseRevision<1)fail('Invalid base revision','invalid-argument');
   if(!b.set||typeof b.set!=='object'||Array.isArray(b.set)||!Object.keys(b.set).length||Object.keys(b.set).length>20)fail('A patch needs 1–20 fields','invalid-argument');
-  for(const k of Object.keys(b.set))if(!ALLOWED.has(k))fail(k==='updatedAt'?'updatedAt is set by the server':`Field is not patchable: ${k}`,'invalid-argument');
-  const key=S.keyOf('tasks',b.projectId,b.taskId);let attempts=0;
-  return db.runTransaction(async tx=>{
-   attempts++;const reads={authorization:3,subscription:0,task:0,configuration:0,dependencies:0};
-   const a=await access(tx,uid,b.orgId,b.workspaceId);
+  for(const k of Object.keys(b.set))if(!spec.allowed.has(k))fail(k==='updatedAt'?'updatedAt is set by the server':`Field is not patchable: ${k}`,'invalid-argument');
+  const key=spec.key(b),timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const reads={authorization:3,subscription:0,record:0,configuration:0,dependencies:0},reader=authMode()==='snapshot'?{get:r=>r.get()}:tx,accessStart=performance.now();
+   const a=await access(reader,uid,b.orgId,b.workspaceId);timings.accessMs=ms(accessStart);
    if(a.member?.active!==true||a.meta?.state!=='active')fail('Workspace access is unavailable');
    if(!IAM.can(a.member,a.grant,b.projectId,'edit'))fail('Action is outside the scoped grant');
    if(a.meta.protocol!==4)fail('This workspace does not accept field patches','failed-precondition');
    if(a.meta.writeFreeze===true)fail('Writes are temporarily paused for this workspace','failed-precondition');
-   const ref=a.ws.collection('records').doc(key),[sub,snap]=await Promise.all([tx.get(a.org.collection('subscription').doc('current')),tx.get(ref)]);reads.subscription=1;reads.task=1;
+   const ref=a.ws.collection('records').doc(key),[sub,snap]=await Promise.all([reader.get(a.org.collection('subscription').doc('current')),tx.get(ref)]);reads.subscription=1;reads.record=1;
    if(!sub.data()?.seats?.includes(uid))fail('A licensed seat is required for project editing');
-   if(!snap.exists)fail('Task is unavailable','failed-precondition');
-   const old=snap.data();if(old.kind!=='tasks'||old.projectId!==b.projectId||old.id!==b.taskId)fail('Task is unavailable','failed-precondition');
+   if(!snap.exists)fail('Record is unavailable','failed-precondition');
+   const old=snap.data();if(!spec.owns(old,b))fail('Record is unavailable','failed-precondition');
    const measured=()=>IAM.administer(a.member)?{documentReads:Object.values(reads).reduce((x,y)=>x+y,0),documentWrites:0,documentDeletes:0,readBreakdown:reads,validationClass:'patch',transactionAttempts:attempts}:undefined;
    if(old.deleted)return {...reject('deleted',old),measured:measured()};
-   // Retry safety without receipts: the last accepted operation is remembered on the task itself.
-   if(old.lastOpId===b.opId)return {ok:true,duplicate:true,revision:old.revision,record:old,measured:measured()};
+   // Retry safety without receipts: the last accepted operation is remembered on the record itself.
+   const hash=fingerprint(uid,b);
+   if(old.lastOpId===b.opId){if(old.lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,revision:old.revision,record:old,measured:measured()};}
    const applied=Object.entries(b.set).every(([k,v])=>S.equal(old.data[k],v));
    if(old.revision!==b.baseRevision)return applied?{ok:true,alreadyApplied:true,revision:old.revision,record:old,measured:measured()}:{...reject('conflict',old),measured:measured()};
-   const now=stamp(),data={...old.data,...b.set,updatedAt:new Date(now).toISOString()},next={...old,data};
-   let project;if(V.needsConfiguration(old,next)){const p=await tx.get(a.ws.collection('records').doc(S.keyOf('projects',b.projectId,b.projectId)));reads.configuration=1;project=p.data();}
-   V.validateWorkflow(old,next,project);
+   const now=stamp(),data={...old.data,...b.set,...(spec.stampData?{updatedAt:new Date(now).toISOString()}:{})},next={...old,data};
+   await spec.validate({tx,a,b,old,next,reads});
+   const record={...old,data,revision:old.revision+1,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash};
+   tx.update(ref,{data,revision:record.revision,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash});
+   const m=measured();if(m)m.documentWrites=1;
+   return {ok:true,revision:record.revision,record,measured:m?{...m,authMode:authMode()}:undefined};
+  });
+ }
+ const taskSpec={allowed:ALLOWED,stampData:true,key:b=>S.keyOf('tasks',b.projectId,S.segment(b.taskId)),owns:(old,b)=>old.kind==='tasks'&&old.projectId===b.projectId&&old.id===b.taskId,
+  async validate({tx,a,b,old,next,reads}){
+   const data=next.data;let project;
+   if(V.needsConfiguration(old,next)){const p=await tx.get(a.ws.collection('records').doc(S.keyOf('projects',b.projectId,b.projectId)));reads.configuration=1;project=p.data();}
+   V.validatePatch(old,next,project);
    if(old.data.status!==data.status&&data.status==='Done'&&data.dependsOn.length){
     const deps=await Promise.all(data.dependsOn.map(id=>tx.get(a.ws.collection('records').doc(S.keyOf('tasks',b.projectId,id)))));reads.dependencies=deps.length;
     const status=new Map(deps.filter(d=>d.exists&&!d.data().deleted).map(d=>[d.data().id,d.data().data.status]));V.validateDone(old,next,id=>status.get(id));
    }
-   const record={...old,data,revision:old.revision+1,updatedAt:now,updatedBy:uid,lastOpId:b.opId};
-   tx.update(ref,{data,revision:record.revision,updatedAt:now,updatedBy:uid,lastOpId:b.opId});
-   const m=measured();if(m)m.documentWrites=1;
-   return {ok:true,revision:record.revision,record,measured:m};
+  }};
+ const canvasSpec={allowed:CANVAS_ALLOWED,stampData:false,key:b=>S.keyOf('canvas.objects',b.projectId,S.segment(b.objectId),S.segment(b.boardId)),owns:(old,b)=>old.kind==='canvas.objects'&&old.projectId===b.projectId&&old.id===b.objectId&&old.boardId===b.boardId,
+  async validate({old,next}){if(!S.equal(canvas.normalizeObject(next.data,old.boardId,old.projectId),next.data))throw Error('Canvas change violates the canonical object schema');}};
+ const patch=(uid,b)=>run(uid,b,taskSpec),patchCanvas=(uid,b)=>run(uid,b,canvasSpec);
+ // Shared guards for cascading edits: authorization, protocol, freeze, seat, idempotency and the revision check.
+ async function preflight(tx,uid,b,permission,key,timings={bench:b.bench===true}){
+  const reads={authorization:3,subscription:0,record:0,configuration:0,dependencies:0,queries:0,releases:0,links:0},reader=authMode()==='snapshot'?{get:r=>r.get()}:tx;
+  const accessStart=performance.now(),a=await access(reader,uid,b.orgId,b.workspaceId);timings.accessMs=ms(accessStart);
+  if(a.member?.active!==true||a.meta?.state!=='active')fail('Workspace access is unavailable');
+  if(!IAM.can(a.member,a.grant,b.projectId,permission))fail('Action is outside the scoped grant');
+  if(a.meta.protocol!==4)fail('This workspace does not accept field patches','failed-precondition');
+  if(a.meta.writeFreeze===true)fail('Writes are temporarily paused for this workspace','failed-precondition');
+  const ref=a.ws.collection('records').doc(key),[sub,snap]=await Promise.all([reader.get(a.org.collection('subscription').doc('current')),tx.get(ref)]);reads.subscription=1;reads.record=1;
+  if(!sub.data()?.seats?.includes(uid))fail('A licensed seat is required for project editing');
+  const total=()=>Object.values(reads).reduce((x,y)=>x+y,0),admin=IAM.administer(a.member);
+  return {a,reads,ref,snap,admin,total,reader};
+ }
+ const cascadeBase=b=>{S.segment(b.projectId);S.segment(b.taskId);S.segment(b.opId);if(!Number.isSafeInteger(b.baseRevision)||b.baseRevision<1)fail('Invalid base revision','invalid-argument');};
+ const iso=now=>new Date(now).toISOString();
+ const taskOwns=(old,b)=>old.kind==='tasks'&&old.projectId===b.projectId&&old.id===b.taskId;
+ // Applies every record update in one transaction. Reads are finished before the first write; each record gains one revision.
+ function commitAll(tx,ctx,uid,now,main,others){
+  const all=[main,...others];if(all.length>LIMITS.changedRecords)fail('This change touches too many records for a field patch; use the full editor','failed-precondition');
+  const col=ctx.a.ws.collection('records'),records=[];
+  for(const {record,update} of all){const next={...record,...update,revision:record.revision+1,updatedAt:now,updatedBy:uid};if(record.revision===0)tx.set(col.doc(record.key),next);else tx.update(col.doc(record.key),{...update,revision:next.revision,updatedAt:now,updatedBy:uid});records.push(next);}
+  return records;
+ }
+ // Edge records: tombstone a live edge, or create (or revive) a default edge. Both are exactly one write.
+ const tombstoneEdge=(e,now)=>e.record&&!e.record.deleted?{record:e.record,update:{deleted:true,deletedAt:now}}:null;
+ const addEdge=(e,projectId)=>e.record&&!e.record.deleted?null:{record:e.record||newEdge(projectId,e.pred,e.succ),update:{deleted:false,deletedAt:null,data:{predecessorId:e.pred,successorId:e.succ,type:'FS',lagDays:0}}};
+ async function deleteTask(uid,b){
+  cascadeBase(b);const key=S.keyOf('tasks',b.projectId,b.taskId),timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const ctx=await preflight(tx,uid,b,'delete',key,timings),{a,reads,snap}=ctx;
+   const measured=(writes=0)=>ctx.admin?{documentReads:ctx.total(),documentWrites:writes,documentDeletes:0,readBreakdown:{...reads},validationClass:'delete',transactionAttempts:attempts}:undefined;
+   if(!snap.exists)fail('Record is unavailable','failed-precondition');const old=snap.data();if(!taskOwns(old,b))fail('Record is unavailable','failed-precondition');
+   if(old.deleted)return {ok:true,alreadyApplied:true,revision:old.revision,deleted:true,changed:[],measured:measured()};
+   const hash=fingerprint(uid,b);
+   if(old.lastOpId===b.opId){if(old.lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,revision:old.revision,deleted:true,changed:[],measured:measured()};}
+   if(old.revision!==b.baseRevision)return {ok:false,code:'conflict',current:old,measured:measured()};
+   const now=stamp(),id=b.taskId,c=createCascade({tx,a,projectId:b.projectId,fail,reads}),col=a.ws.collection('records');
+   const [dependents,children,linked]=await Promise.all([c.dependents(id),c.children(id),c.linked(id)]);
+   const originals=new Map([...dependents,...children].map(r=>[r.id,r])),edited=new Map();
+   for(const r of originals.values())if(r.id!==id)edited.set(r.id,{...r,data:{...r.data,parentId:r.data.parentId===id?'':r.data.parentId,dependsOn:r.data.dependsOn.filter(d=>d!==id),verified:false,merged:false,updatedAt:iso(now)}});
+   const {changed,releases}=await invalidate(c,edited,old.data.releaseId?[old.data.releaseId]:[],now,new Set([id]));
+   const edges=await readEdges(c,tx,col,reads,b.projectId,[...old.data.dependsOn.map(p=>[p,id]),...dependents.map(d=>[id,d.id])]);
+   const others=[];
+   for(const r of edited.values())others.push({record:originals.get(r.id),update:{data:r.data}});
+   for(const r of changed.values())others.push({record:r,update:{data:r.data}});
+   for(const r of releases)others.push({record:r,update:{data:r.data}});
+   for(const r of linked)others.push({record:r,update:{deleted:true,deletedAt:now}});
+   for(const e of edges){const t=tombstoneEdge(e,now);if(t)others.push(t);}
+   const records=commitAll(tx,ctx,uid,now,{record:old,update:{deleted:true,deletedAt:now,lastOpId:b.opId,lastOpHash:hash}},others);
+   return {ok:true,revision:records[0].revision,deleted:true,changed:records,measured:measured(records.length)};
   });
+ }
+ async function patchDependencies(uid,b){
+  cascadeBase(b);if(!Array.isArray(b.dependsOn)||b.dependsOn.length>200)fail('dependsOn must be a list of at most 200 task IDs','invalid-argument');
+  const list=[...new Set(b.dependsOn.map(id=>S.segment(id)))],key=S.keyOf('tasks',b.projectId,b.taskId),timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const ctx=await preflight(tx,uid,b,'edit',key,timings),{a,reads,snap}=ctx;
+   const measured=(writes=0)=>ctx.admin?{documentReads:ctx.total(),documentWrites:writes,documentDeletes:0,readBreakdown:{...reads},validationClass:'dependencies',transactionAttempts:attempts}:undefined;
+   if(!snap.exists)fail('Record is unavailable','failed-precondition');const old=snap.data();if(!taskOwns(old,b))fail('Record is unavailable','failed-precondition');
+   if(old.deleted)return {ok:false,code:'deleted',current:old,measured:measured()};
+   const hash=fingerprint(uid,b);
+   if(old.lastOpId===b.opId){if(old.lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,revision:old.revision,record:old,changed:[],measured:measured()};}
+   const same=old.data.dependsOn.length===list.length&&old.data.dependsOn.every(d=>list.includes(d));
+   if(old.revision!==b.baseRevision)return same?{ok:true,alreadyApplied:true,revision:old.revision,record:old,changed:[],measured:measured()}:{ok:false,code:'conflict',current:old,measured:measured()};
+   if(same)return {ok:true,alreadyApplied:true,revision:old.revision,record:old,changed:[],measured:measured()};
+   const now=stamp(),id=b.taskId,added=list.filter(d=>!old.data.dependsOn.includes(d)),removed=old.data.dependsOn.filter(d=>!list.includes(d)),c=createCascade({tx,a,projectId:b.projectId,fail,reads}),col=a.ws.collection('records');
+   if(list.includes(id))fail('Task cannot depend on itself','invalid-argument');
+   for(const pred of added)if(!(await c.get('tasks',pred)))fail('Missing dependency '+pred,'invalid-argument');
+   await c.assertNoCycle(id,added);
+   const data={...old.data,dependsOn:list,verified:false,merged:false,updatedAt:iso(now)};if(!S.equal(model.defaultTask(data),data))fail('Cloud change violates the canonical task schema','invalid-argument');
+   const {changed,releases}=await invalidate(c,new Map([[id,{...old,data}]]),[],now);
+   const edges=await readEdges(c,tx,col,reads,b.projectId,[...removed.map(p=>[p,id]),...added.map(p=>[p,id])]),others=[];
+   for(const r of changed.values())others.push({record:r,update:{data:r.data}});for(const r of releases)others.push({record:r,update:{data:r.data}});
+   for(const e of edges){const op=removed.includes(e.pred)?tombstoneEdge(e,now):addEdge(e,b.projectId);if(op)others.push(op);}
+   const records=commitAll(tx,ctx,uid,now,{record:old,update:{data,lastOpId:b.opId,lastOpHash:hash}},others);
+   return {ok:true,revision:records[0].revision,record:records[0],changed:records,measured:measured(records.length)};
+  });
+ }
+ // Create handlers: exactly one new document (plus one per dependency link for a task). The record count is checked with an aggregation query (1 read per 1,000 rows).
+ const createBase=b=>{S.segment(b.projectId);S.segment(b.opId);};
+ async function createRecord(uid,b,spec){
+  createBase(b);const {id,boardId='',order=0}=spec.identify(b),key=S.keyOf(spec.kind,b.projectId,id,boardId),timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const ctx=await preflight(tx,uid,b,spec.permission,key,timings),{a,reads,snap}=ctx,col=a.ws.collection('records');reads.aggregation=0;
+   const measured=(writes=0)=>ctx.admin?{documentReads:ctx.total(),documentWrites:writes,documentDeletes:0,readBreakdown:{...reads},validationClass:'create-'+spec.kind,transactionAttempts:attempts}:undefined;
+   const hash=fingerprint(uid,{...b,id});
+   if(snap.exists){const old=snap.data();if(old.lastOpId===b.opId&&old.lastOpHash===hash)return {ok:true,duplicate:true,revision:old.revision,record:old,changed:[],measured:measured()};fail('Record already exists','already-exists');}
+   const now=stamp(),c=createCascade({tx,a,projectId:b.projectId,fail,reads});
+   const kindQuery=col.where('projectId','==',b.projectId).where('kind','==',spec.kind);let rows;
+   try{rows=(await kindQuery.count().get()).data().count;reads.aggregation=Math.max(1,Math.ceil(rows/1000));}
+   catch{// Aggregation queries are missing from some emulator builds: fall back to a bounded key-only query (billed per row, but only reached where aggregation is unavailable).
+    const snap=await kindQuery.select().limit(CAPS[spec.kind]+1).get();rows=snap.size;reads.aggregation=Math.max(1,snap.size);reads.aggregationFallback=1;}
+   if(rows>=CAPS[spec.kind])fail('This project is too large for a field patch; use the full editor','failed-precondition');
+   const out=await spec.prepare({tx,a,b,c,col,reads,now,uid,id,fail});
+   const records=commitAll(tx,ctx,uid,now,{record:shell(spec.kind,b.projectId,id,order,boardId),update:{deleted:false,data:out.data,lastOpId:b.opId,lastOpHash:hash}},out.others||[]);
+   return {ok:true,revision:1,record:records[0],changed:records,measured:measured(records.length)};
+  });
+ }
+ const fallbackIfSet=(data,fields,fail)=>{for(const f of fields)if(data[f]!==''&&data[f]!==undefined&&!(f==='boardId'&&data[f]==='board-default')&&!(Array.isArray(data[f])&&!data[f].length))fail(`A new task with ${f} set needs the full editor`,'failed-precondition');};
+ const taskCreate={kind:'tasks',permission:'create',identify:b=>({id:S.segment(b.taskId),order:Number.isSafeInteger(b.order)&&b.order>=0&&b.order<=100000?b.order:100000}),
+  async prepare({tx,a,b,c,col,reads,now,fail,id}){
+   if(!b.data||typeof b.data!=='object'||Array.isArray(b.data)||b.data.id!==id)fail('The task must carry its own ID','invalid-argument');
+   const data={...b.data,updatedAt:iso(now)};
+   if(!S.equal(model.defaultTask(data),data))fail('Cloud change violates the canonical task schema','invalid-argument');
+   if(data.verified||data.merged)fail('A new task cannot be verified or merged','invalid-argument');
+   fallbackIfSet(data,['boardId','listId','sprintId','phaseId','releaseId'],fail);
+   const project=(await tx.get(col.doc(S.keyOf('projects',b.projectId,b.projectId)))).data();reads.configuration=1;if(!project||project.deleted)fail('Task configuration is unavailable','failed-precondition');
+   model.taskSchema.validateTask(project.data,data);
+   if(data.parentId){let key=data.parentId,depth=0;while(key){if(++depth>40)fail('Task hierarchy exceeds 40 levels','invalid-argument');const p=await c.get('tasks',key);if(!p)fail('Missing parent: '+key,'invalid-argument');key=p.data.parentId;}}
+   const preds=[...new Set(data.dependsOn)],statuses=new Map();
+   if(preds.length!==data.dependsOn.length)fail('Duplicate dependency','invalid-argument');
+   for(const pred of preds){const t=await c.get('tasks',pred);if(!t)fail('Missing dependency '+pred,'invalid-argument');statuses.set(pred,t.data.status);}
+   V.validateDone({data:{status:'Backlog'}},{data},id=>statuses.get(id));
+   const edges=await readEdges(c,tx,col,reads,b.projectId,preds.map(p=>[p,id])),others=[];
+   for(const e of edges){const op=addEdge(e,b.projectId);if(op)others.push(op);}
+   return {data,others};
+  }};
+ const commentCreate={kind:'comments',permission:'comment',identify:b=>({id:S.segment(b.commentId)}),
+  async prepare({a,b,c,now,fail,id}){
+   const d=b.data;if(!d||typeof d!=='object'||Array.isArray(d)||d.id!==id||d.taskId!==b.taskId)fail('The comment must carry its own ID and task','invalid-argument');
+   const data={...d,at:iso(now)},clean={id:txt(data.id,120),taskId:txt(data.taskId,120),author:txt(data.author,120)||'Local operator',body:txt(data.body,4000),at:data.at};
+   if(!S.equal(clean,data)||!clean.id||!clean.taskId||!clean.body)fail('Cloud change violates the canonical comment schema','invalid-argument');
+   if(!(await c.get('tasks',b.taskId)))fail('Comment task is unavailable','failed-precondition');
+   return {data};
+  }};
+ const timeCreate={kind:'timeEntries',permission:'create',identify:b=>({id:S.segment(b.entryId)}),
+  async prepare({b,c,fail,id}){
+   const d=b.data;if(!d||typeof d!=='object'||Array.isArray(d)||d.id!==id||d.taskId!==b.taskId)fail('The time entry must carry its own ID and task','invalid-argument');
+   const clean={id:txt(d.id,120),taskId:txt(d.taskId,120),owner:txt(d.owner,120),date:d.date,hours:whole(d.hours,24),rateAtEntry:Number.isFinite(d.rateAtEntry)&&d.rateAtEntry>=0&&d.rateAtEntry<=100000?d.rateAtEntry:null,note:txt(d.note,1000)};
+   if(!isDate(d.date)||clean.hours<=0||!S.equal(clean,d))fail('Cloud change violates the canonical time entry schema','invalid-argument');
+   if(!(await c.get('tasks',b.taskId)))fail('Time entry task is unavailable','failed-precondition');
+   return {data:d};
+  }};
+ const createTask=(uid,b)=>createRecord(uid,b,taskCreate),addComment=(uid,b)=>createRecord(uid,b,commentCreate),logTime=(uid,b)=>createRecord(uid,b,timeCreate);
+ // Removes up to 50 Canvas objects with the same cascade as canvas.changeBoard({type:'remove'}): attached connectors and anchored comment threads
+ // are removed, children of a removed frame lose their group. Related rows are found with indexed `in` queries (30 IDs each), never by scanning the board.
+ async function deleteCanvasObjects(uid,b){
+  S.segment(b.projectId);S.segment(b.boardId);S.segment(b.opId);
+  if(!Array.isArray(b.objectIds)||!b.objectIds.length||b.objectIds.length>50)fail('Choose between 1 and 50 Canvas objects','invalid-argument');
+  const ids=[...new Set(b.objectIds.map(id=>S.segment(id)))];
+  if(!b.bases||typeof b.bases!=='object'||ids.some(id=>!Number.isSafeInteger(b.bases[id])||b.bases[id]<1))fail('Every Canvas object needs its base revision','invalid-argument');
+  const objectKey=id=>S.keyOf('canvas.objects',b.projectId,id,b.boardId),timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const ctx=await preflight(tx,uid,b,'delete',objectKey(ids[0]),timings),{a,reads}=ctx,col=a.ws.collection('records');
+   const measured=(writes=0)=>ctx.admin?{documentReads:ctx.total(),documentWrites:writes,documentDeletes:0,readBreakdown:{...reads},validationClass:'canvas-delete',transactionAttempts:attempts}:undefined;
+   const found=await Promise.all(ids.map(async(id,i)=>i===0?ctx.snap:(reads.record++,tx.get(col.doc(objectKey(id)))))),objects=found.map(f=>f.exists?f.data():null);
+   if(objects.some(o=>!o||o.kind!=='canvas.objects'||o.projectId!==b.projectId||o.boardId!==b.boardId))fail('Canvas object is unavailable','failed-precondition');
+   if(objects.every(o=>o.deleted))return {ok:true,alreadyApplied:true,changed:[],measured:measured()};
+   const hash=fingerprint(uid,b);
+   if(objects[0].lastOpId===b.opId){if(objects[0].lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,changed:[],measured:measured()};}
+   if(objects.some((o,i)=>o.deleted||o.revision!==b.bases[ids[i]]))return {ok:false,code:'conflict',current:objects,measured:measured()};
+   if(objects.some(o=>o.data.locked))fail('Unlock the object before editing','failed-precondition');
+   const now=stamp(),chosen=new Set(ids),related=new Map(),chunks=[];for(let i=0;i<ids.length;i+=30)chunks.push(ids.slice(i,i+30));
+   const query=async(field,chunk)=>{const snap=await tx.get(col.where('projectId','==',b.projectId).where(field,'in',chunk).limit(LIMITS.queryRows+1));reads.queries+=Math.max(1,snap.docs.length);if(snap.docs.length>LIMITS.queryRows)fail('The Canvas selection is connected to too many items for a field patch; use the full editor','failed-precondition');return snap.docs.map(d=>d.data());};
+   for(const chunk of chunks)for(const field of ['data.groupId','data.from','data.to','data.objectId'])for(const r of await query(field,chunk))if(!r.deleted&&r.boardId===b.boardId&&['canvas.objects','canvas.connectors','canvas.threads'].includes(r.kind)&&!chosen.has(r.id))related.set(r.key,r);
+   const others=[];
+   for(const r of related.values()){
+    if(r.kind==='canvas.objects'&&chosen.has(r.data.groupId))others.push({record:r,update:{data:{...r.data,groupId:''}}});
+    else if(r.kind==='canvas.connectors'&&(chosen.has(r.data.from)||chosen.has(r.data.to)))others.push({record:r,update:{deleted:true,deletedAt:now}});
+    else if(r.kind==='canvas.threads'&&chosen.has(r.data.objectId))others.push({record:r,update:{deleted:true,deletedAt:now}});
+   }
+   for(const o of objects.slice(1))others.push({record:o,update:{deleted:true,deletedAt:now}});
+   const records=commitAll(tx,ctx,uid,now,{record:objects[0],update:{deleted:true,deletedAt:now,lastOpId:b.opId,lastOpHash:hash}},others);
+   return {ok:true,deleted:ids,changed:records,measured:measured(records.length)};
+  });
+ }
+ // Read-only latency probe for the concurrency investigation (administrators only, no writes): separates plain reads and read-only
+ // transactions, the floor for any patch, from the cost of our own logic.
+ async function latencyProbe(uid,b){
+  let ref;await db.runTransaction(async tx=>{const a=await access(tx,uid,b.orgId,b.workspaceId);if(!IAM.administer(a.member)||!a.meta)fail('Organization administrator required');ref=a.ws;});
+  const iterations=Math.min(Math.max(Number(b.iterations)||5,1),20);
+  const sample=async fn=>{const out=[];for(let i=0;i<iterations;i++){const t=performance.now();await fn();out.push(performance.now()-t);}out.sort((x,y)=>x-y);return {medianMs:+out[Math.floor(out.length/2)].toFixed(1),maxMs:+out.at(-1).toFixed(1)};};
+  const five=()=>[ref,ref.collection('grants').doc(uid),ref.collection('grants').doc('probe-1'),ref.collection('records').doc('probe-2'),ref.collection('records').doc('probe-3')];
+  return {ok:true,iterations,plainRead:await sample(()=>ref.get()),readOnlyTransactionOneDoc:await sample(()=>db.runTransaction(tx=>tx.get(ref))),readOnlyTransactionFiveDocs:await sample(()=>db.runTransaction(tx=>Promise.all(five().map(r=>tx.get(r)))))};
  }
  // Administrator controls: the workspace protocol marker and the destructive-write freeze.
  async function workspaceControl(uid,b){
@@ -53,6 +254,6 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    return {ok:true,...change};
   });
  }
- return {patch,workspaceControl};
+ return {patch,patchCanvas,deleteCanvasObjects,deleteTask,patchDependencies,createTask,addComment,logTime,workspaceControl,latencyProbe};
 }
-module.exports={patchHandlers,ALLOWED};
+module.exports={patchHandlers,ALLOWED,CANVAS_ALLOWED};

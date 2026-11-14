@@ -1,10 +1,9 @@
 MILVAYO — FIREBASE v4.0 IMPLEMENTATION PLAN v1.2 (CURATED)
 
-STATUS: Gate 0 closed. Gate 1 contract package accepted by the owner ("Proceed with v4"). Gate 2 (lean patch prototype) is included in the v0.8.6 checkpoint; the owner's Termux/emulator run remains pending. Gates 3 to 6 not started. Nothing is deployed or merged.
+STATUS: Gate 0 closed. Gate 1 contract package accepted by the owner ("Proceed with v4"). Gate 2 (lean patch prototype) IMPLEMENTED in the sandbox and awaiting the owner's Termux/emulator run. Gates 3 to 6 not started. Nothing is deployed, committed, pushed or merged.
 SUPERSEDES: nothing the owner wrote. Milvayo-Firebase-v4_0-Implementation-Plan-v1_1.md stays the product source of truth; this document applies it to the verified v3.1.2 code, closes its open questions where evidence allows, and lists the decisions only the owner can make.
 BASELINE: Milvayo 0.8.5 + Firebase v3.0 Phase 1 + v3.1.2 security patch (owner-verified, emulator, 130/130; see "firebase v3.0.md" section 3.9 and docs/qa/cloud-v3/REPORT.md). Emulator-tested, not production-certified.
-GATE 2 CHECKPOINT: Implemented and recorded as Milvayo 0.8.6 on 2026-11-10. The app, lockfile, Expo config and local Functions package are versioned together; Android/iOS build metadata is 96. In-memory checks pass; the Gate 2 emulator suite remains Not run. See `docs/changelog/CHANGELOG.md` and `docs/qa/cloud-v4/GATE2-REPORT.md`.
-RULES THAT STAY IN FORCE: no deploy/commit/push/merge without explicit authorization; never `git add .`; legacy history, receipts and sequence stay until the replacement protocol passes correctness and isolation tests.
+RULES THAT STAY IN FORCE: no deploy/commit/push/merge without explicit authorization; never `git add .`; legacy history, receipts and sequence stay until the replacement protocol passes correctness and isolation tests; app and Functions package versions are not bumped in deliverables.
 
 ---
 
@@ -132,7 +131,7 @@ D9 Whether posted chat messages keep a workspace audit entry (today each message
 
 10. GATE 2 RESULT (IMPLEMENTED; OWNER EMULATOR RUN PENDING)
 
-Built: src/cloud/server/patch.cjs (`patch`, `workspaceControl`), registered in service.cjs; a protocol/write-freeze guard on the legacy commit; tests/cloud/patch.test.cjs (8 tests) and tests/cloud/patch.emulator.test.cjs (emulator, Not run). Reused unchanged: Class A/B validators, IAM, access(). Legacy pull, versions, receipts, audit, sequence, heads, client code, UI and stored formats are untouched. Version metadata is synchronized to 0.8.6 for this checkpoint.
+Built: src/cloud/server/patch.cjs (`patch`, `workspaceControl`), registered in service.cjs; a protocol/write-freeze guard on the legacy commit; tests/cloud/patch.test.cjs (8 tests) and tests/cloud/patch.emulator.test.cjs (emulator, Not run). Reused unchanged: Class A/B validators, IAM, access(). Legacy pull, versions, receipts, audit, sequence, heads, client code, UI, stored formats and package versions are untouched.
 Measured in the sandbox fake database (instrumented counts, not billing; v3 numbers are the owner's emulator baseline):
   Edit                                   v3.0 commit          v4 patch
   Title/priority/owner/stage/position    6 R / 5-6 W          5 R / 1 W
@@ -143,4 +142,6 @@ Write path for a routine edit is exactly one document (the task); no version, re
 Tests: 320 edit shapes run through legacy commit and patch on twin workspaces; patch never accepts what legacy rejects and accepts every valid Class A/B edit. Also: stale revision rejected without a write, duplicate opId idempotent, already-applied detection, tombstones not revived, viewer/scoped/no-seat/revoked/outsider/cross-org/cross-workspace/wrong-project denied, protocol-3 workspace and frozen workspace refused, legacy commit refused on protocol 4, only validated fields patchable, controls administrator-only and audited.
 Decision applied: D1 server strict revision gate (client auto-reapply belongs to Gate 3). Still open: D2 to D9 (needed from Gate 3/4 onward).
 Not done in Gate 2 on purpose: client sync, signals/cursor (Gate 3), offline queue and UI (Gate 4), backups (Gate 5), removal of legacy code (after Gate 3), summaries (D4), cheaper reads (the seat check reads the subscription document on every edit; it could move to a cached claim later).
+UPDATE 2026-11-09 (fixes and cost): the patch now also covers dates and the other single-task fields (784 combinations proven against canonical validation) and Canvas object geometry (`patchCanvas`: x, y, width, height, layer); an operation ID is bound to actor and exact edit (`lastOpHash`, same write); chat honours the freeze; S1, S2, S3, S9 fixed. Details, before/after counts and the remaining unoptimized workflows (create, delete, dependencies, sprints, comments, time entries, Canvas text) are in docs/qa/cloud-v4/GATE2-FIXES-REPORT.md.
+UPDATE 2026-11-10: `deleteTask` and `patchDependencies` added (bounded cascades proven against the domain functions; delete 2,010 to 8 reads and 1 write, add dependency 2,009 to 9 reads and 2 writes; limits and indexes in the fixes report section 2b).
 Next: Gate 3 design spike (change discovery with project-scoped, access-controlled signals; cursor semantics; R1, R2, R3, R5 tests). It needs decisions D1 confirmation, D7 and the contention measurements.

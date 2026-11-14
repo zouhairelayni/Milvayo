@@ -1,11 +1,35 @@
-## v0.8.6 — Firebase v4.0 Gate 2 task patch prototype (2026-11-10)
+## v0.8.10 — Emulator fixture recovery and restricted worker telemetry (2026-11-14)
 
-- Clean up current Milvayo backup/import copy: distinguish unsupported formats, malformed JSON, invalid backup structure, missing projects, and file-access failures; update workspace recovery guidance, password warning, export filename, and screen-error log label. Preserve the historical `niyarvo.project.v1` / `niyarvo.workspace.v1` formats and on-device storage identifiers. Focused backup/import tests: 39 passed; full `npm test`: 1,090 passed, 0 failed, 4 emulator-only skipped. Android device/runtime verification: Not run. QA inventory: `docs/qa/branding-cleanup/REPORT.md`.
+- Capture Firestore reads inside rules-disabled callbacks and return their values explicitly; isolate security subtests with fresh accounts/workspaces and assert viewer telemetry on initial and cached pulls.
+- Keep cached read counts restricted to administrators and attach worker telemetry only to authorization-derived numeric read instrumentation, or the existing explicit emulator benchmark opt-in. Security rules are unchanged.
+- Number the previously unversioned Gate 2 fixes and following changes as v0.8.6 through v0.8.9. Synchronize application and Functions manifests at v0.8.10, Android/iOS build 100. No data migration. Owner-requested verification: npm test 1,122 passed, 0 failed, 8 skipped; npm run test:cloud 191 passed, 0 failed. Web/Expo Go/Fast Refresh acceptance remains pending.
+
+## v0.8.9 — Firebase v4.0 — Canvas delete on the field-patch path and recorded decisions (2026-11-10)
+
+- Add `deleteCanvasObjects` (up to 50 objects): attached connectors and anchored comments are removed and children of a removed frame lose their group, exactly like the domain remove cascade (oracle tests); 1,013 reads and 7 writes become 9 reads and 1 write at 1,000 objects. Canvas add and text edit stay on the full editor on purpose (2 MB board limit). Four new composite indexes (unenforced by the emulator).
+- Record the owner-delegated decisions D1 to D11 in plain language (`docs/Milvayo-Handoffs/firebase v4.0 decisions.md`). Sandbox only; emulator run: Not run.
+
+## v0.8.8 — Firebase v4.0 verification package — instrumentation, emulator tests and baselines (2026-11-10)
+
+- Add concurrency instrumentation: stage timings (client-to-Function delay, token verification, handler, authorization, transaction wall time and attempts, in-flight requests), an administrator read-only `latencyProbe`, and a one-run benchmark with three controls (single token, read-only, disjoint organizations). Timings reach non-administrators only with MILVAYO_BENCH=1 and an explicit request.
+- Add emulator integration tests for deletes, dependencies and the Gate 2 security fixes, a sandbox baseline of every Firebase-backed workflow, shared test helpers, a Termux README, and the Gate 3 design with an assessment of the development order. Sandbox: 904 tests, same 71 environment failures as the untouched source. Emulator results: Not run.
+
+## v0.8.7 — Firebase v4.0 — Delete and dependencies on the field-patch path (2026-11-10)
+
+- Add `deleteTask` and `patchDependencies`. Both reproduce the domain cascade exactly (dependents and children, downstream verification reset, releases, linked comments/time entries/reminders, dependency link records) while reading only related records through indexed queries. Delete: 2,010 reads and 7 writes become 8 reads and 1 write at 2,000 tasks; adding a dependency: 2,009 reads and 8 writes become 9 reads and 2 writes. Large cascades fall back to the full editor.
+- Add composite indexes for the cascade queries (must be built before real use); extend the sandbox benchmark; 5 new tests (899 total in the sandbox, same 71 environment failures). Emulator and device runs: Not run.
+
+## v0.8.6 — Firebase v4.0 Gate 2 fixes — security hardening and wider one-write coverage (2026-11-09)
+
+- Security: a revoked member no longer regains an organization role on re-invitation; a platform security role can no longer create, change or remove owners; patch operation IDs are bound to the actor and exact edit; the write freeze also stops chat messages; unexpected errors and Auth library errors are replaced with a generic message and telemetry is limited to administrator responses; `history` on a missing record is handled; invitations require an active workspace and are capped at 100 pending; RTDB ACL writes are retried three times before a failure is reported.
+- Cost: the one-write `patch` now covers dates, milestone, estimate, progress, labels, links, attachments and task type, tests/evidence/actual (locked on verified tasks), and `patchCanvas` covers Canvas object geometry. Proven equivalent to canonical validation (784 task-field and 26 Canvas combinations). Due-date and Canvas moves drop from 109 to 2,009 and 22 to 1,012 reads to 5 reads and 1 write.
+- Experiment (off by default): `MILVAYO_PATCH_AUTH_MODE=snapshot`. Sandbox tests pass; emulator and device runs: Not run. Report: `docs/qa/cloud-v4/GATE2-FIXES-REPORT.md`.
+
+## Firebase v4.0 Gate 2 — Lean task patch prototype (2026-11-08, version not bumped)
+
 - Add `patch`: a routine task edit (title, description, priority, custom values, status, owner, stage, position) writes exactly one Firestore document, with no version, receipt, audit, workspace-sequence or summary write; 5 reads (6 with a status change). Retry safety uses a last-operation ID on the task, stale revisions return a conflict with the current record, tombstones are never revived. Validation reuses the Class A/B validators and is proven equivalent to the legacy commit across 320 edit shapes.
 - Add workspace protocol and write-freeze controls (`workspaceControl`, administrator-only, audited). A protocol-4 workspace refuses legacy commits ("Update the app…"); `patch` refuses any other workspace; a freeze stops both. v4 replaces v3 outright (no installed clients yet); legacy code stays only until Gate 3 passes.
-- Sandbox/in-memory Gate 2 checks pass; the emulator test `tests/cloud/patch.emulator.test.cjs` is written and Not run. The full repository comparison recorded 804 passing, 71 failing (same missing-dependency/assets failures as baseline), and 5 skipped. This checkpoint is not emulator or production certified; nothing deployed.
-- Synchronize app, lockfile, Expo and local Functions package versions to 0.8.6; Android `versionCode` and iOS `buildNumber` to 96. No schema migration, dependency change, build, deployment or production operation.
-- Keep standalone emulator benchmark runners under `scripts/cloud/`, outside the `tests/` tree. After correcting their location and instructions, `npm test` passes 1,090 tests with 0 failures and 4 emulator-only skips.
+- Sandbox tests pass; the emulator test `tests/cloud/patch.emulator.test.cjs` is written and Not run. Nothing deployed.
 
 ## Firebase v3.0 security patch — Global signal restricted to unrestricted workspace readers (2026-11-08, version not bumped)
 

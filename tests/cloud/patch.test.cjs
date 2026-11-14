@@ -30,7 +30,7 @@ test('a routine title or priority edit writes exactly one document and nothing e
   const x=database(generate({tasks,objects:0})),t=x.tasks()[0],r=await x.patch('alice',t.id,{title:'Renamed',priority:'High'});
   assert.equal(r.ok,true);assert.equal(r.revision,t.revision+1);assert.equal(r.record.data.title,'Renamed');assert.equal(r.record.lastOpId.startsWith('op-'),true);
   assert.deepEqual(x.writes,[t.key.startsWith('tasks')?x.root+'/records/'+t.key:x.root+'/records/'+t.key],'exactly one write: the task document');
-  assert.equal(r.measured.documentWrites,1);assert.equal(r.measured.documentReads,5,'member, grant, workspace, subscription, task');assert.deepEqual(r.measured.readBreakdown,{authorization:3,subscription:1,task:1,configuration:0,dependencies:0});
+  assert.equal(r.measured.documentWrites,1);assert.equal(r.measured.documentReads,5,'member, grant, workspace, subscription, task');assert.deepEqual(r.measured.readBreakdown,{authorization:3,subscription:1,record:1,configuration:0,dependencies:0});
   assert.equal(x.rows.get(x.root).sequence,1,'the workspace sequence is not written');assert.ok(![...x.rows.keys()].some(k=>/\/(versions|receipts|audit|summaries)\//.test(k)));
   assert.notEqual(x.rows.get(t.key&&x.root+'/records/'+t.key).data.updatedAt,t.data.updatedAt,'the server stamps updatedAt');
  }

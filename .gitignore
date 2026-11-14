@@ -11,6 +11,7 @@ dist/
 *.jks
 *.p12
 *.json.backup
+*.zip
 project-exports/
 credentials.json
 keystore.properties

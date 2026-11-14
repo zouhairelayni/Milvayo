@@ -18,7 +18,7 @@ function collaboration({db,access,fail,digest}){
  async function message(uid,b){
   S.segment(b.mutationId);if(typeof b.body!=='string'||!b.body.trim()||b.body.length>4000)fail('Message must contain 1–4000 characters','invalid-argument');
   const mentions=b.mentions||[];if(!Array.isArray(mentions)||mentions.length>20||new Set(mentions).size!==mentions.length)fail('Invalid mentions','invalid-argument');mentions.forEach(S.segment);
-  return db.runTransaction(async tx=>{const a=await scoped(tx,uid,b,'comment'),ref=a.ws.collection('messages').doc(b.mutationId),thread=a.ws.collection('conversations').doc(a.threadKey),[old,meta,watchers]=await Promise.all([tx.get(ref),tx.get(thread),tx.get(a.ws.collection('watchers').where('projectId','==',b.projectId).where('threadId','==',a.threadId).limit(100))]);
+  return db.runTransaction(async tx=>{const a=await scoped(tx,uid,b,'comment');if(a.meta.writeFreeze===true)fail('Writes are temporarily paused for this workspace','failed-precondition');const ref=a.ws.collection('messages').doc(b.mutationId),thread=a.ws.collection('conversations').doc(a.threadKey),[old,meta,watchers]=await Promise.all([tx.get(ref),tx.get(thread),tx.get(a.ws.collection('watchers').where('projectId','==',b.projectId).where('threadId','==',a.threadId).limit(100))]);
    const payload={projectId:b.projectId,threadId:a.threadId,taskId:b.taskId||'',body:b.body.trim(),mentions,actor:uid},hash=digest(payload);
    if(old.exists){if(old.data().hash!==hash||old.data().actor!==uid)fail('Message ID reused','already-exists');return {id:ref.id,duplicate:true};}
    const targets=[...new Set([...mentions,...watchers.docs.map(d=>d.data().uid)])].filter(id=>id!==uid),permitted=[];

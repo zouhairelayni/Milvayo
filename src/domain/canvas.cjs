@@ -134,4 +134,4 @@ function selectionBoard(board,ids){
 }
 function exportBoard(board){return JSON.stringify({format:'milvayo.canvas.v1',board:normalizeBoard(board,board.projectId)});}
 function importBoard(text,options){if(typeof text!=='string'||tooBig(text,MAX_BYTES+10000))throw Error('Canvas import exceeds 2 MB');const raw=JSON.parse(text.replace(/^\uFEFF/,''));if(raw.format!=='milvayo.canvas.v1')throw Error('Unsupported Canvas backup');return duplicateBoard(raw.board,options);}
-module.exports={VERSION,LOCAL_OWNER,MAX_BYTES,TYPES,SOURCE_TYPES,normalizeBoard,normalizeBoards,rehomeBoards,createBoard,createObject,assertAccess,changeBoard,contentOf,saveBoard,saveViewport,deleteBoard,duplicateBoard,exportBoard,importBoard,selectionBoard,viewport,projection};
+module.exports={VERSION,LOCAL_OWNER,MAX_BYTES,TYPES,SOURCE_TYPES,normalizeObject:object,normalizeBoard,normalizeBoards,rehomeBoards,createBoard,createObject,assertAccess,changeBoard,contentOf,saveBoard,saveViewport,deleteBoard,duplicateBoard,exportBoard,importBoard,selectionBoard,viewport,projection};

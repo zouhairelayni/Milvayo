@@ -37,7 +37,7 @@ test('revocation writes a denying ACL immediately and bumps the access signal',a
 test('if the RTDB revocation write fails, data access ends at once and the ACL exposure is bounded by its expiry; retrying repairs it',async()=>{
  const x=setup();const before=Date.now();await x.run('bob',{action:'presenceAuthorize'});
  const granted=x.rtdb.nodes.get(x.aclPath);assert.equal(granted.unrestricted,true);assert.ok(granted.expiresAt-before<=ACL_TTL_MS+1000,'ACL expiry is bounded by the 10-minute TTL');
- x.rtdb.failNext(1);await assert.rejects(x.run('alice',{action:'revoke',uid:'bob'}),/RTDB unavailable/,'the administrator sees the failure');
+ x.rtdb.failNext(3);await assert.rejects(x.run('alice',{action:'revoke',uid:'bob'}),/RTDB unavailable/,'the administrator sees the failure');
  // Firestore state is already revoked: every API request re-checks membership and grants.
  assert.equal(x.rows.get('orgs/org/members/bob').active,false);assert.equal(x.rows.get(x.root+'/grants/bob').workspaceRole,'none');
  await assert.rejects(x.run('bob',{action:'pull',cursor:0}),/unavailable/i);await assert.rejects(x.run('bob',{action:'presenceAuthorize'}),/unavailable/i,'a revoked user cannot refresh the ACL');
@@ -47,11 +47,11 @@ test('if the RTDB revocation write fails, data access ends at once and the ACL e
 });
 test('grant failures stay fail-closed: Firestore is denied first, a failed deny phase leaves only the bounded ACL expiry, and a failed final write leaves the ACL denied',async()=>{
  const x=setup();x.rows.set('orgs/org/subscription/current',{seats:['alice','bob'],allocations:{}});await x.run('bob',{action:'presenceAuthorize'});
- x.rtdb.failNext(1);await assert.rejects(x.run('alice',{action:'grant',uid:'bob',grant:{workspaceRole:'none',projects:{}}}),/RTDB unavailable/);
+ x.rtdb.failNext(3);await assert.rejects(x.run('alice',{action:'grant',uid:'bob',grant:{workspaceRole:'none',projects:{}}}),/RTDB unavailable/);
  const pending=x.rows.get(x.root+'/grants/bob');assert.equal(pending.workspaceRole,'none');assert.equal(pending.pending,true,'Firestore is already in the denying phase');
  assert.equal(x.rtdb.nodes.get(x.aclPath).unrestricted,true,'only the stale RTDB entry remains, bounded by its expiry');
  // Retry with a restricted grant; the final ACL write fails after the deny phase, so the ACL must stay denied.
- const original=x.rtdb.ref;let calls=0;x.rtdb.ref=path=>{const r=original(path);return path.startsWith('acl/')?{transaction:async fn=>{calls++;if(calls===2)throw Error('RTDB unavailable');return r.transaction(fn);}}:r;};
+ const original=x.rtdb.ref;let calls=0;x.rtdb.ref=path=>{const r=original(path);return path.startsWith('acl/')?{transaction:async fn=>{calls++;if(calls>=2)throw Error('RTDB unavailable');return r.transaction(fn);}}:r;};
  await assert.rejects(x.run('alice',{action:'grant',uid:'bob',grant:{workspaceRole:'viewer',projects:{confidential:'none'}}}),/RTDB unavailable/);
  const acl=x.rtdb.nodes.get(x.aclPath);assert.equal(acl.workspace,false);assert.equal(acl.unrestricted,false);
 });
