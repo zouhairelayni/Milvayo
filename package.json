@@ -15,7 +15,15 @@
     "cloud:seed": "node src/cloud/tools/seed.cjs",
     "cloud:benchmark": "node src/cloud/tools/benchmark.cjs",
     "cloud:cost": "node src/cloud/tools/cost.cjs",
-    "cloud:export": "node src/cloud/tools/emulators.cjs export"
+    "cloud:export": "node src/cloud/tools/emulators.cjs export",
+    "postinstall": "node scripts/sync-version.cjs",
+    "pretest": "node scripts/sync-version.cjs",
+    "prestart": "node scripts/sync-version.cjs",
+    "preweb": "node scripts/sync-version.cjs",
+    "prebuild:web": "node scripts/sync-version.cjs",
+    "pretest:cloud": "node scripts/sync-version.cjs",
+    "pretest:cloud:running": "node scripts/sync-version.cjs",
+    "predeploy:hosting": "node scripts/sync-version.cjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",

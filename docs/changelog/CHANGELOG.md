@@ -1,3 +1,7 @@
+## v0.8.20 — Draft (version synchronized automatically)
+
+- Release notes pending. This draft does not certify or deploy a release.
+
 ## v0.8.10 — Emulator fixture recovery and restricted worker telemetry (2026-11-14)
 
 - Capture Firestore reads inside rules-disabled callbacks and return their values explicitly; isolate security subtests with fresh accounts/workspaces and assert viewer telemetry on initial and cached pulls.

@@ -59,9 +59,8 @@ test('the Brand logo can still play at 1.5x; the More screen shows it still and 
  assert.match(more,/label="Appearance"/);
 });
 
-test('0.5.58 manifests match and no legacy logo dependency is necessary',()=>{
- const pkg=require('../../package.json'),lock=require('../../package-lock.json'),app=require('../../app.json');
- assert.match(pkg.version,/^\d+\.\d+\.\d+$/);assert.equal(lock.version,pkg.version);assert.equal(lock.packages[''].version,pkg.version);assert.equal(app.expo.version,pkg.version);
+test('v0.5.58 UI requires no legacy logo asset',()=>{
+ // Version synchronization is verified once in tests/app/release-metadata-060.test.cjs.
  assert.match(read('src/components/shell/Menus.js'),/BoardMorph/);
  assert.doesNotMatch(read('src/components/shell/Menus.js'),/niyarvo-mark-mask\.png/);
 });
