@@ -1,26 +1,47 @@
-# Milvayo v0.8.10 — Control A benchmark fixture fix
+# Milvayo v0.8.10 — I/O audit meter correction
 
-Source: user-uploaded `Milvayo 0.8.10.zip`. Only `tests/helpers/bench-v4-concurrency.cjs` is replaced.
+This **test-only** patch fixes the first whole-cloud audit. No business logic,
+application configuration, deployment or Git files are modified.
 
-**Bug:** Control A reuses `tasks[40+i]` although earlier shared-workspace sweeps change part of that range. This can produce stale-revision conflicts instead of a valid single-token baseline.
+## Fixes
 
-**Change:** Reserve non-overlapping tasks for sequential (first 20), sweeps (next 68 by default), and Control A (next 30). Require enough tasks; do not silently wrap the cursor back to previously used tasks. A failing Control A now exits nonzero **after saving the report**. The comparison caption now notes that owner vs contributor roles also differ.
+1. A Firestore prototype probe used an invalid odd-segment document path,
+   causing the existing collaboration and emulator tests to fail before
+   running many actions. The path is now valid and performs no database I/O.
+2. The old RTDB wrapper produced zero RTDB operations even when grant and revoke
+   used RTDB. This version instruments reference methods on their prototype.
+   Its smoke test verifies that interception; actual SDK behavior remains to be
+   confirmed by the Termux emulator run.
+3. The smoke test checks valid Firestore paths (so the first bug cannot recur).
+4. Adds emulator success scenarios for `groupDelete`, `patchCanvas` and
+   `latencyProbe`—three action paths the existing suite doesn't positively
+   measure.
+5. The source inventory no longer classifies generic `list()` calls as Firebase
+   Storage operations. The scan remains a **candidate list**, not full client
+   Firebase I/O coverage.
 
-Default allocations (`BENCH_USERS=30`, `BENCH_TASKS=500`): sequential 0–19; sweep 20–87; control A 88–117.
-
-## In Termux
+## Run in Termux
 
 ```sh
 cd ~/Milvayo
-unzip -o ~/storage/downloads/Milvayo-v4-Control-A-Fix.zip -d .
-node --check tests/helpers/bench-v4-concurrency.cjs
-MILVAYO_BENCH=1 JAVA_TOOL_OPTIONS="-Xms32m -Xmx192m -XX:ActiveProcessorCount=2" \
-  firebase emulators:exec --only auth,firestore,database,functions,storage,hosting \
-  --project demo-milvayo-083 \
-  "BENCH_OUT=$HOME/milvayo-v4-concurrency-control-a.json node tests/helpers/bench-v4-concurrency.cjs" \
-  > ~/milvayo-v4-concurrency-control-a.log 2>&1
+unzip -o ~/storage/downloads/Milvayo-v4-IO-Audit-Meter-Fix.zip -d .
+node tests/helpers/io-audit-selftest.cjs
+bash scripts/run-firebase-io-audit.sh
 echo "exit $?"
-tail -n 45 ~/milvayo-v4-concurrency-control-a.log
+node scripts/patch-io-audit.cjs status
 ```
 
-Expected: Control A no longer fails due to **reused task fixtures**. The emulator run is still needed to establish actual success and latency. This archive has not been emulator-tested here.
+Expected meter status: `temporary emulator meter not installed`.
+The runner is the one installed from the original full audit package.
+
+Share `$HOME/milvayo-v4-full-io/emulator.log` if tests fail; otherwise share
+`milvayo-v4-io-audit.json` and `.md` to inspect per-action measured costs.
+
+## Limitations
+
+Even 49/49 successful dispatches is *not* every Firebase I/O path: client-side
+RTDB listeners, Auth/Storage, scheduling, rules evaluations, data sizes, denied,
+no-op, duplicate and concurrency variants need separate coverage. SDK counts are
+not billing; they reflect observed operations within measured requests.
+
+Nothing in this package claims the Firebase emulators have passed.

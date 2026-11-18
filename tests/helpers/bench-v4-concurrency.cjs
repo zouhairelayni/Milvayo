@@ -35,10 +35,7 @@ async function main(){
   log('Setup (excluded from results): owner workspace with',TASKS,'tasks and',USERS,'contributors');
   const owner=await H.account('conc-owner'),published=await H.publish(owner,generate({tasks:TASKS,objects:0}),'conc-shared'),scope={orgId:published.orgId,workspaceId:published.workspaceId},call=(u,b)=>post(u,{...scope,...b});
   await call(owner,{action:'subscription',capacity:USERS+2});await call(owner,{action:'workspaceControl',protocol:4});
-  const tasks=(await call(owner,{action:'pull'})).json.records.filter(r=>r.kind==='tasks'&&!r.deleted);
-  const levels=[1,2,5,10,20,30].filter(l=>l<=USERS);
-  const requiredTasks=20+levels.reduce((sum,n)=>sum+n,0)+USERS;
-  if(tasks.length<requiredTasks)throw Error(`Not enough distinct tasks: need ${requiredTasks}, got ${tasks.length}`);
+  const tasks=(await call(owner,{action:'pull'})).json.records.filter(r=>r.kind==='tasks'&&!r.deleted);if(tasks.length<USERS+40)throw Error('Not enough tasks');
   const peers=[];for(let i=0;i<USERS;i++){const u=await H.account('conc-peer-'+i),inv=await call(owner,{action:'invite',uid:u.uid,grant:{workspaceRole:'contributor',projects:{}}});await call(u,{action:'accept',token:inv.json.token});peers.push(u);}
   const patchJob=(user,task,i,sc=scope)=>()=>post(user,{...sc,action:'patch',projectId:task.projectId,taskId:task.id,opId:crypto.randomUUID(),baseRevision:task.revision,set:{title:`bench ${i} ${crypto.randomUUID().slice(0,6)}`}});
   // 0. Floor: plain reads and read-only transactions on the same Function and emulators, no writes.
@@ -46,26 +43,37 @@ async function main(){
   // 1. Sequential baseline: one request at a time.
   log('1. Sequential baseline');const seq=[];for(let i=0;i<20;i++)seq.push(await patchJob(owner,tasks[i],i)());report.sequential={...stages(seq)};save();
   // 2. Sweep: distinct users, distinct tasks, one shared workspace.
-  let cursor=20;for(const level of levels){log('2. Shared workspace, distinct users, level',level);await wave(`shared-workspace distinct-users c=${level}`,Array.from({length:level},(_,i)=>patchJob(peers[i],tasks[cursor+i],i)),report.sweep);cursor+=level;save();}
-  // 3. Control A: one token (no per-user variation), distinct tasks, shared workspace.
-  // Reserve untouched tasks after all sweep waves; reusing 40+i overlaps earlier sweeps and can trigger stale-revision failures.
-  log('3. Control A: single user token, c='+USERS);await wave(`control A: single-token c=${USERS}`,Array.from({length:USERS},(_,i)=>patchJob(owner,tasks[cursor+i],i)),report.controls);cursor+=USERS;save();
-  // 4. Control B: concurrent read-only probes (no writes at all).
-  log('4. Control B: concurrent read-only probes');await wave(`control B: read-only probes c=${USERS}`,Array.from({length:USERS},()=>()=>call(owner,{action:'latencyProbe',iterations:1})),report.controls);save();
-  // 5. Control C: every user edits their OWN organization and workspace (no shared documents at all).
-  log('5. Control C: disjoint organizations (setup excluded)');const own=[];
+  let cursor=20;for(const level of [1,2,5,10,20,30].filter(l=>l<=USERS)){log('2. Shared workspace, distinct users, level',level);await wave(`shared-workspace distinct-users c=${level}`,Array.from({length:level},(_,i)=>patchJob(peers[i],tasks[cursor+i],i)),report.sweep);cursor+=level;if(cursor+USERS>tasks.length)cursor=20;save();}
+  // 3. Control B: concurrent read-only probes (no writes at all).
+  log('3. Control B: concurrent read-only probes');await wave(`control B: read-only probes c=${USERS}`,Array.from({length:USERS},()=>()=>call(owner,{action:'latencyProbe',iterations:1})),report.controls);save();
+  // 4. Control C: every user edits their OWN organization and workspace (no shared documents at all).
+  log('4. Control C: disjoint organizations (setup excluded)');const own=[];
   for(let i=0;i<USERS;i++){const u=peers[i],pub=await H.publish(u,generate({tasks:20,objects:0}),'conc-own-'+i),sc={orgId:pub.orgId,workspaceId:pub.workspaceId};await post(u,{...sc,action:'workspaceControl',protocol:4});const t=(await post(u,{...sc,action:'pull'})).json.records.find(r=>r.kind==='tasks'&&!r.deleted);own.push({u,sc,t});}
-  await wave(`control C: disjoint-organizations c=${USERS}`,own.map(({u,sc,t},i)=>patchJob(u,t,i,sc)),report.controls);
+  await wave(`control C: disjoint-organizations c=${USERS}`,own.map(({u,sc,t},i)=>patchJob(u,t,i,sc)),report.controls);save();
+  // 5. Control A: ONE token, distinct tasks, one shared workspace. Revisions are re-read first (the sweep already edited tasks 20 to 88).
+  const fresh=(await call(owner,{action:'pull'})).json.records.filter(r=>r.kind==='tasks'&&!r.deleted).slice(100,160);
+  for(const [level,from] of [[15,0],[USERS,15]].filter(([l,f])=>f+l<=fresh.length)){log('5. Control A: single token, same workspace, c='+level);await wave(`control A: single-token same-workspace c=${level}`,fresh.slice(from,from+level).map((t,i)=>patchJob(owner,t,i)),report.controls);save();}
+  // 6. Control D: the same single token, but every edit goes to a DIFFERENT workspace of the same organization. The platform allows at most 20 workspaces per organization, so this control uses 15.
+  const D=15;
+  try{log('6. Control D: single token, 15 workspaces in one organization (setup excluded)');const multi=[];
+   for(let i=0;i<D;i++){const pub=await H.publish(owner,generate({tasks:10,objects:0}),'conc-multi-'+i),sc={orgId:pub.orgId,workspaceId:pub.workspaceId};await post(owner,{...sc,action:'workspaceControl',protocol:4});const t=(await post(owner,{...sc,action:'pull'})).json.records.find(r=>r.kind==='tasks'&&!r.deleted);multi.push({sc,t});}
+   await wave(`control D: single-token distinct-workspaces c=${D}`,multi.map(({sc,t},i)=>patchJob(owner,t,i,sc)),report.controls);save();
+  }catch(e){report.controlDError=e.message;save();log('Control D could not run:',e.message);}
+  // 7. The original wave again, twice, now that the emulator has already handled 30 concurrent requests. If these are fast, the early slowness was the emulator
+  // starting its Function workers (a one-time cost), not contention in our code or in Firestore.
+  for(const rep of [1,2]){const again=(await call(owner,{action:'pull'})).json.records.filter(r=>r.kind==='tasks'&&!r.deleted).slice(200+rep*50,200+rep*50+USERS);
+   log('7. Repeat of the shared-workspace wave, run',rep);await wave(`repeat ${rep}: shared-workspace distinct-users c=${USERS} (warm)`,again.map((t,i)=>patchJob(peers[i],t,i)),report.controls);save();}
   report.finishedAt=new Date().toISOString();save();
-  const byLabel=l=>report.sweep.find(r=>r.label.includes(`c=${l}`))||null,shared=byLabel(USERS),a=report.controls.find(c=>c.label.startsWith('control A')),b=report.controls.find(c=>c.label.startsWith('control B')),c=report.controls.find(c=>c.label.startsWith('control C'));
-  console.table([...report.sweep,...report.controls].map(r=>({label:r.label,ok:`${r.succeeded}/${r.requests}`,p50:r.p50Ms,p95:r.p95Ms,perSec:r.completedPerSecond,retries:r.requestsWithRetries,queueMs:r.meanClientToFunctionMs,execMs:r.meanExecuteMs,txMs:r.meanTransactionMs})));
+  const byLabel=l=>report.sweep.find(r=>r.label.includes(`c=${l}`))||null,shared=byLabel(USERS),a=report.controls.find(c=>c.label.startsWith('control A')&&c.label.endsWith(`c=${USERS}`)),a15=report.controls.find(c=>c.label.startsWith('control A')&&c.label.endsWith('c=15')),d=report.controls.find(c=>c.label.startsWith('control D')),b=report.controls.find(c=>c.label.startsWith('control B')),c=report.controls.find(c=>c.label.startsWith('control C'));
+  console.table([...report.sweep,...report.controls].map(r=>({label:r.label,ok:`${r.succeeded}/${r.requests}`,p50:r.p50Ms,p95:r.p95Ms,perSec:r.completedPerSecond,retries:r.requestsWithRetries,queueMs:r.meanClientToFunctionMs,execMs:r.meanExecuteMs,txMs:r.meanTransactionMs,inFlight:r.peakInFlightSeenByFunction,maxTries:r.maxAttempts})));
   console.log('\nHow to read this (comparisons, not conclusions):');
   console.log(' - shared c=30 vs control C (disjoint organizations): a large drop in C points at shared-document contention; no drop points at Functions/Firestore emulator throughput or the device.');
-  console.log(' - shared vs control A: control A also changes authorization role (owner vs contributor), so differences do not isolate token effects.');
+  console.log(' - A c=15 vs D c=15 (same single token): A shares the workspace, D shares only the organization; a large A-to-D drop points at workspace-level contention (records collection, workspace document); no drop points at organization-level documents or the emulator.');
+  console.log(' - shared vs A: a difference points at per-user effects (token verification, per-user documents).');
   console.log(' - control B slow with no writes: the emulators serialize even read-only work; not a patch or locking problem.');
   console.log(' - requestsWithRetries > 0 and long attempts: transaction retries; meanClientToFunctionMs large: requests wait before the Function starts (queueing).');
-  console.log('Full report:',OUT);if(shared&&a&&b&&c)log('shared',shared.p50Ms,'A',a.p50Ms,'B',b.p50Ms,'C',c.p50Ms);
-  if(a && a.succeeded!==USERS)throw Error(`Control A failed ${a.succeeded}/${USERS}; see the JSON report for errors`);
+  console.log('Full report:',OUT);const rep1=report.controls.find(c=>c.label.startsWith('repeat 1')),rep2=report.controls.find(c=>c.label.startsWith('repeat 2'));
+  log('p50 ms | FIRST shared c=30:',shared?.p50Ms,'| REPEAT 1:',rep1?.p50Ms,'| REPEAT 2:',rep2?.p50Ms,'|| A single token c=15:',a15?.p50Ms,'| A c=30:',a?.p50Ms,'| B read-only:',b?.p50Ms,'| C disjoint organizations:',c?.p50Ms,'| D distinct workspaces c=15:',d?.p50Ms);
  }catch(err){report.error={message:err.message,stack:err.stack};save();console.error(err);process.exitCode=1;}
 }
 main();

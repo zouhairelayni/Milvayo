@@ -1,0 +1,8 @@
+src/cloud/server/ioAudit.cjs       temporary emulator-only SDK meter (inert except in audit mode)
+scripts/patch-io-audit.cjs          install/uninstall temporary dispatcher instrumentation
+scripts/run-firebase-io-audit.sh   one-command complete cloud-suite runner and reporting
+tests/helpers/report-firebase-io.cjs per-action inventory, CSV/JSON/Markdown writer
+tests/helpers/scan-firebase-usage.cjs auxiliary/client source candidates
+tests/helpers/io-audit-selftest.cjs meter-only smoke test
+tests/cloud/io-audit-extra.emulator.test.cjs successful paths for organizationCreate, billingHistory
+docs/qa/MILVAYO-FIREBASE-IO-AUDIT-README.md usage, limitations, staged coverage
