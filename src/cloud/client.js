@@ -2,7 +2,7 @@
 import {initializeApp,deleteApp} from 'firebase/app';
 import {initializeAuth,inMemoryPersistence,connectAuthEmulator,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from 'firebase/auth';
 import {initializeFirestore,memoryLocalCache,connectFirestoreEmulator,terminate} from 'firebase/firestore';
-import {getDatabase,connectDatabaseEmulator,ref,set,remove,onDisconnect,onValue,serverTimestamp} from 'firebase/database';
+import {getDatabase,connectDatabaseEmulator,ref,set,remove,onDisconnect,onValue,onChildAdded,onChildChanged,onChildRemoved,serverTimestamp} from 'firebase/database';
 import {getStorage,connectStorageEmulator} from 'firebase/storage';
 import {getFunctions,connectFunctionsEmulator} from 'firebase/functions';
 import * as Crypto from 'expo-crypto';
@@ -21,15 +21,39 @@ export async function createEmulatorClient(host){
   const token=await auth.currentUser.getIdToken();const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),90000);
   try{const response=await fetch(`http://${config.host}:${config.ports.functions}/${config.projectId}/us-central1/cloudApi`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),signal:controller.signal});const data=await response.json();if(!response.ok)throw Object.assign(Error(data.error||'Cloud operation failed'),{code:data.code});return data;}finally{clearTimeout(timer);}
  }
+ // One shared server-clock listener per client (not one per presence session); it is released with the last session.
+ let clockOffset=0,clockUsers=0,stopClock=null;
+ const acquireClock=()=>{if(clockUsers++===0)stopClock=onValue(ref(rtdb,'.info/serverTimeOffset'),s=>{clockOffset=s.val()||0;});};
+ const releaseClock=()=>{if(clockUsers>0&&--clockUsers===0){try{stopClock?.();}catch{}stopClock=null;}};
+ const sizeOf=value=>require('fflate').strToU8(JSON.stringify(value)).length;
+ // Presence: one room per resource (task, canvas, conversation). The listener receives only the person who changed (child events), never the whole room, and the heartbeat is slow because leaving a screen removes the entry at once.
  async function presence(scope,projectId,resource='',state='viewing',onPeers=()=>{}){
-  const uid=auth.currentUser.uid,id=Crypto.randomUUID(),base=`presence/${scope.orgId}/${scope.workspaceId}/${projectId}`,session=ref(rtdb,`${base}/${uid}/${id}`);let offset=0;
-  const stopOffset=onValue(ref(rtdb,'.info/serverTimeOffset'),s=>{offset=s.val()||0;});
-  let active=true;traffic.activeSessions++;const disconnect=onDisconnect(session),publish=async()=>{if(active){const payload={state,resource,expiresAt:Date.now()+offset+60000};await set(session,payload);traffic.presenceUpdates++;traffic.uploadPayloadBytes+=require('fflate').strToU8(JSON.stringify(payload)).length;}};
-  const stopConnect=onValue(ref(rtdb,'.info/connected'),snap=>{if(snap.val()){traffic.connectionEvents++;disconnect.remove().then(publish).catch(()=>{});}});
-  let room={};const report=()=>{const now=Date.now()+offset;onPeers(Object.entries(room).filter(([user])=>user!==uid).flatMap(([user,sessions])=>Object.values(sessions).filter(v=>v.expiresAt>now&&v.resource===resource).map(v=>({uid:user,state:v.state}))));};
-  const stopPeers=onValue(ref(rtdb,base),s=>{room=s.val()||{};traffic.downloadPayloadBytes+=require('fflate').strToU8(JSON.stringify(room)).length;report();},()=>onPeers([]));
-  const timer=setInterval(()=>{report();publish().catch(()=>{});},25000);
-  return async()=>{if(!active)return;active=false;traffic.activeSessions--;clearInterval(timer);stopPeers();stopOffset();stopConnect();await remove(session).catch(()=>{});await disconnect.cancel().catch(()=>{});};
+  const P=require('./presenceCore.cjs');
+  const uid=auth.currentUser.uid,id=Crypto.randomUUID(),base=`presence/${scope.orgId}/${scope.workspaceId}/${projectId}/${P.resourceKey(resource)}`,node=ref(rtdb,base),session=ref(rtdb,`${base}/${uid}/${id}`),room=P.createRoom({uid,resource});
+  let active=true,visible=true,connected=false,current=state,lastWrite=0,writing=false,reportQueued=false,lastShown=null;
+  acquireClock();traffic.activeSessions++;
+  const disconnect=onDisconnect(session);
+  // Only tell the screen when the set of people actually changed.
+  const report=()=>{if(!active)return;const peers=room.peers(Date.now()+clockOffset),key=peers.map(p=>p.uid+':'+p.state).sort().join('|');if(key===lastShown)return;lastShown=key;onPeers(peers);};
+  // Events from one server snapshot arrive together; report once for the whole batch.
+  const schedule=()=>{if(reportQueued)return;reportQueued=true;Promise.resolve().then(()=>{reportQueued=false;report();});};
+  const publish=async()=>{
+   if(!active||!visible||!connected||writing)return;
+   writing=true;
+   try{const now=Date.now(),payload=P.payload(current,resource,now,clockOffset);await set(session,payload);lastWrite=now;traffic.presenceUpdates++;traffic.uploadPayloadBytes+=sizeOf(payload);if(!active||!visible)await remove(session).catch(()=>{});}
+   finally{writing=false;}
+  };
+  const stopConnect=onValue(ref(rtdb,'.info/connected'),snap=>{connected=!!snap.val();if(connected){traffic.connectionEvents++;disconnect.remove().then(publish).catch(()=>{});}});
+  const onChild=type=>snap=>{traffic.downloadPayloadBytes+=sizeOf(snap.val());room.apply(type,snap.key,type==='removed'?null:snap.val());schedule();};
+  const denied=()=>{lastShown='';onPeers([]);};
+  const stopAdded=onChildAdded(node,onChild('added'),denied),stopChanged=onChildChanged(node,onChild('changed'),denied),stopRemoved=onChildRemoved(node,onChild('removed'),denied);
+  // Local housekeeping only: drop people whose entry expired (no network) and refresh my own entry when it is half way to expiring.
+  const timer=setInterval(()=>{if(!active)return;report();if(visible&&connected&&P.heartbeatDue(lastWrite,Date.now()))publish().catch(()=>{});},P.SWEEP_MS);
+  const stop=async()=>{if(!active)return;active=false;traffic.activeSessions--;clearInterval(timer);stopAdded();stopChanged();stopRemoved();stopConnect();releaseClock();await remove(session).catch(()=>{});await disconnect.cancel().catch(()=>{});};
+  // Same session, no new listeners: a changed state is published in place; a hidden screen removes my entry and a visible one publishes it again.
+  stop.setState=next=>{if(!active||next===current)return;current=next;if(visible&&connected)publish().catch(()=>{});};
+  stop.setVisible=next=>{if(!active||!!next===visible)return;visible=!!next;if(!visible){remove(session).catch(()=>{});lastWrite=0;}else if(connected)publish().catch(()=>{});};
+  return stop;
  }
  // Change signal: one tiny RTDB node per workspace. The listener reports {sequence, access}; callers pull only when it moves.
  function heads(scope,onHead,onLive=()=>{}){

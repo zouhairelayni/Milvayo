@@ -49,6 +49,22 @@ test('every code file starts with a comment holding its own /path', () => {
   assert.deepEqual(wrong, []);
 });
 
+// True when position `index` of `text` sits inside a quoted string on its own line, e.g. code that a script writes into another file.
+const insideString = (text, index) => {
+  let quote = null;
+  for (let i = text.lastIndexOf('\n', index - 1) + 1; i < index; i++) {
+    const c = text[i];
+    if (quote) { if (c === '\\') i++; else if (c === quote) quote = null; } else if (c === "'" || c === '"' || c === '`') quote = c;
+  }
+  return quote !== null;
+};
+
+test('the import scanner ignores require text inside string literals but still sees real imports', () => {
+  const sample = "const needle=\"service=require('./a.cjs')\";\nconst real=require('./b.cjs');\nconst mixed='x';const also=require('./c.cjs');";
+  const hits = [...sample.matchAll(/\brequire\s*\(\s*(['"])(\.{1,2}\/[^'"\n$\\]*)\1/g)].filter((m) => !insideString(sample, m.index)).map((m) => m[2]);
+  assert.deepEqual(hits, ['./b.cjs', './c.cjs']);
+});
+
 test('every relative import and require in App.js, src, tests and scripts points to a real file', () => {
   const re = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*|\brequire\.resolve\s*\(\s*)(['"])(\.{1,2}\/[^'"\n$\\]*)\1/g;
   const exts = ['', '.js', '.cjs', '.web.js', '.native.js', '.json', '/index.js'];
@@ -56,6 +72,7 @@ test('every relative import and require in App.js, src, tests and scripts points
   for (const f of code.filter((x) => /\.(js|cjs)$/.test(x) && /^(App\.js|src\/|tests\/|scripts\/)/.test(x))) {
     const text = fs.readFileSync(path.join(root, f), 'utf8');
     for (const m of text.matchAll(re)) {
+      if (insideString(text, m.index)) continue;
       const base = path.resolve(path.dirname(path.join(root, f)), m[2]);
       if (!exts.some((e) => fs.existsSync(base + e) && fs.statSync(base + e).isFile())) missing.push(f + ' -> ' + m[2]);
     }

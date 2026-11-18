@@ -7,7 +7,7 @@ function fixture(){
  let records=S.pack(remote).map(r=>({...r,revision:1,sequence:1,deleted:false})),sequence=1;
  const versions=new Map(records.map(r=>[r.key+'@'+r.revision,r]));
  const pulls=[],hook={},storageData=new Map(),storage={getItem:async k=>storageData.get(k)||null,setItem:async(k,v)=>storageData.set(k,v),removeItem:async k=>storageData.delete(k)},sent=[];
- const client={config:{host:'127.0.0.1'},login:(...args)=>login(...args),publish:async(_scope,w)=>{records=S.pack(w).map(r=>({...r,revision:1,sequence:1,deleted:false}));},close:async()=>{closed++;},presence:async()=>async()=>{},request:async b=>{if(revoked)throw Object.assign(Error('Revoked'),{code:'permission-denied'});if(b.action==='bootstrap')return {orgId:'org',workspaceId:'main'};if(b.action==='presenceAuthorize')return {};if(b.action==='pull'){pulls.push(b);}if(b.action==='pull')return {records:records.filter(r=>r.sequence>b.cursor),cursor:sequence,accessVersion:'v1',grant:{workspaceRole:'manager',projects:{}},reset:false};if(b.action==='commit'){sent.push(b);sequence++;const ack=[];for(const wire of b.changes){const current=records.find(r=>r.key===wire.key),c=wire.patch?require('../../src/cloud/taskMutation.cjs').expandPatch(wire,versions.get(wire.key+'@'+wire.baseRevision)):wire,next={...S.mergeChange(current,c),revision:(current?.revision||0)+1,sequence};records=records.filter(r=>r.key!==c.key).concat(next);versions.set(next.key+'@'+next.revision,next);ack.push(next);}return {records:ack,sequence};}throw Error('Unexpected action '+b.action);}};
+ const client={config:{host:'127.0.0.1'},login:(...args)=>login(...args),publish:async(_scope,w)=>{records=S.pack(w).map(r=>({...r,revision:1,sequence:1,deleted:false}));},close:async()=>{closed++;},presence:async(...a)=>hook.presence?hook.presence(...a):async()=>{},request:async b=>{if(revoked)throw Object.assign(Error('Revoked'),{code:'permission-denied'});if(b.action==='bootstrap')return {orgId:'org',workspaceId:'main'};if(b.action==='presenceAuthorize'){hook.authorized=(hook.authorized||0)+1;return {};}if(b.action==='pull'){pulls.push(b);}if(b.action==='pull')return {records:records.filter(r=>r.sequence>b.cursor),cursor:sequence,accessVersion:'v1',grant:{workspaceRole:'manager',projects:{}},reset:false};if(b.action==='commit'){sent.push(b);sequence++;const ack=[];for(const wire of b.changes){const current=records.find(r=>r.key===wire.key),c=wire.patch?require('../../src/cloud/taskMutation.cjs').expandPatch(wire,versions.get(wire.key+'@'+wire.baseRevision)):wire,next={...S.mergeChange(current,c),revision:(current?.revision||0)+1,sequence};records=records.filter(r=>r.key!==c.key).concat(next);versions.set(next.key+'@'+next.revision,next);ack.push(next);}return {records:ack,sequence};}throw Error('Unexpected action '+b.action);}};
  let offset=0;const intervals=[];class ClockDate extends Date{static now(){return Date.now()+offset;}constructor(...a){if(a.length)super(...a);else super(ClockDate.now());}}
  const file=path.resolve(__dirname,'../../src/cloud/session.cjs'),actual=createRequire(file),module={exports:{}};
  vm.runInNewContext(fs.readFileSync(file,'utf8'),{module,exports:module.exports,require:id=>id==='./client'?{createEmulatorClient:async()=>client}:id==='expo-crypto'?{randomUUID:crypto.randomUUID}:actual(id),setInterval:fn=>{intervals.push(fn);return intervals.length;},clearInterval(){},Date:ClockDate});
@@ -64,4 +64,26 @@ test('losing or being denied the change signal resumes adaptive polling; a live 
  x.hook.live(false);await x.advance(5000);
  assert.ok(x.pulls.length>base+1,'when the signal is unavailable or denied, adaptive polling resumes immediately');
  await session.disconnect();
+});
+test('presence: access is refreshed only when older than four minutes, state changes go to the open session, and visibility is forwarded',async()=>{
+ const x=fixture(),calls=[],handle={setState:v=>calls.push('state:'+v),setVisible:v=>calls.push('visible:'+v)};
+ x.hook.presence=async(_scope,project,resource,state)=>{calls.push(`open:${project}:${resource}:${state}`);const stop=async()=>{calls.push('stop');};stop.setState=handle.setState;stop.setVisible=handle.setVisible;return stop;};
+ const session=x.make();await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});
+ const peers=()=>{};
+ const first=await session.watch('p1','task:1',false,peers);const afterFirst=x.hook.authorized;
+ const second=await session.watch('p1','task:2','typing',peers);assert.equal(x.hook.authorized,afterFirst,'a second screen right away asks the server for nothing');
+ assert.deepEqual(calls.slice(0,2),['open:p1:task:1:viewing','open:p1:task:2:typing'],'initial state: false is viewing, typing stays typing');
+ first.setState(true);first.setState(false);first.setState('typing');
+ assert.deepEqual(calls.slice(2),['state:editing','state:viewing','state:typing'],'changes use the open session; nothing is opened or stopped');
+ calls.length=0;session.setVisibility(false);assert.deepEqual(calls,['visible:false','visible:false'],'hiding is forwarded to every open screen at once');
+ calls.length=0;await x.advance(5*60000);session.setVisibility(true);for(let i=0;i<10;i++)await new Promise(r=>setImmediate(r));
+ assert.deepEqual(calls,['visible:true','visible:true'],'showing again is forwarded after access was refreshed');
+ calls.length=0;await first();await second();assert.deepEqual(calls,['stop','stop']);
+ await session.disconnect();
+});
+test('presence: a screen opened while hidden starts hidden, and an older presence handle without the new methods still works',async()=>{
+ const x=fixture(),calls=[];x.hook.presence=async(_s,_p,_r,state)=>{const stop=async()=>{};stop.setVisible=v=>calls.push('visible:'+v);return stop;};
+ const session=x.make();await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});
+ session.setVisibility(false);const cleanup=await session.watch('p1','task:1',false,()=>{});assert.deepEqual(calls,['visible:false']);
+ assert.doesNotThrow(()=>cleanup.setState(true));await cleanup();await session.disconnect();
 });

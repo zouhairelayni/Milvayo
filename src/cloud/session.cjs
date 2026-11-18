@@ -10,7 +10,7 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
  // While the change signal is live, polling is only a safety net; queued local work still retries on the short delay.
  const SIGNAL_FALLBACK_MS=300000,SIGNAL_HIDDEN_FALLBACK_MS=600000,AUTHORIZE_MS=240000;
  const nextDelay=()=>signalLive?(journal?.status().pending>0?5000:(visible?SIGNAL_FALLBACK_MS:SIGNAL_HIDDEN_FALLBACK_MS)):polling.next({visible});
- async function authorize(){if(!client||!visible||Date.now()-lastPresenceAuthorization<=AUTHORIZE_MS)return;lastPresenceAuthorization=Date.now();try{await request({action:'presenceAuthorize'});}catch(e){lastPresenceAuthorization=0;throw e;}}
+ async function authorize(force=false){if(!client||(!visible&&!force)||Date.now()-lastPresenceAuthorization<=AUTHORIZE_MS)return;lastPresenceAuthorization=Date.now();try{await request({action:'presenceAuthorize'});}catch(e){lastPresenceAuthorization=0;throw e;}}
  function startSignal(activeClient,activeJournal){
   if(typeof activeClient.heads!=='function')return;
   let first=true,access=0;
@@ -77,7 +77,9 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
  async function capture(workspace){if(journal&&!stopped&&getLocalId()===scope.localId)try{await journal.capture(workspace);lastCaptureError=null;}catch(e){lastCaptureError=e;emit({error:'Cloud queue could not be saved: '+e.message});throw e;}}
  return {connect,disconnect,capture,tick,request,
   syncNow:async()=>{await journal?.flush();await tick();return state;},
-  setVisibility:value=>{visible=!!value;if(visible){polling.reset();nextPoll=0;void tick({flush:false});}},
+  setVisibility:value=>{visible=!!value;if(visible){polling.reset();nextPoll=0;void tick({flush:false});}
+   // Presence follows the screen: hidden removes my entry at once; visible refreshes the access window first, then publishes again.
+   if(!visible)for(const stop of presenceStops)stop.setVisible?.(false);else void authorize(true).catch(()=>{}).then(()=>{if(visible)for(const stop of presenceStops)stop.setVisible?.(true);});},
   getSyncInterval:()=>syncInterval,
   setSyncInterval:ms=>{if(!Number.isInteger(ms)||ms<30000||ms>600000)throw Error('Sync interval must be 30–600 seconds');syncInterval=ms;emit({syncInterval});},
   async loadConflicts(){
@@ -100,7 +102,8 @@ function createCloudSession({storage,getWorkspace,getLocalId,applyRemote,onChang
   async restoreNew(backup,workspaceId){require('./recovery.cjs').verifyBackup(backup);if(!client||!state.connected||backup.orgId!==scope.orgId||backup.workspaceId!==scope.workspaceId)throw Error('Choose a backup of this connected cloud workspace');S.segment(workspaceId);if(workspaceId===scope.workspaceId)throw Error('Choose a new cloud workspace ID');await client.publish({...scope,workspaceId},S.unpack(backup.records),{extras:backup.extras,restoredFrom:scope.workspaceId,archiveRecords:backup.records});return {workspaceId};},
   clientMetrics:()=>client?.metrics?.()||null,
   can:(permission,projectId)=>!!state.connected&&require('./iam.cjs').can({active:true},state.grant,projectId,permission),
-  async watch(projectId,resource,editing,onPeers){if(!client||!state.connected)return()=>{};const activeClient=client,activeScope={...scope};await activeClient.request({...activeScope,action:'presenceAuthorize'});if(client!==activeClient||!state.connected)return()=>{};const stop=await activeClient.presence(activeScope,projectId,resource,editing==='typing'?'typing':editing?'editing':'viewing',onPeers);presenceStops.add(stop);return async()=>{presenceStops.delete(stop);await stop();};},
+  // Presence: access is refreshed only when it is older than four minutes (the shared authorize helper); the returned function stops watching and also offers setState(editing) to change my state in place.
+  async watch(projectId,resource,editing,onPeers){if(!client||!state.connected)return()=>{};const activeClient=client,activeScope={...scope},toState=e=>e==='typing'?'typing':e?'editing':'viewing';await authorize(true);if(client!==activeClient||!state.connected)return()=>{};const stop=await activeClient.presence(activeScope,projectId,resource,toState(editing),onPeers);if(!visible)stop.setVisible?.(false);presenceStops.add(stop);const cleanup=async()=>{presenceStops.delete(stop);await stop();};cleanup.setState=e=>stop.setState?.(toState(e));return cleanup;},
  };
 }
 module.exports={createCloudSession};
