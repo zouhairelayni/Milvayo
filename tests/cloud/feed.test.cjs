@@ -131,12 +131,17 @@ test('signal: every accepted v4 write sets the project node (and only that proje
 test('signal covers every v4 writer',async t=>{
  clock(t);const x=world({tasks:10,projects:1});const p=x.projects[0],tk=task(x,p,0),other=[];let last;const moved=async(label,fn)=>{const before=JSON.stringify(head(x,p)||null);const r=await fn();assert.equal(r.ok,true,label);assert.notEqual(JSON.stringify(head(x,p)),before,label+' must signal');return r;};
  await moved('patch',()=>edit(x,tk,{title:'x'}));
+ const mv=task(x,p,4);await moved('moveTask',()=>x.service.execute('alice',{...x.scope,action:'moveTask',projectId:p,taskId:mv.id,opId:'mv-1',baseRevision:mv.revision,order:mv.order+0.5}));
  await moved('createTask',()=>x.service.execute('alice',{...x.scope,action:'createTask',projectId:p,taskId:'brand-new',opId:'c-1',order:40,data:m.defaultTask({id:'brand-new',title:'New'})}));
  await moved('addComment',()=>x.service.execute('alice',{...x.scope,action:'addComment',projectId:p,taskId:tk.id,commentId:'c1',opId:'o-c1',data:{id:'c1',taskId:tk.id,author:'Ann',body:'Hi',at:'x'}}));
  await moved('logTime',()=>x.service.execute('alice',{...x.scope,action:'logTime',projectId:p,taskId:tk.id,entryId:'e1',opId:'o-e1',data:{id:'e1',taskId:tk.id,owner:'Ann',date:'2026-11-01',hours:2,rateAtEntry:null,note:''}}));
  const t1=task(x,p,1);await moved('patchDependencies',()=>x.service.execute('alice',{...x.scope,action:'patchDependencies',projectId:p,taskId:t1.id,opId:'d-1',baseRevision:t1.revision,dependsOn:[task(x,p,2).id]}));
  const t3=task(x,p,3);await moved('deleteTask',()=>x.service.execute('alice',{...x.scope,action:'deleteTask',projectId:p,taskId:t3.id,opId:'x-1',baseRevision:t3.revision}));
  const obj=recs(x,p).find(r=>r.kind==='canvas.objects');await moved('patchCanvas',()=>x.service.execute('alice',{...x.scope,action:'patchCanvas',projectId:p,boardId:obj.boardId,objectId:obj.id,opId:'v-1',baseRevision:obj.revision,set:{x:obj.data.x+10}}));
+ await moved('createCanvasObject',()=>x.service.execute('alice',{...x.scope,action:'createCanvasObject',projectId:p,boardId:obj.boardId,objectId:'sig-note',opId:'sn-1',order:90,data:{...obj.data,id:'sig-note',x:5,y:5}}));
+ await moved('createCanvasConnector',()=>x.service.execute('alice',{...x.scope,action:'createCanvasConnector',projectId:p,boardId:obj.boardId,connectorId:'sig-edge',opId:'se-1',order:90,data:{id:'sig-edge',from:obj.id,to:'sig-note',label:'',style:'curve',arrow:true}}));
+ const edge=recs(x,p).find(r=>r.id==='sig-edge');await moved('patchCanvasConnector',()=>x.service.execute('alice',{...x.scope,action:'patchCanvasConnector',projectId:p,boardId:obj.boardId,connectorId:'sig-edge',opId:'pe-1',baseRevision:edge.revision,set:{label:'x'}}));
+ const edge2=recs(x,p).find(r=>r.id==='sig-edge');await moved('deleteCanvasConnector',()=>x.service.execute('alice',{...x.scope,action:'deleteCanvasConnector',projectId:p,boardId:obj.boardId,connectorId:'sig-edge',opId:'de-1',baseRevision:edge2.revision}));
  const obj2=recs(x,p).filter(r=>r.kind==='canvas.objects')[1];await moved('deleteCanvasObjects',()=>x.service.execute('alice',{...x.scope,action:'deleteCanvasObjects',projectId:p,boardId:obj2.boardId,objectIds:[obj2.id],bases:{[obj2.id]:obj2.revision},opId:'v-2'}));
 });
 test('two clients converge through random edits, deletes, creates, comments and dependency changes, with time passing between syncs',async t=>{

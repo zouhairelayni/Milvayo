@@ -1,10 +1,17 @@
 // /src/cloud/v4Writes.cjs
 'use strict';
 // Turns the journal's queued change (the record diff of one domain transaction) into ONE v4 server call, and sends it.
-// Supported in a v4 workspace today: edit task fields (`patch`), delete a task with its cascade (`deleteTask`), create a task, add a comment, log time.
-// Anything else (dependencies, moving a task in a list, Canvas, projects, ...) is refused with a clear message and stays in the recovery queue; nothing is lost and nothing is sent half-way.
+// Supported in a v4 workspace today: moving a task in its list (`moveTask`), edit task fields (`patch`), change task dependencies (`patchDependencies`), delete a task with its cascade (`deleteTask`), create a task, add a comment, log time,
+// move/resize/re-stack a Canvas object (`patchCanvas`: position, size, stacking, text, colour, lock), edit or remove a connector (`patchCanvasConnector`, `deleteCanvasConnector`), add a Canvas object or connector (`createCanvasObject`, `createCanvasConnector`) and delete Canvas objects with their cascade (`deleteCanvasObjects`).
+// Anything else (a reorder of several tasks at once, other Canvas edits, projects, ...) is refused with a clear message and stays in the recovery queue; nothing is lost and nothing is sent half-way.
 const S=require('./schema.cjs');
 const notYet=why=>Object.assign(new Error('This change is not available in v4 workspaces yet ('+why+'). It stays in your recovery queue.'),{code:'failed-precondition'});
+// A Canvas save also rewrites the board's own record (revision counter, update time, viewport pose). Those are local bookkeeping in a v4 workspace: not sent (the server keeps one record per object, and writing the board on every move would make it a hot spot),
+// but acknowledged locally so the app keeps its own counter. Title, archive state and other board fields are not bookkeeping and are still refused.
+const BOARD_LOCAL=['revision','updatedAt','viewport'];
+const bookkeeping=c=>{if(!c.before||!c.after||c.before.kind!=='canvases'||c.before.order!==c.after.order)return false;for(const k of new Set([...Object.keys(c.before.data),...Object.keys(c.after.data)]))if(!BOARD_LOCAL.includes(k)&&!S.equal(c.before.data[k],c.after.data[k]))return false;return true;};
+const localAcks=changes=>Array.isArray(changes)?changes.filter(bookkeeping).map(c=>({...c.before,data:c.after.data,order:c.after.order})):[];
+const CANVAS_FIELDS=['x','y','width','height','zIndex','text','color','locked'],CONNECTOR_FIELDS=['label','style','arrow','color'];
 const projectOf=c=>(c.before||c.after).projectId;
 // Server records carry bookkeeping the app never needs (operation IDs and hashes, legacy sequence); the journal compares `sequence`, which is the per-record revision here.
 function publicRecord(r){const o={key:r.key,kind:r.kind,projectId:r.projectId,boardId:r.boardId,id:r.id,data:r.data,order:r.order,revision:r.revision,sequence:r.revision,updatedAt:r.updatedAt,updatedBy:r.updatedBy};if(r.deleted){o.deleted=true;o.deletedAt=r.deletedAt;}return o;}
@@ -16,23 +23,53 @@ function single(c){
   if(after.kind==='tasks')return {request:{action:'createTask',projectId,taskId:after.id,order:after.order,data:after.data}};
   if(after.kind==='comments')return {request:{action:'addComment',projectId,taskId:after.data.taskId,commentId:after.id,data:after.data}};
   if(after.kind==='timeEntries')return {request:{action:'logTime',projectId,taskId:after.data.taskId,entryId:after.id,data:after.data}};
+  if(after.kind==='canvas.objects'){
+   if(after.data.type==='linked'||after.data.sourceLink)throw notYet('adding a linked Canvas object');
+   if(after.data.groupId)throw notYet('adding a Canvas object inside a group');
+   return {request:{action:'createCanvasObject',projectId,boardId:after.boardId,objectId:after.id,order:after.order,data:after.data}};
+  }
+  if(after.kind==='canvas.connectors')return {request:{action:'createCanvasConnector',projectId,boardId:after.boardId,connectorId:after.id,order:after.order,data:after.data}};
   throw notYet('adding this kind of record');
  }
  if(before&&!after){
+  if(before.kind==='canvas.connectors')return {request:{action:'deleteCanvasConnector',projectId:before.projectId,boardId:before.boardId,connectorId:before.id,baseRevision:c.baseRevision}};
   if(before.kind==='tasks')return {request:{action:'deleteTask',projectId:before.projectId,taskId:before.id,baseRevision:c.baseRevision}};
   throw notYet('deleting this kind of record');
  }
  if(before&&after&&before.kind==='tasks'){
-  if(before.order!==after.order)throw notYet('moving a task in its list');
+  if(before.order!==after.order){if(!S.equal(before.data,after.data))throw notYet('moving and editing a task together');return {request:{action:'moveTask',projectId:before.projectId,taskId:before.id,baseRevision:c.baseRevision,order:after.order}};}
   const set={};
   for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
-   if(S.equal(before.data[k],after.data[k]))continue;
+   if(S.equal(before.data[k],after.data[k])||k==='updatedAt')continue;
    if(!Object.hasOwn(after.data,k))throw notYet('removing the field '+k);
    if(k==='dependsOn')throw notYet('dependencies');
    set[k]=after.data[k];
   }
   if(!Object.keys(set).length)return {noop:true};
   return {request:{action:'patch',projectId:before.projectId,taskId:before.id,baseRevision:c.baseRevision,set}};
+ }
+ if(before&&after&&before.kind==='canvas.objects'){
+  const set={};
+  for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
+   if(S.equal(before.data[k],after.data[k])||k==='updatedAt')continue;
+   if(!CANVAS_FIELDS.includes(k))throw notYet('editing the Canvas property '+k);
+   set[k]=after.data[k];
+  }
+  if(before.order!==after.order)throw notYet('reordering Canvas objects');
+  if(!Object.keys(set).length)return {noop:true};
+  return {request:{action:'patchCanvas',projectId:before.projectId,boardId:before.boardId,objectId:before.id,baseRevision:c.baseRevision,set}};
+ }
+ if(before&&after&&before.kind==='canvas.connectors'){
+  const set={};
+  for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
+   if(S.equal(before.data[k],after.data[k]))continue;
+   if(!CONNECTOR_FIELDS.includes(k))throw notYet('editing the connector property '+k);
+   // The app drops an empty colour from the connector; the server is told to clear it.
+   if(!Object.hasOwn(after.data,k)){if(k!=='color')throw notYet('removing the connector property '+k);set.color='';continue;}
+   set[k]=after.data[k];
+  }
+  if(!Object.keys(set).length)return {noop:true};
+  return {request:{action:'patchCanvasConnector',projectId:before.projectId,boardId:before.boardId,connectorId:before.id,baseRevision:c.baseRevision,set}};
  }
  throw notYet('this kind of record');
 }
@@ -42,7 +79,12 @@ function single(c){
 function plan(changes,opId){
  if(!Array.isArray(changes))throw notYet('empty change');
  const same=c=>c.before&&c.after&&S.equal(c.before.data,c.after.data)&&c.before.order===c.after.order;
- let list=changes.filter(c=>(c.before||c.after)&&!same(c));
+ let list=changes.filter(c=>(c.before||c.after)&&!same(c)&&!bookkeeping(c));
+ // A task that was moved and also edited becomes two calls: its fields as a patch, its position as `moveTask` (sent after the patch, re-based on the newer revision by the sender).
+ const moveSteps=[],movedPer=new Map();
+ for(const c of list)if(c.before&&c.after&&c.before.kind==='tasks'&&c.before.order!==c.after.order)movedPer.set(c.before.projectId,(movedPer.get(c.before.projectId)||0)+1);
+ if([...movedPer.values()].some(n=>n>1))throw notYet('moving several tasks at once');
+ list=list.flatMap(c=>{if(c.before&&c.after&&c.before.kind==='tasks'&&c.before.order!==c.after.order&&!S.equal(c.before.data,c.after.data)){moveSteps.push(c);return [{...c,after:{...c.after,order:c.before.order}}];}return [c];});
  const gone=new Set(list.filter(c=>c.before&&!c.after&&c.before.kind==='tasks').map(c=>c.before.projectId+'|'+c.before.id));
  // A dependency edit has its own call that also writes the links and resets the downstream chain on the server. The same task's other field edits go separately; the links and the downstream resets are not sent.
  const CASCADE_FIELDS=['dependsOn','verified','merged','updatedAt'],depChanged=c=>c.before&&c.after&&c.before.kind==='tasks'&&!S.equal((c.before.data.dependsOn||[]).filter(d=>!gone.has(c.before.projectId+'|'+d)),c.after.data.dependsOn||[]),depTasks=new Set(list.filter(depChanged).map(c=>c.before.projectId+'|'+c.before.id)),extra=[];
@@ -55,14 +97,28 @@ function plan(changes,opId){
    return [c];
   });
  }
+ // Canvas objects removed together become one call per board (up to 50 each). The connectors and comment threads attached to them, and the children that lose their frame, are the server's cascade and are not sent.
+ const cgone=new Set(list.filter(c=>c.before&&!c.after&&c.before.kind==='canvas.objects').map(c=>c.before.projectId+'|'+c.before.boardId+'|'+c.before.id)),cdel=list.filter(c=>c.before&&!c.after&&c.before.kind==='canvas.objects');
+ if(cgone.size){
+  const only=(c,k0)=>{for(const k of new Set([...Object.keys(c.before.data),...Object.keys(c.after.data)]))if(!S.equal(c.before.data[k],c.after.data[k])&&k!==k0&&k!=='updatedAt')return false;return true;};
+  list=list.filter(c=>{const r=c.before||c.after,id=x=>r.projectId+'|'+r.boardId+'|'+x;
+   if(c.before&&!c.after&&r.kind==='canvas.objects')return false;
+   if(!c.after&&r.kind==='canvas.connectors')return !(cgone.has(id(r.data.from))||cgone.has(id(r.data.to)));
+   if(!c.after&&r.kind==='canvas.threads')return !cgone.has(id(r.data.objectId));
+   if(c.before&&c.after&&r.kind==='canvas.objects'&&c.after.data.groupId===''&&cgone.has(id(c.before.data.groupId))&&only(c,'groupId'))return false;
+   return true;});
+ }
  const dropped=(c,r)=>{const id=x=>r.projectId+'|'+x;
   if(r.kind==='dependencies'&&!c.after)return gone.has(id(r.data.predecessorId))||gone.has(id(r.data.successorId));
   if(['comments','timeEntries','reminders'].includes(r.kind)&&!c.after)return gone.has(id(r.data.taskId));
   if(r.kind==='tasks'&&c.before&&c.after)return (c.before.data.dependsOn||[]).some(d=>gone.has(id(d)))||gone.has(id(c.before.data.parentId));
   return false;};
  if(gone.size)list=list.filter(c=>c.before&&!c.after&&c.before.kind==='tasks'||!dropped(c,c.before||c.after));
- const rank=c=>c.before&&!c.after?0:!c.before?1:2,order=list.map(c=>({c,built:single(c)})).filter(x=>!x.built.noop).sort((a,b)=>rank(a.c)-rank(b.c)||(a.c.key<b.c.key?-1:a.c.key>b.c.key?1:0));
- const steps=[...order.map(x=>({change:x.c,request:x.built.request})),...extra.sort((x,y)=>x.change.key<y.change.key?-1:1)];
+ const rank=c=>c.before&&!c.after?0:!c.before?(c.after.kind==='canvas.connectors'?1.5:1):2,order=list.map(c=>({c,built:single(c)})).filter(x=>!x.built.noop).sort((a,b)=>rank(a.c)-rank(b.c)||(a.c.key<b.c.key?-1:a.c.key>b.c.key?1:0));
+ const cgroups=new Map();for(const c of cdel.sort((a,b)=>a.key<b.key?-1:1)){const g=c.before.projectId+'|'+c.before.boardId,a=cgroups.get(g)||[];a.push(c);cgroups.set(g,a);}
+ const canvasDeletes=[];for(const list2 of cgroups.values())for(let i=0;i<list2.length;i+=50){const part=list2.slice(i,i+50),first=part[0].before;canvasDeletes.push({change:part[0],request:{action:'deleteCanvasObjects',projectId:first.projectId,boardId:first.boardId,objectIds:part.map(c=>c.before.id),bases:Object.fromEntries(part.map(c=>[c.before.id,c.baseRevision]))}});}
+ const moves=moveSteps.map(c=>({change:c,request:{action:'moveTask',projectId:c.before.projectId,taskId:c.before.id,baseRevision:c.baseRevision,order:c.after.order}}));
+ const steps=[...canvasDeletes,...order.map(x=>({change:x.c,request:x.built.request})),...extra.sort((x,y)=>x.change.key<y.change.key?-1:1),...moves.sort((x,y)=>x.change.key<y.change.key?-1:1)];
  return steps.map((x,i)=>({change:x.change,request:{...x.request,opId:steps.length===1?opId:`${opId}.${i}`}}));
 }
 // Single-call form used by tests and callers that expect exactly one call.
@@ -76,12 +132,17 @@ function createSender({request,maxReapply=2}){
    const result=await request(attempt?{...body,opId:`${body.opId}.r${attempt}`}:body);
    if(result.ok===true){const list=result.changed&&result.changed.length?result.changed:result.record?[result.record]:[];return list.map(publicRecord);}
    if(result.code==='deleted')throw Object.assign(new Error('The record was deleted by someone else; your edit is kept for recovery'),{code:'conflict'});
+   if(result.code==='conflict'&&result.current&&attempt<maxReapply&&body.action==='moveTask'){
+    const current=publicRecord(result.current);
+    if(current.order!==change.before.order)throw Object.assign(new Error('Someone else moved this task too; compare the versions to resolve it'),{code:'conflict',current});
+    body={...body,baseRevision:current.revision};continue;
+   }
    if(result.code==='conflict'&&result.current&&attempt<maxReapply&&body.action==='patchDependencies'){
     const current=publicRecord(result.current);
     if(!S.equal(current.data.dependsOn,change.before.data.dependsOn))throw Object.assign(new Error('Someone else changed this task\'s dependencies; compare the versions to resolve it'),{code:'conflict',current});
     body={...body,baseRevision:current.revision};continue;
    }
-   if(result.code!=='conflict'||!result.current||attempt>=maxReapply||body.action!=='patch')throw Object.assign(new Error('Someone else changed this record; compare the versions to resolve it'),{code:'conflict',current:result.current?publicRecord(result.current):undefined});
+   if(result.code!=='conflict'||!result.current||attempt>=maxReapply||!['patch','patchCanvas','patchCanvasConnector'].includes(body.action))throw Object.assign(new Error('Someone else changed this record; compare the versions to resolve it'),{code:'conflict',current:result.current?publicRecord(result.current):undefined});
    const current=publicRecord(result.current);
    try{const merged=S.mergeChange(current,{before:change.before,after:change.after});change={key:change.key,before:current,after:merged,baseRevision:current.revision};const built=single(change);if(built.noop)return [];body={...built.request,opId:body.opId};}
    catch(e){if(e.code==='failed-precondition')throw e;throw Object.assign(new Error('Someone else changed the same field; compare the versions to resolve it'),{code:'conflict',current});}
@@ -91,11 +152,21 @@ function createSender({request,maxReapply=2}){
   if(body.action!=='commit')return request(body);
   const records=[];
   for(const step of plan(body.changes,body.mutationId))records.push(...await sendOne(step));
+  records.push(...localAcks(body.changes));
   return {records};
  };
 }
 // pack() numbers records by their position in the app's lists, but a v4 server keeps each record's order fixed (a delete leaves a gap). So that a deleted or added task does not look like a change to every task after it,
-// positions are matched back to the stored orders whenever the surviving records are still in the same relative order; new records go after the last stored order. A real reorder is left alone and is refused by requestFor.
+// positions are matched back to the stored orders whenever the surviving records are still in the same relative order; new records go after the last stored order. A move of one record is sent as `moveTask`; a bigger reorder is left alone and is refused by requestFor.
+const MIN_GAP=1e-9;
+// The one survivor whose removal leaves the others in their stored relative order (via the longest increasing run), or null when more than one is out of place.
+function oneMoved(kept,old){
+ const rank=kept.map(r=>old.get(r.key)),n=rank.length,tails=[],prev=new Array(n).fill(-1),at=[];
+ for(let i=0;i<n;i++){let lo=0,hi=tails.length;while(lo<hi){const mid=(lo+hi)>>1;if(rank[tails[mid]]<rank[i]||(rank[tails[mid]]===rank[i]&&kept[tails[mid]].key<kept[i].key))lo=mid+1;else hi=mid;}if(lo>0)prev[i]=tails[lo-1];tails[lo]=i;}
+ if(tails.length!==n-1)return null;
+ const keep=new Set();for(let i=tails[tails.length-1];i>=0;i=prev[i])keep.add(i);
+ for(let i=0;i<n;i++)if(!keep.has(i))return kept[i].key;return null;
+}
 function alignOrders(next,local){
  const group=r=>r.kind+'|'+r.projectId+'|'+r.boardId,stored=new Map(),groups=new Map();
  for(const r of local){if(!stored.has(group(r)))stored.set(group(r),[]);stored.get(group(r)).push(r);}
@@ -103,10 +174,23 @@ function alignOrders(next,local){
  const orders=new Map();
  for(const [g,list] of groups){
   const old=new Map((stored.get(g)||[]).map(r=>[r.key,r.order])),kept=list.filter(r=>old.has(r.key)),byOld=[...kept].sort((a,b)=>old.get(a.key)-old.get(b.key)||(a.key<b.key?-1:1));
-  const sameOrder=kept.every((r,i)=>r.key===byOld[i].key);if(!sameOrder)continue;
+  const sameOrder=kept.every((r,i)=>r.key===byOld[i].key);
+  // Exactly one survivor out of place is a real move of one record: it gets a position between its new neighbours (a fractional order, one write on the server); anything more complex is left alone and refused.
+  const moved=sameOrder?null:oneMoved(kept,old);if(!sameOrder&&!moved)continue;
   let top=Math.max(-1,...old.values());
-  for(const r of list)orders.set(r.key,old.has(r.key)?old.get(r.key):++top);
+  for(const r of list)if(r.key!==moved)orders.set(r.key,old.has(r.key)?old.get(r.key):++top);
+  if(moved){
+   const at=list.findIndex(r=>r.key===moved),before=list.slice(0,at).reverse().find(r=>orders.has(r.key)),after=list.slice(at+1).find(r=>orders.has(r.key));
+   const lo=before?orders.get(before.key):null,hi=after?orders.get(after.key):null;
+   const value=lo===null?(hi>0?hi/2:null):hi===null?lo+1:(lo+hi)/2;
+   if(value===null||(lo!==null&&hi!==null&&hi-lo<MIN_GAP*2)||(lo===null&&hi<MIN_GAP*2)||value>100000){for(const r of list)orders.delete(r.key);continue;}
+   orders.set(moved,value);
+  }
  }
- return next.map(r=>orders.has(r.key)&&orders.get(r.key)!==r.order?{...r,order:orders.get(r.key)}:r);
+ const was=new Map(local.map(r=>[r.key,r]));
+ // The update time of a task or a Canvas object is set by the server in a v4 workspace (and the app's own clock reading is never sent), so the two can never agree.
+ // A record that already exists keeps the stored value, so that an edit never shows up as a change of the update time and a later edit is not mistaken for a concurrent change to it.
+ const keepStamp=r=>{const old=was.get(r.key);if(!old||!['tasks','canvas.objects'].includes(r.kind)||S.equal(old.data.updatedAt,r.data.updatedAt))return r;const data={...r.data};if(Object.hasOwn(old.data,'updatedAt'))data.updatedAt=old.data.updatedAt;else delete data.updatedAt;return {...r,data};};
+ return next.map(r=>keepStamp(orders.has(r.key)&&orders.get(r.key)!==r.order?{...r,order:orders.get(r.key)}:r));
 }
-module.exports={alignOrders,plan,requestFor,createSender,publicRecord};
+module.exports={alignOrders,plan,requestFor,createSender,publicRecord,localAcks};

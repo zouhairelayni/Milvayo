@@ -1,6 +1,34 @@
 # Milvayo summary (2026-11-19)
 
-**App version:** 0.8.23 (owner bumps package.json, package-lock.json, app.json and src/cloud/server/package.json). Last owner-verified release: 0.8.23 (npm test 1191 pass/0 fail/13 skipped, test:cloud exit 0).
+**App version:** 0.8.27 (owner bumps package.json, package-lock.json, app.json and src/cloud/server/package.json). Last owner-verified release: 0.8.23 (npm test 1191 pass/0 fail/13 skipped, test:cloud exit 0).
+
+## 0.8.27 - Canvas edits + update-time fix
+- IMPORTANT FIX (affects 0.8.22-0.8.26): the app stamps updatedAt on every task/Canvas edit but v4 servers own it; edits with a changed updatedAt were refused (tasks) or conflicted (second Canvas edit). Now alignOrders keeps the stored updatedAt of existing tasks/Canvas objects; single() ignores updatedAt. Earlier tests missed it because timestamps matched.
+- Done: patchCanvas accepts text/color/locked (locked objects only unlockable); new patchCanvasConnector (label/style/arrow/color, empty colour clears) and deleteCanvasConnector.
+- Not yet on v4: group/ungroup, linked objects, Canvas comments, board rename/archive/create/delete, projects.
+- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-canvas-edit.test.cjs (new), tests/cloud/patch-canvas.test.cjs, tests/cloud/patch-canvas-create.emulator.test.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
+- Next: group/ungroup, Canvas comments, boards, projects, list tidy-up, legacy `pull` guard, two-device UI check (now more important), billing measurement.
+- Open: owner to run `npm test` and `npm run test:cloud` for 0.8.27.
+
+## 0.8.26 - Canvas on v4: real saves, creates
+- Done: found that real Canvas saves were refused on v4 (board record revision/updatedAt/viewport change too); those three fields are now local bookkeeping (not sent, acked locally). New server calls `createCanvasObject` and `createCanvasConnector` (canonical validation, per-board caps 1000/2000, connector ends must be live). App sends them, objects before connectors.
+- Not yet on v4: object text/colour/lock, group/ungroup, linked objects, connector edit/delete, Canvas comments, board rename/archive/create/delete, projects.
+- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-canvas-create.test.cjs (new), tests/cloud/patch-canvas-create.emulator.test.cjs (new), tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
+- Next: Canvas object text/colour/lock + connector edit/delete (server field list), Canvas comments, boards, projects, list tidy-up for tiny task gaps, legacy `pull` guard, two-device check, billing measurement.
+- Verified by owner: npm test 1,226 tests (1,212 pass, 0 fail, 14 skipped); test:cloud 307/307.
+
+## 0.8.25 - task reorder on v4
+- Verified by owner: npm test 1,215 tests (1,202 pass, 0 fail, 13 skipped); test:cloud 296/296.
+- Decision (owner): fractional positions. New server `moveTask` (order only, one write). App sends `moveTask` for one moved task; moved+edited = patch then moveTask; several tasks at once or a gap under 1e-9 stays in the recovery queue.
+- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-move.test.cjs (new), tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, tests/cloud/feed.emulator.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
+- Next: creating Canvas objects/connectors, projects, list tidy-up for tiny gaps, legacy `pull` guard, two-device check, billing measurement.
+- Open: owner to run `npm test` and `npm run test:cloud` for 0.8.25.
+
+## 0.8.24 - Canvas on v4
+- Done: Canvas object move/resize/zIndex via `patchCanvas`; Canvas object delete via `deleteCanvasObjects` (cascade left to the server); stale reapply for patchCanvas.
+- Files changed: src/cloud/v4Writes.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
+- Next: task reorder (needs a server `moveTask` call and an order-storage decision), creating Canvas objects/connectors, projects, legacy `pull` guard, two-device check, billing measurement.
+- Verified by owner: npm test 1,208 tests (1,195 pass, 0 fail, 13 skipped); test:cloud 288/288.
 
 ## 0.8.23 - dependency edits on v4
 - Done: task dependency add/remove/replace goes out as `patchDependencies` (own call; links and downstream resets are the server's). Other field edits of the same task go as a separate `patch`. Stale base: automatic reapply if nobody else changed `dependsOn`, else conflict. Planner fix: missing `dependsOn` no longer counts as a change.

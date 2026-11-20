@@ -65,6 +65,12 @@ test('v4 change feed: full sync, incremental sync, tombstones, ties, access rese
  await t.test('S6 an expired cursor asks for a full resync',async()=>{
   const r=await call(alice,{action:'pullV4',projectId:project,cursor:Date.now()-91*86400000});assert.equal(r.reset,'expired');
  });
+ await t.test('moveTask stores a fractional position with one revision bump, signals the project and shows up in the feed',async()=>{
+  const current=(await pullAll()).records.find(r=>r.key===task.key),before=await headNow(),order=current.order+0.5;
+  const r=await call(alice,{action:'moveTask',projectId:project,taskId:task.id,opId:crypto.randomUUID(),baseRevision:current.revision,order});assert.equal(r.ok,true);assert.equal(r.record.order,order);assert.equal(r.record.revision,current.revision+1);
+  await waitHead(before);const got=(await pullAll()).records.find(x=>x.key===task.key);assert.equal(got.order,order);assert.deepEqual(got.data,current.data,'the data is untouched');
+  const stale=await call(alice,{action:'moveTask',projectId:project,taskId:task.id,opId:crypto.randomUUID(),baseRevision:current.revision,order:order+1});assert.equal(stale.ok,false);assert.equal(stale.code,'conflict');
+ });
  await t.test('S7 idle cost: a pull with nothing new reads the three authorization documents plus only the records inside the 30 s overlap',async()=>{
   const fresh=await pullAll(),idle=await call(alice,{action:'pullV4',projectId:project,cursor:Date.now()+1000,accessVersion:fresh.last.accessVersion});
   assert.ok(idle.measured.documentReads<=idle.records.length+3,`idle pull read ${idle.measured.documentReads} documents for ${idle.records.length} records`);

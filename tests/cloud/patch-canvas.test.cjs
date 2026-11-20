@@ -33,6 +33,6 @@ test('Canvas patches keep authorization, stale, duplicate and tombstone behavior
  const first=await patch(x,o,{x:11},{opId:'canvas-fixed'});assert.equal(first.ok,true);
  assert.equal((await patch(x,o,{x:11},{opId:'canvas-fixed'})).duplicate,true);await assert.rejects(patch(x,o,{x:12},{opId:'canvas-fixed'}),/reused with different content/);
  const stale=await patch(x,o,{x:99},{opId:'canvas-stale'});assert.equal(stale.ok,false);assert.equal(stale.code,'conflict');
- await assert.rejects(patch(x,o,{text:'no'}),/not patchable/);await assert.rejects(patch(x,o,{x:1},{boardId:'other-board'}),/unavailable/);
+ await assert.rejects(patch(x,o,{type:'frame'}),/not patchable/);await assert.rejects(patch(x,o,{x:1},{boardId:'other-board'}),/unavailable/);
  x.rows.set(o.key&&x.root+'/records/'+o.key,{...x.record('canvas.objects',o.id),deleted:true});assert.equal((await patch(x,o,{x:2},{opId:'canvas-dead',baseRevision:2})).code,'deleted');
 });

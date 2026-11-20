@@ -9,12 +9,13 @@ const txt=(v,n=240)=>typeof v==='string'?v.trim().slice(0,n):'';
 const isDate=v=>typeof v==='string'&&/^\d{4}-\d\d-\d\d$/.test(v)&&!Number.isNaN(Date.parse(v+'T00:00:00Z'))&&new Date(v+'T00:00:00Z').toISOString().slice(0,10)===v;
 const whole=(v,max)=>Number.isFinite(v)&&v>=0&&v<=max?Math.round(v*100)/100:0;
 // Appended records are refused above these counts (their canonical array limits are 10,000 tasks, 20,000 comments, 10,000 time entries) so a cloud project can never become unloadable.
-const CAPS=Object.freeze({tasks:9000,comments:19000,timeEntries:9500});
+const CAPS=Object.freeze({tasks:9000,comments:19000,timeEntries:9500,'canvas.objects':1000,'canvas.connectors':2000});
 // An operation ID is bound to the actor and the exact edit, so a reused ID can never acknowledge different content.
 const fingerprint=(uid,b)=>crypto.createHash('sha256').update(S.stable({uid,action:b.action,projectId:b.projectId,boardId:b.boardId||'',id:b.taskId||b.objectId,set:b.set,dependsOn:b.dependsOn,objectIds:b.objectIds,bases:b.bases,data:b.data,order:b.order,commentId:b.commentId,entryId:b.entryId})).digest('hex').slice(0,32);
 const ALLOWED=new Set([...V.PATCHABLE].filter(k=>k!=='updatedAt'));
 // Canvas objects: geometry and layer only. Text, grouping, links and drawings keep the full legacy validation (board size and group rules span records).
-const CANVAS_ALLOWED=new Set(['x','y','width','height','zIndex']);
+const CANVAS_ALLOWED=new Set(['x','y','width','height','zIndex','text','color','locked']);
+const CONNECTOR_ALLOWED=new Set(['label','style','arrow','color']);
 // EXPERIMENT (default off): MILVAYO_PATCH_AUTH_MODE=snapshot reads membership, grant, workspace and seat documents outside the transaction so that
 // shared documents are not locked by every edit. Authorization may then be a few milliseconds stale relative to a concurrent revoke; the default keeps every read transactional.
 const authMode=()=>process.env.MILVAYO_PATCH_AUTH_MODE==='snapshot'?'snapshot':'transaction';
@@ -26,8 +27,10 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
  async function run(uid,b,spec){
   S.segment(b.projectId);S.segment(b.opId);
   if(!Number.isSafeInteger(b.baseRevision)||b.baseRevision<1)fail('Invalid base revision','invalid-argument');
+  if(spec.move){if(!Number.isFinite(b.order)||b.order<0||b.order>100000)fail('Invalid position','invalid-argument');b={...b,set:{}};}
+  else{
   if(!b.set||typeof b.set!=='object'||Array.isArray(b.set)||!Object.keys(b.set).length||Object.keys(b.set).length>20)fail('A patch needs 1–20 fields','invalid-argument');
-  for(const k of Object.keys(b.set))if(!spec.allowed.has(k))fail(k==='updatedAt'?'updatedAt is set by the server':`Field is not patchable: ${k}`,'invalid-argument');
+  for(const k of Object.keys(b.set))if(!spec.allowed.has(k))fail(k==='updatedAt'?'updatedAt is set by the server':`Field is not patchable: ${k}`,'invalid-argument');}
   const key=spec.key(b),timings={bench:b.bench===true};let attempts=0;
   return timedTx(timings,async tx=>{
    attempts++;const reads={authorization:3,subscription:0,record:0,configuration:0,dependencies:0},reader=authMode()==='snapshot'?{get:r=>r.get()}:tx,accessStart=performance.now();
@@ -45,12 +48,12 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    // Retry safety without receipts: the last accepted operation is remembered on the record itself.
    const hash=fingerprint(uid,b);
    if(old.lastOpId===b.opId){if(old.lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,revision:old.revision,record:old,measured:measured()};}
-   const applied=Object.entries(b.set).every(([k,v])=>S.equal(old.data[k],v));
+   const applied=spec.move?old.order===b.order:Object.entries(b.set).every(([k,v])=>S.equal(old.data[k],v));
    if(old.revision!==b.baseRevision)return applied?{ok:true,alreadyApplied:true,revision:old.revision,record:old,measured:measured()}:{...reject('conflict',old),measured:measured()};
-   const now=stamp(),data={...old.data,...b.set,...(spec.stampData?{updatedAt:new Date(now).toISOString()}:{})},next={...old,data};
+   const now=stamp(),moved=spec.move?{order:b.order}:{},data={...old.data,...b.set,...(spec.stampData?{updatedAt:new Date(now).toISOString()}:{})},next={...old,data};
    await spec.validate({tx,a,b,old,next,reads});
-   const record={...old,data,revision:old.revision+1,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash};
-   tx.update(ref,{data,revision:record.revision,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash});
+   const record={...old,data,...moved,revision:old.revision+1,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash};
+   tx.update(ref,{data,...moved,revision:record.revision,updatedAt:now,updatedBy:uid,lastOpId:b.opId,lastOpHash:hash});
    const m=measured();if(m)m.documentWrites=1;
    return {ok:true,revision:record.revision,record,measured:m?{...m,authMode:authMode()}:undefined};
   });
@@ -66,8 +69,18 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    }
   }};
  const canvasSpec={allowed:CANVAS_ALLOWED,stampData:false,key:b=>S.keyOf('canvas.objects',b.projectId,S.segment(b.objectId),S.segment(b.boardId)),owns:(old,b)=>old.kind==='canvas.objects'&&old.projectId===b.projectId&&old.id===b.objectId&&old.boardId===b.boardId,
-  async validate({old,next}){if(!S.equal(canvas.normalizeObject(next.data,old.boardId,old.projectId),next.data))throw Error('Canvas change violates the canonical object schema');}};
- const patch=(uid,b)=>run(uid,b,taskSpec),patchCanvas=(uid,b)=>run(uid,b,canvasSpec);
+  // Same rule as the canonical board: a locked object can only be unlocked (or locked again) until the lock is lifted.
+  async validate({old,next}){const changed=[...new Set([...Object.keys(old.data),...Object.keys(next.data)])].filter(k=>!S.equal(old.data[k],next.data[k]));if(old.data.locked===true&&changed.some(k=>k!=='locked'))fail('Unlock the object before editing','failed-precondition');if(!S.equal(canvas.normalizeObject(next.data,old.boardId,old.projectId),next.data))throw Error('Canvas change violates the canonical object schema');}};
+ // A connector edit (label, line style, arrow, colour). Validated through a two-object board so the canonical connector rules apply.
+ const connectorKey=b=>S.keyOf('canvas.connectors',b.projectId,S.segment(b.connectorId),S.segment(b.boardId));
+ const connectorSpec={allowed:CONNECTOR_ALLOWED,stampData:false,key:connectorKey,owns:(old,b)=>old.kind==='canvas.connectors'&&old.projectId===b.projectId&&old.id===b.connectorId&&old.boardId===b.boardId,
+  async validate({old,next}){const end=id=>canvas.normalizeObject(canvas.createObject({id,boardId:old.boardId,x:0,y:0,now:'2026-01-01T00:00:00.000Z',zIndex:0}),old.boardId,old.projectId);
+   let clean;try{clean=canvas.normalizeBoard({...canvas.createBoard({id:old.boardId,projectId:old.projectId,title:'x',now:'2026-01-01T00:00:00.000Z'}),objects:[end(next.data.from),end(next.data.to)],connectors:[next.data],threads:[]},old.projectId).connectors[0];}catch{throw Error('Canvas change violates the canonical connector schema');}
+   // The canonical connector has no `color` key when the colour is empty: clearing it removes the key.
+   if(next.data.color==='')delete next.data.color,delete clean.color;
+   if(!S.equal(clean,next.data))throw Error('Canvas change violates the canonical connector schema');}};
+ const moveSpec={...taskSpec,move:true,stampData:false,validate:async()=>{}};
+ const patch=(uid,b)=>run(uid,b,taskSpec),moveTask=(uid,b)=>run(uid,b,moveSpec),patchCanvas=(uid,b)=>run(uid,b,canvasSpec),patchCanvasConnector=(uid,b)=>run(uid,b,connectorSpec);
  // Shared guards for cascading edits: authorization, protocol, freeze, seat, idempotency and the revision check.
  async function preflight(tx,uid,b,permission,key,timings={bench:b.bench===true}){
   const reads={authorization:3,subscription:0,record:0,configuration:0,dependencies:0,queries:0,releases:0,links:0},reader=authMode()==='snapshot'?{get:r=>r.get()}:tx;
@@ -156,11 +169,11 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    const hash=fingerprint(uid,{...b,id});
    if(snap.exists){const old=snap.data();if(old.lastOpId===b.opId&&old.lastOpHash===hash)return {ok:true,duplicate:true,revision:old.revision,record:old,changed:[],measured:measured()};fail('Record already exists','already-exists');}
    const now=stamp(),c=createCascade({tx,a,projectId:b.projectId,fail,reads});
-   const kindQuery=col.where('projectId','==',b.projectId).where('kind','==',spec.kind);let rows;
+   let kindQuery=col.where('projectId','==',b.projectId).where('kind','==',spec.kind);if(spec.boardScoped)kindQuery=kindQuery.where('boardId','==',b.boardId);let rows;
    try{rows=(await kindQuery.count().get()).data().count;reads.aggregation=Math.max(1,Math.ceil(rows/1000));}
    catch{// Aggregation queries are missing from some emulator builds: fall back to a bounded key-only query (billed per row, but only reached where aggregation is unavailable).
     const snap=await kindQuery.select().limit(CAPS[spec.kind]+1).get();rows=snap.size;reads.aggregation=Math.max(1,snap.size);reads.aggregationFallback=1;}
-   if(rows>=CAPS[spec.kind])fail('This project is too large for a field patch; use the full editor','failed-precondition');
+   if(rows>=CAPS[spec.kind])fail(spec.boardScoped?'This Canvas is too large for a field patch; use the full editor':'This project is too large for a field patch; use the full editor','failed-precondition');
    const out=await spec.prepare({tx,a,b,c,col,reads,now,uid,id,fail});
    const records=commitAll(tx,ctx,uid,now,{record:shell(spec.kind,b.projectId,id,order,boardId),update:{deleted:false,data:out.data,lastOpId:b.opId,lastOpHash:hash}},out.others||[]);
    return {ok:true,revision:1,record:records[0],changed:records,measured:measured(records.length)};
@@ -202,6 +215,29 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    return {data:d};
   }};
  const createTask=(uid,b)=>createRecord(uid,b,taskCreate),addComment=(uid,b)=>createRecord(uid,b,commentCreate),logTime=(uid,b)=>createRecord(uid,b,timeCreate);
+ // Canvas creates: one new object or connector (one write). The board must exist and be live; the object count per board is capped like the canonical board (1,000 objects, 2,000 connectors).
+ // Objects that need the full editor (linked sources, group membership) are refused; a connector's two ends must be live objects of the same board.
+ const boardOf=async(tx,col,b,reads,fail)=>{const snap=await tx.get(col.doc(S.keyOf('canvases',b.projectId,S.segment(b.boardId))));reads.board=1;const rec=snap.exists?snap.data():null;if(!rec||rec.deleted||rec.kind!=='canvases'||rec.projectId!==b.projectId)fail('Canvas is unavailable','failed-precondition');return rec;};
+ const canvasObjectCreate={kind:'canvas.objects',permission:'edit',boardScoped:true,identify:b=>({id:S.segment(b.objectId),boardId:S.segment(b.boardId),order:Number.isSafeInteger(b.order)&&b.order>=0&&b.order<=100000?b.order:100000}),
+  async prepare({tx,b,col,reads,fail,id}){
+   const d=b.data;if(!d||typeof d!=='object'||Array.isArray(d)||d.id!==id||d.boardId!==b.boardId)fail('The Canvas object must carry its own ID and board','invalid-argument');
+   if(d.type==='linked'||d.sourceLink)fail('A linked Canvas object needs the full editor','failed-precondition');
+   if(d.groupId)fail('A Canvas object inside a group needs the full editor','failed-precondition');
+   await boardOf(tx,col,b,reads,fail);
+   let clean;try{clean=canvas.normalizeObject(d,b.boardId,b.projectId);}catch{fail('Canvas change violates the canonical object schema','invalid-argument');}
+   if(!S.equal(clean,d))fail('Canvas change violates the canonical object schema','invalid-argument');
+   return {data:d};
+  }};
+ const canvasConnectorCreate={kind:'canvas.connectors',permission:'edit',boardScoped:true,identify:b=>({id:S.segment(b.connectorId),boardId:S.segment(b.boardId),order:Number.isSafeInteger(b.order)&&b.order>=0&&b.order<=100000?b.order:100000}),
+  async prepare({tx,b,col,reads,fail,id}){
+   const d=b.data;if(!d||typeof d!=='object'||Array.isArray(d)||d.id!==id)fail('The connector must carry its own ID','invalid-argument');
+   const board=await boardOf(tx,col,b,reads,fail),ends=[];
+   for(const end of [d.from,d.to]){const snap=await tx.get(col.doc(S.keyOf('canvas.objects',b.projectId,S.segment(end),b.boardId)));reads.endpoints=(reads.endpoints||0)+1;const r=snap.exists?snap.data():null;if(!r||r.deleted)fail('A connector end is unavailable','failed-precondition');ends.push({...r.data,groupId:''});}
+   let clean;try{clean=canvas.normalizeBoard({...board.data,objects:ends.filter((o,i)=>i===0||o.id!==ends[0].id),connectors:[d],threads:[]},b.projectId).connectors[0];}catch{fail('Canvas change violates the canonical connector schema','invalid-argument');}
+   if(!S.equal(clean,d))fail('Canvas change violates the canonical connector schema','invalid-argument');
+   return {data:d};
+  }};
+ const createCanvasObject=(uid,b)=>createRecord(uid,b,canvasObjectCreate),createCanvasConnector=(uid,b)=>createRecord(uid,b,canvasConnectorCreate);
  // Removes up to 50 Canvas objects with the same cascade as canvas.changeBoard({type:'remove'}): attached connectors and anchored comment threads
  // are removed, children of a removed frame lose their group. Related rows are found with indexed `in` queries (30 IDs each), never by scanning the board.
  async function deleteCanvasObjects(uid,b){
@@ -234,6 +270,24 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    return {ok:true,deleted:ids,changed:records,measured:measured(records.length)};
   });
  }
+ // Removes one Canvas connector (a tombstone, one write). Nothing hangs off a connector, so there is no cascade.
+ async function deleteCanvasConnector(uid,b){
+  S.segment(b.projectId);S.segment(b.boardId);S.segment(b.connectorId);S.segment(b.opId);
+  if(!Number.isSafeInteger(b.baseRevision)||b.baseRevision<1)fail('Invalid base revision','invalid-argument');
+  const timings={bench:b.bench===true};let attempts=0;
+  return timedTx(timings,async tx=>{
+   attempts++;const ctx=await preflight(tx,uid,b,'delete',connectorKey(b),timings),{a,reads}=ctx;
+   const measured=(writes=0)=>ctx.admin?{documentReads:ctx.total(),documentWrites:writes,documentDeletes:0,readBreakdown:{...reads},validationClass:'canvas-connector-delete',transactionAttempts:attempts}:undefined;
+   if(!ctx.snap.exists)fail('Canvas connector is unavailable','failed-precondition');
+   const old=ctx.snap.data();if(old.kind!=='canvas.connectors'||old.projectId!==b.projectId||old.boardId!==b.boardId||old.id!==b.connectorId)fail('Canvas connector is unavailable','failed-precondition');
+   if(old.deleted)return {ok:true,alreadyApplied:true,changed:[],measured:measured()};
+   const hash=fingerprint(uid,b);
+   if(old.lastOpId===b.opId){if(old.lastOpHash!==hash)fail('Operation ID was reused with different content','already-exists');return {ok:true,duplicate:true,changed:[],measured:measured()};}
+   if(old.revision!==b.baseRevision)return {ok:false,code:'conflict',current:old,measured:measured()};
+   const now=stamp(),records=commitAll(tx,ctx,uid,now,{record:old,update:{deleted:true,deletedAt:now,lastOpId:b.opId,lastOpHash:hash}},[]);
+   return {ok:true,deleted:[b.connectorId],changed:records,measured:measured(records.length)};
+  });
+ }
  // Read-only latency probe for the concurrency investigation (administrators only, no writes): separates plain reads and read-only
  // transactions, the floor for any patch, from the cost of our own logic.
  async function latencyProbe(uid,b){
@@ -254,6 +308,6 @@ function patchHandlers({db,access,fail,stamp=Date.now}){
    return {ok:true,...change};
   });
  }
- return {patch,patchCanvas,deleteCanvasObjects,deleteTask,patchDependencies,createTask,addComment,logTime,workspaceControl,latencyProbe};
+ return {patch,moveTask,patchCanvas,deleteCanvasObjects,deleteTask,patchDependencies,createTask,addComment,logTime,createCanvasObject,createCanvasConnector,patchCanvasConnector,deleteCanvasConnector,workspaceControl,latencyProbe};
 }
-module.exports={patchHandlers,ALLOWED,CANVAS_ALLOWED};
+module.exports={patchHandlers,ALLOWED,CANVAS_ALLOWED,CONNECTOR_ALLOWED};

@@ -11,7 +11,7 @@ const crypto=require('node:crypto');
 const S=require('../schema.cjs'),IAM=require('../iam.cjs');
 const LIMITS=Object.freeze({pageDefault:200,pageMax:500,pageBytes:4000000,overlapMs:30000,retentionMs:90*86400000,signalTimeoutMs:1500});
 // Writers whose accepted result must wake the other clients of the project.
-const WRITERS=Object.freeze(['patch','patchCanvas','deleteCanvasObjects','deleteTask','patchDependencies','createTask','addComment','logTime']);
+const WRITERS=Object.freeze(['patch','moveTask','patchCanvas','deleteCanvasObjects','deleteTask','patchDependencies','createTask','addComment','logTime','createCanvasObject','createCanvasConnector','patchCanvasConnector','deleteCanvasConnector']);
 // Internal bookkeeping (operation IDs and hashes, legacy sequence, schema tag) is never sent to clients.
 const publicRecord=r=>{const o={key:r.key,kind:r.kind,projectId:r.projectId,boardId:r.boardId,id:r.id,data:r.data,order:r.order,revision:r.revision,updatedAt:r.updatedAt,updatedBy:r.updatedBy};if(r.deleted){o.deleted=true;o.deletedAt=r.deletedAt;}return o;};
 const bounded=(promise,ms)=>{promise.catch(()=>{});let timer;return Promise.race([promise,new Promise(resolve=>{timer=setTimeout(resolve,ms);})]).finally(()=>clearTimeout(timer));};

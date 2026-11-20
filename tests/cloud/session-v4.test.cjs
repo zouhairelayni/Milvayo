@@ -105,6 +105,31 @@ test('a dependency edit and an unrelated field edit in one queued change both ar
  await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[a.id]);ws.projects[0].tasks.find(t=>t.id===b.id).title='Linked and renamed';});await alice.session.syncNow();
  assert.equal(alice.session.getState().pending,0);assert.equal(h.x.task(b.id).data.title,'Linked and renamed');assert.deepEqual(h.x.task(b.id).data.dependsOn,[a.id]);converged(h,alice);
 });
+test('Canvas: moving and deleting objects go out as patchCanvas and deleteCanvasObjects and the other person converges',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const board=()=>alice.workspace.projects[0].canvases[0],[first,second]=board().objects;
+ await alice.edit(ws=>{ws.projects[0].canvases[0].objects.find(o=>o.id===first.id).x+=37;});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(a=>a.startsWith('patchCanvas:')));assert.ok(!alice.actions().some(a=>a.startsWith('commit')));
+ await alice.edit(ws=>{const b=ws.projects[0].canvases[0];b.objects=b.objects.filter(o=>o.id!==second.id);b.connectors=(b.connectors||[]).filter(c=>c.from!==second.id&&c.to!==second.id);b.threads=(b.threads||[]).filter(t=>t.objectId!==second.id);});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(a=>a.startsWith('deleteCanvasObjects:')));
+ await h.pump();assert.equal(bob.workspace.projects[0].canvases[0].objects.some(o=>o.id===second.id),false);converged(h,alice,bob);
+});
+test('moving a task in its list goes out as moveTask with a position between its neighbours; the other person sees the same order; twenty moves into the same gap stay valid',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const ids=()=>alice.workspace.projects[0].tasks.map(t=>t.id),moved=ids()[6];
+ const move=to=>alice.edit(ws=>{const l=ws.projects[0].tasks,i=l.findIndex(t=>t.id===moved),[t]=l.splice(i,1);l.splice(to,0,t);});
+ await move(1);await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(a=>a.startsWith('moveTask:')));assert.ok(!alice.actions().some(a=>a.startsWith('commit')));
+ const order=h.x.task(moved).order;assert.ok(order>0&&order<2&&!Number.isInteger(order),'between its new neighbours: '+order);
+ await h.pump();assert.deepEqual(bob.workspace.projects[0].tasks.map(t=>t.id),ids());converged(h,alice,bob);
+ for(let i=0;i<20;i++){await move(i%2?1:2);await alice.session.syncNow();}
+ assert.equal(alice.session.getState().pending,0);await h.pump();assert.deepEqual(bob.workspace.projects[0].tasks.map(t=>t.id),ids());converged(h,alice,bob);
+});
+test('moving two tasks at once is kept in the queue with a clear message',async()=>{
+ const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=h.live();alice.log.length=0;
+ await alice.edit(ws=>{const l=ws.projects[0].tasks,a=l.splice(5,1)[0],b=l.splice(8,1)[0];l.unshift(a);l.splice(3,0,b);});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,1);assert.match(alice.session.getState().error||'',/not available in v4 workspaces yet/);assert.deepEqual(h.live(),before);
+});
 test('reconnecting resumes from the stored feed state: only newer changes are read, and edits made while away arrive',async()=>{
  const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();await alice.session.disconnect();
  const id=firstTask(bob.workspace).id;await bob.edit(ws=>{ws.projects[0].tasks.find(t=>t.id===id).title='While Alice was away';});await bob.session.syncNow();
@@ -146,4 +171,79 @@ test('two people, random edits, creates, deletes and comments, with syncs in ran
  assert.ok(done>40);
  for(const p of all)assert.equal(p.session.getState().pending,0,p.session.getState().error||'queue empty');
  converged(h,alice,bob);
+});
+// These tests use the app's own Canvas functions (changeBoard + saveBoard), which also rewrite the board record (revision counter, update time).
+const canvasDomain=require('../../src/domain/canvas.cjs');
+const stamp=()=>new Date().toISOString();
+const canvasEdit=(person,command)=>person.edit(ws=>{const p=ws.projects[0],b=p.canvases[0];ws.projects[0]=canvasDomain.saveBoard(p,canvasDomain.changeBoard(b,command,stamp()),b.revision);});
+const objectsOf=ws=>new Map(ws.projects[0].canvases[0].objects.map(o=>[o.id,o]));
+const firstProject=h=>[...h.x.rows.values()].find(r=>r.kind==='projects'&&!r.deleted).projectId;
+const serverObjects=h=>new Map([...h.x.rows.values()].filter(r=>r.kind==='canvas.objects'&&!r.deleted&&r.projectId===firstProject(h)).map(r=>[r.id,r.data]));
+const serverConnectors=h=>[...h.x.rows.values()].filter(r=>r.kind==='canvas.connectors'&&!r.deleted&&r.projectId===firstProject(h));
+test('real Canvas saves: move, layer and viewport work in a v4 workspace although the board record changes too; the board counter stays local',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const b0=alice.workspace.projects[0].canvases[0],o=b0.objects[0];
+ await canvasEdit(alice,{type:'patch',id:o.id,patch:{x:o.x+11},bases:[{id:o.id,x:o.x,y:o.y,width:o.width,height:o.height}]});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('patchCanvas:')));assert.ok(!alice.actions().some(a=>a.startsWith('commit')));
+ assert.equal(serverObjects(h).get(o.id).x,o.x+11);assert.equal(alice.workspace.projects[0].canvases[0].revision,b0.revision+1,'the app keeps its own counter');
+ alice.log.length=0;await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=canvasDomain.saveViewport(p,p.canvases[0].id,{x:5,y:6,scale:1.25},p.canvases[0].revision);});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.deepEqual(alice.actions().filter(a=>!a.startsWith('pullV4')&&a!=='directoryV4'),[],'a viewport change sends nothing');
+ await canvasEdit(alice,{type:'move',ids:[o.id],dx:3,dy:4,bases:[{id:o.id,x:o.x+11,y:o.y,width:o.width,height:o.height}]});await alice.session.syncNow();assert.equal(alice.session.getState().pending,0);
+ await h.pump();assert.equal(objectsOf(bob.workspace).get(o.id).x,o.x+14);assert.equal(serverObjects(h).get(o.id).y,o.y+4);
+});
+test('real Canvas saves: a new note, a connector between two notes, and removing a note with its connector',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const board=alice.workspace.projects[0].canvases[0],first=board.objects[0].id;
+ const note=canvasDomain.createObject({id:'new-note-1',boardId:board.id,type:'note',x:40,y:50,text:'Hello',now:stamp(),zIndex:50});
+ await canvasEdit(alice,{type:'add',objects:[note]});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('createCanvasObject:')));assert.equal(serverObjects(h).get('new-note-1').text,'Hello');
+ await canvasEdit(alice,{type:'connect',edge:{id:'edge-1',from:first,to:'new-note-1',label:'',style:'curve',arrow:true}});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('createCanvasConnector:')));assert.equal(serverConnectors(h).filter(r=>r.id==='edge-1').length,1);
+ await h.pump();assert.ok(objectsOf(bob.workspace).has('new-note-1'));assert.ok(bob.workspace.projects[0].canvases[0].connectors.some(e=>e.id==='edge-1'));
+ alice.log.length=0;await canvasEdit(alice,{type:'remove',ids:['new-note-1']});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('deleteCanvasObjects:')));
+ assert.equal(serverObjects(h).has('new-note-1'),false);assert.equal(serverConnectors(h).filter(r=>r.id==='edge-1').length,0,'the connector went with its note (server cascade)');
+ await h.pump();assert.ok(!objectsOf(bob.workspace).has('new-note-1'));assert.ok(!bob.workspace.projects[0].canvases[0].connectors.some(e=>e.id==='edge-1'));
+});
+test('real Canvas saves: a note and a connector created in one change are sent in the right order',async()=>{
+ const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();alice.log.length=0;
+ const board=alice.workspace.projects[0].canvases[0];
+ await alice.edit(ws=>{const p=ws.projects[0],b=p.canvases[0],n1=canvasDomain.createObject({id:'pair-a',boardId:b.id,x:0,y:0,now:stamp(),zIndex:60}),n2=canvasDomain.createObject({id:'pair-b',boardId:b.id,x:300,y:0,now:stamp(),zIndex:61});
+  const next=canvasDomain.changeBoard(canvasDomain.changeBoard(b,{type:'add',objects:[n1,n2]},stamp()),{type:'connect',edge:{id:'pair-edge',from:'pair-a',to:'pair-b',label:'',style:'curve',arrow:true}},stamp());
+  ws.projects[0]=canvasDomain.saveBoard(p,{...next,revision:b.revision+1},b.revision);});
+ await alice.session.syncNow();assert.equal(alice.session.getState().pending,0,alice.session.getState().error);
+ const sent=alice.actions().filter(a=>/^createCanvas/.test(a)).map(a=>a.split(':')[0]);assert.deepEqual(sent,['createCanvasObject','createCanvasObject','createCanvasConnector']);
+ assert.equal(serverConnectors(h).filter(r=>r.id==='pair-edge').length,1);assert.ok(board);
+});
+test('real Canvas saves: editing text and colour, locking, editing a connector and removing it all reach the server and the other person',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const board=()=>alice.workspace.projects[0].canvases[0],o=board().objects[0],o2=board().objects[1],base=x=>[{id:x.id,x:x.x,y:x.y,width:x.width,height:x.height}];
+ await canvasEdit(alice,{type:'patch',id:o.id,patch:{text:'Words on the note',color:'#336699'},bases:base(o)});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.equal(serverObjects(h).get(o.id).text,'Words on the note');assert.equal(serverObjects(h).get(o.id).color,'#336699');
+ await canvasEdit(alice,{type:'lock',id:o.id,locked:true});await alice.session.syncNow();assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.equal(serverObjects(h).get(o.id).locked,true);
+ await canvasEdit(alice,{type:'lock',id:o.id,locked:false});await alice.session.syncNow();assert.equal(serverObjects(h).get(o.id).locked,false);
+ await canvasEdit(alice,{type:'connect',edge:{id:'edge-x',from:o.id,to:o2.id,label:'',style:'curve',arrow:true}});await alice.session.syncNow();
+ await canvasEdit(alice,{type:'editConnector',id:'edge-x',patch:{label:'blocks',style:'elbow',color:'#445566'}});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('patchCanvasConnector:')));
+ const edge=()=>serverConnectors(h).find(r=>r.id==='edge-x');assert.equal(edge().data.label,'blocks');assert.equal(edge().data.color,'#445566');
+ await canvasEdit(alice,{type:'editConnector',id:'edge-x',patch:{color:''}});await alice.session.syncNow();assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.equal('color' in edge().data,false);
+ await h.pump();const theirs=bob.workspace.projects[0].canvases[0];assert.equal(theirs.objects.find(x=>x.id===o.id).text,'Words on the note');assert.equal(theirs.connectors.find(e=>e.id==='edge-x').label,'blocks');
+ alice.log.length=0;await canvasEdit(alice,{type:'disconnect',id:'edge-x'});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('deleteCanvasConnector:')));assert.equal(edge(),undefined);
+ await h.pump();assert.ok(!bob.workspace.projects[0].canvases[0].connectors.some(e=>e.id==='edge-x'));
+});
+test('real Canvas saves: a board rename stays in the recovery queue',async()=>{
+ const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=serverObjects(h).size;alice.log.length=0;
+ await canvasEdit(alice,{type:'rename',title:'Renamed board'});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,1);assert.match(alice.session.getState().error||'',/not available in v4 workspaces yet/);assert.equal(serverObjects(h).size,before);
+});
+
+test('edits that also change the update time (as the app does) keep working one after another, for a task and for a Canvas object',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();
+ const id=alice.workspace.projects[0].tasks[0].id;
+ for(const [i,t] of ['2031-01-01T00:00:01.000Z','2031-01-01T00:00:09.000Z','2031-01-01T00:00:20.000Z'].entries()){await alice.edit(ws=>{const k=ws.projects[0].tasks.find(x=>x.id===id);k.title='Title '+i;k.updatedAt=t;});await alice.session.syncNow();assert.equal(alice.session.getState().pending,0,alice.session.getState().error);}
+ assert.equal(h.x.task(id).data.title,'Title 2');
+ const o=alice.workspace.projects[0].canvases[0].objects[0],base=x=>[{id:x.id,x:x.x,y:x.y,width:x.width,height:x.height}];
+ for(const [i,t] of ['2031-02-01T00:00:01.000Z','2031-02-01T00:00:30.000Z'].entries()){await canvasEdit(alice,{type:'patch',id:o.id,patch:{text:'Words '+i},bases:base(alice.workspace.projects[0].canvases[0].objects[0])});await alice.session.syncNow();assert.equal(alice.session.getState().pending,0,alice.session.getState().error);}
+ assert.equal(serverObjects(h).get(o.id).text,'Words 1');await h.pump();assert.equal(bob.workspace.projects[0].canvases[0].objects.find(x=>x.id===o.id).text,'Words 1');
 });
