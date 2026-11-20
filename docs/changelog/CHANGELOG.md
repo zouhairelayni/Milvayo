@@ -1,6 +1,12 @@
-## v0.8.20 — Draft (version synchronized automatically)
+## v0.8.23 — Firebase v4.0 — dependency edits work in v4 workspaces (2026-11-20)
 
-- Release notes pending. This draft does not certify or deploy a release.
+- Adding, removing or replacing the predecessors of a task now goes out as one v4 `patchDependencies` call (the server writes the links and resets the downstream chain itself) instead of staying in the recovery queue.
+- When one queued edit also holds other changes to the same task (for example a rename), the rename goes as a separate `patch`; the dependency links and the downstream resets that follow from the edit are not sent, the server computes them.
+- Deleting a task together with edits to the tasks that depended on it works too: the dependency list ignores the tasks that are being deleted.
+- If someone else changed the same task's predecessors meanwhile, the edit becomes a conflict for review and nothing is overwritten. If only other fields changed, the edit is re-applied on top automatically.
+- Fixed in the planner: a task with no `dependsOn` field was treated as a dependency change when any other field was edited.
+- Still not supported on v4 workspaces (kept in the recovery queue with the "not available in v4 workspaces yet" message): moving a task in its list, Canvas, projects and the other record kinds. The legacy `pull` guard for protocol-4 workspaces is still not added.
+- Tests: 3 new two-person session tests (add/remove, conflict, dependency plus rename), planner tests for the split, the unsupported-change session test now uses a reorder. Sandbox: no new failures against the untouched tree (993 run, 64 failing, all existing environment-only UI/native tests). Owner run: `npm test` 1,204 tests, 1,191 pass, 0 fail, 13 skipped; `npm run test:cloud` finished with exit code 0 (0 skipped; the pass/fail lines were cut off in the pasted tail).
 
 ## v0.8.22 — Firebase v4.0 Gate 3a — the app reads and writes v4 workspaces through the change feed (2026-11-19)
 
@@ -10,7 +16,7 @@
 - Edits go out as v4 calls instead of commits (`src/cloud/v4Writes.cjs`): task field edits (`patch`), task delete with its whole cascade (`deleteTask`), new task, comment, time entry. One queued edit that holds several unrelated changes becomes several calls in a fixed order with stable operation IDs, so a retry after a crash repeats the same calls and the server ignores what it already applied. A stale edit on a different field is re-applied automatically on top of the newer record; the same field, or a task deleted meanwhile, stays in the queue as a conflict with a plain message.
 - Not yet supported on v4 workspaces (kept in the recovery queue with the message "not available in v4 workspaces yet", nothing half-sent): dependencies, moving a task in its list, Canvas, projects and the other record kinds. The legacy `pull` guard for protocol-4 workspaces is not added yet: many emulator tests still read through `pull`.
 - Positions: a deleted or added task no longer looks like a change to every task after it (stored orders are kept when the surviving records keep their relative order).
-- Server: new `directoryV4`; the journal stores the feed state and drops records of a project that left the directory. Tests: 8 reader, 9 writer/planner, 10 two-person session tests (including a seeded random two-person run that ends with identical workspaces equal to the cloud), directory tests in `feed.test.cjs`, one new emulator case. Sandbox: no new failures against the untouched tree. Emulator run: Not run (owner to run `npm run test:cloud`).
+- Server: new `directoryV4`; the journal stores the feed state and drops records of a project that left the directory. Tests: 8 reader, 9 writer/planner, 10 two-person session tests (including a seeded random two-person run that ends with identical workspaces equal to the cloud), directory tests in `feed.test.cjs`, one new emulator case. Sandbox: no new failures against the untouched tree. Emulator run: passed by the owner (`npm run test:cloud` 281/281, `npm test` 1188 pass, 0 fail, 13 skipped).
 
 ## v0.8.21 — Firebase v4.0 Gate 3a server — change feed, per-project signal and cheaper presence (2026-11-19)
 

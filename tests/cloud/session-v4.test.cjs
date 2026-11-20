@@ -78,9 +78,32 @@ test('edits to different fields of the same task from two people both survive; t
 });
 test('a change the v4 path cannot send yet is kept in the queue with a clear message and nothing is sent',async()=>{
  const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=h.live();alice.log.length=0;
- await alice.edit(ws=>{const p=ws.projects[0],[a,b]=p.tasks;ws.projects[0]=model.setTaskDependencies(p,b.id,[a.id]);});await alice.session.syncNow();
+ await alice.edit(ws=>{ws.projects[0].tasks.reverse();});await alice.session.syncNow();
  const state=alice.session.getState();assert.equal(state.pending,1);assert.match(state.error||'',/not available in v4 workspaces yet/);
  assert.ok(!alice.actions().some(a=>/^(patch|commit|patchDependencies|deleteTask|createTask)/.test(a)),'no half-sent change');assert.deepEqual(h.live(),before);
+});
+test('a dependency edit goes out as patchDependencies; the other person gets the same links, and removing it also converges',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ const [a,b]=alice.workspace.projects[0].tasks;
+ await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[a.id]);});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(x=>x.startsWith('patchDependencies:')));assert.ok(!alice.actions().some(x=>x.startsWith('commit')));
+ assert.deepEqual(h.x.task(b.id).data.dependsOn,[a.id]);await h.pump();converged(h,alice,bob);
+ await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[]);});await alice.session.syncNow();await h.pump();
+ assert.deepEqual(h.x.task(b.id).data.dependsOn||[],[]);converged(h,alice,bob);
+});
+test('two people changing the same task\'s dependencies: the second becomes a conflict, nothing is overwritten',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();
+ const [a,b,c]=alice.workspace.projects[0].tasks;
+ await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[a.id]);});
+ await bob.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[c.id]);});
+ await alice.session.syncNow();await bob.session.syncNow();
+ assert.deepEqual(h.x.task(b.id).data.dependsOn,[a.id],'the first writer wins');assert.equal(bob.session.getState().pending,1,'the second edit stays for review');
+});
+test('a dependency edit and an unrelated field edit in one queued change both arrive',async()=>{
+ const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();
+ const [a,b]=alice.workspace.projects[0].tasks;
+ await alice.edit(ws=>{const p=ws.projects[0];ws.projects[0]=model.setTaskDependencies(p,b.id,[a.id]);ws.projects[0].tasks.find(t=>t.id===b.id).title='Linked and renamed';});await alice.session.syncNow();
+ assert.equal(alice.session.getState().pending,0);assert.equal(h.x.task(b.id).data.title,'Linked and renamed');assert.deepEqual(h.x.task(b.id).data.dependsOn,[a.id]);converged(h,alice);
 });
 test('reconnecting resumes from the stored feed state: only newer changes are read, and edits made while away arrive',async()=>{
  const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();await alice.session.disconnect();

@@ -1,6 +1,12 @@
 # Milvayo summary (2026-11-19)
 
-**App version:** 0.8.22 (owner bumps package.json, package-lock.json, app.json and src/cloud/server/package.json). Last owner-verified release: 0.8.21 (npm test 1158/0, test:cloud 250/0).
+**App version:** 0.8.23 (owner bumps package.json, package-lock.json, app.json and src/cloud/server/package.json). Last owner-verified release: 0.8.23 (npm test 1191 pass/0 fail/13 skipped, test:cloud exit 0).
+
+## 0.8.23 - dependency edits on v4
+- Done: task dependency add/remove/replace goes out as `patchDependencies` (own call; links and downstream resets are the server's). Other field edits of the same task go as a separate `patch`. Stale base: automatic reapply if nobody else changed `dependsOn`, else conflict. Planner fix: missing `dependsOn` no longer counts as a change.
+- Files changed: src/cloud/v4Writes.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
+- Next: reorder, Canvas, projects on v4; legacy `pull` guard; two-device check; billing measurement.
+- Verified by owner: npm test 1,204 tests (1,191 pass, 0 fail, 13 skipped); test:cloud exit 0.
 
 ## 0.8.22 - the app speaks v4 (Gate 3a, app side)
 - NEW `src/cloud/changeFeed.cjs` (reader), `src/cloud/v4Writes.cjs` (queued edit -> v4 calls, order alignment, automatic reapply). Changed: `session.cjs` (v4 mode, per-project signal, safety poll), `journal.cjs` (feed state, dropped projects, order alignment), `client.js` (`projectHeads`), `server/feed.cjs` (`directoryV4`).

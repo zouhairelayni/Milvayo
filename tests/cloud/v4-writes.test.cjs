@@ -26,10 +26,10 @@ test('mapping: delete, create, comment and time entry each become their own call
 test('mapping: anything not supported yet is refused with a clear message and never half-sent',()=>{
  const t=publicRecord({key:'tasks~p~~t',kind:'tasks',projectId:'p',boardId:'',id:'t',order:0,revision:1,data:{title:'a',dependsOn:[]}}),other=publicRecord({key:'tasks~p~~u',kind:'tasks',projectId:'p',boardId:'',id:'u',order:1,revision:1,data:{title:'u'}});
  const refuses=(changes,pattern)=>assert.throws(()=>requestFor(changes,'o'),e=>e.code==='failed-precondition'&&pattern.test(e.message)&&/recovery queue/.test(e.message));
- refuses([change(t,withData(t,{dependsOn:['u']}))],/dependencies/);
+ assert.deepEqual(requestFor([change(t,withData(t,{dependsOn:['u'],verified:false}))],'o').request,{action:'patchDependencies',projectId:'p',taskId:'t',baseRevision:1,dependsOn:['u'],opId:'o'});
  refuses([change(t,{...withData(t,{}),order:5})],/moving a task/);
  refuses([change(t,{...withData(t,{title:'b'}),data:{dependsOn:[]}})],/removing the field title/);
- refuses([change(t,withData(t,{title:'b'})),change(other,withData(other,{dependsOn:['t']}))],/dependencies/);
+ refuses([change(t,withData(t,{title:'b'})),change(other,{...withData(other,{}),order:7})],/moving a task/);
  assert.throws(()=>requestFor([change(t,withData(t,{title:'b'})),change(other,withData(other,{title:'x'}))],'o'),/several records/,'the one-call form refuses what needs two calls');
  refuses([change(null,{key:'k',kind:'canvas.objects',projectId:'p',boardId:'b',id:'o',order:0,data:{}})],/adding this kind/);
  refuses([change({key:'k',kind:'projects',projectId:'p',boardId:'',id:'p',order:0,revision:1,data:{}},{key:'k',kind:'projects',projectId:'p',boardId:'',id:'p',order:0,data:{name:'z'}})],/this kind of record/);

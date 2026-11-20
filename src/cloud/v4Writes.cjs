@@ -44,6 +44,17 @@ function plan(changes,opId){
  const same=c=>c.before&&c.after&&S.equal(c.before.data,c.after.data)&&c.before.order===c.after.order;
  let list=changes.filter(c=>(c.before||c.after)&&!same(c));
  const gone=new Set(list.filter(c=>c.before&&!c.after&&c.before.kind==='tasks').map(c=>c.before.projectId+'|'+c.before.id));
+ // A dependency edit has its own call that also writes the links and resets the downstream chain on the server. The same task's other field edits go separately; the links and the downstream resets are not sent.
+ const CASCADE_FIELDS=['dependsOn','verified','merged','updatedAt'],depChanged=c=>c.before&&c.after&&c.before.kind==='tasks'&&!S.equal((c.before.data.dependsOn||[]).filter(d=>!gone.has(c.before.projectId+'|'+d)),c.after.data.dependsOn||[]),depTasks=new Set(list.filter(depChanged).map(c=>c.before.projectId+'|'+c.before.id)),extra=[];
+ if(depTasks.size){
+  list=list.flatMap(c=>{
+   const r=c.before||c.after,id=x=>r.projectId+'|'+x;
+   if(r.kind==='dependencies')return depTasks.has(id(r.data.successorId))?[]:[c];
+   if(depChanged(c)){const rest={...c.after,data:{...c.after.data}};for(const k of CASCADE_FIELDS)if(Object.hasOwn(c.before.data,k))rest.data[k]=c.before.data[k];else delete rest.data[k];extra.push({change:c,request:{action:'patchDependencies',projectId:r.projectId,taskId:r.id,baseRevision:c.baseRevision,dependsOn:c.after.data.dependsOn}});return [{...c,after:rest}];}
+   if(r.kind==='tasks'&&c.before&&c.after&&CASCADE_FIELDS.some(k=>!S.equal(c.before.data[k],c.after.data[k]))){const rest={...c.after,data:{...c.after.data}};let onlyCascade=true;for(const k of new Set([...Object.keys(c.before.data),...Object.keys(c.after.data)]))if(!S.equal(c.before.data[k],c.after.data[k])&&!CASCADE_FIELDS.includes(k))onlyCascade=false;return onlyCascade?[]:[c];}
+   return [c];
+  });
+ }
  const dropped=(c,r)=>{const id=x=>r.projectId+'|'+x;
   if(r.kind==='dependencies'&&!c.after)return gone.has(id(r.data.predecessorId))||gone.has(id(r.data.successorId));
   if(['comments','timeEntries','reminders'].includes(r.kind)&&!c.after)return gone.has(id(r.data.taskId));
@@ -51,7 +62,8 @@ function plan(changes,opId){
   return false;};
  if(gone.size)list=list.filter(c=>c.before&&!c.after&&c.before.kind==='tasks'||!dropped(c,c.before||c.after));
  const rank=c=>c.before&&!c.after?0:!c.before?1:2,order=list.map(c=>({c,built:single(c)})).filter(x=>!x.built.noop).sort((a,b)=>rank(a.c)-rank(b.c)||(a.c.key<b.c.key?-1:a.c.key>b.c.key?1:0));
- return order.map((x,i)=>({change:x.c,request:{...x.built.request,opId:order.length===1?opId:`${opId}.${i}`}}));
+ const steps=[...order.map(x=>({change:x.c,request:x.built.request})),...extra.sort((x,y)=>x.change.key<y.change.key?-1:1)];
+ return steps.map((x,i)=>({change:x.change,request:{...x.request,opId:steps.length===1?opId:`${opId}.${i}`}}));
 }
 // Single-call form used by tests and callers that expect exactly one call.
 function requestFor(changes,opId){const steps=plan(changes,opId);if(!steps.length)return {noop:true};if(steps.length>1)throw notYet('one change touches several records');return {request:steps[0].request};}
@@ -64,6 +76,11 @@ function createSender({request,maxReapply=2}){
    const result=await request(attempt?{...body,opId:`${body.opId}.r${attempt}`}:body);
    if(result.ok===true){const list=result.changed&&result.changed.length?result.changed:result.record?[result.record]:[];return list.map(publicRecord);}
    if(result.code==='deleted')throw Object.assign(new Error('The record was deleted by someone else; your edit is kept for recovery'),{code:'conflict'});
+   if(result.code==='conflict'&&result.current&&attempt<maxReapply&&body.action==='patchDependencies'){
+    const current=publicRecord(result.current);
+    if(!S.equal(current.data.dependsOn,change.before.data.dependsOn))throw Object.assign(new Error('Someone else changed this task\'s dependencies; compare the versions to resolve it'),{code:'conflict',current});
+    body={...body,baseRevision:current.revision};continue;
+   }
    if(result.code!=='conflict'||!result.current||attempt>=maxReapply||body.action!=='patch')throw Object.assign(new Error('Someone else changed this record; compare the versions to resolve it'),{code:'conflict',current:result.current?publicRecord(result.current):undefined});
    const current=publicRecord(result.current);
    try{const merged=S.mergeChange(current,{before:change.before,after:change.after});change={key:change.key,before:current,after:merged,baseRevision:current.revision};const built=single(change);if(built.noop)return [];body={...built.request,opId:body.opId};}
