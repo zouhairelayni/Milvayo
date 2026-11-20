@@ -109,7 +109,7 @@ test('No Noble direct or transitive dependency, and Expo Go supported AES remain
  const pkg=require('../../package.json'),lock=require('../../package-lock.json');
  assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  assert.equal(pkg.dependencies['js-sha256'],'1.0.0');
- assert.ok(pkg.dependencies['expo-crypto'].includes('58.0.7'));
+ assert.match(pkg.dependencies['expo-crypto'],/^~?58\.0\.\d+$/);// any 58.0.x patch that Expo asks for
  assert.equal(lock.packages['node_modules/js-sha256'].version,'1.0.0');
  assert.equal(lock.packages[''].dependencies['js-sha256'],'1.0.0');
  assert.ok(!Object.keys(lock.packages).some(n=>n.includes('/@noble/')));

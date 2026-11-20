@@ -3,24 +3,43 @@
   ".read": false,
   ".write": false,
   "heads": {
-   "$org": { "$workspace": {
-    ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && root.child('acl').child($org).child($workspace).child(auth.uid).child('unrestricted').val() == true"
-   }}
+   "$org": {
+    "$workspace": {
+     ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && root.child('acl').child($org).child($workspace).child(auth.uid).child('unrestricted').val() == true",
+     "$project": {
+      ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))"
+     }
+    }
+   }
   },
   "presence": {
-   "$org": { "$workspace": { "$project": {
-    ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
-    "$resource": {
-     "$uid": { "$session": {
-      ".write": "$resource.matches(/^[A-Za-z0-9_-]{22}$/) && auth != null && auth.uid == $uid && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
-      ".validate": "newData.hasChildren(['state','resource','expiresAt'])",
-      "state": {".validate":"newData.isString() && (newData.val() == 'viewing' || newData.val() == 'editing' || newData.val() == 'typing')"},
-      "resource": {".validate":"newData.isString() && newData.val().length <= 160"},
-      "expiresAt": {".validate":"newData.isNumber() && newData.val() > now && newData.val() <= now + 330000"},
-      "$other": {".validate":false}
-     }}
+   "$org": {
+    "$workspace": {
+     "$project": {
+      ".read": "auth != null && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
+      "$resource": {
+       "$uid": {
+        "$session": {
+         ".write": "$resource.matches(/^[A-Za-z0-9_-]{22}$/) && auth != null && auth.uid == $uid && root.child('acl').child($org).child($workspace).child(auth.uid).child('expiresAt').val() > now && (root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).val() == true || (!root.child('acl').child($org).child($workspace).child(auth.uid).child('projects').child($project).exists() && root.child('acl').child($org).child($workspace).child(auth.uid).child('workspace').val() == true))",
+         ".validate": "newData.hasChildren(['state','resource','expiresAt'])",
+         "state": {
+          ".validate": "newData.isString() && (newData.val() == 'viewing' || newData.val() == 'editing' || newData.val() == 'typing')"
+         },
+         "resource": {
+          ".validate": "newData.isString() && newData.val().length <= 160"
+         },
+         "expiresAt": {
+          ".validate": "newData.isNumber() && newData.val() > now && newData.val() <= now + 330000"
+         },
+         "$other": {
+          ".validate": false
+         }
+        }
+       }
+      }
+     }
     }
-   }}}
+   }
   }
  }
 }

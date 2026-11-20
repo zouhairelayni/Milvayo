@@ -1,6 +1,6 @@
 {
   "name": "milvayo-local-functions",
-  "version": "0.8.20",
+  "version": "0.8.22",
   "private": true,
   "main": "index.cjs",
   "engines": {

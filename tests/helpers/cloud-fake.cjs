@@ -3,7 +3,7 @@
 // In-memory transactional Firestore/RTDB fake for service-level tests. Counts nothing itself: the service's own `measured` fields are the instrumentation.
 const assert=require('node:assert/strict'),crypto=require('node:crypto');
 const S=require('../../src/cloud/schema.cjs'),m=require('../../src/domain/model.cjs'),{generate}=require('../../src/cloud/tools/fixtures.cjs'),{createService}=require('../../src/cloud/server/service.cjs');
-function fakeRtdb(){const nodes=new Map();let failures=0;return {nodes,failNext(n=1){failures=n;},ref:path=>({transaction:async fn=>{if(failures>0){failures--;throw Error('RTDB unavailable');}const next=fn(nodes.get(path)??null);if(next!==undefined)nodes.set(path,structuredClone(next));return {committed:next!==undefined};}})};}
+function fakeRtdb(){const nodes=new Map();let failures=0;return {nodes,failNext(n=1){failures=n;},ref:path=>({set:async value=>{if(failures>0){failures--;throw Error('RTDB unavailable');}nodes.set(path,structuredClone(value));},transaction:async fn=>{if(failures>0){failures--;throw Error('RTDB unavailable');}const next=fn(nodes.get(path)??null);if(next!==undefined)nodes.set(path,structuredClone(next));return {committed:next!==undefined};}})};}
 function database(workspace,{protocol=4,extra={},users=['alice','bob','carol']}={}){
  const root='orgs/org/workspaces/main',rows=new Map(),writes=[],rtdb=fakeRtdb(),stats={reads:0,writes:0,deletes:0};
  for(const r of S.pack(workspace))rows.set(root+'/records/'+r.key,{...r,revision:1,sequence:1,deleted:false});

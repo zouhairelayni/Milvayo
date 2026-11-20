@@ -2,6 +2,24 @@
 
 - Release notes pending. This draft does not certify or deploy a release.
 
+## v0.8.22 — Firebase v4.0 Gate 3a — the app reads and writes v4 workspaces through the change feed (2026-11-19)
+
+- The app now speaks v4. On connect it asks `directoryV4` which projects and workspace-level records the person may read; a workspace that is not v4 answers with its protocol only and keeps using the v3 pull and commit unchanged.
+- New client change-feed reader (`src/cloud/changeFeed.cjs`): first sync reads each project once; later rounds read only the projects whose change signal moved (up to 3 in parallel); an access change or an expired cursor makes the app read everything again once; a failed round changes nothing. A journal written by the old v3 pull is replaced by a full read, never trusted.
+- One tiny signal per project (`heads/{org}/{workspace}/{project}`) replaces the workspace-wide signal for v4: with a live signal and nothing marked the app makes no request at all (a safety poll runs every 5 minutes, and polling resumes at once if a signal cannot be read).
+- Edits go out as v4 calls instead of commits (`src/cloud/v4Writes.cjs`): task field edits (`patch`), task delete with its whole cascade (`deleteTask`), new task, comment, time entry. One queued edit that holds several unrelated changes becomes several calls in a fixed order with stable operation IDs, so a retry after a crash repeats the same calls and the server ignores what it already applied. A stale edit on a different field is re-applied automatically on top of the newer record; the same field, or a task deleted meanwhile, stays in the queue as a conflict with a plain message.
+- Not yet supported on v4 workspaces (kept in the recovery queue with the message "not available in v4 workspaces yet", nothing half-sent): dependencies, moving a task in its list, Canvas, projects and the other record kinds. The legacy `pull` guard for protocol-4 workspaces is not added yet: many emulator tests still read through `pull`.
+- Positions: a deleted or added task no longer looks like a change to every task after it (stored orders are kept when the surviving records keep their relative order).
+- Server: new `directoryV4`; the journal stores the feed state and drops records of a project that left the directory. Tests: 8 reader, 9 writer/planner, 10 two-person session tests (including a seeded random two-person run that ends with identical workspaces equal to the cloud), directory tests in `feed.test.cjs`, one new emulator case. Sandbox: no new failures against the untouched tree. Emulator run: Not run (owner to run `npm run test:cloud`).
+
+## v0.8.21 — Firebase v4.0 Gate 3a server — change feed, per-project signal and cheaper presence (2026-11-19)
+
+- Everything since v0.8.10 is recorded here; the numbers v0.8.11 to v0.8.20 were not written down at the time.
+- Cheaper presence: one room per task or Canvas item, one shared clock listener, child listeners that deliver only the person who changed, heartbeat every 120 s with a 300 s entry lifetime (rule limit 330 s), local sweep every 30 s, publishing only when the state changes. Measured on the owner's emulator with 30 clients: attach + 80 s idle + cleanup went from 15,115,765 B to 152,190 B (about 99% less); 150 s run passed. Rules: new `$resource` level (22 URL-safe characters).
+- Folder-structure checks: own-path header on the benchmark and I/O audit files; the import scanner ignores `require()` text inside strings.
+- Server: new `pullV4` (project change feed with a 30 s overlap, strict paging by time and key, tombstones, 90-day retention, access-version reset) and a per-project signal written after every accepted v4 edit (bounded to 1.5 s, never fails an edit). New Firestore composite index (projectId, updatedAt): deploy it before real Firebase. Rules: `heads/{org}/{workspace}/{project}` is readable with the same access as the project's presence; nobody can write it from the app (owner-approved).
+- Tests: 14 sandbox feed tests plus 5 deliberate-break checks, emulator feed suite and signal-rule suite. Owner run: `npm test` 1,158 passed, 0 failed; `npm run test:cloud` 250 passed, 0 failed.
+
 ## v0.8.10 — Emulator fixture recovery and restricted worker telemetry (2026-11-14)
 
 - Capture Firestore reads inside rules-disabled callbacks and return their values explicitly; isolate security subtests with fresh accounts/workspaces and assert viewer telemetry on initial and cached pulls.
