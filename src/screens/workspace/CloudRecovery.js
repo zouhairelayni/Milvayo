@@ -11,7 +11,7 @@ const {pickDocumentFileBytes,MAX_IMPORT_BYTES}=require('../../store/importFiles.
 const {previewRestore}=require('../../cloud/recovery.cjs');
 export default function CloudRecovery({session}){
  const [backup,setBackup]=useState(null),[plan,setPlan]=useState(null),[projectId,setProjectId]=useState(''),[taskId,setTaskId]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
- const [newWorkspaceId,setNewWorkspaceId]=useState(''),[created,setCreated]=useState('');
+ const [newWorkspaceId,setNewWorkspaceId]=useState(''),[created,setCreated]=useState('');const [brought,setBrought]=useState('');
  const run=async fn=>{setBusy(true);setError('');try{await fn();}catch(e){setError(e.message);}finally{setBusy(false);}};
  const pick=()=>run(async()=>{const selection=await DocumentPicker.getDocumentAsync({type:'application/json',copyToCacheDirectory:true,multiple:false});if(selection.canceled)return;const asset=selection.assets[0];if(asset.size>MAX_IMPORT_BYTES)throw Error('Backup exceeds 5 MB');const text=asset.file?await asset.file.text():strFromU8(await pickDocumentFileBytes(selection,File));setBackup(JSON.parse(text));setPlan(null);});
  const preview=()=>run(async()=>{if(session.getState().pending)throw Error('Resolve or export pending synchronization before restoring');const scope=session.getState().scope;if(backup.orgId!==scope.orgId||backup.workspaceId!==scope.workspaceId)throw Error('Choose a backup of this cloud workspace');const current=await session.request({action:'pull',cursor:0});setPlan(previewRestore(current.records,backup,{projectId:projectId.trim(),taskId:taskId.trim()}));});
@@ -21,6 +21,8 @@ export default function CloudRecovery({session}){
    <Input value={projectId} onChangeText={v=>{setProjectId(v);setPlan(null);}} placeholder="Project ID (optional)" accessibilityLabel="Project to recover"/>
    <Input value={taskId} onChangeText={v=>{setTaskId(v);setPlan(null);}} placeholder="Task ID (optional)" accessibilityLabel="Task and related comments to recover"/>
    <Button label="Preview recovery" disabled={busy} onPress={preview}/>
+   {taskId.trim()?<><T muted size={12}>Bring back one deleted task: it returns on its own (without its old parent, dependencies, list, sprint, phase or release). A task that is alive is never overwritten.</T><DangerConfirm label="Bring this task back from the backup" onConfirm={()=>run(async()=>{await session.restoreTaskFromBackup(backup,taskId.trim());setBrought(taskId.trim());})}/></>:null}
+   {brought?<T>Task {brought} is back in the cloud workspace.</T>:null}
   </>:null}
   {plan?<>
    <T>{plan.affected.length} record(s) will change</T>

@@ -8,13 +8,16 @@ import CloudRecovery from './CloudRecovery';
 import CloudConflicts from './CloudConflicts';
 import CloudOrganization from './CloudOrganization';
 import CloudPlatform from './CloudPlatform';
+import CloudSignIn from './CloudSignIn';
+import CloudDiagnostics from './CloudDiagnostics';
 const {ROLES}=require('../../cloud/iam.cjs');
+const {describe}=require('../../cloud/syncBanner.cjs');
 function CloudPanelContent({api,session,state}){
  const [host,setHost]=useState('127.0.0.1'),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[orgId,setOrgId]=useState(''),[workspaceId,setWorkspaceId]=useState('main');
  const [error,setError]=useState(''),[busy,setBusy]=useState(false),[admin,setAdmin]=useState(null),[platform,setPlatform]=useState(null),[uid,setUid]=useState(''),[role,setRole]=useState('viewer'),[capacity,setCapacity]=useState('5'),[invitation,setInvitation]=useState('');
  const [projectId,setProjectId]=useState(''),[inviteToken,setInviteToken]=useState(''),[summaries,setSummaries]=useState(null),[guest,setGuest]=useState(false);
 
- const run=async fn=>{setBusy(true);setError('');try{await fn();}catch(e){setError(e.message);}finally{setBusy(false);}};
+ const run=async fn=>{setBusy(true);setError('');try{await fn();return true;}catch(e){setError(e.message);return false;}finally{setBusy(false);}};
  const connect=(publish,create=false)=>run(async()=>{if(!(await api.flush()))throw Error('Save the local workspace before connecting');await session.connect({host,email,password,orgId:orgId.trim(),workspaceId:workspaceId.trim(),publish,create});setPassword('');});
  const loadAdmin=async()=>setAdmin(await session.request({action:'admin'}));
  return <View style={{gap:16}}>
@@ -23,8 +26,11 @@ function CloudPanelContent({api,session,state}){
   <T muted size={12}>demo-milvayo-083 · build 0.8.5</T>
   {state.connected?<>
    <T>{state.scope.orgId} / {state.scope.workspaceId}</T>
-   <T>{state.pending} pending · {state.conflicts} conflicts</T>
-   <T muted size={12}>Periodic editing checkpoint</T>
+   <T>{describe(state).line}</T>
+   {describe(state).banner?<T muted size={13}>{describe(state).banner.text} Open "Resolve sync conflicts" below.</T>:null}
+   {describe(state).notice?<T muted size={13}>{describe(state).notice} Nothing is lost: it stays in your recovery queue and is tried again each time you connect.</T>:null}
+   <CloudDiagnostics session={session}/>
+   <T muted size={12}>Safety checkpoint (edits are already sent about 2 seconds after you make them)</T>
    <Pick values={[{value:30000,label:'30 seconds'},{value:45000,label:'45 seconds'},{value:60000,label:'60 seconds'}]} value={state.syncInterval||45000} onChange={ms=>session.setSyncInterval(ms)}/>
    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
     <Button label="Synchronize" disabled={busy||state.busy} onPress={()=>run(()=>session.tick())}/>
@@ -70,21 +76,8 @@ function CloudPanelContent({api,session,state}){
    <Button label="Export authorized cloud backup" variant="secondary" disabled={busy||state.busy} onPress={()=>run(async()=>downloadText('milvayo-cloud-backup.json',JSON.stringify(await session.request({action:'backup'})),'application/json'))}/>
    <Fold title="Resolve sync conflicts" subtitle="Compare retained edits with the current cloud version"><CloudConflicts session={session}/></Fold>
    <Fold title="Cloud recovery" subtitle="Validate and preview a task, project or workspace restore"><CloudRecovery session={session}/></Fold>
-  </>:<View style={{gap:12}}>
-   <Input value={host} onChangeText={setHost} autoCapitalize="none" placeholder="127.0.0.1" accessibilityLabel="Private emulator host"/>
-   <Input value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="Email" accessibilityLabel="Emulator account email"/>
-   <Input value={password} onChangeText={setPassword} secure placeholder="Password" accessibilityLabel="Emulator account password"/>
-   <Input value={orgId} onChangeText={setOrgId} autoCapitalize="none" placeholder="Personal organization (leave blank)" accessibilityLabel="Cloud organization ID"/>
-   <Input value={workspaceId} onChangeText={setWorkspaceId} autoCapitalize="none" placeholder="Cloud workspace ID" accessibilityLabel="Cloud workspace ID"/>
-   <T muted size={12}>Publish sends this workspace explicitly. Open saves a recovery snapshot before loading remote work. Signing in is required again after restart.</T>
-   <Button label="Sign in and publish this workspace" disabled={busy||state.busy} onPress={()=>connect(true)}/>
-   <Button label="Create emulator account and publish" variant="secondary" disabled={busy||state.busy} onPress={()=>connect(true,true)}/>
-   <Button label="Sign in and open cloud workspace" variant="secondary" disabled={busy||state.busy} onPress={()=>connect(false)}/>
-   <Fold title="Accept an invitation" subtitle="Use your emulator email, password and organization above">
-    <Input value={inviteToken} onChangeText={setInviteToken} placeholder="Invitation token" accessibilityLabel="Local invitation token"/>
-    <Button label="Accept invitation" variant="secondary" disabled={busy||state.busy||!orgId.trim()||!inviteToken.trim()} onPress={()=>run(async()=>{const client=await require('../../cloud/client').createEmulatorClient(host);try{await client.login(email.trim(),password);const result=await client.request({action:'accept',orgId:orgId.trim(),token:inviteToken.trim()});setWorkspaceId(result.workspaceId);setInviteToken('');}finally{await client.close();}})}/>
-   </Fold>
-  </View>}
+  </>:<CloudSignIn busy={busy||state.busy} fields={{host,setHost,email,setEmail,password,setPassword,orgId,setOrgId,workspaceId,setWorkspaceId}} onConnect={connect}
+   onAcceptInvite={token=>run(async()=>{const client=await require('../../cloud/client').createEmulatorClient(host);try{await client.login(email.trim(),password);const result=await client.request({action:'accept',orgId:orgId.trim(),token:token.trim()});setWorkspaceId(result.workspaceId);}finally{await client.close();}})}/>}
   {error||state.error?<T accessibilityRole="alert">{error||state.error}</T>:null}
  </View>;
 }

@@ -41,6 +41,7 @@ const {randomLineColor,LINE_PALETTE}=require('../../canvas/connections.cjs');
 const {groupProblem,selectionRoots}=require('../../domain/canvasGroups.cjs');
 const {insertionPoint}=require('../../canvas/presentation.cjs');
 const {routingObjects}=require('../../canvas/connectionGeometry.cjs');
+const adoptNewer=require('../../canvas/adoptNewer.cjs');
 const {connectorPath}=require('../../canvas/interaction.cjs'),{pathLabel}=require('../../canvas/routing.cjs');
 export default function CanvasEditor({board,project,scope,onClose,go,openTask,openProject}){
  useRenderMetric('canvas/editor');
@@ -59,6 +60,8 @@ export default function CanvasEditor({board,project,scope,onClose,go,openTask,op
  const backPanel=()=>{const value=panelHistory.current.length?panelHistory.current.pop():parents[panelRef.current]||'';panelRef.current=value;setPanelState(value);};
  const undo=useRef([]),redo=useRef([]),measured=useRef(false);
  const camera=useCanvasCamera(board.viewport),insets=useSafeAreaInsets();
+ // Someone else's changes arrived while this screen is open: take the newer board so the next edit builds on it and cannot erase it (see src/canvas/adoptNewer.cjs).
+ useEffect(()=>{if(adoptNewer.decide({pending:pending.current,expected:expected.current,board})!=='adopt')return;current.current=board;expected.current=board.revision;undo.current=[];redo.current=[];setDraft(board);setSelected(prev=>adoptNewer.keepSelection(prev,board));},[board]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;clearTimeout(autoSaveTimer.current);void flush();};},[flush]);
  const reportSave=async()=>{clearTimeout(autoSaveTimer.current);const token=++serial.current;setStatus('Saving…');const ok=await flush();if(mounted.current&&token===serial.current){setStatus(ok?'Saved on this device':'Save failed');if(!ok)setError('Local save failed. Keep this screen open and retry.');}return ok;};
  const commit=(next,history=true)=>{

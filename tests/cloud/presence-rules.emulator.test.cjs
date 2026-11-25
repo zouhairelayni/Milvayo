@@ -49,7 +49,7 @@ test('presence rules: per-resource path, access checks, entry lifetime and per-p
   await assertFails(db(carol).ref(`${room(keyA,otherProject)}/${carol.uid}/${crypto.randomUUID()}`).set(entry()));
   await assertFails(db(carol).ref(room(keyA,otherProject)).get());
   await assertSucceeds(db(carol).ref(room(keyA)).get());
-  await assertSucceeds(db(carol).ref(carolPath).remove());
+  await assertSucceeds(db(carol).ref(carolPath).remove());// leave no entry behind: the child-event test below expects Carol's room to be exactly her own c1
  });
  await t.test('outsiders and signed-out users cannot read or write',async()=>{
   const outsider=await H.account('outsider');

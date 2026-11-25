@@ -47,8 +47,12 @@ test('Sprint burndown lets vertical gestures reach the page',()=>{
   assert.match(s,/onPanResponderMove/);
 });
 
-test('historical changelog and v0.5.53 QA remain cumulative',()=>{
-  // Version synchronization is verified once in tests/app/release-metadata-060.test.cjs.
+test('Current release is a full source version with one cumulative changelog',()=>{
+  const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
+  assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+  assert.equal(app.expo.version,pkg.version);
+  assert.equal(lock.version,pkg.version);
+  assert.equal(lock.packages[''].version,pkg.version);
   const changelog=read('docs/changelog/CHANGELOG.md');
   assert.match(changelog,/## v0\.1\.0/);
   assert.equal((changelog.match(/^## v0\.5\.53/gm)||[]).length,1);

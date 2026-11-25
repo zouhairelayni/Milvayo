@@ -57,10 +57,9 @@ test('a live change signal triggers one pull only when the head moves and slows 
 test('losing or being denied the change signal resumes adaptive polling; a live signal keeps polling to the slow safety net',async()=>{
  const x=fixture();x.signal=true;const session=x.make();
  await session.connect({host:'127.0.0.1',email:'local',password:'local',orgId:'org',workspaceId:'main'});x.hook.live(true);await x.advance(0);
- const base=x.pulls.length;for(let i=0;i<12;i++)await x.advance(5000);
- assert.equal(x.pulls.length,base,'with a live signal there is no poll inside the first minute');
- await x.advance(230000);assert.equal(x.pulls.length,base,'still inside the five-minute safety net');
- await x.advance(20000);assert.equal(x.pulls.length,base+1,'the safety-net poll runs after five minutes');
+ const base=x.pulls.length;for(let i=0;i<10;i++)await x.advance(5000);
+ assert.equal(x.pulls.length,base,'with a live signal there is no poll inside the first 50 seconds');
+ await x.advance(15000);assert.equal(x.pulls.length,base+1,'the safety-net poll runs after one minute (0.8.33: was five minutes)');
  x.hook.live(false);await x.advance(5000);
  assert.ok(x.pulls.length>base+1,'when the signal is unavailable or denied, adaptive polling resumes immediately');
  await session.disconnect();

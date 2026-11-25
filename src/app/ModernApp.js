@@ -32,6 +32,7 @@ const { screenReadiness } = require('./navigation/screenReadiness.cjs');
 import { diagnosticMonitor } from '../diagnostics/monitor';
 import { useRenderMetric } from '../diagnostics/useRenderMetric';
 import IslandNotice from '../components/notice/IslandNotice';
+import SyncBanner from '../components/shell/SyncBanner';
 import { backupJobs } from '../store/backupJobs';
 import { noticeTopOffset } from '../components/notice/noticePlacement.cjs';
 import { shouldRenderPage, retainsHiddenTabs } from './navigation/pageRetention.cjs';
@@ -244,7 +245,7 @@ function Shell({ launching = false }) {
   useEffect(() => { setTaskId(null); setCreatingTask(false); setQuery(''); setStatusRequest(null); setProjectRequest(null); setCreatingProject(false); setReleaseRequest(false); }, [workspaceId]);
   // A tool switched off while its screen is open (or in the project just opened): leave the screen, keep the data.
   useEffect(() => { if (!screenOn(tools, screen)) go(sectionOf(screen) === 'work' ? 'board' : 'more', 'tool switched off'); }, [tools, screen, go]);
-  const {createProject}=useStoreActions();
+  const {createProject,cloudSession}=useStoreActions();
   const [touring,setTouring]=useState(false);
   useEffect(()=>subscribeTour(()=>{setTaskId(null);setCreatingTask(false);setCreatingProject(false);setTouring(true);}),[]);
   const finishTour=useCallback(({name,starterId})=>{
@@ -293,6 +294,7 @@ function Shell({ launching = false }) {
             <PhoneHeader kind={section.id !== 'more' ? 'main' : screen === 'more' ? 'hub' : 'sub'} title={labelOf(screen)}
               query={query} onQuery={onQuery} controls={controls} onPickProject={pickProject} onBack={() => {if(!backSupport.current.back())go('more', 'back to More');}} showProjectName={screen !== 'overview' && section.id !== 'work' && section.id !== 'projects'} />}
           {!wide && views.length > 1 ? <ViewPill views={views} current={screen} go={requestTab} /> : null}
+          <SyncBanner session={cloudSession?.()} onReview={() => go('settings', 'sync needs review')} />
           <View style={{ flex: 1, minHeight: 0 }}>{page}</View>
           {!wide && !controls?.canvas ? <TabBar tabs={TABS} current={section.id} go={requestSection} intent={intentRef.current} onCreate={newTask} /> : null}
         </View>

@@ -26,8 +26,12 @@ test('large-surface components and secondary list interactions use the same layo
  assert.match(read('src/app/ModernApp.js'),/outline:2px solid currentColor/);
 });
 
-test('historical v0.5.50 changelog and design audit remain available',()=>{
- // Version synchronization is verified once in tests/app/release-metadata-060.test.cjs.
+test('version and cumulative changelog remain synchronized',()=>{
+ const pkg=require('../../package.json'), app=require('../../app.json'),lock=require('../../package-lock.json');
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.equal(app.expo.version,pkg.version);
+ assert.equal(lock.version,pkg.version);
+ assert.equal(lock.packages[''].version,pkg.version);
  assert.match(read('docs/changelog/CHANGELOG.md'),/## v0\.5\.50/);
  assert.ok(fs.existsSync(path.join(root,'docs/qa/NP-UI-DESIGN-AUDIT-v0.5.49.md')));
 });

@@ -54,6 +54,25 @@ function unpack(records,local={}){
 function validateRecords(records){const safe=pack(unpack(records));const a=new Map(records.filter(r=>!r.deleted).map(r=>[r.key,r]));if(safe.length!==a.size||safe.some(r=>!a.has(r.key)||!equal(r.data,a.get(r.key).data)))throw Error('Cloud change violates the canonical workspace schema or references');return safe;}
 function diff(before,after){const a=new Map(before.map(r=>[r.key,r])),b=new Map(after.map(r=>[r.key,r])),changes=[];for(const key of new Set([...a.keys(),...b.keys()])){const old=a.get(key),next=b.get(key);if(!old||!next||!equal(old.data,next.data)||old.order!==next.order)changes.push({key,before:old||null,after:next||null});}return changes;}
 // Objects merge at their top-level fields. Arrays/text and structural fields are indivisible conflicts.
+const BOARD_LOCAL=['revision','updatedAt','viewport'];
+function mergeKeys(base,theirs,mine){
+ const o=x=>x&&typeof x==='object'&&!Array.isArray(x);
+ if(!o(base)||!o(theirs)||!o(mine))return null;
+ const out={};
+ for(const k of new Set([...Object.keys(base),...Object.keys(theirs),...Object.keys(mine)])){
+  const b=base[k],t=theirs[k],m=mine[k];let v;
+  if(equal(b,t))v=m;else if(equal(b,m)||equal(t,m))v=t;else return null;
+  if(v!==undefined)out[k]=clone(v);
+ }
+ return out;
+}
+function mergeReplies(base,theirs,mine){
+ if(!Array.isArray(base)||!Array.isArray(theirs)||!Array.isArray(mine))return null;
+ const prefix=(a,b)=>a.length<=b.length&&a.every((m,i)=>equal(m,b[i]));
+ if(!prefix(base,theirs)||!prefix(base,mine))return null;
+ const have=new Set(theirs.map(m=>m&&m.id)),added=mine.slice(base.length).filter(m=>!have.has(m&&m.id));
+ const all=[...theirs,...clone(added)];return all.length>100?null:all;
+}
 function mergeChange(current,change){
  const base=change.before,next=change.after;
  if(!base){if(current&&!current.deleted){if(equal(current.data,next.data)&&current.order===next.order)return current;throw Object.assign(Error('Concurrent creation'),{code:'conflict'});}return next;}
@@ -61,6 +80,12 @@ function mergeChange(current,change){
  if(!next){if(!equal(base.data,current.data)||base.order!==current.order)throw Object.assign(Error('Delete conflicts with an edit'),{code:'conflict'});return {...current,deleted:true};}
  const data={...current.data};for(const field of new Set([...Object.keys(base.data),...Object.keys(next.data)])){
   if(equal(base.data[field],next.data[field]))continue;
+  // 0.8.36: a Canvas board's revision counter, update time and viewport are local bookkeeping (never sent). Two people editing the same board must not raise a conflict over them.
+  if(base.kind==='canvases'&&BOARD_LOCAL.includes(field)){if(Object.hasOwn(next.data,field))data[field]=clone(next.data[field]);else delete data[field];continue;}
+  // 0.8.44: two people replying to the same comment thread at once keep BOTH replies (each side only appended; an edit or removal of an old reply is still a conflict).
+  // 0.8.45: two people filling in different boxes of the same governance document keep both (each box is its own field; the same box on both sides is still a conflict).
+  if(base.kind==='governance.docs'&&field==='values'){const merged=mergeKeys(base.data.values,current.data.values,next.data.values);if(merged){data.values=merged;continue;}}
+  if(base.kind==='canvas.threads'&&field==='messages'){const merged=mergeReplies(base.data.messages,current.data.messages,next.data.messages);if(merged){data.messages=merged;continue;}}
   if(!equal(base.data[field],current.data[field])&&!equal(next.data[field],current.data[field]))throw Object.assign(Error('Concurrent change to '+field),{code:'conflict',field});
   if(Object.hasOwn(next.data,field))data[field]=clone(next.data[field]);else delete data[field];
  }

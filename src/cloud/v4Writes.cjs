@@ -5,14 +5,17 @@
 // move/resize/re-stack a Canvas object (`patchCanvas`: position, size, stacking, text, colour, lock), edit or remove a connector (`patchCanvasConnector`, `deleteCanvasConnector`), add a Canvas object or connector (`createCanvasObject`, `createCanvasConnector`) and delete Canvas objects with their cascade (`deleteCanvasObjects`).
 // Anything else (a reorder of several tasks at once, other Canvas edits, projects, ...) is refused with a clear message and stays in the recovery queue; nothing is lost and nothing is sent half-way.
 const S=require('./schema.cjs');
-const notYet=why=>Object.assign(new Error('This change is not available in v4 workspaces yet ('+why+'). It stays in your recovery queue.'),{code:'failed-precondition'});
+// `local:true` marks a change the cloud cannot take yet: the journal keeps it on this device as "not shared yet" (0.8.35) instead of a conflict.
+const notYet=why=>Object.assign(new Error('This change is not available in v4 workspaces yet ('+why+'). It stays in your recovery queue.'),{code:'failed-precondition',local:true});
 // A Canvas save also rewrites the board's own record (revision counter, update time, viewport pose). Those are local bookkeeping in a v4 workspace: not sent (the server keeps one record per object, and writing the board on every move would make it a hot spot),
 // but acknowledged locally so the app keeps its own counter. Title, archive state and other board fields are not bookkeeping and are still refused.
 const BOARD_LOCAL=['revision','updatedAt','viewport'];
 const bookkeeping=c=>{if(!c.before||!c.after||c.before.kind!=='canvases'||c.before.order!==c.after.order)return false;for(const k of new Set([...Object.keys(c.before.data),...Object.keys(c.after.data)]))if(!BOARD_LOCAL.includes(k)&&!S.equal(c.before.data[k],c.after.data[k]))return false;return true;};
 const localAcks=changes=>Array.isArray(changes)?changes.filter(bookkeeping).map(c=>({...c.before,data:c.after.data,order:c.after.order})):[];
-const CANVAS_FIELDS=['x','y','width','height','zIndex','text','color','locked'],CONNECTOR_FIELDS=['label','style','arrow','color'];
+const CANVAS_FIELDS=['x','y','width','height','zIndex','text','color','locked','groupId','sourceLink'],CONNECTOR_FIELDS=['label','style','arrow','color'];
 const projectOf=c=>(c.before||c.after).projectId;
+// 0.8.45: governance records go through three generic actions (create, patch, delete) keyed by record kind. Later project lists join this set.
+const PROJECT_RECORDS=new Set(['governance.risks','governance.budget.lines','governance.wbs','governance.docs']);
 // Server records carry bookkeeping the app never needs (operation IDs and hashes, legacy sequence); the journal compares `sequence`, which is the per-record revision here.
 function publicRecord(r){const o={key:r.key,kind:r.kind,projectId:r.projectId,boardId:r.boardId,id:r.id,data:r.data,order:r.order,revision:r.revision,sequence:r.revision,updatedAt:r.updatedAt,updatedBy:r.updatedBy};if(r.deleted){o.deleted=true;o.deletedAt=r.deletedAt;}return o;}
 // One record change -> one server call: {request} (without scope/opId), or {noop:true}. Throws code 'failed-precondition' for unsupported changes.
@@ -24,16 +27,22 @@ function single(c){
   if(after.kind==='comments')return {request:{action:'addComment',projectId,taskId:after.data.taskId,commentId:after.id,data:after.data}};
   if(after.kind==='timeEntries')return {request:{action:'logTime',projectId,taskId:after.data.taskId,entryId:after.id,data:after.data}};
   if(after.kind==='canvas.objects'){
-   if(after.data.type==='linked'||after.data.sourceLink)throw notYet('adding a linked Canvas object');
-   if(after.data.groupId)throw notYet('adding a Canvas object inside a group');
    return {request:{action:'createCanvasObject',projectId,boardId:after.boardId,objectId:after.id,order:after.order,data:after.data}};
   }
   if(after.kind==='canvas.connectors')return {request:{action:'createCanvasConnector',projectId,boardId:after.boardId,connectorId:after.id,order:after.order,data:after.data}};
+  // 0.8.44: a new comment thread (with its first comment).
+  if(after.kind==='canvas.threads')return {request:{action:'createCanvasThread',projectId,boardId:after.boardId,threadId:after.id,order:after.order,data:after.data}};
+  // 0.8.42: a new, empty Canvas board (the board's own record only; its objects arrive as their own creates).
+  if(after.kind==='canvases')return {request:{action:'createCanvasBoard',projectId,boardId:after.id,order:after.order,data:after.data}};
+  if(PROJECT_RECORDS.has(after.kind))return {request:{action:'createProjectRecord',projectId,recordKind:after.kind,recordId:after.id,order:after.order,data:after.data}};
   throw notYet('adding this kind of record');
  }
  if(before&&!after){
   if(before.kind==='canvas.connectors')return {request:{action:'deleteCanvasConnector',projectId:before.projectId,boardId:before.boardId,connectorId:before.id,baseRevision:c.baseRevision}};
   if(before.kind==='tasks')return {request:{action:'deleteTask',projectId:before.projectId,taskId:before.id,baseRevision:c.baseRevision}};
+  // 0.8.42: delete a board (archived first). The server removes the board's objects, connectors and comments with it, so the app's per-item deletes are not sent (see plan()).
+  if(before.kind==='canvases')return {request:{action:'deleteCanvasBoard',projectId:before.projectId,boardId:before.id,baseRevision:c.baseRevision}};
+  if(PROJECT_RECORDS.has(before.kind))return {request:{action:'deleteProjectRecord',projectId:before.projectId,recordKind:before.kind,recordId:before.id,baseRevision:c.baseRevision}};
   throw notYet('deleting this kind of record');
  }
  if(before&&after&&before.kind==='tasks'){
@@ -59,6 +68,29 @@ function single(c){
   if(!Object.keys(set).length)return {noop:true};
   return {request:{action:'patchCanvas',projectId:before.projectId,boardId:before.boardId,objectId:before.id,baseRevision:c.baseRevision,set}};
  }
+ // 0.8.44: replying to or resolving a Canvas comment thread. Only new replies and the resolved time are sent; anything else about a thread stays on the device.
+ // 0.8.45: editing a governance record: only the fields that changed are sent. A change of position alone is handled by plan() (a shift caused by an insert or delete is not a change; a real reorder stays on the device).
+ if(before&&after&&PROJECT_RECORDS.has(before.kind)){
+  const set={};
+  for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
+   if(S.equal(before.data[k],after.data[k]))continue;
+   if(k==='id')throw notYet('changing the ID of a record');
+   set[k]=after.data[k];
+  }
+  if(!Object.keys(set).length)return {noop:true};
+  return {request:{action:'patchProjectRecord',projectId:before.projectId,recordKind:before.kind,recordId:before.id,baseRevision:c.baseRevision,set}};
+ }
+ if(before&&after&&before.kind==='canvas.threads'){
+  const set={};
+  for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
+   if(S.equal(before.data[k],after.data[k])||k==='updatedAt')continue;
+   if(k!=='messages'&&k!=='resolvedAt')throw notYet('changing the Canvas comment property '+k);
+   set[k]=after.data[k];
+  }
+  if(before.order!==after.order)throw notYet('reordering Canvas comments');
+  if(!Object.keys(set).length)return {noop:true};
+  return {request:{action:'patchCanvasThread',projectId:before.projectId,boardId:before.boardId,threadId:before.id,baseRevision:c.baseRevision,set}};
+ }
  if(before&&after&&before.kind==='canvas.connectors'){
   const set={};
   for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
@@ -70,6 +102,18 @@ function single(c){
   }
   if(!Object.keys(set).length)return {noop:true};
   return {request:{action:'patchCanvasConnector',projectId:before.projectId,boardId:before.boardId,connectorId:before.id,baseRevision:c.baseRevision,set}};
+ }
+ if(before.kind==='canvases'){
+  // 0.8.41: rename or archive a board. The board's counter, update time and viewport are bookkeeping and never sent (see `bookkeeping`).
+  const set={};
+  for(const k of new Set([...Object.keys(before.data),...Object.keys(after.data)])){
+   if(S.equal(before.data[k],after.data[k])||BOARD_LOCAL.includes(k))continue;
+   if(!['title','archivedAt'].includes(k))throw notYet('changing the Canvas board property '+k);
+   set[k]=Object.hasOwn(after.data,k)?after.data[k]:null;
+  }
+  if(before.order!==after.order)throw notYet('reordering Canvas boards');
+  if(!Object.keys(set).length)return {noop:true};
+  return {request:{action:'patchCanvasBoard',projectId:before.projectId,boardId:before.id,baseRevision:c.baseRevision,set}};
  }
  throw notYet('this kind of record');
 }
@@ -97,6 +141,14 @@ function plan(changes,opId){
    return [c];
   });
  }
+ // 0.8.42: a board deleted with up to 90 items is one call; the server removes the items with it. A bigger board sends its items first (50 per call, below), then the board.
+ const bgone=new Set(),bcount=new Map();
+ for(const c of list)if(c.before&&!c.after&&c.before.kind==='canvases')bgone.add(c.before.projectId+'|'+c.before.id);
+ if(bgone.size){
+  const key=c=>{const r=c.before||c.after;return r.projectId+'|'+r.boardId;},child=c=>c.before&&!c.after&&['canvas.objects','canvas.connectors','canvas.threads'].includes(c.before.kind)&&bgone.has(key(c));
+  for(const c of list)if(child(c))bcount.set(key(c),(bcount.get(key(c))||0)+1);
+  list=list.filter(c=>!(child(c)&&bcount.get(key(c))<=90));
+ }
  // Canvas objects removed together become one call per board (up to 50 each). The connectors and comment threads attached to them, and the children that lose their frame, are the server's cascade and are not sent.
  const cgone=new Set(list.filter(c=>c.before&&!c.after&&c.before.kind==='canvas.objects').map(c=>c.before.projectId+'|'+c.before.boardId+'|'+c.before.id)),cdel=list.filter(c=>c.before&&!c.after&&c.before.kind==='canvas.objects');
  if(cgone.size){
@@ -114,7 +166,14 @@ function plan(changes,opId){
   if(r.kind==='tasks'&&c.before&&c.after)return (c.before.data.dependsOn||[]).some(d=>gone.has(id(d)))||gone.has(id(c.before.data.parentId));
   return false;};
  if(gone.size)list=list.filter(c=>c.before&&!c.after&&c.before.kind==='tasks'||!dropped(c,c.before||c.after));
- const rank=c=>c.before&&!c.after?0:!c.before?(c.after.kind==='canvas.connectors'?1.5:1):2,order=list.map(c=>({c,built:single(c)})).filter(x=>!x.built.noop).sort((a,b)=>rank(a.c)-rank(b.c)||(a.c.key<b.c.key?-1:a.c.key>b.c.key?1:0));
+
+ // 0.8.45: governance lists keep their position as a stored number. A new record joins after the last one and a delete leaves a gap, so those never change anyone else's position (see alignOrders).
+// So if an existing record's position still differs here, it is a genuine reorder (items swapped or moved). That cannot be sent yet and stays on the device, "not shared yet".
+ for(const c of list)if(c.before&&c.after&&PROJECT_RECORDS.has(c.before.kind)&&c.before.order!==c.after.order)throw notYet('reordering '+c.before.kind.replace('governance.','governance '));
+ const wdepthNew=new Map(list.filter(c=>!c.before&&c.after&&c.after.kind==='governance.wbs').map(c=>[c.after.projectId+'|'+c.after.id,c.after.data.parent])),wdepth=c=>{let n=0,id=c.after.data.parent;const k=c.after.projectId+'|';while(id&&wdepthNew.has(k+id)&&n<45){n++;id=wdepthNew.get(k+id);}return n;};
+ const wdepthOld=new Map(list.filter(c=>c.before&&!c.after&&c.before.kind==='governance.wbs').map(c=>[c.before.projectId+'|'+c.before.id,c.before.data.parent])),wdeep=c=>{let n=0,id=c.before.data.parent;const k=c.before.projectId+'|';while(id&&wdepthOld.has(k+id)&&n<45){n++;id=wdepthOld.get(k+id);}return n;};
+ const newGroup=new Map(list.filter(c=>!c.before&&c.after&&c.after.kind==='canvas.objects').map(c=>[c.after.projectId+'|'+c.after.boardId+'|'+c.after.id,c.after.data.groupId||''])),depth=c=>{let n=0,id=c.after.data.groupId,k=c.after.projectId+'|'+c.after.boardId+'|';while(id&&newGroup.has(k+id)&&n<10){n++;id=newGroup.get(k+id);}return n;},
+  rank=c=>c.before&&!c.after?(c.before.kind==='governance.wbs'?-wdeep(c)*0.01:0):!c.before?(c.after.kind==='governance.wbs'?1+wdepth(c)*0.01:c.after.kind==='canvases'?0.5:c.after.kind==='canvas.connectors'?1.5:c.after.kind==='canvas.threads'?1.6:c.after.kind==='canvas.objects'?1+depth(c)*0.01:1):2,order=list.map(c=>({c,built:single(c)})).filter(x=>!x.built.noop).sort((a,b)=>rank(a.c)-rank(b.c)||(a.c.key<b.c.key?-1:a.c.key>b.c.key?1:0));
  const cgroups=new Map();for(const c of cdel.sort((a,b)=>a.key<b.key?-1:1)){const g=c.before.projectId+'|'+c.before.boardId,a=cgroups.get(g)||[];a.push(c);cgroups.set(g,a);}
  const canvasDeletes=[];for(const list2 of cgroups.values())for(let i=0;i<list2.length;i+=50){const part=list2.slice(i,i+50),first=part[0].before;canvasDeletes.push({change:part[0],request:{action:'deleteCanvasObjects',projectId:first.projectId,boardId:first.boardId,objectIds:part.map(c=>c.before.id),bases:Object.fromEntries(part.map(c=>[c.before.id,c.baseRevision]))}});}
  const moves=moveSteps.map(c=>({change:c,request:{action:'moveTask',projectId:c.before.projectId,taskId:c.before.id,baseRevision:c.baseRevision,order:c.after.order}}));
@@ -142,7 +201,7 @@ function createSender({request,maxReapply=2}){
     if(!S.equal(current.data.dependsOn,change.before.data.dependsOn))throw Object.assign(new Error('Someone else changed this task\'s dependencies; compare the versions to resolve it'),{code:'conflict',current});
     body={...body,baseRevision:current.revision};continue;
    }
-   if(result.code!=='conflict'||!result.current||attempt>=maxReapply||!['patch','patchCanvas','patchCanvasConnector'].includes(body.action))throw Object.assign(new Error('Someone else changed this record; compare the versions to resolve it'),{code:'conflict',current:result.current?publicRecord(result.current):undefined});
+   if(result.code!=='conflict'||!result.current||attempt>=maxReapply||!['patch','patchCanvas','patchCanvasConnector','patchCanvasThread','patchProjectRecord'].includes(body.action))throw Object.assign(new Error('Someone else changed this record; compare the versions to resolve it'),{code:'conflict',current:result.current?publicRecord(result.current):undefined});
    const current=publicRecord(result.current);
    try{const merged=S.mergeChange(current,{before:change.before,after:change.after});change={key:change.key,before:current,after:merged,baseRevision:current.revision};const built=single(change);if(built.noop)return [];body={...built.request,opId:body.opId};}
    catch(e){if(e.code==='failed-precondition')throw e;throw Object.assign(new Error('Someone else changed the same field; compare the versions to resolve it'),{code:'conflict',current});}

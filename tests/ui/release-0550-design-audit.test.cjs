@@ -70,8 +70,10 @@ test('charts and gesture-heavy task surfaces have accessible actions without cha
   assert.match(timeline,/<Pressable onPress=\{onGridTap\} accessible=\{false\}/);
 });
 
-test('historical release remains cumulative with its original QA record',()=>{
-  // Version synchronization is verified once in tests/app/release-metadata-060.test.cjs.
+test('historical release remains cumulative, with one current QA record and synchronized metadata',()=>{
+  const pkg=require('../../package.json'),app=require('../../app.json'),lock=require('../../package-lock.json');
+  assert.match(pkg.version,/^\d+\.\d+\.\d+$/); assert.equal(app.expo.version,pkg.version);
+  assert.equal(lock.version,pkg.version); assert.equal(lock.packages[''].version,pkg.version);
   const log=read('docs/changelog/CHANGELOG.md');
   assert.equal((log.match(/^## v0\.5\.50 /gm)||[]).length,1);
   assert.match(log,/## v0\.1\.0/);

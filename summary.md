@@ -1,74 +1,55 @@
-# Milvayo summary (2026-11-19)
+# Milvayo summary (2026-11-21)
 
-**App version:** 0.8.27 (owner bumps package.json, package-lock.json, app.json and src/cloud/server/package.json). Last owner-verified release: 0.8.23 (npm test 1191 pass/0 fail/13 skipped, test:cloud exit 0).
+**App version:** 0.8.45 (built, not yet run by you). Your last run, 0.8.44 on 2026-11-25: app 1323 passed / 0 failed, cloud 426 passed / 0 failed (rules, presence and storage ran on the real emulators; restore and board tests use the in-memory server = Planner-tested only). No device testing yet (0.8.28 to 0.8.45 are inside it and await your test) (owner bumps package.json, package-lock.json, app.json, src/cloud/server/package.json). **STATUS: FEATURE FREEZE.** No new features until the QA failures are fixed and owner device-verified. **Owner rule: no batches. One fix per version (0.8.28, 0.8.29, ...), delivered one at a time.**
 
-## 0.8.27 - Canvas edits + update-time fix
-- IMPORTANT FIX (affects 0.8.22-0.8.26): the app stamps updatedAt on every task/Canvas edit but v4 servers own it; edits with a changed updatedAt were refused (tasks) or conflicted (second Canvas edit). Now alignOrders keeps the stored updatedAt of existing tasks/Canvas objects; single() ignores updatedAt. Earlier tests missed it because timestamps matched.
-- Done: patchCanvas accepts text/color/locked (locked objects only unlockable); new patchCanvasConnector (label/style/arrow/color, empty colour clears) and deleteCanvasConnector.
-- Not yet on v4: group/ungroup, linked objects, Canvas comments, board rename/archive/create/delete, projects.
-- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-canvas-edit.test.cjs (new), tests/cloud/patch-canvas.test.cjs, tests/cloud/patch-canvas-create.emulator.test.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
-- Next: group/ungroup, Canvas comments, boards, projects, list tidy-up, legacy `pull` guard, two-device UI check (now more important), billing measurement.
-- Open: owner to run `npm test` and `npm run test:cloud` for 0.8.27.
+## Where we are
+- **0.8.45 = governance records on v4** (risks, work breakdown, budget lines, documents): new actions `createProjectRecord` / `patchProjectRecord` / `deleteProjectRecord`; documents merge per box; approving a document needs manager level; a new item joins the end of the list; a real reorder stays "not shared yet". Sandbox: cloud 327 pass / 13 old failures, app 1045 pass / 76 old failures (same names as before). Planner-tested only. Check: `CHECKLIST-0.8.45.md`.
+- **Owner decision (2026-11-22): build all remaining fixes first (one version each, delivered after each), then test everything at the end. Testing starts only when I say all development builds are done.**
+- **0.8.44 = Canvas comments**: new actions `createCanvasThread` / `patchCanvasThread` (commenters allowed; replies add-only; two simultaneous replies both kept). Fake database now serializes transactions (test harness only). Planner-tested only. Check: `CHECKLIST-0.8.44.md`.
+- **0.8.43 = group/ungroup and linked objects**: existing Canvas actions widened (`groupId`, `sourceLink`; linked and in-frame creates). Server checks the frame (live, same board, not nested, not locked). Planner-tested only. Check: `CHECKLIST-0.8.43.md`.
+- **0.8.42 = create and delete a Canvas board, plus a new cloud sign-in screen** (you asked for the redesign on 2026-11-23): new server actions `createCanvasBoard` / `deleteCanvasBoard` (delete only after archiving, up to 99 items per call, a bigger board sends its items first). The sign-in card (new file `src/screens/workspace/CloudSignIn.js`) replaces the stack of boxes: Email, Password, one choice, one Sign in button, technical fields folded under "Connection details". Screen code only syntax-checked here, needs your eyes. Planner-tested only. Check: `CHECKLIST-0.8.42.md`.
+- **0.8.41 = rename and archive a Canvas board** (approved after the freeze): new cloud action `patchCanvasBoard` (title and archive time only; counter/viewport stay local). Planner-tested only. Check: `CHECKLIST-0.8.41.md`.
+- **0.8.40 = restore a deleted task** (approved after the freeze, "yes to all"): new server action `restoreTask` (manager only, revision-checked, comes back without parent/dependencies/list/sprint/phase/release); conflict button "Bring the task back"; Recovery button for one task from a backup. Planner-tested only. Check: `CHECKLIST-0.8.40.md`.
+- **0.8.39 = FIX-10** (approved): `storage.rules` now checks that the member and grant records exist before reading them (same access as before, no null warning). Server-tested on your emulators (2026-11-23: storage checks passed, cloud 411/411, app 1308/1308, 0 failed). Check: `CHECKLIST-0.8.39.md`.
+- **0.8.38 = FIX-08** (D3): after a web reload the sign-in screen now says you are signed out, nothing is lost, and changes are sent when you sign in again. No sign-in is stored. Planner-tested only. Check: `CHECKLIST-0.8.38.md`.
+- **0.8.37 = FIX-09** presence retest plan: no code change (old test used one account, so "nobody" was correct). Existing tests already use 4 different users and the rules passed on your emulator run (396/396). Check: `CHECKLIST-0.8.37.md`.
+- **0.8.36 = FIX-11** test reform: whole-scenario tests with two users found and fixed 3 bugs (one conflict stopped all of the other person's changes arriving; two people on one Canvas raised a false conflict; Compare wrongly said DIFFERENT after deletes or reorders). New helper `node scripts/qa-evidence.cjs` collects logs as evidence (your first run: 1298 pass / 6 fail; 5 fails were a stray file now moved, 1 is a stale leftover test in your folder; cloud run blocked by an old emulator holding the ports). Planner-tested only. Check: `CHECKLIST-0.8.36.md`.
+- **0.8.35 = FIX-03** (D1 approved): changes the cloud cannot take yet (board rename, groups, linked objects) stay on the device as "not shared yet", never a conflict, never block; edits made of several changes are split so the supported ones go out. Board rename on the server is not built. Planner-tested only. Check: `CHECKLIST-0.8.35.md`.
+- **0.8.34 = FIX-07 / F12** (approved by you): an open Canvas screen no longer erases or reverts the other person's work (board counter goes up when someone else's changes arrive; the open Canvas takes the newer board by itself). Found by a test; probable cause of missing Canvas items. Planner-tested only. Check: `CHECKLIST-0.8.34.md`.
+- **0.8.33 = FIX-05** (audit F3): the safety check is every 60 s instead of 5 min (assumed D5 answer, you can veto) and a watchdog switches to polling when the live signal misses changes. Real cause of a silent signal still unknown. Planner-tested only. Check: `CHECKLIST-0.8.33.md`.
+- **0.8.32 = FIX-04** (audit F4): every edit is sent about 1.5 to 2 s after you make it (before: up to 50 s). Planner-tested only. Check: `CHECKLIST-0.8.32.md`.
+- **0.8.31 = FIX-06** (audit F6): the Cloud screen shows "N waiting · M need review" and the main screen shows a banner while something needs review. Planner-tested only. Check: `CHECKLIST-0.8.31.md`.
+- **0.8.30 = FIX-02** (audit F2): a conflict on a task someone else deleted can be cleared. "Keep cloud version" drops my edit and clears the conflict (a copy stays in the recovery export); "Keep my changes" is hidden because bringing a task back is not built and needs its own approval. Planner-tested only (8 new sandbox tests, no new failures). Check: `docs/qa/cloud-v4/CHECKLIST-0.8.30.md`.
+- **0.8.29 = FIX-01**: a stuck edit only holds back later edits that depend on it. Planner-tested only. Check: `CHECKLIST-0.8.29.md`.
+- **0.8.28 = diagnostics** (Sync status, Compare with cloud). Planner-tested only. Short check: `Milvayo-v0.8.28-Short-QA-Checklist.html`.
+- The 0.8.30 zip is cumulative: it contains 0.8.28, 0.8.29 and 0.8.30. You test them later, in that order or all at once.
+- Owner's QA of 0.8.27: 161 cases, 33 working, 9 not working, 119 not tested.
+- Audit: `docs/qa/cloud-v4/AUDIT-0.8.27.md`. Fix plan: `docs/qa/cloud-v4/FIX-PLAN-0.8.28.md` (one fix per version). Handoff: `docs/Milvayo-Handoffs/HANDOFF-0.8.27-to-new-chat.md`.
+- Still open causes (audit): edits only queue and go out in a later round, up to about 50 s (0.8.32); receiver may wait up to 5 min (to be measured by 0.8.28); unsupported changes still end as conflicts; the pending counter counts conflicts (0.8.31); bringing a deleted task back (needs approval, not built).
+- Labels: Planner-tested, Server-tested, Flow-tested, Owner device-verified. Nothing from 0.8.22 to 0.8.30 is device-verified except the 33 QA "working" cases.
 
-## 0.8.26 - Canvas on v4: real saves, creates
-- Done: found that real Canvas saves were refused on v4 (board record revision/updatedAt/viewport change too); those three fields are now local bookkeeping (not sent, acked locally). New server calls `createCanvasObject` and `createCanvasConnector` (canonical validation, per-board caps 1000/2000, connector ends must be live). App sends them, objects before connectors.
-- Not yet on v4: object text/colour/lock, group/ungroup, linked objects, connector edit/delete, Canvas comments, board rename/archive/create/delete, projects.
-- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-canvas-create.test.cjs (new), tests/cloud/patch-canvas-create.emulator.test.cjs (new), tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
-- Next: Canvas object text/colour/lock + connector edit/delete (server field list), Canvas comments, boards, projects, list tidy-up for tiny task gaps, legacy `pull` guard, two-device check, billing measurement.
-- Verified by owner: npm test 1,226 tests (1,212 pass, 0 fail, 14 skipped); test:cloud 307/307.
+## Owner test results (npm test total / pass / fail / skipped; test:cloud)
+0.8.23: 1204/1191/0/13, cloud OK. 0.8.24: 1208/1195/0/13, 288/288. 0.8.25: 1215/1202/0/13, 296/296. 0.8.26: 1226/1212/0/14, 307/307. **0.8.27 to 0.8.30: not reported yet.** Sandbox note: this sandbox lacks some packages (babel, react, fflate), so 81 app tests and 13 cloud tests cannot run here. They fail identically on untouched 0.8.27; no new failure comes from 0.8.28.
 
-## 0.8.25 - task reorder on v4
-- Verified by owner: npm test 1,215 tests (1,202 pass, 0 fail, 13 skipped); test:cloud 296/296.
-- Decision (owner): fractional positions. New server `moveTask` (order only, one write). App sends `moveTask` for one moved task; moved+edited = patch then moveTask; several tasks at once or a gap under 1e-9 stays in the recovery queue.
-- Files changed: src/cloud/server/patch.cjs, src/cloud/server/feed.cjs, src/cloud/v4Writes.cjs, tests/cloud/patch-move.test.cjs (new), tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, tests/cloud/feed.test.cjs, tests/cloud/feed.emulator.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
-- Next: creating Canvas objects/connectors, projects, list tidy-up for tiny gaps, legacy `pull` guard, two-device check, billing measurement.
-- Open: owner to run `npm test` and `npm run test:cloud` for 0.8.25.
+## Next versions (one fix each, in this order; see fix plan)
+1. Owner: all development builds first, then testing starts when I say so. Then run `npm test` and `npm run test:cloud` and report numbers; answer D1 to D5 (left blank so far; where a recommended answer is used it is stated in the changelog and you can veto it).
+2. **ALL DEVELOPMENT BUILDS ARE DONE (0.8.28 to 0.8.39).** Testing starts now with `docs/qa/cloud-v4/FINAL-QA-CHECKLIST-0.8.28-to-0.8.39.md` and `node scripts/qa-evidence.cjs` (your 0.8.36 run: cloud 396/396, app 1298 pass, 1 stray-file failure to recheck). Then answer D2, D4, D5 (D5 assumed 60 s).
+3. Approved "yes to all" on 2026-11-23, built one per version, order: (done: 0.8.40 restore a deleted task, 0.8.41 board rename/archive, 0.8.42 board create/delete, 0.8.43 group/ungroup + linked objects, 0.8.44 Canvas comments, 0.8.45 governance records), then the rest of projects (0.8.46 simple lists, 0.8.47 Kanban + dependency links, 0.8.48 project settings, 0.8.49 project create/delete, 0.8.50 portfolios/programs; your 4 answers are in; planned in `docs/qa/cloud-v4/PLAN-projects-governance.md`: six builds 0.8.45 to 0.8.50; see that plan). Earlier text: board rename on the server, group/ungroup, linked objects, Canvas comments, board create/delete/archive, projects/governance on v4.
+9. Installed APK cannot connect: test skipped by owner for now.
 
-## 0.8.24 - Canvas on v4
-- Done: Canvas object move/resize/zIndex via `patchCanvas`; Canvas object delete via `deleteCanvasObjects` (cascade left to the server); stale reapply for patchCanvas.
-- Files changed: src/cloud/v4Writes.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
-- Next: task reorder (needs a server `moveTask` call and an order-storage decision), creating Canvas objects/connectors, projects, legacy `pull` guard, two-device check, billing measurement.
-- Verified by owner: npm test 1,208 tests (1,195 pass, 0 fail, 13 skipped); test:cloud 288/288.
+## Files changed in 0.8.45
+Edited: `src/cloud/server/patch.cjs`, `src/cloud/server/feed.cjs`, `src/cloud/v4Writes.cjs`, `src/cloud/schema.cjs`. Tests: `tests/cloud/two-user-scenario.test.cjs`, `v4-writes.test.cjs`, `support-contract.test.cjs`. Docs: CHANGELOG, SUPPORT-MATRIX, FIX-PLAN, `CHECKLIST-0.8.45.md`.
 
-## 0.8.23 - dependency edits on v4
-- Done: task dependency add/remove/replace goes out as `patchDependencies` (own call; links and downstream resets are the server's). Other field edits of the same task go as a separate `patch`. Stale base: automatic reapply if nobody else changed `dependsOn`, else conflict. Planner fix: missing `dependsOn` no longer counts as a change.
-- Files changed: src/cloud/v4Writes.cjs, tests/cloud/v4-writes.test.cjs, tests/cloud/session-v4.test.cjs, docs/changelog/CHANGELOG.md, docs/qa/cloud-v4/GATE3A-RESULTS.md, summary.md.
-- Next: reorder, Canvas, projects on v4; legacy `pull` guard; two-device check; billing measurement.
-- Verified by owner: npm test 1,204 tests (1,191 pass, 0 fail, 13 skipped); test:cloud exit 0.
+## Files changed in 0.8.36
+New: `tests/cloud/two-user-scenario.test.cjs`, `tests/cloud/support-contract.test.cjs`, `docs/qa/cloud-v4/SUPPORT-MATRIX.md`, `docs/qa/cloud-v4/CHECKLIST-0.8.36.md`, `scripts/qa-evidence.cjs`. Edited: `src/cloud/journal.cjs` (overlay), `src/cloud/schema.cjs` (board counter), `src/cloud/diagnostics.cjs` (Compare by order).
 
-## 0.8.22 - the app speaks v4 (Gate 3a, app side)
-- NEW `src/cloud/changeFeed.cjs` (reader), `src/cloud/v4Writes.cjs` (queued edit -> v4 calls, order alignment, automatic reapply). Changed: `session.cjs` (v4 mode, per-project signal, safety poll), `journal.cjs` (feed state, dropped projects, order alignment), `client.js` (`projectHeads`), `server/feed.cjs` (`directoryV4`).
-- Works on v4: task field edits, task delete with cascade, new task, comment, time entry. Kept in the queue with a clear message: dependencies, moving a task, Canvas, projects, others. Legacy `pull` guard NOT added (emulator tests still read via `pull`).
-- Tests: change-feed-client (9), v4-writes (9), session-v4 (10 incl. seeded two-person random run), feed.test (+directory), feed.emulator (+directory), session.test fixture answers `directoryV4`.
-- Open: run `npm test`, `npm run test:cloud`; two-device check in the real app; cost per poll when no signal is live is one call per project; billing measurement.
+## Files changed in 0.8.35 (on top of 0.8.28 to 0.8.34)
+New: `tests/cloud/not-shared-yet.test.cjs`, `docs/qa/cloud-v4/CHECKLIST-0.8.35.md`. Edited: `src/cloud/v4Writes.cjs` (`local` mark), `src/cloud/journal.cjs` (status `local`, split, retry on open, counts), `src/cloud/queueOrder.cjs` (`local`/`localheld`), `src/cloud/syncBanner.cjs` (wording, notice), `src/components/shell/SyncBanner.js`, `src/screens/workspace/CloudPanel.js`, `src/cloud/diagnostics.cjs`, `tests/cloud/session-v4.test.cjs` (three tests updated), `docs/changelog/CHANGELOG.md`, `docs/qa/cloud-v4/FIX-PLAN-0.8.28.md`, `summary.md`.
+Earlier: 0.8.34 `canvasStale.cjs`, `adoptNewer.cjs`, `CanvasEditor.js`; 0.8.33 `session.cjs` 60 s check and watchdog; 0.8.32 quick send; 0.8.31 `syncBanner.cjs`; 0.8.30 `conflictGone.cjs`; 0.8.29 `queueOrder.cjs`; 0.8.28 `diagnostics.cjs`, `CloudDiagnostics.js`.
 
-## 0.8.21 (verified) (Milvayo_v4_gate3a_feed.zip)
-- NEW `src/cloud/server/feed.cjs`: `pullV4` (project change feed) + per-project signal `heads/{org}/{ws}/{project}` written after each accepted v4 edit (bounded 1.5 s, errors swallowed, not on conflict/no-op; a replayed duplicate re-signals).
-- `src/cloud/server/service.cjs` wired; `firestore.indexes.json` + composite index (projectId, updatedAt); `tests/helpers/cloud-fake.cjs` (+RTDB `set`).
-- Tests: `tests/cloud/feed.test.cjs` 14/14 in sandbox (S1 ties + 30 s late visibility, S2 cascades, S4 access, S5/S6 cursors, S7 cost, every writer signals, 2-replica random convergence); 5 deliberate code breaks were all caught. `tests/cloud/feed.emulator.test.cjs` (new, NOT run in sandbox).
-- Sandbox full suite vs untouched copy: no new failures (64 fail vs 66 before; the same environment-only failures remain, none in cloud feed/presence).
-- NOT in this batch: RTDB rule so the app can read the per-project signal (needs your approval), app-side change applier, offline queue rules, legacy `pull` guard. Nothing in the app calls `pullV4` yet, so behavior is unchanged for users.
+## Open issues
+Installed Android APK cannot sign in to the emulators (`auth/network-request-failed`, host 127.0.0.1 correct, Expo Go works). Suspected cause: Android blocks plain http in installed apps (`app.json` has no cleartext setting). Not confirmed. Owner approved a TEST-BUILD-ONLY change (throwaway branch; Elay runs `npx expo install expo-build-properties` and adds the plugin line to `app.json`); awaiting his result. The long-term answer (limit to local addresses) is a separate version.
+MIL-QA-001..009 (QA handoff); legacy `pull` guard for protocol 4 not added; not yet on v4: nested groups, projects; tiny-gap tidy-up; billing on real Firebase; `storage.rules` line 8 warning untraced; Cloud panel still shows the old text "demo-milvayo-083 · build 0.8.5".
 
-
-## Verified on your Termux (your report, 2026-11-18)
-- Presence/session tests 26/26; `npm run test:cloud` 219/219 (after the Carol fixture fix); 5-client and 30-client RTDB benchmarks PASS, 0 listener errors.
-- 30 clients, attach + 80 s idle + cleanup: 15,115,765 B -> 152,190 B of callback payload (about 99% less). Event counts at attach and cleanup are unchanged (900 and 435); idle events 2,700 -> 0. Callback sizes, not billing.
-
-- 150 s run (30 clients, your Termux): PASS, 0 listener errors, 30 heartbeat writes (exactly one per client), 900 events / 102,600 B for the round, 2,190 B uploaded, 1,368 B per client per minute. Cleanup 435 events / 49,590 B, all 90 listeners and 30 disconnect hooks released. Callback sizes, not billing.
-
-## Done in the second patch (Milvayo_v4_structure_fix.zip, sandbox-checked)
-- Own-path header added to the 7 I/O audit files; `folder-structure.test.cjs` import scanner now ignores `require(...)` text inside string literals (new regression test); `npm test` structure failures should be gone (folder-structure 6/6 in sandbox; `patch-io-audit.cjs` install/remove still restores index.cjs byte-for-byte).
-
-## Done in the first fix patch (Milvayo_v4_presence_fixes.zip)
-- Carol fixture fix rolled into `tests/cloud/presence-rules.emulator.test.cjs` (same change you applied by hand: remove her test entry after the read).
-- Own-path header added to `tests/helpers/bench-v4-client-rtdb.cjs` and `bench-v4-client-rtdb-scale.cjs` (these were two of the nine files failing `folder-structure.test.cjs:41`).
-
-## Open issues (in priority order)
-1. Re-run `npm test` on your device to confirm the two structure failures are gone (expected 0 fail).
-2. (closed) 150 s heartbeat round measured, see above.
-3. Two-device/UI checks (background, reconnect, typing) not done. Billed bytes unmeasured.
-4. Gate 3a batch 2 (rule for the project signal, app applier, offline queue, legacy pull guard), remaining N-read workflows, retire legacy code, disaster recovery, open security items, indexes (see handoff).
-5. Changelog: file `docs/qa/cloud-v4/CHANGELOG-ENTRIES.md` by hand (no merge helper in your tree).
-
-## Decisions
-- Online state stays on Realtime Database presence, 2 min heartbeat. FCM only later for offline notifications (assignments, mentions).
+## Decisions in force
+Fractional task positions; server owns `updatedAt` of tasks and Canvas objects; board `revision`, `updatedAt`, `viewport` are local-only; emulator suites are owner-run on Termux; deletion/rules/data-safety changes need explicit owner approval; one fix per version.

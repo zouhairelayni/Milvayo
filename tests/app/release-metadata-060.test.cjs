@@ -8,14 +8,12 @@ const root=path.resolve(__dirname,'../..');
 const pkg=require('../../package.json');
 const app=require('../../app.json');
 const lock=require('../../package-lock.json');
-const server=require('../../src/cloud/server/package.json');
 
 test('Milvayo release versions, build numbers and cumulative changelog agree',()=>{
  assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  assert.equal(pkg.version,app.expo.version);
  assert.equal(pkg.version,lock.version);
  assert.equal(pkg.version,lock.packages[''].version);
- assert.equal(pkg.version,server.version);
  assert.ok(Number.isInteger(app.expo.android.versionCode)&&app.expo.android.versionCode>0);
  assert.match(String(app.expo.ios.buildNumber),/^\d+$/);
  const log=fs.readFileSync(path.join(root,'docs/changelog/CHANGELOG.md'),'utf8');

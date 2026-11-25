@@ -64,9 +64,10 @@ export async function createEmulatorClient(host){
  }
  // v4 change signal: one tiny RTDB node per project ({at, n}); the callback gets the project ID, and `onLive(false)` is reported if any of the nodes cannot be read.
  function projectHeads(scope,projectIds,onHead,onLive=()=>{}){
-  let connected=false;const readable=new Map(projectIds.map(id=>[id,true])),report=()=>onLive(connected&&[...readable.values()].every(Boolean));
+  // The second argument of onLive only explains the state (for the Sync status panel); it changes nothing.
+  let connected=false;const readable=new Map(projectIds.map(id=>[id,true])),codes=new Map(),report=()=>onLive(connected&&[...readable.values()].every(Boolean),{connected,unreadable:projectIds.filter(id=>!readable.get(id)).map(id=>({id,code:codes.get(id)||''}))});
   const stopConnect=onValue(ref(rtdb,'.info/connected'),s=>{connected=!!s.val();report();});
-  const stops=projectIds.map(id=>onValue(ref(rtdb,`heads/${scope.orgId}/${scope.workspaceId}/${id}`),s=>{readable.set(id,true);const v=s.val()||{};traffic.downloadPayloadBytes+=JSON.stringify(v).length;report();onHead(id,{at:Number(v.at)||0,n:Number(v.n)||0});},()=>{readable.set(id,false);report();}));
+  const stops=projectIds.map(id=>onValue(ref(rtdb,`heads/${scope.orgId}/${scope.workspaceId}/${id}`),s=>{readable.set(id,true);const v=s.val()||{};traffic.downloadPayloadBytes+=JSON.stringify(v).length;report();onHead(id,{at:Number(v.at)||0,n:Number(v.n)||0});},error=>{readable.set(id,false);codes.set(id,error&&error.code||'error');report();}));
   return ()=>{stopConnect();stops.forEach(stop=>stop());};
  }
  return {app,auth,db,rtdb,storage,config,request,presence,heads,projectHeads,metrics:()=>({...traffic,scope:'Client session payloads only; protocol and TLS overhead excluded'}),

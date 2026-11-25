@@ -16,11 +16,11 @@ test('createCanvasObject writes one document and keeps canonical state; duplicat
  assert.equal((await addObject(x,o,data,{opId:'fixed-1'})).duplicate,true);
  await assert.rejects(addObject(x,o,data,{opId:'other-op'}),/already exists/);
 });
-test('createCanvasObject rejects what canonical validation rejects, linked and grouped objects, a missing board and a viewer',async()=>{
+test('createCanvasObject rejects what canonical validation rejects, a group frame that does not exist, a missing board and a viewer',async()=>{
  const x=world(),o=live(x,'canvas.objects')[0];
  for(const bad of [{...note(o,'b1'),width:5},{...note(o,'b2'),x:1e9},{...note(o,'b3'),type:'nonsense'},{...note(o,'b4'),extra:'field'},{...note(o,'b5'),boardId:'another'}])await assert.rejects(addObject(x,o,bad),/canonical|carry its own/);
- await assert.rejects(addObject(x,o,note(o,'g1',{groupId:'someframe'})),/full editor/);
- await assert.rejects(addObject(x,o,{...note(o,'l1'),type:'linked'}),/full editor/);
+ await assert.rejects(addObject(x,o,note(o,'g1',{groupId:'someframe'})),/group frame is unavailable/);
+ await assert.rejects(addObject(x,o,{...note(o,'l1'),type:'linked'}),/canonical/);
  await assert.rejects(addObject(x,{...o,boardId:'no-board'},note({...o,boardId:'no-board'},'nb1')),/unavailable/);
  await assert.rejects(addObject(x,o,note(o,'v1'),{opId:'v1'}).then(()=>call(x,{action:'createCanvasObject',projectId:o.projectId,boardId:o.boardId,objectId:'v2',order:1,data:note(o,'v2')},'viewer')),/scoped grant/);
  assert.equal(live(x,'canvas.objects').filter(r=>/^(b|g|l|nb)\d/.test(r.id)).length,0);

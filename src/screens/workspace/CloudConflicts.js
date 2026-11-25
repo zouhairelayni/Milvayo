@@ -15,15 +15,16 @@ export default function CloudConflicts({session}){
    {q.changes.map((change,index)=>{const remote=q.remote[index];return <View key={change.key} style={{gap:8}}>
     <T size={13}>{change.after?.data?.title||change.before?.data?.title||change.key}</T>
     <T muted size={12}>Cloud revision {remote?.revision||'unavailable'} · sequence {remote?.sequence||'unavailable'}</T>
-    {!remote||remote.deleted?<T muted>This record was deleted. Keep the original edit in recovery and use authorized restoration before reconciling.</T>:null}
+    {q.gone?.[index]?<T muted>Someone deleted this record. {q.changes[index]?.before?.kind==='tasks'?'"Bring the task back" restores it with your edit (without its old parent, dependencies, list, sprint, phase or release). ':''}"Keep cloud version" drops your edit and clears this conflict; a copy of your edit stays in the recovery export.</T>:!remote||remote.deleted?<T muted>This record is not available in the cloud right now. Your original edit is kept in recovery.</T>:null}
     {[...new Set([...Object.keys(change.before?.data||{}),...Object.keys(change.after?.data||{})])].filter(field=>!equal(change.before?.data?.[field],change.after?.data?.[field])).map(field=><View key={field} style={{gap:4}}>
      <T size={12}>{field}</T><T selectable size={12}>Your edit: {JSON.stringify(change.after?.data?.[field]??null)}</T><T selectable muted size={12}>Cloud: {JSON.stringify(remote?.data?.[field]??null)}</T>
     </View>)}
    </View>;})}
-   <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
-    <Button label="Keep my changed fields" disabled={busy} onPress={()=>run(async()=>{await session.resolveConflict(q.id,'local',review.remote);setReview(await session.loadConflicts());})}/>
-    <Button label="Keep cloud version" variant="secondary" disabled={busy} onPress={()=>run(async()=>{await session.resolveConflict(q.id,'remote',review.remote);setReview(await session.loadConflicts());})}/>
-   </View>
+   {(()=>{const dropsEdit=q.changes.some((change,index)=>q.gone?.[index]&&change.after);return <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
+    {q.changes.length&&q.changes.every((change,index)=>q.gone?.[index]&&change.after&&change.before?.kind==='tasks')?<Button label="Bring the task back" disabled={busy} onPress={()=>run(async()=>{await session.resolveConflict(q.id,'restore',review.remote);setReview(await session.loadConflicts());})}/>:null}
+    {dropsEdit?null:<Button label="Keep my changed fields" disabled={busy} onPress={()=>run(async()=>{await session.resolveConflict(q.id,'local',review.remote);setReview(await session.loadConflicts());})}/>}
+    <Button label={dropsEdit?'Keep cloud version (drop my edit)':'Keep cloud version'} variant="secondary" disabled={busy} onPress={()=>run(async()=>{await session.resolveConflict(q.id,'remote',review.remote);setReview(await session.loadConflicts());})}/>
+   </View>;})()}
   </Card>)}
   {error?<T size={13}>{error}</T>:null}
  </View>;

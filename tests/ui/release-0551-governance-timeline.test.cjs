@@ -51,8 +51,12 @@ test('Shared sheets reset prior scroll position when opened again',()=>{
   assert.match(src,/onTouchStart=\{scrollable\?startSwipe:undefined\} onTouchEnd=\{scrollable\?finishSwipe:undefined\}/);
 });
 
-test('v0.5.51 historical changelog and QA remain available',()=>{
-  // Version synchronization is verified once in tests/app/release-metadata-060.test.cjs.
+test('v0.5.51 ships one cumulative changelog, QA and matching application versions',()=>{
+  const pkg=require('../../package.json'), app=require('../../app.json'), lock=require('../../package-lock.json');
+  assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+  assert.equal(app.expo.version,pkg.version);
+  assert.equal(lock.version,pkg.version);
+  assert.equal(lock.packages[''].version,pkg.version);
   const changelog=read('docs/changelog/CHANGELOG.md');
   assert.match(changelog,/## v0\.1\.0/);
   assert.equal((changelog.match(/## v0\.5\.51/g)||[]).length,1);

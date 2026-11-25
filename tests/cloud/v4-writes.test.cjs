@@ -31,7 +31,7 @@ test('mapping: anything not supported yet is refused with a clear message and ne
  refuses([change(t,{...withData(t,{title:'b'}),data:{dependsOn:[]}})],/removing the field title/);
  refuses([change(t,{...withData(t,{title:'b'}),order:5})].map(c=>({...c,after:{...c.after,data:{}}})),/removing the field title/);
  assert.throws(()=>requestFor([change(t,withData(t,{title:'b'})),change(other,withData(other,{title:'x'}))],'o'),/several records/,'the one-call form refuses what needs two calls');
- refuses([change(null,{key:'k',kind:'canvas.threads',projectId:'p',boardId:'b',id:'o',order:0,data:{}})],/adding this kind/);
+ refuses([change(null,{key:'k',kind:'risks',projectId:'p',boardId:'b',id:'o',order:0,data:{}})],/adding this kind/);
  refuses([change({key:'k',kind:'projects',projectId:'p',boardId:'',id:'p',order:0,revision:1,data:{}},{key:'k',kind:'projects',projectId:'p',boardId:'',id:'p',order:0,data:{name:'z'}})],/this kind of record/);
  assert.deepEqual(requestFor([],'o'),{noop:true});assert.throws(()=>requestFor(null,'o'),/empty/);
 });
@@ -131,17 +131,27 @@ test('moveTask mapping: a position change is one moveTask; moved and edited toge
  assert.equal(x.task(b.id).order,other.order+0.25,'the first mover wins');
 });
 
-test('Canvas creates: a note and a connector map to their own calls in order; linked and grouped notes are refused; board bookkeeping is not sent but acknowledged locally',()=>{
+test('Canvas creates: a note and a connector map to their own calls in order; linked and grouped notes are sent (0.8.43); board bookkeeping is not sent but acknowledged locally',()=>{
  const x=world(),[a]=objects(x).map(publicRecord),mk=(kind,id,data,extra={})=>({key:kind+'~'+a.projectId+'~'+a.boardId+'~'+id,kind,projectId:a.projectId,boardId:a.boardId,id,order:7,data,...extra});
  const note=mk('canvas.objects','n1',{...a.data,id:'n1'}),edge=mk('canvas.connectors','e1',{id:'e1',from:a.id,to:'n1',label:'',style:'curve',arrow:true});
  const steps=plan([change(null,edge),change(null,note)],'op');assert.deepEqual(steps.map(s=>s.request.action),['createCanvasObject','createCanvasConnector']);
  assert.deepEqual(steps[0].request,{action:'createCanvasObject',projectId:a.projectId,boardId:a.boardId,objectId:'n1',order:7,data:note.data,opId:'op.0'});
- assert.throws(()=>requestFor([change(null,mk('canvas.objects','n2',{...a.data,id:'n2',type:'linked'}))],'o'),e=>e.code==='failed-precondition'&&/linked/.test(e.message));
- assert.throws(()=>requestFor([change(null,mk('canvas.objects','n3',{...a.data,id:'n3',groupId:'f'}))],'o'),e=>e.code==='failed-precondition'&&/group/.test(e.message));
+ assert.equal(requestFor([change(null,mk('canvas.objects','n2',{...a.data,id:'n2',type:'linked'}))],'o').request.action,'createCanvasObject');
+ assert.equal(requestFor([change(null,mk('canvas.objects','n3',{...a.data,id:'n3',groupId:'f'}))],'o').request.action,'createCanvasObject');
+ // 0.8.43: a new frame is created before the notes that join it, even when the frame sorts later; joining or leaving a group is a field patch.
+ const frame=mk('canvas.objects','zz-frame',{...a.data,id:'zz-frame',type:'frame'}),inside=mk('canvas.objects','aa-note',{...a.data,id:'aa-note',groupId:'zz-frame'});
+ assert.deepEqual(plan([change(null,inside),change(null,frame)],'o').map(s=>s.request.objectId),['zz-frame','aa-note']);
+ const join=requestFor([change(a,{...a,data:{...a.data,groupId:'zz-frame'}})],'o').request;assert.deepEqual({action:join.action,set:join.set},{action:'patchCanvas',set:{groupId:'zz-frame'}});
+ const link={mode:'live',sourceType:'task',sourceId:'t1',projectId:a.projectId,view:'tree',direction:'down',scopeType:'project',scopeId:''};
+ assert.deepEqual(requestFor([change(a,{...a,data:{...a.data,sourceLink:link}})],'o').request.set,{sourceLink:link});
  const board={key:'canvases~'+a.projectId+'~'+a.boardId,kind:'canvases',projectId:a.projectId,boardId:'',id:a.boardId,order:0,revision:3,sequence:3,data:{title:'T',revision:4,updatedAt:'a',viewport:{x:0,y:0,scale:1}}},next={...board,data:{...board.data,revision:5,updatedAt:'b',viewport:{x:9,y:9,scale:2}}};
  assert.deepEqual(plan([change(board,next)],'o'),[]);assert.deepEqual(requestFor([change(board,next)],'o'),{noop:true});
  const ack=localAcks([change(board,next)]);assert.equal(ack.length,1);assert.equal(ack[0].data.revision,5);assert.equal(ack[0].sequence,3,'the server revision does not move');
- assert.throws(()=>requestFor([change(board,{...next,data:{...next.data,title:'Renamed'}})],'o'),e=>e.code==='failed-precondition');
+ // 0.8.41: a rename and an archive are sent as one board call; any other board property is still kept on the device.
+ const rename=requestFor([change(board,{...next,data:{...next.data,title:'Renamed'}})],'o').request;
+ assert.deepEqual({action:rename.action,boardId:rename.boardId,baseRevision:rename.baseRevision,set:rename.set},{action:'patchCanvasBoard',boardId:a.boardId,baseRevision:3,set:{title:'Renamed'}});
+ assert.deepEqual(requestFor([change(board,{...next,data:{...next.data,archivedAt:'2026-11-23T10:00:00.000Z'}})],'o').request.set,{archivedAt:'2026-11-23T10:00:00.000Z'});
+ assert.throws(()=>requestFor([change(board,{...next,data:{...next.data,ownerId:'x'}})],'o'),e=>e.code==='failed-precondition'&&e.local===true);
 });
 
 test('alignOrders keeps the stored update time of a task or Canvas object, so an edit never looks like a change of it',()=>{
@@ -158,4 +168,28 @@ test('Canvas edits: text, colour and lock are one patchCanvas; a connector edit,
  assert.deepEqual(requestFor([edit({},'color')],'o').request.set,{color:''},'a cleared colour is sent as an empty colour');
  assert.throws(()=>requestFor([edit({to:'other'})],'o'),e=>e.code==='failed-precondition'&&/connector property to/.test(e.message));
  assert.deepEqual(requestFor([change(edge,null)],'o').request,{action:'deleteCanvasConnector',projectId:a.projectId,boardId:a.boardId,connectorId:'e1',opId:'o',baseRevision:2});
+});
+
+test('0.8.42 Canvas boards: a create is createCanvasBoard (before the notes put on it); a delete is one deleteCanvasBoard and its items are not sent separately; a very large board sends items first',()=>{
+ const P='proj1',bd=(id,extra={})=>publicRecord({key:'canvases~'+P+'~~'+id,kind:'canvases',projectId:P,boardId:'',id,order:1,revision:3,data:{id,title:'T',archivedAt:'t',revision:2,...extra}}),item=(kind,id,b)=>publicRecord({key:kind+'~'+P+'~'+b+'~'+id,kind,projectId:P,boardId:b,id,order:0,revision:2,data:{id,boardId:b,from:'a',to:'b'}});
+ const b=bd('nb');
+ assert.deepEqual(requestFor([change(null,b)],'o').request,{action:'createCanvasBoard',projectId:P,boardId:'nb',order:1,opId:'o',data:b.data});
+ const note={...item('canvas.objects','n1','nb'),revision:0},steps=plan([change(null,note),change(null,b)],'o');
+ assert.equal(steps[0].request.action,'createCanvasBoard','the board is created before the note on it');assert.equal(steps[1].request.action,'createCanvasObject');
+ const kids=[item('canvas.objects','n1','nb'),item('canvas.objects','n2','nb'),item('canvas.connectors','c1','nb')],del=plan([...kids.map(k=>change(k,null)),change(b,null)],'o');
+ assert.equal(del.length,1,'the items go with the board');assert.deepEqual(del[0].request,{action:'deleteCanvasBoard',projectId:P,boardId:'nb',baseRevision:3,opId:'o'});
+ const many=Array.from({length:120},(_,i)=>item('canvas.objects','m'+i,'nb')),big=plan([...many.map(k=>change(k,null)),change(b,null)],'o');
+ assert.equal(big.filter(s=>s.request.action==='deleteCanvasObjects').length,3,'120 items: three calls of up to 50');assert.equal(big.at(-1).request.action,'deleteCanvasBoard','the board goes last');
+ const other=item('canvas.objects','x1','otherboard');assert.ok(plan([change(other,null),change(b,null)],'o').some(s=>s.request.action==='deleteCanvasObjects'),'items of a different board are still their own delete');
+});
+
+test('0.8.44 Canvas comments: a new thread is one create (after the object it is on); a reply or a resolve is a patch of only messages / resolvedAt; moving a thread is kept on the device',()=>{
+ const P='proj1',B='b1',th=(over={},extra={})=>publicRecord({key:'canvas.threads~'+P+'~'+B+'~t1',kind:'canvas.threads',projectId:P,boardId:B,id:'t1',order:2,revision:4,data:{id:'t1',objectId:'o1',x:0,y:0,resolvedAt:null,messages:[{id:'m1',authorId:'local-device',text:'hi',at:'2026-11-24T10:00:00.000Z'}],...over},...extra});
+ const t=th();assert.deepEqual(requestFor([change(null,t)],'o').request,{action:'createCanvasThread',projectId:P,boardId:B,threadId:'t1',order:2,data:t.data,opId:'o'});
+ const reply=th({messages:[...t.data.messages,{id:'m2',authorId:'local-device',text:'ok',at:'2026-11-24T10:05:00.000Z'}]});
+ const r=requestFor([change(t,reply)],'o').request;assert.deepEqual({action:r.action,threadId:r.threadId,baseRevision:r.baseRevision,keys:Object.keys(r.set)},{action:'patchCanvasThread',threadId:'t1',baseRevision:4,keys:['messages']});
+ assert.deepEqual(requestFor([change(t,th({resolvedAt:'2026-11-24T11:00:00.000Z'}))],'o').request.set,{resolvedAt:'2026-11-24T11:00:00.000Z'});
+ assert.throws(()=>requestFor([change(t,th({x:90}))],'o'),e=>e.local===true);
+ const obj=publicRecord({key:'canvas.objects~'+P+'~'+B+'~o1',kind:'canvas.objects',projectId:P,boardId:B,id:'o1',order:1,revision:0,data:{id:'o1',boardId:B,type:'note',x:0,y:0,width:240,height:144,zIndex:1,locked:false,groupId:'',text:'n'}});
+ assert.deepEqual(plan([change(null,t),change(null,obj)],'o').map(s=>s.request.action),['createCanvasObject','createCanvasThread']);
 });

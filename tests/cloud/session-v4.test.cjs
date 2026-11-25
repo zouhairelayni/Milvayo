@@ -53,10 +53,10 @@ test('a second person sees it after the project signal: one pull of that project
  await alice.edit(ws=>{firstTask(ws).title='Seen by Bob';});await alice.session.syncNow();await h.pump();
  assert.equal(firstTask(bob.workspace).title,'Seen by Bob');assert.deepEqual(bob.actions(),['pullV4:'+project.id]);converged(h,alice,bob);
 });
-test('idle costs nothing: no requests while the signal is live, and one safety poll after five minutes',async()=>{
+test('idle costs little: no requests while the signal is live, and one safety poll every minute',async()=>{
  const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();alice.log.length=0;
- await h.advance(120000);await h.advance(120000);assert.deepEqual(alice.actions(),[],'four idle minutes, zero requests');
- await h.advance(120000);const a=alice.actions();assert.equal(a.filter(x=>x==='directoryV4').length,1);assert.ok(a.filter(x=>x.startsWith('pullV4')).length>=2,'the safety poll reads each project');
+ await h.advance(30000);assert.deepEqual(alice.actions(),[],'thirty idle seconds, zero requests');
+ await h.advance(40000);const a=alice.actions();assert.equal(a.filter(x=>x==='directoryV4').length,1);assert.ok(a.filter(x=>x.startsWith('pullV4')).length>=2,'the safety poll reads each project');
 });
 test('deleting a task deletes its cascade for everyone',async()=>{
  const h=harness({tasks:16}),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();
@@ -76,11 +76,12 @@ test('edits to different fields of the same task from two people both survive; t
  const state=bob.session.getState();assert.equal(h.x.task(id).data.title,'Alice again','the server keeps the first writer');
  assert.equal(state.pending,1,'Bob\'s edit is kept, not discarded');assert.match(state.error||'',/same field|compare/i);
 });
-test('a change the v4 path cannot send yet is kept in the queue with a clear message and nothing is sent',async()=>{
- const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=h.live();alice.log.length=0;
- await alice.edit(ws=>{ws.projects[0].tasks.reverse();});await alice.session.syncNow();
- const state=alice.session.getState();assert.equal(state.pending,1);assert.match(state.error||'',/not available in v4 workspaces yet/);
- assert.ok(!alice.actions().some(a=>/^(patch|commit|patchDependencies|deleteTask|createTask)/.test(a)),'no half-sent change');assert.deepEqual(h.live(),before);
+test('a whole-list reorder is not "all or nothing" any more: since 0.8.35 it is split into single moves, each goes out, and the other person gets the same order',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ await alice.edit(ws=>{ws.projects[0].tasks.reverse();});await alice.session.syncNow();await h.advance(5000);await h.pump();
+ const state=alice.session.getState();assert.equal(state.pending,0);assert.equal(state.conflicts,0);assert.equal(state.local,0);
+ assert.ok(!alice.actions().some(a=>/^(commit|patchDependencies|deleteTask|createTask)/.test(a)));assert.ok(alice.actions().some(a=>a.startsWith('moveTask:')));
+ assert.deepEqual(bob.workspace.projects[0].tasks.map(t=>t.id),alice.workspace.projects[0].tasks.map(t=>t.id));assert.equal((await alice.session.compare()).allSame,true);
 });
 test('a dependency edit goes out as patchDependencies; the other person gets the same links, and removing it also converges',async()=>{
  const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
@@ -112,7 +113,7 @@ test('Canvas: moving and deleting objects go out as patchCanvas and deleteCanvas
  assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(a=>a.startsWith('patchCanvas:')));assert.ok(!alice.actions().some(a=>a.startsWith('commit')));
  await alice.edit(ws=>{const b=ws.projects[0].canvases[0];b.objects=b.objects.filter(o=>o.id!==second.id);b.connectors=(b.connectors||[]).filter(c=>c.from!==second.id&&c.to!==second.id);b.threads=(b.threads||[]).filter(t=>t.objectId!==second.id);});await alice.session.syncNow();
  assert.equal(alice.session.getState().pending,0);assert.ok(alice.actions().some(a=>a.startsWith('deleteCanvasObjects:')));
- await h.pump();assert.equal(bob.workspace.projects[0].canvases[0].objects.some(o=>o.id===second.id),false);converged(h,alice,bob);
+ await h.pump();assert.equal(bob.workspace.projects[0].canvases[0].objects.some(o=>o.id===second.id),false);assert.deepEqual([...objectsOf(bob.workspace)],[...objectsOf(alice.workspace)],'same objects; the board counter is local, and since 0.8.34 it goes up on Bob when he receives Alice\'s change');
 });
 test('moving a task in its list goes out as moveTask with a position between its neighbours; the other person sees the same order; twenty moves into the same gap stay valid',async()=>{
  const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
@@ -125,10 +126,11 @@ test('moving a task in its list goes out as moveTask with a position between its
  for(let i=0;i<20;i++){await move(i%2?1:2);await alice.session.syncNow();}
  assert.equal(alice.session.getState().pending,0);await h.pump();assert.deepEqual(bob.workspace.projects[0].tasks.map(t=>t.id),ids());converged(h,alice,bob);
 });
-test('moving two tasks at once is kept in the queue with a clear message',async()=>{
- const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=h.live();alice.log.length=0;
- await alice.edit(ws=>{const l=ws.projects[0].tasks,a=l.splice(5,1)[0],b=l.splice(8,1)[0];l.unshift(a);l.splice(3,0,b);});await alice.session.syncNow();
- assert.equal(alice.session.getState().pending,1);assert.match(alice.session.getState().error||'',/not available in v4 workspaces yet/);assert.deepEqual(h.live(),before);
+test('moving two tasks at once is split into single moves (0.8.35) and both devices end with the same order',async()=>{
+ const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();alice.log.length=0;
+ await alice.edit(ws=>{const l=ws.projects[0].tasks,a=l.splice(5,1)[0],b=l.splice(8,1)[0];l.unshift(a);l.splice(3,0,b);});await alice.session.syncNow();await h.advance(5000);await h.pump();
+ assert.equal(alice.session.getState().pending,0);assert.equal(alice.session.getState().local,0);
+ assert.deepEqual(bob.workspace.projects[0].tasks.map(t=>t.id),alice.workspace.projects[0].tasks.map(t=>t.id));assert.equal((await alice.session.compare()).allSame,true);
 });
 test('reconnecting resumes from the stored feed state: only newer changes are read, and edits made while away arrive',async()=>{
  const h=harness(),alice=h.person('alice'),bob=h.person('bob');await alice.connect();await bob.connect();await h.settle();await alice.session.disconnect();
@@ -232,10 +234,11 @@ test('real Canvas saves: editing text and colour, locking, editing a connector a
  assert.equal(alice.session.getState().pending,0,alice.session.getState().error);assert.ok(alice.actions().some(a=>a.startsWith('deleteCanvasConnector:')));assert.equal(edge(),undefined);
  await h.pump();assert.ok(!bob.workspace.projects[0].canvases[0].connectors.some(e=>e.id==='edge-x'));
 });
-test('real Canvas saves: a board rename stays in the recovery queue',async()=>{
- const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();const before=serverObjects(h).size;alice.log.length=0;
+test('real Canvas saves: a board rename is sent to the cloud since 0.8.41 (see two-user-scenario.test.cjs for the two-person check)',async()=>{
+ const h=harness(),alice=h.person('alice');await alice.connect();await h.settle();alice.log.length=0;
  await canvasEdit(alice,{type:'rename',title:'Renamed board'});await alice.session.syncNow();
- assert.equal(alice.session.getState().pending,1);assert.match(alice.session.getState().error||'',/not available in v4 workspaces yet/);assert.equal(serverObjects(h).size,before);
+ assert.equal(alice.session.getState().pending,0);assert.equal(alice.session.getState().local,0);assert.equal(alice.session.getState().conflicts,0);
+ assert.equal([...h.x.rows.values()].find(r=>r.kind==='canvases'&&!r.deleted).data.title,'Renamed board');
 });
 
 test('edits that also change the update time (as the app does) keep working one after another, for a task and for a Canvas object',async()=>{

@@ -4,11 +4,17 @@ service firebase.storage {
  match /b/{bucket}/o {
   // Assumed path: attachments/org/workspace/project/actor/file.
   // Every operation rechecks active membership and scoped Firestore grants.
-  function allowed(org, ws, project, edit) {
-   let member = firestore.get(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid)).data;
+  // 0.8.38 (FIX-10): check that the member and grant records exist BEFORE reading them. Before, a person with no record hit a "null value" error on the
+  // old line 8 (access was refused anyway, but the emulator warned). The result is the same: no record means no access.
+  function roleOf(org, ws, project) {
    let grant = firestore.get(/databases/(default)/documents/orgs/$(org)/workspaces/$(ws)/grants/$(request.auth.uid)).data;
-   let role = project in grant.projects ? grant.projects[project] : grant.workspaceRole;
-   return member.active == true && (edit ? role in ['contributor', 'manager'] : role in ['viewer', 'commenter', 'contributor', 'manager']);
+   return ('projects' in grant && project in grant.projects) ? grant.projects[project] : grant.workspaceRole;
+  }
+  function allowed(org, ws, project, edit) {
+   return firestore.exists(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid))
+    && firestore.exists(/databases/(default)/documents/orgs/$(org)/workspaces/$(ws)/grants/$(request.auth.uid))
+    && firestore.get(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid)).data.active == true
+    && (edit ? roleOf(org, ws, project) in ['contributor', 'manager'] : roleOf(org, ws, project) in ['viewer', 'commenter', 'contributor', 'manager']);
   }
   match /attachments/{org}/{ws}/{project}/{uid}/{file} {
    allow read: if request.auth != null && allowed(org, ws, project, false);
